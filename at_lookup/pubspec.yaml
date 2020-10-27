@@ -1,6 +1,7 @@
 name: at_lookup
 description: Library for executing at commands on a secondary server.
 version: 1.0.0
+repository: https://github.com/atsign-foundation/at_libraries
 homepage: https://atsign.dev
 
 environment:
