@@ -1,0 +1,20 @@
+name: at_lookup
+description: Library for executing at commands on a secondary server.
+version: 1.0.0
+homepage: https://atsign.dev
+
+environment:
+  sdk: '>=2.7.0 <3.0.0'
+
+dependencies:
+  path: ^1.6.0
+  crypton: ^1.1.0
+  at_utils:
+    git:
+      url: git://github.com/atsign-foundation/at_tools.git
+      path: at_utils
+      ref: master
+
+dev_dependencies:
+  pedantic: ^1.8.0
+  test: ^1.6.0
