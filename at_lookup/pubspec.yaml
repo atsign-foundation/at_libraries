@@ -11,7 +11,7 @@ dependencies:
   crypton: ^1.1.0
   at_utils:
     git:
-      url: git://github.com/atsign-foundation/at_tools.git
+      url: git@github.com:atsign-foundation/at_tools.git
       path: at_utils
       ref: master
 
