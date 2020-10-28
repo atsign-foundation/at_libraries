@@ -3,3 +3,39 @@
 
 # at_lookup
 A library for Dart developers.
+
+## Installation:
+To use this library in your app, first add it to your pubspec.yaml
+```  
+dependencies:
+  at_lookup: ^1.0.0
+```
+### Add to your project 
+```
+pub get 
+```
+### Import in your application code
+```
+import 'package:at_lookup/at_lookup.dart';
+```
+## Usage
+```
+var atLookUpImpl = AtLookupImpl('@alice', 'root.atsign.com',
+    64, privateKey, cramSecret,);
+
+var key = 'test_key';
+var sharedBy = '@alice';
+var sharedWith = '@bob';
+var result = await atLookUpImpl.update(key, value, sharedWith, metadata);
+// lookup
+var lookup_result = await atLookUpImpl.lookup(key, sharedBy);
+// plookup
+var plookup_result = await atLookUpImpl.plookup(key, sharedBy);
+// llookup	
+var llookup_result = await atLookUpImpl.llookup(key, sharedBy, sharedWith, isPublic);
+// delete
+var delete_result = await atLookUpImpl.delete(key, sharedWith, isPublic);
+// scan
+var scan_result_list = await atLookUpImpl.scan(regex, sharedBy);
+var executeVerb_result = await atLookUpImpl.executeVerb(verbBuilder, sync);
+```
