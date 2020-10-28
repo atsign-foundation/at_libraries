@@ -1,8 +1,8 @@
 ![image alt <](../.github/@developersmall.png) 
 ### Now for a little internet optimism
 
-# at_lookup
-A library for Dart developers.
+# at_lookup library
+The AtLookup Library is the low-level direct implementation of the @protocol verbs
 
 ## Installation:
 To use this library in your app, first add it to your pubspec.yaml
