@@ -20,22 +20,30 @@ import 'package:at_lookup/at_lookup.dart';
 ```
 ## Usage
 ```
-var atLookUpImpl = AtLookupImpl('@alice', 'root.atsign.com',
-    64, privateKey, cramSecret,);
+var atLookUpImpl = AtLookupImpl(
+    '@alice',
+    'root.atsign.com',
+    64,
+    privateKey: 'privateKey',
+    cramSecret: 'cramSecret',
+  );
 
-var key = 'test_key';
-var sharedBy = '@alice';
-var sharedWith = '@bob';
-var result = await atLookUpImpl.update(key, value, sharedWith, metadata);
+  var key = 'test_key';
+  var sharedBy = '@alice';
+  var sharedWith = '@bob';
+  var result =
+      await atLookUpImpl.update(key, 'test_value', sharedWith: sharedWith);
 // lookup
-var lookup_result = await atLookUpImpl.lookup(key, sharedBy);
+  var lookup_result = await atLookUpImpl.lookup(key, sharedBy);
 // plookup
-var plookup_result = await atLookUpImpl.plookup(key, sharedBy);
-// llookup	
-var llookup_result = await atLookUpImpl.llookup(key, sharedBy, sharedWith, isPublic);
+  var plookup_result = await atLookUpImpl.plookup(key, sharedBy);
+// llookup
+  var llookup_result = await atLookUpImpl.llookup(key,
+      sharedBy: sharedBy, sharedWith: sharedWith, isPublic: true);
 // delete
-var delete_result = await atLookUpImpl.delete(key, sharedWith, isPublic);
+  var delete_result =
+      await atLookUpImpl.delete(key, sharedWith: '@bob', isPublic: false);
 // scan
-var scan_result_list = await atLookUpImpl.scan(regex, sharedBy);
-var executeVerb_result = await atLookUpImpl.executeVerb(verbBuilder, sync);
+  var scan_result_list =
+      await atLookUpImpl.scan(regex: '*', sharedBy: '@alice');
 ```

@@ -1,5 +1,5 @@
 name: at_lookup
-description: Library for executing at commands on a secondary server.
+description: Library for executing at commands on a secondary server. Example - scan. update, lookup, llookup, plookup etc.
 version: 1.0.0
 repository: https://github.com/atsign-foundation/at_libraries
 homepage: https://atsign.dev
@@ -10,12 +10,7 @@ environment:
 dependencies:
   path: ^1.6.0
   crypton: ^1.1.0
-  at_utils:
-    git:
-      url: https://github.com/atsign-foundation/at_tools.git
-      path: at_utils
-      ref: master
-      version: ^1.0.0
+  at_utils: ^1.0.1
 
 dev_dependencies:
   pedantic: ^1.8.0
