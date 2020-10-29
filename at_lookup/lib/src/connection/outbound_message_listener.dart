@@ -4,7 +4,7 @@ import 'package:at_commons/at_commons.dart';
 
 ///Listener class for messages received by [RemoteSecondary]
 class OutboundMessageListener {
-  final _buffer = ByteBuffer(capacity: 512000);
+  final _buffer = ByteBuffer(capacity: 10240000);
   Queue _queue;
   final _connection;
 
