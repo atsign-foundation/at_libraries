@@ -1,9 +1,11 @@
 import 'dart:collection';
 import 'dart:convert';
 import 'package:at_commons/at_commons.dart';
+import 'package:at_utils/at_logger.dart';
 
 ///Listener class for messages received by [RemoteSecondary]
 class OutboundMessageListener {
+  final logger = AtSignLogger('OutboundMessageListener');
   final _buffer = ByteBuffer(capacity: 10240000);
   Queue _queue;
   final _connection;

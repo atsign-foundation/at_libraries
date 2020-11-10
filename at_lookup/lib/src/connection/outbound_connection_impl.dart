@@ -2,7 +2,6 @@ import 'dart:io';
 import 'outbound_connection.dart';
 
 class OutboundConnectionImpl extends OutboundConnection {
-
   int outbound_idle_time = 600000; //default timeout 10 minutes
 
   OutboundConnectionImpl(Socket socket) : super(socket) {
