@@ -1,0 +1,22 @@
+name: at_server_status
+description: A readonly webapp for searching for public @ protocol information
+documentation: https://atsign.dev/apidocs
+repository: https://github.com/atsign-foundation/at_libraries
+homepage: https://atsign.dev
+
+version: 0.1.0
+
+environment:
+  sdk: '>=2.8.1 <3.0.0'
+
+dependencies:
+  at_lookup:
+    git:
+      url: git@github.com:atsign-company/atsign_foundation.git
+      path: at_lookup
+      ref: dev_env
+  uuid: 2.2.2
+
+dev_dependencies:
+  pedantic: ^1.9.0
+  test: ^1.14.4
