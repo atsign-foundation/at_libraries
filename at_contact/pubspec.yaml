@@ -13,8 +13,8 @@ dependencies:
     git:
       url: https://github.com/atsign-foundation/at_client_sdk.git
       path: at_client
-      ref: master
-      version: ^1.0.0
+      ref: dev_env
+      version: ^1.0.1
 
 dev_dependencies:
   pedantic: ^1.9.0
