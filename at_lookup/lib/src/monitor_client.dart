@@ -20,8 +20,8 @@ class MonitorClient {
   }
 
   ///Monitor Verb
-  void executeMonitorVerb(String _command, String _atSign, String _rootDomain,
-      int _rootPort, Function callback,
+  Future<OutboundConnection> executeMonitorVerb(String _command, String _atSign,
+      String _rootDomain, int _rootPort, Function callback,
       {bool auth = true}) async {
     //1. Get a new outbound connection dedicated to monitor verb.
     var _monitorConnection =
@@ -35,10 +35,15 @@ class MonitorClient {
       } else {
         _monitorVerbResponseQueue.add(response);
       }
+    }, onError: (error) {
+      _errorHandler(error, _monitorConnection);
+    }, onDone: () {
+      _finishedHandler(_monitorConnection);
     });
     await _authenticateConnection(_atSign, _monitorConnection);
     //3. Write monitor verb to connection
     await _monitorConnection.write(_command);
+    return _monitorConnection;
   }
 
   /// Create a new connection for monitor verb.
@@ -110,5 +115,21 @@ class MonitorClient {
       result.add(arr[1]);
     }
     return result;
+  }
+
+  /// Logs the error and closes the [OutboundConnection]
+  void _errorHandler(error, OutboundConnection _connection) async {
+    await _closeConnection(_connection);
+  }
+
+  /// Closes the [OutboundConnection]
+  void _finishedHandler(OutboundConnection _connection) async {
+    await _closeConnection(_connection);
+  }
+
+  void _closeConnection(OutboundConnection _connection) async {
+    if (!_connection.isInValid()) {
+      await _connection.close();
+    }
   }
 }
