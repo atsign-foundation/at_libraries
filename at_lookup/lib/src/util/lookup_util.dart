@@ -1,4 +1,3 @@
-
 class LookUpUtil {
   static List<String> getSecondaryInfo(String url) {
     var result = <String>[];
