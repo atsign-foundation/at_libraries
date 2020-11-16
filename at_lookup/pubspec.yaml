@@ -13,7 +13,7 @@ dependencies:
   crypto: ^2.1.5
   at_utils:
     git:
-      url: https://github.com/atsign-foundation/at_libraries.git
+      url: https://github.com/atsign-foundation/at_tools.git
       path: at_utils
       ref: dev_env
       version: ^1.0.1
