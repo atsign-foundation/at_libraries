@@ -1,5 +1,5 @@
 name: at_server_status
-description: A readonly webapp for searching for public @ protocol information
+description: The at_server_status library provides an easy means to check on the status of the @root server as well as the @server for a particular @sign.
 documentation: https://atsign.dev/apidocs
 repository: https://github.com/atsign-foundation/at_libraries
 homepage: https://atsign.dev
@@ -14,7 +14,7 @@ dependencies:
     git:
       url: git@github.com:atsign-company/atsign_foundation.git
       path: at_lookup
-      ref: dev_env
+      ref: master
   uuid: 2.2.2
 
 dev_dependencies:

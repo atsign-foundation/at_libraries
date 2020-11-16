@@ -9,10 +9,10 @@ void main() async {
     AtStatus atStatus;
     AtStatusImpl atStatusImpl;
 
-    atStatusImpl = AtStatusImpl();
     // AtStatus atStatus = await atStatusImpl.get(atSign);
     // AtSignStatus atSignStatus = atStatus.status();
     // int httpStatus = atStatus.httpStatus();
+    atStatusImpl = AtStatusImpl();
     atStatus = await atStatusImpl.get(atSign);
     print('status for : $atSign');
     print('rootStatus: ${atStatus.rootStatus}');

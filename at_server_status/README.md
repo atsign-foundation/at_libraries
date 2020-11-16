@@ -48,7 +48,7 @@ on the registrar site.
     library (the at_pairing library is used for that purpose).
 
 1. The final step in the process is to save a backup of this information.
-    - In case you  
+    - In case you   
 
 ## Configuring additional applications to work with your @server
 
