@@ -1,10 +1,12 @@
 import 'dart:collection';
 import 'dart:convert';
 import 'package:at_commons/at_commons.dart';
+import 'package:at_utils/at_logger.dart';
 
 ///Listener class for messages received by [RemoteSecondary]
 class OutboundMessageListener {
-  final _buffer = ByteBuffer(capacity: 512000);
+  final logger = AtSignLogger('OutboundMessageListener');
+  final _buffer = ByteBuffer(capacity: 10240000);
   Queue _queue;
   final _connection;
 
@@ -48,26 +50,30 @@ class OutboundMessageListener {
 
   /// Reads the response sent by remote socket from the queue.
   /// If there is no message in queue after [maxWaitMilliSeconds], return null
-  Future<String> read({int maxWaitMilliSeconds = 10000}) async {
+  Future<String> read({int maxWaitMilliSeconds = 120000}) async {
+    return _read(maxWaitMillis: maxWaitMilliSeconds);
+  }
+
+  Future<String> _read({int maxWaitMillis = 120000, int retryCount = 1}) async {
     var result;
-    //wait maxWaitMilliSeconds seconds for response from remote socket
-    var loopCount = (maxWaitMilliSeconds / 50).round();
-    for (var i = 0; i < loopCount; i++) {
-      await Future.delayed(Duration(milliseconds: 50));
-      var queueLength = _queue.length;
-      if (queueLength > 0) {
-        result = _queue.removeFirst();
-        // result from another secondary is either data or a @<atSign>@ denoting complete
-        // of the handshake
-        if (_isValidResponse(result)) {
-          return result;
-        } else {
-          //ignore any other response
-          result = '';
-        }
+    var maxIterations = maxWaitMillis / 10;
+    if (retryCount == maxIterations) {
+      return null;
+    }
+    var queueLength = _queue.length;
+    if (queueLength > 0) {
+      result = _queue.removeFirst();
+      // result from another secondary is either data or a @<atSign>@ denoting complete
+      // of the handshake
+      if (_isValidResponse(result)) {
+        return result;
+      } else {
+        //ignore any other response
+        return '';
       }
     }
-    return result;
+    return Future.delayed(Duration(milliseconds: 10))
+        .then((value) => _read(retryCount: ++retryCount));
   }
 
   bool _isValidResponse(String result) {
