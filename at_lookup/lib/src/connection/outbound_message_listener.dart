@@ -56,7 +56,7 @@ class OutboundMessageListener {
 
   Future<String> _read({int maxWaitMillis = 120000, int retryCount = 1}) async {
     var result;
-    var maxIterations = maxWaitMillis / 1000;
+    var maxIterations = maxWaitMillis / 10;
     if (retryCount == maxIterations) {
       return null;
     }
@@ -72,7 +72,7 @@ class OutboundMessageListener {
         return '';
       }
     }
-    return Future.delayed(Duration(seconds: 1))
+    return Future.delayed(Duration(milliseconds: 10))
         .then((value) => _read(retryCount: ++retryCount));
   }
 
