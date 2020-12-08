@@ -32,6 +32,9 @@ abstract class AtContactsLibrary {
   // creates Group
   Future<AtGroup> createGroup(AtGroup atGroup);
 
+  // deletes Group
+  Future<bool> deleteGroup(AtGroup atGroup);
+
   // fetches all the group names
   Future<List<String>> listGroupNames();
 

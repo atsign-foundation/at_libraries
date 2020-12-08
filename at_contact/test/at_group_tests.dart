@@ -40,14 +40,21 @@ Future<void> main() async {
     // test get all group names
     test(' test get all group names', () async {
       var result = await atContactImpl.listGroupNames();
-      //print('result : $result');
+      print('group names list : $result');
       expect(result.length, greaterThan(0));
+    });
+
+    // test get group
+    test(' test delete group by groupName', () async {
+      var group = AtGroup( 'test_group2', description: 'test group 2');
+      var result = await atContactImpl.deleteGroup(group);
+      expect(result, true);
     });
 
     // Add members to group
     test(' test add members to group', () async {
       var group = await atContactImpl.getGroup(atGroup.name);
-      print('Group size beofre add : ${group.members.length}');
+      print('Group size before adding members : ${group.members.length}');
       var atContacts = Set<AtContact>();
       var contact1 = AtContact(atSign: 'test1', type: ContactType.Individual);
       atContacts.add(contact1);
@@ -55,21 +62,21 @@ Future<void> main() async {
       atContacts.add(contact2);
       var result = await atContactImpl.addMembers(atContacts, group);
       group = await atContactImpl.getGroup(atGroup.name);
-      print('Group size beofre add : ${group.members.length}');
+      print('Group size after adding members : ${group.members.length}');
       expect(result, true);
     });
 
     // Delete members to group
     test(' test delete members to group', () async {
       var group = await atContactImpl.getGroup(atGroup.name);
-      print('Group size beofre delete : ${group.members.length}');
+      print('Group size beofre deleting a member : ${group.members.length}');
       var atContacts = Set<AtContact>();
       var contact1 = AtContact(atSign: 'test1', type: ContactType.Individual);
       atContacts.add(contact1);
       var result = await atContactImpl.deleteMembers(atContacts, group);
       group = await atContactImpl.getGroup(atGroup.name);
       group = await atContactImpl.getGroup(atGroup.name);
-      print('Group size after delete : ${group.members.length}');
+      print('Group size after deleting a member : ${group.members.length}');
       expect(result, true);
     });
 
