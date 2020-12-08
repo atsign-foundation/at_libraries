@@ -7,12 +7,13 @@ import 'test_util.dart';
 Future<void> main() async {
   AtContactsImpl atContactImpl;
   AtGroup atGroup;
-  var atSign = '@colin';
+  var atSign = '@sitaram';
   try {
     await AtClientImpl.createClient(
-        '@colin', '', TestUtil.getPreferenceLocal());
+        atSign, '', TestUtil.getPreferenceLocal());
 
-    atContactImpl = await AtContactsImpl.getInstance('@<atSign>');
+    atContactImpl = await AtContactsImpl.getInstance(atSign);
+    //atContactImpl.atClient.getSyncManager().sync();
     // set contact details
     atGroup = AtGroup( 'test_group1', description: 'test group 1');
   } on Exception catch (e, trace) {
@@ -21,45 +22,65 @@ Future<void> main() async {
   }
   group('A group of at_group tests', () {
     //test create group
-    test(' test create a contact ', () async {
+    test(' test create a group ', () async {
       print('Group name : ${atGroup.name}');
       var result = await atContactImpl.createGroup(atGroup);
-      print('create result : $result');
+      //print('create result : $result');
       expect(result is AtGroup, true);
     });
 
     // test get group
-    test(' test get contact by atSign', () async {
+    test(' test get group by groupName', () async {
       var result = await atContactImpl.getGroup('test_group1');
-      print('get result : $result');
+      print('Group size : ${result.members.length}');
       expect(result is AtGroup, true);
-      expect(result.name, 'test_group1');
+      expect(result.name, atGroup.name);
     });
 
     // test get all group names
     test(' test get all group names', () async {
       var result = await atContactImpl.listGroupNames();
-      print('result : $result');
+      //print('result : $result');
       expect(result.length, greaterThan(0));
     });
 
     // Add members to group
     test(' test add members to group', () async {
-      var atContacts = Set();
-      var group1 = AtGroup('test_group');
-      atContacts.add(group1);
-      var result = await atContactImpl.addMembers(atContacts, atGroup);
-      print('result : $result');
+      var group = await atContactImpl.getGroup(atGroup.name);
+      print('Group size beofre add : ${group.members.length}');
+      var atContacts = Set<AtContact>();
+      var contact1 = AtContact(atSign: 'test1', type: ContactType.Individual);
+      atContacts.add(contact1);
+      var contact2 = AtContact(atSign: 'test2', type: ContactType.Individual);
+      atContacts.add(contact2);
+      var result = await atContactImpl.addMembers(atContacts, group);
+      group = await atContactImpl.getGroup(atGroup.name);
+      print('Group size beofre add : ${group.members.length}');
       expect(result, true);
     });
 
     // Delete members to group
-    test(' test add members to group', () async {
-      var atContacts = Set();
-      var group1 = AtGroup('test_group');
-      atContacts.add(group1);
-      var result = await atContactImpl.deleteMembers(atContacts, atGroup);
-      print('result : $result');
+    test(' test delete members to group', () async {
+      var group = await atContactImpl.getGroup(atGroup.name);
+      print('Group size beofre delete : ${group.members.length}');
+      var atContacts = Set<AtContact>();
+      var contact1 = AtContact(atSign: 'test1', type: ContactType.Individual);
+      atContacts.add(contact1);
+      var result = await atContactImpl.deleteMembers(atContacts, group);
+      group = await atContactImpl.getGroup(atGroup.name);
+      group = await atContactImpl.getGroup(atGroup.name);
+      print('Group size after delete : ${group.members.length}');
+      expect(result, true);
+    });
+
+    // check is member
+    test(' test to check contact is member or not', () async {
+      var group = await atContactImpl.getGroup(atGroup.name);
+      AtContact contact1 = AtContact(atSign: 'test1', type: ContactType.Individual);
+      AtContact contact2 = AtContact(atSign: 'test2', type: ContactType.Individual);
+      var result = atContactImpl.isMember(contact1, group);
+      expect(result, false);
+      result = atContactImpl.isMember(contact2, group);
       expect(result, true);
     });
 

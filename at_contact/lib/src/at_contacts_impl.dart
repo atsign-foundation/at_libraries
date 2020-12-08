@@ -219,17 +219,13 @@ class AtContactsImpl implements AtContactsLibrary {
     if (result != null) {
       list = (result.value != null) ? jsonDecode(result.value) : [];
     }
-    var groupNames = [];
+    list = List<String>.from(list);
+    var groupNames = <String>[];
     list.forEach((group) {
       var groupInfo = AtGroupBasicInfo.fromJson(jsonDecode(group));
       groupNames.add(groupInfo.atGroupName);
     });
     return groupNames;
-  }
-
-  @override
-  List<AtGroup> listGroups() {
-    // <TODO>
   }
 
   /// takes groupName as an input and
@@ -285,7 +281,11 @@ class AtContactsImpl implements AtContactsLibrary {
       ..key = atGroupKey
       ..metadata = metadata;
     // Add all contacts in atContacts from atGroup
-    atGroup.members.addAll(atContacts);
+    atContacts.forEach((contact) {
+      if (!isMember(contact, atGroup)) {
+        atGroup.members.add(contact);
+      }
+    });
     var json = atGroup.toJson();
     var value = jsonEncode(json);
     return await atClient.put(atKey, value);
@@ -310,7 +310,12 @@ class AtContactsImpl implements AtContactsLibrary {
       ..key = atGroupKey
       ..metadata = metadata;
     // removing all contacts in atContacts from atGroup
-    atGroup.members.removeAll(atContacts);
+    var members = atGroup.members;
+    for (var atContact in atContacts) {
+      var contactName = atContact.atSign;
+      members.removeWhere((contact) => (contact.atSign == contactName));
+    }
+    atGroup.members = members;
     var json = atGroup.toJson();
     var value = jsonEncode(json);
     return await atClient.put(atKey, value);
@@ -369,8 +374,18 @@ class AtContactsImpl implements AtContactsLibrary {
   }
 
   @override
-  Future<bool> isMember(AtContact atContact, AtGroup atGroup) {
-    // TODO: implement isMember
-    return null;
+  bool isMember(AtContact atContact, AtGroup atGroup) {
+    if (atGroup == null || atContact == null) {
+      return false;
+    }
+    var result = false;
+    var members = atGroup.members;
+    for (var contact in members) {
+      if (contact.atSign.toString() == atContact.atSign.toString()) {
+        return true;
+      }
+    }
+    return result;
   }
+
 }

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:at_contact/src/model/at_contact.dart';
 import 'package:at_contact/src/service/util_service.dart';
 
@@ -12,7 +14,7 @@ class AtGroup {
   dynamic groupPicture;
 
   //Group members set
-  Set<AtContact> members;
+  Set<AtContact> members = {};
 
   //Additional tags if any
   Map<dynamic, dynamic> tags;
@@ -38,6 +40,7 @@ class AtGroup {
       this.updatedOn,
       this.createdBy,
       this.updatedBy}) {
+    members ??= <AtContact>{};
     createdOn ??= DateTime.now();
     updatedOn ??= DateTime.now();
   }
@@ -47,25 +50,27 @@ class AtGroup {
       'name': name,
       'description': description,
       'groupPicture': groupPicture,
-      'members': members,
+      'members': members.toList(),
       'tags': tags,
-      'createdOn': UtilServices.dateToString(createdOn),
-      'updatedOn': UtilServices.dateToString(updatedOn),
+      'createdOn': createdOn.toIso8601String(),
+      'updatedOn': updatedOn.toIso8601String(),
       'createdBy': createdBy,
       'updatedBy': updatedBy,
     };
   }
 
   AtGroup.fromJson(Map json) {
-    name = json['name'];
-    description = json['description'];
-    groupPicture = json['groupPicture'];
-    members = (json['members'] as Set<dynamic>)?.cast<AtContact>();
-    tags = json['tags'];
-    createdOn = UtilServices.stringToDate(json['createdOn']);
-    updatedOn = UtilServices.stringToDate(json['updatedOn']);
-    createdBy = json['createdBy'];
-    updatedBy = json['updatedBy'];
+    name = json['name'] as String;
+      description = json['description'] as String;
+      groupPicture = json['groupPicture'];
+      members = (json['members'] as List)
+          .map((e) => AtContact.fromJson(e as Map<String, dynamic>))
+          .toSet();
+      tags = json['tags'] as Map<String, dynamic>;
+      createdOn = DateTime.parse(json['createdOn'] as String);
+      updatedOn = DateTime.parse(json['updatedOn'] as String);
+      createdBy = json['createdBy'] as String;
+      updatedBy = json['updatedBy'] as String;
   }
 
   @override

@@ -35,9 +35,6 @@ abstract class AtContactsLibrary {
   // fetches all the group names
   Future<List<String>> listGroupNames();
 
-  // lists all the groups
-  List<AtGroup> listGroups();
-
   // fetches group from groupName
   Future<AtGroup> getGroup(String groupName);
 
@@ -45,6 +42,6 @@ abstract class AtContactsLibrary {
 
   Future<bool> deleteMembers(Set<AtContact> atContacts, AtGroup atGroup);
 
-  Future<bool> isMember(AtContact atContact, AtGroup atGroup);
+  bool isMember(AtContact atContact, AtGroup atGroup);
 
 }
