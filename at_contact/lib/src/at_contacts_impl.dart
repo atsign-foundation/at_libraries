@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:at_client/at_client.dart';
 import 'package:at_contact/src/model/at_contact.dart';
 import 'package:at_contact/src/model/at_group.dart';
@@ -192,11 +193,14 @@ class AtContactsImpl implements AtContactsLibrary {
 
     var json = atGroup.toJson();
     var value = jsonEncode(json);
+    print('created group with key : ${atKey.toString()}');
     var result = await atClient.put(atKey, value);
     if (result) {
+      print('Group creation successful. Adding to group list');
       var atGroupBasicInfo = AtGroupBasicInfo(groupName, atGroupKey);
       // add AtGroupBasicInfo object to list of groupNames
       var success = await _addToGroupList(atGroupBasicInfo);
+      print('Add to group list result : $success');
       return atGroup;
     }
     return null;
@@ -219,7 +223,9 @@ class AtContactsImpl implements AtContactsLibrary {
     var atKey = AtKey()
       ..key = atGroupKey
       ..metadata = metadata;
+    print('calling delete group with key : ${atKey.toString()}');
     var result = await atClient.delete(atKey);
+    print('delete group result : ${result}');
     if(result) {
       var atGroupBasicInfo = AtGroupBasicInfo(groupName, atGroupKey);
       return await _deleteFromGroupList(atGroupBasicInfo);
@@ -238,18 +244,23 @@ class AtContactsImpl implements AtContactsLibrary {
     var atKey = AtKey()
       ..key = groupsListKey
       ..metadata = metadata;
+    print('Getting group list with key : ${atKey.toString()}');
     var result = await atClient.get(atKey);
+    print('Group list result : ${result.value}')
     // get name from AtGroupBasicInfo for all the groups.
     var list = [];
     if (result != null) {
       list = (result.value != null) ? jsonDecode(result.value) : [];
     }
     list = List<String>.from(list);
+    print('List of groupInfo objects : $list');
     var groupNames = <String>[];
     list.forEach((group) {
       var groupInfo = AtGroupBasicInfo.fromJson(jsonDecode(group));
+      print('Adding group name...${groupInfo.atGroupName} to list');
       groupNames.add(groupInfo.atGroupName);
     });
+    print('groupNames : ${groupNames}');
     return groupNames;
   }
 
@@ -272,6 +283,7 @@ class AtContactsImpl implements AtContactsLibrary {
       ..key = atGroupKey
       ..metadata = metadata;
     var group;
+    print('calling get group with key : ${atKey.toString()}');
     await atClient.get(atKey).then((atValue) {
       if (atValue != null) {
         var value = atValue.value;
@@ -284,6 +296,7 @@ class AtContactsImpl implements AtContactsLibrary {
         }
       }
     });
+    print('Got group : ${group.toString()}');
     return group;
   }
 
@@ -393,6 +406,7 @@ class AtContactsImpl implements AtContactsLibrary {
       list = (result.value != null) ? jsonDecode(result.value) : [];
     }
     list.add(jsonEncode(atGroupBasicInfo));
+    print('Updating group list..key : ${atKey.toString()}');
     return await atClient.put(atKey, jsonEncode(list));
   }
 
