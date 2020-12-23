@@ -107,3 +107,8 @@ class AlreadyExistsException implements Exception {
   String message;
   AlreadyExistsException(this.message);
 }
+
+class GroupNotExistsException implements Exception {
+  String message;
+  GroupNotExistsException(this.message);
+}
