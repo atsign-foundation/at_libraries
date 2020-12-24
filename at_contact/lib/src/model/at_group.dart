@@ -7,6 +7,9 @@ class AtGroup {
   //Group name
   String name;
 
+  //Group display name
+  String displayName;
+
   // Group description
   String description;
 
@@ -32,7 +35,8 @@ class AtGroup {
   String updatedBy;
 
   AtGroup(this.name,
-      {this.description,
+      {this.displayName,
+      this.description,
       this.groupPicture,
       this.members,
       this.tags,
@@ -48,6 +52,7 @@ class AtGroup {
   Map<String, dynamic> toJson() {
     return {
       'name': name,
+      'displayName': displayName,
       'description': description,
       'groupPicture': groupPicture,
       'members': members.toList(),
@@ -61,21 +66,22 @@ class AtGroup {
 
   AtGroup.fromJson(Map json) {
     name = json['name'] as String;
-      description = json['description'] as String;
-      groupPicture = json['groupPicture'];
-      members = (json['members'] as List)
-          .map((e) => AtContact.fromJson(e as Map<String, dynamic>))
-          .toSet();
-      tags = json['tags'] as Map<String, dynamic>;
-      createdOn = DateTime.parse(json['createdOn'] as String);
-      updatedOn = DateTime.parse(json['updatedOn'] as String);
-      createdBy = json['createdBy'] as String;
-      updatedBy = json['updatedBy'] as String;
+    displayName = json['displayName'] as String;
+    description = json['description'] as String;
+    groupPicture = json['groupPicture'];
+    members = (json['members'] as List)
+        .map((e) => AtContact.fromJson(e as Map<String, dynamic>))
+        .toSet();
+    tags = json['tags'] as Map<String, dynamic>;
+    createdOn = DateTime.parse(json['createdOn'] as String);
+    updatedOn = DateTime.parse(json['updatedOn'] as String);
+    createdBy = json['createdBy'] as String;
+    updatedBy = json['updatedBy'] as String;
   }
 
   @override
   String toString() {
-    return 'AtGroup{name: $name, description: $description, members: $members, tags: $tags, createdBy: $createdBy, createdOn: $createdOn}';
+    return 'AtGroup{name: $name, displayName: $displayName, description: $description, members: $members, tags: $tags, createdBy: $createdBy, createdOn: $createdOn}';
   }
 }
 

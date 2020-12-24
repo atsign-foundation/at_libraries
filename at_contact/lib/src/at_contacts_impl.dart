@@ -185,7 +185,8 @@ class AtContactsImpl implements AtContactsLibrary {
     var atKey = AtKey()
       ..key = atGroupKey
       ..metadata = metadata;
-//    //update atGroup
+    //update atGroup
+    atGroup.displayName ??= groupName;
     atGroup.createdBy = AtUtils.fixAtSign(atSign);
     atGroup.updatedBy = AtUtils.fixAtSign(atSign);
     atGroup.createdOn = DateTime.now();
@@ -230,6 +231,7 @@ class AtContactsImpl implements AtContactsLibrary {
       ..key = atGroupKey
       ..metadata = metadata;
     //update atGroup
+    atGroup.displayName ??= groupName;
     atGroup.updatedOn = DateTime.now();
 
     var json = atGroup.toJson();
