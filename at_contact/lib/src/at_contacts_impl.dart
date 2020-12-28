@@ -259,7 +259,7 @@ class AtContactsImpl implements AtContactsLibrary {
       ..metadata = metadata;
     print('Getting group list with key : ${atKey.toString()}');
     var result = await atClient.get(atKey);
-    print('Group list result : ${result.value}')
+    print('Group list result : ${result.value}');
     // get name from AtGroupBasicInfo for all the groups.
     var list = [];
     if (result != null) {
