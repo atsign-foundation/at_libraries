@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 import 'package:at_client/at_client.dart';
 import 'package:at_contact/src/model/at_contact.dart';
 import 'package:at_contact/src/model/at_group.dart';
@@ -11,6 +10,7 @@ import 'package:at_utils/at_utils.dart';
 class AtContactsImpl implements AtContactsLibrary {
   AtClientImpl _atClient;
   String _atSign;
+  var logger;
 
   String get atSign => _atSign;
 
@@ -21,6 +21,7 @@ class AtContactsImpl implements AtContactsLibrary {
   AtContactsImpl(AtClient atClient, String atSign) {
     _atSign = atSign;
     _atClient = atClient;
+    logger = AtSignLogger(runtimeType.toString());
   }
 
   AtClientImpl get atClient => _atClient;
@@ -80,7 +81,14 @@ class AtContactsImpl implements AtContactsLibrary {
         var value = atValue.value;
         value = value?.replaceAll('data:', '');
         if (value != null && value != 'null') {
-          var json = jsonDecode(value);
+          var json;
+          try {
+            json = jsonDecode(value);
+          } on FormatException catch (e) {
+            logger
+                .severe('Invalid JSON. ${e.message} found in JSON : ${value}');
+            throw InvalidSyntaxException('Invalid JSON found');
+          }
           if (json != null) {
             contact = AtContact.fromJson(json);
           }
@@ -132,7 +140,12 @@ class AtContactsImpl implements AtContactsLibrary {
     }
     for (var key in scanList) {
       key = reduceKey(key);
-      var contact = await get(key);
+      var contact;
+      try {
+        contact = await get(key);
+      } on Exception catch (e) {
+        logger.severe('Invalid atsign contact found @${key}');
+      }
       if (contact != null) contactList.add(contact);
     }
     return contactList;
