@@ -25,7 +25,14 @@ Future<void> main() async {
     test(' test create a group ', () async {
       print('Group name : ${atGroup.name}');
       var result = await atContactImpl.createGroup(atGroup);
-      //print('create result : $result');
+      print('create result : $result');
+      expect(result is AtGroup, true);
+    });
+
+    test(' test update a group ', () async {
+      atGroup.description = 'updated group description';
+      var result = await atContactImpl.updateGroup(atGroup);
+      print('update result : $result');
       expect(result is AtGroup, true);
     });
 
