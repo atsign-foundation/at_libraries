@@ -40,12 +40,12 @@ class AtLookupImpl implements AtLookUp {
   var outboundConnectionTimeout;
 
   AtLookupImpl(
-      String atSign,
-      String rootDomain,
-      int rootPort, {
-        String privateKey,
-        String cramSecret,
-      }) {
+    String atSign,
+    String rootDomain,
+    int rootPort, {
+    String privateKey,
+    String cramSecret,
+  }) {
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
@@ -164,8 +164,8 @@ class AtLookupImpl implements AtLookUp {
   @override
   Future<String> lookup(String key, String sharedBy,
       {bool auth = true,
-        bool verifyData = false,
-        bool metadata = false}) async {
+      bool verifyData = false,
+      bool metadata = false}) async {
     var builder = LookupVerbBuilder()
       ..atKey = key
       ..sharedBy = sharedBy
@@ -267,7 +267,7 @@ class AtLookupImpl implements AtLookUp {
     if (!_isConnectionAvailable()) {
       //1. find secondary url for atsign from lookup library
       var secondaryUrl =
-      await findSecondary(_currentAtSign, _rootDomain, _rootPort);
+          await findSecondary(_currentAtSign, _rootDomain, _rootPort);
       if (secondaryUrl == null) {
         throw SecondaryNotFoundException('Secondary server not found');
       }
