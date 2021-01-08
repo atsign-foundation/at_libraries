@@ -156,16 +156,64 @@ class AtLookupImpl implements AtLookUp {
         ..atKey = key
         ..sharedBy = _currentAtSign;
     }
-    return await executeVerb(builder);
+    var llookupResult = await executeVerb(builder);
+    llookupResult = VerbUtil.getFormattedValue(llookupResult);
+    return llookupResult;
   }
 
   @override
-  Future<String> lookup(String key, String sharedBy, {bool auth = true}) async {
+  Future<String> lookup(String key, String sharedBy,
+      {bool auth = true,
+      bool verifyData = false,
+      bool metadata = false}) async {
     var builder = LookupVerbBuilder()
       ..atKey = key
       ..sharedBy = sharedBy
-      ..auth = auth;
-    return await executeVerb(builder);
+      ..auth = auth
+      ..operation = metadata == true ? 'all' : null;
+    if (verifyData == null || verifyData == false) {
+      var lookupResult = await executeVerb(builder);
+      lookupResult = VerbUtil.getFormattedValue(lookupResult);
+      return lookupResult;
+    }
+    //verify data signature if verifyData is set to true
+    try {
+      builder = LookupVerbBuilder()
+        ..atKey = key
+        ..sharedBy = sharedBy
+        ..auth = false
+        ..operation = 'all';
+      var lookupResult = await executeVerb(builder);
+      lookupResult = lookupResult.replaceFirst('data:', '');
+      var resultJson = json.decode(lookupResult);
+      logger.finer(resultJson);
+
+      var publicKeyResult = '';
+      if (auth) {
+        publicKeyResult = await plookup('publickey', sharedBy);
+      } else {
+        var publicKeyLookUpBuilder = LookupVerbBuilder()
+          ..atKey = 'publickey'
+          ..sharedBy = sharedBy;
+        publicKeyResult = await executeVerb(publicKeyLookUpBuilder);
+      }
+      publicKeyResult = publicKeyResult.replaceFirst('data:', '');
+      logger.finer('public key of $sharedBy :$publicKeyResult');
+
+      var publicKey = RSAPublicKey.fromString(publicKeyResult);
+      var dataSignature = resultJson['metaData']['dataSignature'];
+      var value = resultJson['data'];
+      value = VerbUtil.getFormattedValue(value);
+      logger.finer('value: ${value} dataSignature:${dataSignature}');
+      var isDataValid = publicKey.verifySHA256Signature(
+          utf8.encode(value), base64Decode(dataSignature));
+      logger.finer('atlookup data verify result: ${isDataValid}');
+      return 'data:$value';
+    } on Exception catch (e) {
+      logger.severe(
+          'Error while verify public data for key: $key sharedBy: $sharedBy exception:${e.toString()}');
+      return 'data:null';
+    }
   }
 
   @override
@@ -173,7 +221,9 @@ class AtLookupImpl implements AtLookUp {
     var builder = PLookupVerbBuilder()
       ..atKey = key
       ..sharedBy = sharedBy;
-    return await executeVerb(builder);
+    var plookupResult = await executeVerb(builder);
+    plookupResult = VerbUtil.getFormattedValue(plookupResult);
+    return plookupResult;
   }
 
   @override
@@ -426,7 +476,6 @@ class AtLookupImpl implements AtLookUp {
   }
 
   bool _isConnectionAvailable() {
-    logger.finer('Is connection invalid:${_connection?.isInValid()}');
     return _connection != null && !_connection.isInValid();
   }
 

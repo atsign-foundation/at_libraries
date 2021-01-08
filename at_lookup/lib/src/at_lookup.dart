@@ -1,5 +1,6 @@
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
+import 'package:at_lookup/src/connection/outbound_connection.dart';
 
 abstract class AtLookUp {
   /// update
@@ -7,7 +8,8 @@ abstract class AtLookUp {
       {String sharedWith, Metadata metadata});
 
   /// lookup
-  Future<String> lookup(String key, String sharedBy);
+  Future<String> lookup(String key, String sharedBy,
+      {bool auth = true, bool verifyData = false});
 
   /// plookup
   Future<String> plookup(String key, String sharedBy);
