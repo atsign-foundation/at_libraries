@@ -6,3 +6,5 @@
 - at_utils and at_commons version changes
 ## 1.0.0+3
 - public data signing, at_utils and at_commons version changes
+## 1.0.1+4
+- at_utils and at_commons version changes
