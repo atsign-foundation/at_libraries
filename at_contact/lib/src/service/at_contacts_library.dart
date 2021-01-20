@@ -49,5 +49,4 @@ abstract class AtContactsLibrary {
   Future<bool> deleteMembers(Set<AtContact> atContacts, AtGroup atGroup);
 
   bool isMember(AtContact atContact, AtGroup atGroup);
-
 }

@@ -8,7 +8,8 @@ abstract class AtLookUp {
       {String sharedWith, Metadata metadata});
 
   /// lookup
-  Future<String> lookup(String key, String sharedBy,{bool auth = true, bool verifyData = false});
+  Future<String> lookup(String key, String sharedBy,
+      {bool auth = true, bool verifyData = false});
 
   /// plookup
   Future<String> plookup(String key, String sharedBy);
