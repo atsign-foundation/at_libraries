@@ -9,13 +9,12 @@ Future<void> main() async {
   AtGroup atGroup;
   var atSign = '@sitaram';
   try {
-    await AtClientImpl.createClient(
-        atSign, '', TestUtil.getPreferenceLocal());
+    await AtClientImpl.createClient(atSign, '', TestUtil.getPreferenceLocal());
 
     atContactImpl = await AtContactsImpl.getInstance(atSign);
     //atContactImpl.atClient.getSyncManager().sync();
     // set contact details
-    atGroup = AtGroup( 'test_group1', description: 'test group 1');
+    atGroup = AtGroup('test_group1', description: 'test group 1');
   } on Exception catch (e, trace) {
     print(e.toString());
     print(trace);
@@ -53,7 +52,7 @@ Future<void> main() async {
 
     // test get group
     test(' test delete group by groupName', () async {
-      var group = AtGroup( 'test_group2', description: 'test group 2');
+      var group = AtGroup('test_group2', description: 'test group 2');
       var result = await atContactImpl.deleteGroup(group);
       expect(result, true);
     });
@@ -90,13 +89,14 @@ Future<void> main() async {
     // check is member
     test(' test to check contact is member or not', () async {
       var group = await atContactImpl.getGroup(atGroup.name);
-      AtContact contact1 = AtContact(atSign: 'test1', type: ContactType.Individual);
-      AtContact contact2 = AtContact(atSign: 'test2', type: ContactType.Individual);
+      AtContact contact1 =
+          AtContact(atSign: 'test1', type: ContactType.Individual);
+      AtContact contact2 =
+          AtContact(atSign: 'test2', type: ContactType.Individual);
       var result = atContactImpl.isMember(contact1, group);
       expect(result, false);
       result = atContactImpl.isMember(contact2, group);
       expect(result, true);
     });
-
   });
 }
