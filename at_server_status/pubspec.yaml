@@ -12,10 +12,10 @@ environment:
 dependencies:
   at_lookup:
     git:
-      url: git@github.com:atsign-company/atsign_foundation.git
+      url: https://github.com/atsign-foundation/at_libraries.git
       path: at_lookup
       ref: dev_env
-      version: ^1.0.0
+      version: ^1.0.0+3
   uuid: ^2.2.2
 
 dev_dependencies:
