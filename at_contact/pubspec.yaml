@@ -13,7 +13,7 @@ dependencies:
     git:
       url: https://github.com/atsign-foundation/at_client_sdk.git
       path: at_client
-      ref: dev_env_staging
+      ref: dev_env
       version: ^1.0.1+5
 
 dev_dependencies:
