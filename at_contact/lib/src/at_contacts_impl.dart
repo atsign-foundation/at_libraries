@@ -371,7 +371,7 @@ class AtContactsImpl implements AtContactsLibrary {
     if(result) {
       atKey.metadata.ttr = 2000;
       atKey.sharedWith = value;
-      await atClient.notifyAll(atKey, value, OperationEnum.append);
+      await atClient.notifyAll(atKey, value, OperationEnum.update);
     }
     return result;
   }
@@ -405,7 +405,7 @@ class AtContactsImpl implements AtContactsLibrary {
     if(result) {
       atKey.sharedWith = value;
       atKey.metadata.ttr = 2000;
-      await atClient.notifyAll(atKey, value, OperationEnum.append);
+      await atClient.notifyAll(atKey, value, OperationEnum.update);
     }
     return result;
   }
