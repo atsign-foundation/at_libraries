@@ -8,12 +8,15 @@ import 'test_util.dart';
 Future<void> main() async {
   AtContactsImpl atContactsImpl;
   AtGroup atGroup;
-  var atSign = '@colin';
+  var atSign = '@sitaram';
+  var preference = TestUtil.getPreferenceLocal();
   try {
-    await AtClientImpl.createClient(
-        '@colin', '', TestUtil.getPreferenceLocal());
+    await AtClientImpl.createClient(atSign, 'me', preference);
+    var atClient = await AtClientImpl.getClient(atSign);
+    await atClient.getSyncManager().init(atSign, preference,
+        atClient.getRemoteSecondary(), atClient.getLocalSecondary());
 
-    atContactsImpl = await AtContactsImpl.getInstance('@colin');
+    atContactsImpl = await AtContactsImpl.getInstance(atSign);
     // set contact details
     atGroup = AtGroup(atSign, description: 'test', displayName: 'test1');
   } on Exception catch (e, trace) {
@@ -25,13 +28,13 @@ Future<void> main() async {
     test(' test create a group', () async {
       var result = await atContactsImpl.createGroup(atGroup);
       print('create result : $result');
-      expect(result, true);
+      expect(result is AtGroup, true);
     });
 
     test(' test add members to group', () async {
-      var contact1 =  AtContact(type: ContactType.Individual, atSign: '@colin');
-      var contact2 =  AtContact(type: ContactType.Individual, atSign: '@bob');
-      Set atContacts;
+      var contact1 = AtContact(type: ContactType.Individual, atSign: '@colin');
+      var contact2 = AtContact(type: ContactType.Individual, atSign: '@bob');
+      var atContacts = <AtContact>{};
       atContacts.add(contact1);
       atContacts.add(contact2);
       var result = await atContactsImpl.addMembers(atContacts, atGroup);
@@ -46,13 +49,12 @@ Future<void> main() async {
     });
 
     test(' test delete members from group', () async {
-      var contact1 =  AtContact(type: ContactType.Individual, atSign: '@colin');
-      Set atContacts;
+      var contact1 = AtContact(type: ContactType.Individual, atSign: '@colin');
+      var atContacts = <AtContact>{};
       atContacts.add(contact1);
       var result = await atContactsImpl.deleteMembers(atContacts, atGroup);
       print('create result : $result');
       expect(result, true);
     });
-
   });
 }

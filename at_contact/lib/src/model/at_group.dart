@@ -1,4 +1,3 @@
-
 class AtGroup {
   //Group id
   String groupId;
@@ -34,15 +33,15 @@ class AtGroup {
 
   AtGroup(this.groupName,
       {this.groupId,
-        this.displayName,
-        this.description,
-        this.groupPicture,
-        this.groupMembersKey,
-        this.tags,
-        this.createdOn,
-        this.updatedOn,
-        this.createdBy,
-        this.updatedBy}) {
+      this.displayName,
+      this.description,
+      this.groupPicture,
+      this.groupMembersKey,
+      this.tags,
+      this.createdOn,
+      this.updatedOn,
+      this.createdBy,
+      this.updatedBy}) {
     createdOn ??= DateTime.now();
     updatedOn ??= DateTime.now();
   }
