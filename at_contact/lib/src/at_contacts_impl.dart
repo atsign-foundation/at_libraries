@@ -34,6 +34,11 @@ class AtContactsImpl implements AtContactsLibrary {
   }
 
   static Future<AtContactsImpl> getInstance(String atSign) async {
+    try {
+      atSign = AtUtils.fixAtSign(AtUtils.formatAtSign(atSign));
+    } on Exception {
+      rethrow;
+    }
     var atClient = await AtClientImpl.getClient(atSign);
     return AtContactsImpl(atClient, atSign);
   }
@@ -46,7 +51,7 @@ class AtContactsImpl implements AtContactsLibrary {
     var atSign = '${contact.atSign}';
     //check if atSign is 'null'
     if (atSign == null) return false;
-    var modifiedKey = formKey(atSign);
+    var modifiedKey = _formKey(atSign);
     var json = contact.toJson();
     var value = jsonEncode(json);
     // set metadata
@@ -69,10 +74,11 @@ class AtContactsImpl implements AtContactsLibrary {
 
   ///returns the [AtContact].has to pass the 'atSign'
   /// Throws [FormatException] on invalid json
+  /// Throws class extending [AtException] on invalid atsign.
   @override
   Future<AtContact> get(String atSign) async {
     var contact;
-    var modifiedKey = formKey(atSign);
+    var modifiedKey = _formKey(atSign);
     var metadata = Metadata()
       ..isPublic = false
       ..namespaceAware = false;
@@ -107,7 +113,7 @@ class AtContactsImpl implements AtContactsLibrary {
   /// on success return true otherwise false
   @override
   Future<bool> delete(String atSign) async {
-    var modifiedKey = formKey(atSign);
+    var modifiedKey = _formKey(atSign);
     var metadata = Metadata()
       ..isPublic = false
       ..namespaceAware = false;
@@ -411,7 +417,13 @@ class AtContactsImpl implements AtContactsLibrary {
     return result;
   }
 
-  String formKey(String key) {
+  /// Throw Exceptions on Invalid AtSigns.
+  String _formKey(String key) {
+    try {
+      key = AtUtils.fixAtSign(AtUtils.formatAtSign(key));
+    } on Exception {
+      rethrow;
+    }
     key = key.replaceFirst('@', '');
     var modifiedKey =
         '${AppConstants.CONTACT_KEY_PREFIX}.$key.${AppConstants.CONTACT_KEY_SUFFIX}.${atSign.replaceFirst('@', '')}';
