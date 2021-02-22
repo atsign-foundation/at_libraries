@@ -34,6 +34,11 @@ class AtContactsImpl implements AtContactsLibrary {
   }
 
   static Future<AtContactsImpl> getInstance(String atSign) async {
+    try {
+      atSign = AtUtils.fixAtSign(AtUtils.formatAtSign(atSign));
+    } on Exception {
+      rethrow;
+    }
     var atClient = await AtClientImpl.getClient(atSign);
     return AtContactsImpl(atClient, atSign);
   }
@@ -46,7 +51,7 @@ class AtContactsImpl implements AtContactsLibrary {
     var atSign = '${contact.atSign}';
     //check if atSign is 'null'
     if (atSign == null) return false;
-    var modifiedKey = formKey(atSign);
+    var modifiedKey = _formKey(atSign);
     var json = contact.toJson();
     var value = jsonEncode(json);
     // set metadata
@@ -69,10 +74,11 @@ class AtContactsImpl implements AtContactsLibrary {
 
   ///returns the [AtContact].has to pass the 'atSign'
   /// Throws [FormatException] on invalid json
+  /// Throws class extending [AtException] on invalid atsign.
   @override
   Future<AtContact> get(String atSign) async {
     var contact;
-    var modifiedKey = formKey(atSign);
+    var modifiedKey = _formKey(atSign);
     var metadata = Metadata()
       ..isPublic = false
       ..namespaceAware = false;
@@ -107,7 +113,7 @@ class AtContactsImpl implements AtContactsLibrary {
   /// on success return true otherwise false
   @override
   Future<bool> delete(String atSign) async {
-    var modifiedKey = formKey(atSign);
+    var modifiedKey = _formKey(atSign);
     var metadata = Metadata()
       ..isPublic = false
       ..namespaceAware = false;
@@ -135,8 +141,8 @@ class AtContactsImpl implements AtContactsLibrary {
     var contactList = <AtContact>[];
     var atSign = _atSign.replaceFirst('@', '');
     var regex =
-    '${AppConstants.CONTACT_KEY_PREFIX}.*.${AppConstants.CONTACT_KEY_SUFFIX}.$atSign@$atSign'
-        .toLowerCase();
+        '${AppConstants.CONTACT_KEY_PREFIX}.*.${AppConstants.CONTACT_KEY_SUFFIX}.$atSign@$atSign'
+            .toLowerCase();
     var scanList = await atClient.getKeys(regex: '$regex');
     if (scanList != null && scanList.isNotEmpty && scanList[0] == '') {
       return contactList;
@@ -368,7 +374,7 @@ class AtContactsImpl implements AtContactsLibrary {
     });
     var value = jsonEncode(members);
     var result = await atClient.put(atKey, value);
-    if(result) {
+    if (result) {
       atKey.metadata.ttr = 2000;
       atKey.sharedWith = value;
       await atClient.notifyAll(atKey, value, OperationEnum.append);
@@ -397,12 +403,13 @@ class AtContactsImpl implements AtContactsLibrary {
     var members = await getGroupMembers(atGroup);
     for (var atContact in atContacts) {
       var contactName = atContact.atSign;
-      members.removeWhere((contact) => (AtContact.fromJson(jsonDecode(contact)).atSign == contactName));
+      members.removeWhere((contact) =>
+          (AtContact.fromJson(jsonDecode(contact)).atSign == contactName));
     }
 
     var value = jsonEncode(members);
     var result = await atClient.put(atKey, value);
-    if(result) {
+    if (result) {
       atKey.sharedWith = value;
       atKey.metadata.ttr = 2000;
       await atClient.notifyAll(atKey, value, OperationEnum.append);
@@ -410,7 +417,13 @@ class AtContactsImpl implements AtContactsLibrary {
     return result;
   }
 
-  String formKey(String key) {
+  /// Throw Exceptions on Invalid AtSigns.
+  String _formKey(String key) {
+    try {
+      key = AtUtils.fixAtSign(AtUtils.formatAtSign(key));
+    } on Exception {
+      rethrow;
+    }
     key = key.replaceFirst('@', '');
     var modifiedKey =
         '${AppConstants.CONTACT_KEY_PREFIX}.$key.${AppConstants.CONTACT_KEY_SUFFIX}.${atSign.replaceFirst('@', '')}';
@@ -421,9 +434,9 @@ class AtContactsImpl implements AtContactsLibrary {
     var modifiedKey = key
         .split('.')
         .where((element) =>
-    element != AppConstants.CONTACT_KEY_PREFIX.toLowerCase() &&
-        element != AppConstants.CONTACT_KEY_SUFFIX.toLowerCase() &&
-        !element.contains(atSign))
+            element != AppConstants.CONTACT_KEY_PREFIX.toLowerCase() &&
+            element != AppConstants.CONTACT_KEY_SUFFIX.toLowerCase() &&
+            !element.contains(atSign))
         .join('');
     return modifiedKey;
   }
@@ -475,7 +488,7 @@ class AtContactsImpl implements AtContactsLibrary {
     }
     list = List<String>.from(list);
     list.removeWhere((group) =>
-    (AtGroupBasicInfo.fromJson(jsonDecode(group)).atGroupId == groupId));
+        (AtGroupBasicInfo.fromJson(jsonDecode(group)).atGroupId == groupId));
     return await atClient.put(atKey, jsonEncode(list));
   }
 
@@ -493,7 +506,8 @@ class AtContactsImpl implements AtContactsLibrary {
     var result = false;
     var members = await getGroupMembers(atGroup);
     for (var contact in members) {
-      if (AtContact.fromJson(jsonDecode(contact)).atSign == atContact.atSign.toString()) {
+      if (AtContact.fromJson(jsonDecode(contact)).atSign ==
+          atContact.atSign.toString()) {
         return true;
       }
     }
