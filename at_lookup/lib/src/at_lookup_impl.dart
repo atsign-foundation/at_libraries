@@ -1,17 +1,18 @@
 import 'dart:convert';
-import 'package:crypton/crypton.dart';
-import 'package:crypto/crypto.dart';
 import 'dart:io';
+
+import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_commons/src/at_constants.dart' as at_constants;
-import 'package:at_commons/at_builders.dart';
-import 'package:at_lookup/src/util/lookup_util.dart';
-import 'package:at_utils/at_logger.dart';
 import 'package:at_lookup/src/at_lookup.dart';
+import 'package:at_lookup/src/connection/outbound_connection.dart';
 import 'package:at_lookup/src/connection/outbound_connection_impl.dart';
 import 'package:at_lookup/src/connection/outbound_message_listener.dart';
-import 'package:at_lookup/src/connection/outbound_connection.dart';
 import 'package:at_lookup/src/exception/at_lookup_exception.dart';
+import 'package:at_lookup/src/util/lookup_util.dart';
+import 'package:at_utils/at_logger.dart';
+import 'package:crypto/crypto.dart';
+import 'package:crypton/crypton.dart';
 
 class AtLookupImpl implements AtLookUp {
   final logger = AtSignLogger('AtLookup');
@@ -306,6 +307,12 @@ class AtLookupImpl implements AtLookUp {
         verbResult = await _config(builder);
       } else if (builder is NotifyVerbBuilder) {
         verbResult = await _notify(builder);
+      } else if (builder is NotifyStatusVerbBuilder) {
+        verbResult = await _notifyStatus(builder);
+      } else if (builder is NotifyListVerbBuilder) {
+        verbResult = await _notifyList(builder);
+      } else if (builder is NotifyAllVerbBuilder) {
+        verbResult = await _notifyAll(builder);
       }
     } on Exception catch (e) {
       logger.severe('Error in remote verb execution ${e.toString()}');
@@ -356,6 +363,21 @@ class AtLookupImpl implements AtLookUp {
   Future<String> _config(ConfigVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
     return await _process(atCommand, auth: true);
+  }
+
+  Future<String> _notifyStatus(NotifyStatusVerbBuilder builder) async {
+    var command = builder.buildCommand();
+    return await _process(command, auth: true);
+  }
+
+  Future<String> _notifyList(NotifyListVerbBuilder builder) async {
+    var command = builder.buildCommand();
+    return await _process(command, auth: true);
+  }
+
+  Future<String> _notifyAll(NotifyAllVerbBuilder builder) async {
+    var command = builder.buildCommand();
+    return await _process(command, auth: true);
   }
 
   Future<String> executeCommand(String atCommand, {bool auth = false}) async {
