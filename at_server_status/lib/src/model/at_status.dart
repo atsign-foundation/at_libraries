@@ -56,7 +56,6 @@ import 'dart:io';
 ///
 
 class AtStatus {
-
   String atSign;
 
   String serverLocation;
@@ -67,7 +66,12 @@ class AtStatus {
 
   AtSignStatus atSignStatus;
 
-  AtStatus({this.atSign, this.serverLocation, this.rootStatus, this.serverStatus, this.atSignStatus}) {
+  AtStatus(
+      {this.atSign,
+      this.serverLocation,
+      this.rootStatus,
+      this.serverStatus,
+      this.atSignStatus}) {
     rootStatus ??= RootStatus.unavailable;
     serverStatus ??= ServerStatus.unavailable;
     atSignStatus ??= AtSignStatus.unavailable;
@@ -77,41 +81,36 @@ class AtStatus {
     AtSignStatus status;
     // enum RootStatus { found, notFound, running, stopped, unavailable }
     // @server has no root location
-    if(rootStatus == RootStatus.notFound) {
+    if (rootStatus == RootStatus.notFound) {
       status = AtSignStatus.notFound;
-    }
-    else if(rootStatus == RootStatus.found) {
+    } else if (rootStatus == RootStatus.found) {
       // enum ServerStatus { notFound, ready, teapot, activated, stopped, unavailable, error }
-      if(serverStatus == ServerStatus.activated) {
+      if (serverStatus == ServerStatus.activated) {
         status = AtSignStatus.activated;
-      }
-      else if(serverStatus == ServerStatus.ready
-          || serverStatus == ServerStatus.teapot) {
+      } else if (serverStatus == ServerStatus.ready ||
+          serverStatus == ServerStatus.teapot) {
         status = AtSignStatus.teapot;
       }
     }
     // service is not available
-    else if(rootStatus == RootStatus.unavailable
-        || rootStatus == RootStatus.stopped
-        || serverStatus == ServerStatus.stopped
-        || serverStatus == ServerStatus.unavailable
-    ) {
+    else if (rootStatus == RootStatus.unavailable ||
+        rootStatus == RootStatus.stopped ||
+        serverStatus == ServerStatus.stopped ||
+        serverStatus == ServerStatus.unavailable) {
       status = AtSignStatus.unavailable;
     }
     // @root is stopped
 
-    else if(serverStatus == ServerStatus.unavailable) {
-    }
+    else if (serverStatus == ServerStatus.unavailable) {}
 
     return status;
   }
 
   int httpStatus() {
     int status;
-    if(rootStatus == RootStatus.found) {
+    if (rootStatus == RootStatus.found) {
       status = _serverHttpStatus();
-    }
-    else {
+    } else {
       status = _rootHttpStatus();
     }
     return status;
@@ -119,16 +118,13 @@ class AtStatus {
 
   int _rootHttpStatus() {
     int status;
-    if(rootStatus == RootStatus.found) {
+    if (rootStatus == RootStatus.found) {
       status = HttpStatus.found;
-    }
-    else if(rootStatus == RootStatus.notFound) {
+    } else if (rootStatus == RootStatus.notFound) {
       status = HttpStatus.notFound;
-    }
-    else if(rootStatus == RootStatus.stopped) {
+    } else if (rootStatus == RootStatus.stopped) {
       status = HttpStatus.serviceUnavailable;
-    }
-    else if(rootStatus == RootStatus.unavailable) {
+    } else if (rootStatus == RootStatus.unavailable) {
       status = HttpStatus.serviceUnavailable;
     } else {
       status = HttpStatus.internalServerError;
@@ -138,20 +134,16 @@ class AtStatus {
 
   int _serverHttpStatus() {
     int status;
-    if(serverStatus == ServerStatus.teapot) {
+    if (serverStatus == ServerStatus.teapot) {
       status = 418;
-    }
-    else if(serverStatus == ServerStatus.stopped
-        || serverStatus == ServerStatus.unavailable) {
+    } else if (serverStatus == ServerStatus.stopped ||
+        serverStatus == ServerStatus.unavailable) {
       status = HttpStatus.serviceUnavailable;
-    }
-    else if(serverStatus == ServerStatus.ready) {
+    } else if (serverStatus == ServerStatus.ready) {
       status = HttpStatus.serviceUnavailable;
-    }
-    else if(serverStatus == ServerStatus.activated) {
+    } else if (serverStatus == ServerStatus.activated) {
       status = HttpStatus.ok;
-    }
-    else {
+    } else {
       status = HttpStatus.internalServerError;
     }
     return status;
@@ -161,9 +153,9 @@ class AtStatus {
     return {
       'atSign': atSign,
       'rootStatus': rootStatus,
-      'serverStatus' : serverStatus,
-      'serverLocation' : serverLocation.toString(),
-      'status' : status,
+      'serverStatus': serverStatus,
+      'serverLocation': serverLocation.toString(),
+      'status': status,
     };
   }
 
