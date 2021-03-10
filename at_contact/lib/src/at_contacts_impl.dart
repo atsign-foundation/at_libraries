@@ -200,7 +200,6 @@ class AtContactsImpl implements AtContactsLibrary {
     }
     //create groupID
     var groupId = (id == null) ? Uuid().v1() : id;
-    var groupMembersId = await createGroupMembersKey(groupId);
     // create key from group name.
     var groupName = atGroup.groupName;
     // set metadata
@@ -211,7 +210,6 @@ class AtContactsImpl implements AtContactsLibrary {
       ..key = groupId
       ..metadata = metadata;
     //update atGroup
-    atGroup.groupMembersKey = groupMembersId;
     atGroup.displayName ??= groupName;
     atGroup.createdBy = AtUtils.fixAtSign(atSign);
     atGroup.updatedBy = AtUtils.fixAtSign(atSign);
@@ -360,26 +358,21 @@ class AtContactsImpl implements AtContactsLibrary {
     var metadata = Metadata()
       ..isPublic = false
       ..namespaceAware = false;
-    // create groupMembersKey
+    // create atkey
     var atKey = AtKey()
-      ..key = atGroup.groupMembersKey
+      ..key = atGroup.groupId
       ..metadata = metadata;
     // Add all contacts in atContacts from atGroup
-    var members = await getGroupMembers(atGroup);
-    atContacts.forEach((contact) async {
-      var success = await isMember(contact, atGroup);
-      if (!success) {
-        members.add(jsonEncode(contact));
+    atContacts.forEach((contact) {
+      if (!isMember(contact, atGroup)) {
+        atGroup.members.add(contact);
       }
     });
-    var value = jsonEncode(members);
-    var result = await atClient.put(atKey, value);
-    if (result) {
-      atKey.metadata.ttr = 2000;
-      atKey.sharedWith = value;
-      await atClient.notifyAll(atKey, value, OperationEnum.update);
-    }
-    return result;
+    atGroup.updatedBy = AtUtils.fixAtSign(atSign);
+    atGroup.updatedOn = DateTime.now();
+    var json = atGroup.toJson();
+    var value = jsonEncode(json);
+    return await atClient.put(atKey, value);
   }
 
   /// takes Set of AtContacts as an input and
@@ -397,24 +390,20 @@ class AtContactsImpl implements AtContactsLibrary {
       ..namespaceAware = false;
     //create atkey
     var atKey = AtKey()
-      ..key = atGroup.groupMembersKey
+      ..key = atGroup.groupId
       ..metadata = metadata;
     // removing all contacts in atContacts from atGroup
-    var members = await getGroupMembers(atGroup);
+    var members = atGroup.members;
     for (var atContact in atContacts) {
       var contactName = atContact.atSign;
-      members.removeWhere((contact) =>
-          (AtContact.fromJson(jsonDecode(contact)).atSign == contactName));
+      members.removeWhere((contact) => (contact.atSign == contactName));
     }
-
-    var value = jsonEncode(members);
-    var result = await atClient.put(atKey, value);
-    if (result) {
-      atKey.sharedWith = value;
-      atKey.metadata.ttr = 2000;
-      await atClient.notifyAll(atKey, value, OperationEnum.update);
-    }
-    return result;
+    atGroup.members = members;
+    atGroup.updatedBy = AtUtils.fixAtSign(atSign);
+    atGroup.updatedOn = DateTime.now();
+    var json = atGroup.toJson();
+    var value = jsonEncode(json);
+    return await atClient.put(atKey, value);
   }
 
   /// Throw Exceptions on Invalid AtSigns.
@@ -499,71 +488,17 @@ class AtContactsImpl implements AtContactsLibrary {
   }
 
   @override
-  Future<bool> isMember(AtContact atContact, AtGroup atGroup) async {
+  bool isMember(AtContact atContact, AtGroup atGroup) {
     if (atGroup == null || atContact == null) {
       return false;
     }
     var result = false;
-    var members = await getGroupMembers(atGroup);
+    var members = atGroup.members;
     for (var contact in members) {
-      if (AtContact.fromJson(jsonDecode(contact)).atSign ==
-          atContact.atSign.toString()) {
+      if (contact.atSign.toString() == atContact.atSign.toString()) {
         return true;
       }
     }
-    return result;
-  }
-
-  Future<String> createGroupMembersKey(String groupId) async {
-    var groupMembersId = '${groupId}.members';
-    // set metadata
-    var metadata = Metadata()
-      ..isPublic = false
-      ..namespaceAware = false;
-    var atKey = AtKey()
-      ..key = groupMembersId
-      ..metadata = metadata;
-
-    var members = [];
-    var value = jsonEncode(members);
-    var result = await atClient.put(atKey, value);
-    return (result) ? groupMembersId : null;
-  }
-
-  Future<List<String>> getGroupMembers(AtGroup atGroup) async {
-    if (atGroup == null || atGroup.groupMembersKey == null) {
-      return null;
-    }
-
-    var metadata = Metadata()
-      ..isPublic = false
-      ..namespaceAware = false;
-    var atKey = AtKey()
-      ..key = atGroup.groupMembersKey
-      ..metadata = metadata;
-    var result = await atClient.get(atKey);
-    // get name from AtGroupBasicInfo for all the groups.
-    var list = [];
-    if (result != null) {
-      list = (result.value != null) ? jsonDecode(result.value) : [];
-    }
-    list = List<String>.from(list);
-    return list;
-  }
-
-  Future<String> shareGroup(AtGroup atGroup) async {
-    // set metadata
-    var metadata = Metadata()
-      ..isPublic = false
-      ..namespaceAware = false;
-    var members = await getGroupMembers(atGroup);
-    var atKey = AtKey()
-      ..key = atGroup.groupId
-      ..sharedWith = jsonEncode(members)
-      ..metadata = metadata;
-    var json = atGroup.toJson();
-    var value = jsonEncode(json);
-    var result = await atClient.notifyAll(atKey, value, OperationEnum.update);
     return result;
   }
 }
