@@ -1,3 +1,5 @@
+import 'package:at_contact/src/model/at_contact.dart';
+
 class AtGroup {
   //Group id
   String groupId;
@@ -14,7 +16,8 @@ class AtGroup {
   // Group picture
   dynamic groupPicture;
 
-  String groupMembersKey;
+  //Group members set
+  Set<AtContact> members = {};
 
   //Additional tags if any
   Map<dynamic, dynamic> tags;
@@ -36,12 +39,13 @@ class AtGroup {
       this.displayName,
       this.description,
       this.groupPicture,
-      this.groupMembersKey,
+      this.members,
       this.tags,
       this.createdOn,
       this.updatedOn,
       this.createdBy,
       this.updatedBy}) {
+    members ??= <AtContact>{};
     createdOn ??= DateTime.now();
     updatedOn ??= DateTime.now();
   }
@@ -53,7 +57,7 @@ class AtGroup {
       'displayName': displayName,
       'description': description,
       'groupPicture': groupPicture,
-      'groupMembersKey': groupMembersKey,
+      'members': members.toList(),
       'tags': tags,
       'createdOn': createdOn.toIso8601String(),
       'updatedOn': updatedOn.toIso8601String(),
@@ -68,7 +72,9 @@ class AtGroup {
     displayName = json['displayName'] as String;
     description = json['description'] as String;
     groupPicture = json['groupPicture'];
-    groupMembersKey = json['groupMembersKey'];
+    members = (json['members'] as List)
+        .map((e) => AtContact.fromJson(e as Map<String, dynamic>))
+        .toSet();
     tags = json['tags'] as Map<String, dynamic>;
     createdOn = DateTime.parse(json['createdOn'] as String);
     updatedOn = DateTime.parse(json['updatedOn'] as String);
@@ -78,7 +84,7 @@ class AtGroup {
 
   @override
   String toString() {
-    return 'AtGroup{groupId: $groupId, groupName: $groupName, displayName: $displayName, description: $description, groupMembersKey: $groupMembersKey, tags: $tags, createdBy: $createdBy, createdOn: $createdOn}';
+    return 'AtGroup{groupId: $groupId, groupName: $groupName, displayName: $displayName, description: $description, members: ${members}, tags: $tags, createdBy: $createdBy, createdOn: $createdOn}';
   }
 }
 
