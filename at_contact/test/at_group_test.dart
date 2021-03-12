@@ -42,8 +42,8 @@ Future<void> main() async {
       expect(result, true);
     });
 
-    test(' test get group members', () async {
-      var result = await atContactsImpl.getGroupMembers(atGroup);
+    test(' test get group names', () async {
+      var result = await atContactsImpl.listGroupNames();
       print('create result : $result');
       expect((result.length > 1), true);
     });
