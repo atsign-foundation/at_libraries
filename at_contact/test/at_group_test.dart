@@ -48,6 +48,12 @@ Future<void> main() async {
       expect((result.length > 1), true);
     });
 
+    test(' test get group Ids', () async {
+      var result = await atContactsImpl.listGroupIds();
+      print('create result : $result');
+      expect((result.length > 1), true);
+    });
+
     test(' test delete members from group', () async {
       var contact1 = AtContact(type: ContactType.Individual, atSign: '@colin');
       var atContacts = <AtContact>{};
