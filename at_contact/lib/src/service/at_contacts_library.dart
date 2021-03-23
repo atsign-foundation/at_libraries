@@ -41,9 +41,6 @@ abstract class AtContactsLibrary {
   // fetches all the group names
   Future<List<String>> listGroupNames();
 
-  // fetches all the group Ids
-  Future<List<String>> listGroupIds();
-
   // fetches group from groupName
   Future<AtGroup> getGroup(String groupName);
 
