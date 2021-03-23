@@ -3,6 +3,7 @@ import 'package:at_contact/src/at_contacts_impl.dart';
 import 'package:at_contact/src/model/at_contact.dart';
 import 'package:at_contact/src/model/at_group.dart';
 import 'package:test/test.dart';
+
 import 'test_util.dart';
 
 Future<void> main() async {
