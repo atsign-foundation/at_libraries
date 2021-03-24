@@ -313,6 +313,32 @@ class AtContactsImpl implements AtContactsLibrary {
     return groupNames;
   }
 
+  /// fetches all the group Ids as a list
+  /// on success return List of Group Ids otherwise []
+  @override
+  Future<List<String>> listGroupIds() async {
+    var groupsListKey = getGroupsListKey();
+    var metadata = Metadata()
+      ..isPublic = false
+      ..namespaceAware = false;
+    var atKey = AtKey()
+      ..key = groupsListKey
+      ..metadata = metadata;
+    var result = await atClient.get(atKey);
+    // get name from AtGroupBasicInfo for all the groups.
+    var list = [];
+    if (result != null) {
+      list = (result.value != null) ? jsonDecode(result.value) : [];
+    }
+    list = List<String>.from(list);
+    var groupIds = <String>[];
+    list.forEach((group) {
+      var groupInfo = AtGroupBasicInfo.fromJson(jsonDecode(group));
+      groupIds.add(groupInfo.atGroupId);
+    });
+    return groupIds;
+  }
+
   /// takes groupName as an input and
   /// get the group details
   /// on success return AtGroup otherwise null
