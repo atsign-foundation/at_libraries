@@ -7,4 +7,4 @@
 - Renamed 'name' as 'groupName' 
 - Reverted groupMembersKey to groupMembers
 ## 1.0.0+3
-- Added getGroupIds method
+- Added listGroupIds method
