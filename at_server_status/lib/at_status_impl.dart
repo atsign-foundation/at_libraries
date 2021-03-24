@@ -1,5 +1,6 @@
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_server_status/src/model/at_status.dart';
+
 import 'at_server_status.dart';
 
 class AtStatusImpl implements AtServerStatus {
