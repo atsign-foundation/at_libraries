@@ -3,6 +3,8 @@
 ## 1.0.0+1
 - at-contact group changes
 ## 1.0.0+2
-- Added groupId as unique identifier renamed 'name' as 'groupName' reverted groupMembersKey to groupMembers
+- Added groupId as unique identifier 
+- Renamed 'name' as 'groupName' 
+- Reverted groupMembersKey to groupMembers
 ## 1.0.0+3
 - Added getGroupIds method
