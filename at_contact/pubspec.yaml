@@ -1,6 +1,6 @@
 name: at_contact
 description: A starting point for Dart libraries or applications.
-version: 1.0.0+2
+version: 1.0.0+3
 repository: https://github.com/atsign-foundation/at_libraries
 homepage: https://atsign.dev
 
@@ -9,9 +9,9 @@ environment:
 
 dependencies:
   intl: ^0.16.1
-  at_client: ^1.0.1+7
-  at_commons: ^1.0.1+5
-  at_utils: ^1.0.1+5
+  at_client: ^1.0.1+8
+  at_commons: ^1.0.1+6
+  at_utils: ^1.0.1+6
   uuid: ^2.0.2
 
 dev_dependencies:
