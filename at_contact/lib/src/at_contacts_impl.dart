@@ -199,8 +199,8 @@ class AtContactsImpl implements AtContactsLibrary {
       }
     }
     //create groupID
-    var groupId = (id == null) ? Uuid().v1() : id;
-    // create key from group name.
+    var groupId = Uuid().v1();
+    atGroup.groupId = groupId;
     var groupName = atGroup.groupName;
     // set metadata
     var metadata = Metadata()
@@ -210,7 +210,6 @@ class AtContactsImpl implements AtContactsLibrary {
       ..key = groupId
       ..metadata = metadata;
     //update atGroup
-    atGroup.displayName ??= groupName;
     atGroup.createdBy = AtUtils.fixAtSign(atSign);
     atGroup.updatedBy = AtUtils.fixAtSign(atSign);
     atGroup.createdOn = DateTime.now();
@@ -253,7 +252,6 @@ class AtContactsImpl implements AtContactsLibrary {
       ..key = atGroup.groupId
       ..metadata = metadata;
     //update atGroup
-    atGroup.displayName ??= atGroup.groupName;
     atGroup.updatedOn = DateTime.now();
 
     var json = atGroup.toJson();
@@ -380,6 +378,9 @@ class AtContactsImpl implements AtContactsLibrary {
     if (atContacts.isEmpty || atGroup == null) {
       return false;
     }
+    if (atGroup.groupId == null) {
+      throw GroupNotExistsException('Group ID is null');
+    }
     // set metadata
     var metadata = Metadata()
       ..isPublic = false
@@ -409,7 +410,9 @@ class AtContactsImpl implements AtContactsLibrary {
     if (atContacts.isEmpty || atGroup == null) {
       return false;
     }
-
+    if (atGroup.groupId == null) {
+      throw GroupNotExistsException('Group ID is null');
+    }
     // set metadata
     var metadata = Metadata()
       ..isPublic = false
