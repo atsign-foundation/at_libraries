@@ -264,8 +264,8 @@ class AtLookupImpl implements AtLookUp {
     return putResult != null;
   }
 
-  void _createConnection() async {
-    if (!_isConnectionAvailable()) {
+  void createConnection() async {
+    if (!isConnectionAvailable()) {
       //1. find secondary url for atsign from lookup library
       var secondaryUrl =
           await findSecondary(_currentAtSign, _rootDomain, _rootPort);
@@ -276,7 +276,7 @@ class AtLookupImpl implements AtLookUp {
       var host = secondaryInfo[0];
       var port = secondaryInfo[1];
       //2. create a connection to secondary server
-      await _createOutBoundConnection(host, port, _currentAtSign);
+      await createOutBoundConnection(host, port, _currentAtSign);
       //3. listen to server response
       messageListener = OutboundMessageListener(_connection);
       messageListener.listen();
@@ -480,11 +480,11 @@ class AtLookupImpl implements AtLookUp {
   }
 
   bool _isAuthRequired() {
-    return !_isConnectionAvailable() ||
+    return !isConnectionAvailable() ||
         !(_isPkamAuthenticated || _isCramAuthenticated);
   }
 
-  Future<bool> _createOutBoundConnection(host, port, toAtSign) async {
+  Future<bool> createOutBoundConnection(host, port, toAtSign) async {
     try {
       var secureSocket = await SecureSocket.connect(host, int.parse(port));
       _connection = OutboundConnectionImpl(secureSocket);
@@ -497,7 +497,7 @@ class AtLookupImpl implements AtLookUp {
     return true;
   }
 
-  bool _isConnectionAvailable() {
+  bool isConnectionAvailable() {
     return _connection != null && !_connection.isInValid();
   }
 
@@ -510,7 +510,7 @@ class AtLookupImpl implements AtLookUp {
   }
 
   void _sendCommand(String command) async {
-    await _createConnection();
+    await createConnection();
     await _connection.write(command);
   }
 }

@@ -10,13 +10,14 @@ class OutboundMessageListener {
   final _buffer = ByteBuffer(capacity: 10240000);
   Queue _queue;
   final _connection;
+  Function syncCallback;
 
   OutboundMessageListener(this._connection);
 
   /// Listens to the underlying connection's socket if the connection is created.
   /// @throws [AtConnectException] if the connection is not yet created
   void listen() {
-    _connection.getSocket().listen(_messageHandler,
+    _connection.getSocket().listen(messageHandler,
         onDone: _finishedHandler, onError: _errorHandler);
     _queue = Queue();
   }
@@ -24,7 +25,7 @@ class OutboundMessageListener {
   /// Handles messages on the inbound client's connection and calls the verb executor
   /// Closes the inbound connection in case of any error.
   /// Throw a [BufferOverFlowException] if buffer is unable to hold incoming data
-  Future<void> _messageHandler(data) async {
+  Future<void> messageHandler(data) async {
     String result;
     if (!_buffer.isOverFlow(data)) {
       // skip @ prompt
