@@ -53,7 +53,7 @@ class AtGroup {
   Map<String, dynamic> toJson() {
     return {
       'groupId': groupId,
-      'name': groupName,
+      'groupName': groupName,
       'displayName': displayName,
       'description': description,
       'groupPicture': groupPicture,
