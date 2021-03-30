@@ -36,7 +36,7 @@ class AtLookupImpl implements AtLookUp {
 
   var privateKey;
 
-  var _cramSecret;
+  var cramSecret;
 
   var outboundConnectionTimeout;
 
@@ -51,7 +51,7 @@ class AtLookupImpl implements AtLookUp {
     _rootDomain = rootDomain;
     _rootPort = rootPort;
     this.privateKey = privateKey;
-    _cramSecret = cramSecret;
+    this.cramSecret = cramSecret;
   }
 
   static Future<String> findSecondary(
@@ -413,7 +413,7 @@ class AtLookupImpl implements AtLookUp {
   /// Generates digest using from verb response and [secret] and performs a CRAM authentication to
   /// secondary server
   Future<bool> authenticate_cram(var secret) async {
-    secret ??= _cramSecret;
+    secret ??= cramSecret;
     if (secret == null) {
       throw UnAuthenticatedException('Cram secret not passed');
     }
@@ -462,8 +462,8 @@ class AtLookupImpl implements AtLookUp {
     if (auth != null && auth && _isAuthRequired()) {
       if (privateKey != null) {
         await authenticate(privateKey);
-      } else if (_cramSecret != null) {
-        await authenticate_cram(_cramSecret);
+      } else if (cramSecret != null) {
+        await authenticate_cram(cramSecret);
       } else {
         throw UnAuthenticatedException(
             'Unable to perform atlookup auth. Private key/cram secret is not set');
