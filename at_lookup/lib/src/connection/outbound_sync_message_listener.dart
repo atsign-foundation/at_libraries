@@ -59,9 +59,7 @@ class SyncMessageListener extends OutboundMessageListener {
       endIndex = startIndex + int.parse(recordLengthStr);
       var jsonString = recordsReceived.substring(startIndex, endIndex);
       var jsonRecord = jsonDecode(jsonString);
-      jsonRecord.forEach((element) {
-        syncCallback(element);
-      });
+      syncCallback(jsonRecord);
       startIndex = endIndex + 1;
     }
   }
