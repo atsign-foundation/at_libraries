@@ -36,11 +36,6 @@ jobs:
         working-directory: at_contact
         run: dart analyze
 
-      # Run tests in at_contacts library
-      - name: Run tests in at_contact
-        working-directory: at_contact
-        run: dart test --concurrency=1
-
       # Install dependencies in at_lookup library
       - name: Install dependencies in at_lookup
         working-directory: at_lookup
