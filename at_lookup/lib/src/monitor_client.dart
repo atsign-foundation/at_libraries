@@ -1,12 +1,13 @@
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:io';
+
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
-import 'dart:convert';
-import 'package:at_utils/at_logger.dart';
-import 'package:crypton/crypton.dart';
 import 'package:at_lookup/src/connection/outbound_connection.dart';
 import 'package:at_lookup/src/connection/outbound_connection_impl.dart';
+import 'package:at_utils/at_logger.dart';
+import 'package:crypton/crypton.dart';
 
 /// Utility class to execute monitor verb.
 class MonitorClient {
@@ -118,7 +119,7 @@ class MonitorClient {
   }
 
   /// Logs the error and closes the [OutboundConnection]
-  void _errorHandler(error, OutboundConnection _connection) async {
+  Future<void> _errorHandler(error, OutboundConnection _connection) async {
     await _closeConnection(_connection);
   }
 
@@ -127,7 +128,7 @@ class MonitorClient {
     await _closeConnection(_connection);
   }
 
-  void _closeConnection(OutboundConnection _connection) async {
+  Future<void> _closeConnection(OutboundConnection _connection) async {
     if (!_connection.isInValid()) {
       await _connection.close();
     }

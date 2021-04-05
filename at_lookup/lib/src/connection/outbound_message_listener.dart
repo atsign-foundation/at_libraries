@@ -85,7 +85,7 @@ class OutboundMessageListener {
   }
 
   /// Logs the error and closes the [RemoteSecondary]
-  void _errorHandler(error) async {
+  Future<void> _errorHandler(error) async {
     await _closeConnection();
   }
 
@@ -95,7 +95,7 @@ class OutboundMessageListener {
     await _closeConnection();
   }
 
-  void _closeConnection() async {
+  Future<void> _closeConnection() async {
     if (!_connection.isInValid()) {
       await _connection.close();
     }
