@@ -27,18 +27,18 @@ jobs:
       - uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
 
       # Install dependencies in at_contacts library
-      - name: Install dependencies in at_contacts
-        working-directory: at_contacts
+      - name: Install dependencies in at_contact
+        working-directory: at_contact
         run: dart pub get
 
       # Run analyzer in at_contacts library
-      - name: Analyze project source in at_contacts
-        working-directory: at_contacts
+      - name: Analyze project source in at_contact
+        working-directory: at_contact
         run: dart analyze
 
       # Run tests in at_contacts library
-      - name: Run tests in at_contacts
-        working-directory: at_contacts
+      - name: Run tests in at_contact
+        working-directory: at_contact
         run: dart test --concurrency=1
 
       # Install dependencies in at_lookup library
