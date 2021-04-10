@@ -84,7 +84,7 @@ class AtGroup {
 
   @override
   String toString() {
-    return 'AtGroup{groupId: $groupId, groupName: $groupName, displayName: $displayName, description: $description, members: ${members}, tags: $tags, createdBy: $createdBy, createdOn: $createdOn}';
+    return 'AtGroup{groupId: $groupId, groupName: $groupName, displayName: $displayName, description: $description, members: $members, tags: $tags, createdBy: $createdBy, createdOn: $createdOn}';
   }
 }
 

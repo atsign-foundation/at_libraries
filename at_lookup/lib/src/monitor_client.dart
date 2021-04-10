@@ -69,7 +69,7 @@ class MonitorClient {
       String _atSign, OutboundConnection _monitorConnection) async {
     await _monitorConnection.write('from:$_atSign\n');
     var fromResponse = await _getQueueResponse();
-    logger.info('from result:${fromResponse}');
+    logger.info('from result:$fromResponse');
     fromResponse = fromResponse.trim().replaceAll('data:', '');
     logger.info('fromResponse $fromResponse');
     var key = RSAPrivateKey.fromString(_privateKey);
