@@ -22,17 +22,19 @@ class MonitorClient {
 
   ///Monitor Verb
   Future<OutboundConnection> executeMonitorVerb(String _command, String _atSign,
-      String _rootDomain, int _rootPort, Function callback,
-      {bool auth = true}) async {
+      String _rootDomain, int _rootPort, Function notificationCallBack,
+      {bool auth = true, Function restartCallBack}) async {
     //1. Get a new outbound connection dedicated to monitor verb.
+    logger.finer('before monitor create connection');
     var _monitorConnection =
         await _createNewConnection(_atSign, _rootDomain, _rootPort);
+    logger.finer('after monitor create connection');
     //2. Listener on _monitorConnection.
     _monitorConnection.getSocket().listen((event) {
       response = utf8.decode(event);
       // If response contains data to be notified, invoke callback function.
       if (response.toString().startsWith('notification')) {
-        callback(response);
+        notificationCallBack(response);
       } else {
         _monitorVerbResponseQueue.add(response);
       }
@@ -40,6 +42,7 @@ class MonitorClient {
       _errorHandler(error, _monitorConnection);
     }, onDone: () {
       _finishedHandler(_monitorConnection);
+      restartCallBack(_command, notificationCallBack, _privateKey);
     });
     await _authenticateConnection(_atSign, _monitorConnection);
     //3. Write monitor verb to connection
@@ -69,7 +72,7 @@ class MonitorClient {
       String _atSign, OutboundConnection _monitorConnection) async {
     await _monitorConnection.write('from:$_atSign\n');
     var fromResponse = await _getQueueResponse();
-    logger.info('from result:${fromResponse}');
+    logger.info('from result:$fromResponse');
     fromResponse = fromResponse.trim().replaceAll('data:', '');
     logger.info('fromResponse $fromResponse');
     var key = RSAPrivateKey.fromString(_privateKey);
