@@ -98,7 +98,7 @@ class AtLookupImpl implements AtLookUp {
           response = secondary;
           socket.write('@exit\n');
           await socket.flush();
-          await socket.destroy();
+          socket.destroy();
           AtSignLogger('AtLookup').finer(
               'AtLookup.findSecondary got answer: $secondary and closing connection');
           return response;
@@ -264,7 +264,7 @@ class AtLookupImpl implements AtLookUp {
     return putResult != null;
   }
 
-  void _createConnection() async {
+  Future<void> _createConnection() async {
     if (!_isConnectionAvailable()) {
       //1. find secondary url for atsign from lookup library
       var secondaryUrl =
@@ -450,7 +450,7 @@ class AtLookupImpl implements AtLookUp {
     return await _process(atCommand, auth: true);
   }
 
-  Future<String> _delete(DeleteVerbBuilder builder, {String privateKey}) async {
+  Future<String> _delete(DeleteVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
     return await _process(
       atCommand,
@@ -509,7 +509,7 @@ class AtLookupImpl implements AtLookUp {
     await _connection.close();
   }
 
-  void _sendCommand(String command) async {
+  Future<void> _sendCommand(String command) async {
     await _createConnection();
     await _connection.write(command);
   }

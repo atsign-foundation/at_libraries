@@ -122,7 +122,7 @@ class MonitorClient {
   }
 
   /// Logs the error and closes the [OutboundConnection]
-  void _errorHandler(error, OutboundConnection _connection) async {
+  Future<void> _errorHandler(error, OutboundConnection _connection) async {
     await _closeConnection(_connection);
   }
 
