@@ -47,7 +47,7 @@ class SyncMessageListener extends OutboundMessageListener {
 
   void _process(sync_records) {
     var recordsReceived = utf8.decode(sync_records);
-    logger.finer('Records received t process: $recordsReceived');
+    logger.finer('Records received to process: $recordsReceived');
     var startIndex = 0, endIndex = 0;
     while (startIndex < recordsReceived.length &&
         endIndex < recordsReceived.length) {
