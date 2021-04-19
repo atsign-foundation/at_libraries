@@ -48,7 +48,7 @@ class AtContactsImpl implements AtContactsLibrary {
   /// if atSign value is 'null' then returns false
   @override
   Future<bool> add(AtContact contact) async {
-    var atSign = '${contact.atSign}';
+    var atSign = contact.atSign;
     //check if atSign is 'null'
     if (atSign == null) return false;
     var modifiedKey = _formKey(atSign);
@@ -128,7 +128,7 @@ class AtContactsImpl implements AtContactsLibrary {
   /// on success return true otherwise false
   @override
   Future<bool> deleteContact(AtContact contact) async {
-    var atSign = '${contact.atSign}';
+    var atSign = contact.atSign;
     //check if atSign is 'null'
     if (atSign == null) return false;
     return await delete(atSign);
@@ -143,7 +143,7 @@ class AtContactsImpl implements AtContactsLibrary {
     var regex =
         '${AppConstants.CONTACT_KEY_PREFIX}.*.${AppConstants.CONTACT_KEY_SUFFIX}.$atSign@$atSign'
             .toLowerCase();
-    var scanList = await atClient.getKeys(regex: '$regex');
+    var scanList = await atClient.getKeys(regex: regex);
     if (scanList != null && scanList.isNotEmpty && scanList[0] == '') {
       return contactList;
     }

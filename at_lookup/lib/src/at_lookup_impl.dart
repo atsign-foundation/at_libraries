@@ -98,7 +98,7 @@ class AtLookupImpl implements AtLookUp {
           response = secondary;
           socket.write('@exit\n');
           await socket.flush();
-          await socket.destroy();
+          socket.destroy();
           AtSignLogger('AtLookup').finer(
               'AtLookup.findSecondary got answer: $secondary and closing connection');
           return response;

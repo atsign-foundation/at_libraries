@@ -3,6 +3,7 @@ import 'package:at_contact/src/at_contacts_impl.dart';
 import 'package:at_contact/src/model/at_contact.dart';
 import 'package:at_contact/src/model/at_group.dart';
 import 'package:test/test.dart';
+
 import 'test_util.dart';
 
 Future<void> main() async {
@@ -13,7 +14,7 @@ Future<void> main() async {
   try {
     await AtClientImpl.createClient(atSign, 'me', preference);
     var atClient = await AtClientImpl.getClient(atSign);
-    await atClient.getSyncManager().init(atSign, preference,
+    atClient.getSyncManager().init(atSign, preference,
         atClient.getRemoteSecondary(), atClient.getLocalSecondary());
 
     atContactsImpl = await AtContactsImpl.getInstance(atSign);
