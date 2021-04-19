@@ -6,61 +6,49 @@ import 'package:at_lookup/src/connection/outbound_message_listener.dart';
 
 class SyncMessageListener extends OutboundMessageListener {
   Queue pendingData = Queue<List<int>>();
+  var atConst = '@'.codeUnitAt(0);
+  var dollarConst = '\$'.codeUnitAt(0);
 
   SyncMessageListener(connection) : super(connection);
 
   @override
   Future<void> messageHandler(sync_data) async {
-    if (sync_data.length == 1 && sync_data.first == 64) {
+    // If sync_data contains only '@', return.
+    if (sync_data.length == 1 && sync_data.first == atConst) {
       return;
     }
-    if (sync_data.last == 64 && sync_data.contains(10)) {
+    // if sync_data last is '@' and contains a new line.
+    if (sync_data.last == atConst && sync_data.contains(10)) {
       await super.messageHandler(sync_data);
       return;
     }
-    if (sync_data.last == 36) {
-      if (pendingData.isNotEmpty) {
-        var builder = BytesBuilder();
-        while (pendingData.isNotEmpty) {
-          builder.add(pendingData.removeFirst());
-        }
-        builder.add(sync_data);
-        _process(builder.takeBytes());
-      } else {
-        _process(sync_data);
+    var start = 0;
+    // If sync_data does not contain '$', add the data into pending queue.
+    if (!sync_data.contains(dollarConst)) {
+      pendingData.addLast(sync_data);
+    }
+    // If sync_data contains '$', process the data.
+    if (sync_data.contains(dollarConst)) {
+      var bytes = BytesBuilder();
+      while (pendingData.isNotEmpty) {
+        bytes.add(pendingData.removeFirst());
       }
-    } else {
-      if (sync_data.lastIndexOf(36) != -1) {
-        var builder = BytesBuilder();
-        if (pendingData.isNotEmpty) {
-          builder.add(pendingData.removeFirst());
-        }
-        builder.add(sync_data.sublist(0, sync_data.lastIndexOf(36)));
-        var incompleteData = sync_data.sublist(sync_data.lastIndexOf(36) + 1);
-        pendingData.addLast(incompleteData);
-        _process(builder.takeBytes());
-      } else {
-        pendingData.addLast(sync_data);
+      while (sync_data.indexOf(dollarConst, start) != -1) {
+        var index = sync_data.indexOf(dollarConst, start);
+        bytes.add(sync_data.sublist(start, index));
+        start = index + 1;
+        _process(bytes.takeBytes());
+      }
+      if (sync_data.length > start) {
+        pendingData.addLast(sync_data.sublist(start, sync_data.length));
       }
     }
   }
 
   void _process(sync_records) {
     var recordsReceived = utf8.decode(sync_records);
-    logger.finer('Records received to process: $recordsReceived');
-    var startIndex = 0, endIndex = 0;
-    while (startIndex < recordsReceived.length &&
-        endIndex < recordsReceived.length) {
-      var startOfRecord = recordsReceived.indexOf('#', startIndex) + 1;
-      if (startOfRecord == 0) break;
-      var recordLengthStr =
-          recordsReceived.substring(startIndex, startOfRecord - 1);
-      startIndex = startIndex + recordLengthStr.length + 1;
-      endIndex = startIndex + int.parse(recordLengthStr);
-      var jsonString = recordsReceived.substring(startIndex, endIndex);
-      var jsonRecord = jsonDecode(jsonString);
-      syncCallback(jsonRecord);
-      startIndex = endIndex + 1;
-    }
+    var startIndex = recordsReceived.indexOf('#');
+    var jsonRecord = jsonDecode(recordsReceived.substring(startIndex + 1));
+    syncCallback(jsonRecord);
   }
 }
