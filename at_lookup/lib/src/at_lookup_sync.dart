@@ -23,7 +23,7 @@ class AtLookupSync extends AtLookupImpl {
   }
 
   @override
-  void createConnection() async {
+  Future<void> createConnection() async {
     if (!isConnectionAvailable()) {
       //1. find secondary url for atsign from lookup library
       var secondaryUrl = await AtLookupImpl.findSecondary(
