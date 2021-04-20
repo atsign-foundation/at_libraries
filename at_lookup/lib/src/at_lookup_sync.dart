@@ -32,10 +32,9 @@ class AtLookupSync extends AtLookupImpl {
         throw SecondaryNotFoundException('Secondary server not found');
       }
       var secondaryInfo = LookUpUtil.getSecondaryInfo(secondaryUrl);
-      var host = secondaryInfo[0];
-      var port = secondaryInfo[1];
       //2. create a connection to secondary server
-      await createOutBoundConnection(host, port, _currentAtSign);
+      await createOutBoundConnection(
+          secondaryInfo[0], secondaryInfo[1], _currentAtSign);
       //3. listen to server response
       messageListener = SyncMessageListener(connection);
       messageListener.syncCallback = syncCallback;
