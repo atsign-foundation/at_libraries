@@ -41,7 +41,7 @@ class OutboundMessageListener {
           'Buffer overflow on outbound connection result');
     }
     if (_buffer.isEnd()) {
-      result = utf8.decode(_buffer.message);
+      result = utf8.decode(_buffer.getData());
       result = result.trim();
       _buffer.clear();
       _queue.addFirst(result);
