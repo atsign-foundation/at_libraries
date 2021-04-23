@@ -13,7 +13,7 @@ import 'package:crypton/crypton.dart';
 class MonitorClient {
   final _monitorVerbResponseQueue = Queue();
   var response;
-  var _privateKey;
+  late var _privateKey;
   var logger = AtSignLogger('MonitorVerbManager');
 
   MonitorClient(String privateKey) {
@@ -23,7 +23,7 @@ class MonitorClient {
   ///Monitor Verb
   Future<OutboundConnection> executeMonitorVerb(String _command, String _atSign,
       String _rootDomain, int _rootPort, Function notificationCallBack,
-      {bool auth = true, Function restartCallBack}) async {
+      {bool auth = true, Function? restartCallBack}) async {
     //1. Get a new outbound connection dedicated to monitor verb.
     logger.finer('before monitor create connection');
     var _monitorConnection =
@@ -42,7 +42,7 @@ class MonitorClient {
       _errorHandler(error, _monitorConnection);
     }, onDone: () {
       _finishedHandler(_monitorConnection);
-      restartCallBack(_command, notificationCallBack, _privateKey);
+      restartCallBack!(_command, notificationCallBack, _privateKey);
     });
     await _authenticateConnection(_atSign, _monitorConnection);
     //3. Write monitor verb to connection
@@ -71,16 +71,16 @@ class MonitorClient {
   Future<OutboundConnection> _authenticateConnection(
       String _atSign, OutboundConnection _monitorConnection) async {
     await _monitorConnection.write('from:$_atSign\n');
-    var fromResponse = await _getQueueResponse();
+    var fromResponse = await (_getQueueResponse() as FutureOr<String>);
     logger.info('from result:$fromResponse');
     fromResponse = fromResponse.trim().replaceAll('data:', '');
     logger.info('fromResponse $fromResponse');
     var key = RSAPrivateKey.fromString(_privateKey);
-    var sha256signature = key.createSHA256Signature(utf8.encode(fromResponse));
+    var sha256signature = key.createSHA256Signature(utf8.encode(fromResponse) as Uint8List);
     var signature = base64Encode(sha256signature);
     logger.info('Sending command pkam:$signature');
     await _monitorConnection.write('pkam:$signature\n');
-    var pkamResponse = await _getQueueResponse();
+    var pkamResponse = await (_getQueueResponse() as FutureOr<String>);
     if (!pkamResponse.contains('success')) {
       throw UnAuthenticatedException('Auth failed');
     }
@@ -89,9 +89,9 @@ class MonitorClient {
   }
 
   ///Returns the response of the monitor verb queue.
-  Future<String> _getQueueResponse() async {
+  Future<String?> _getQueueResponse() async {
     var maxWaitMilliSeconds = 5000;
-    String result;
+    String? result;
     //wait maxWaitMilliSeconds seconds for response from remote socket
     var loopCount = (maxWaitMilliSeconds / 50).round();
     for (var i = 0; i < loopCount; i++) {
@@ -101,7 +101,7 @@ class MonitorClient {
         result = _monitorVerbResponseQueue.removeFirst();
         // result from another secondary is either data or a @<atSign>@ denoting complete
         // of the handshake
-        if (result.startsWith('data:')) {
+        if (result!.startsWith('data:')) {
           var index = result.indexOf(':');
           result = result.substring(index + 1, result.length - 2);
           break;
@@ -111,7 +111,7 @@ class MonitorClient {
     return result;
   }
 
-  List<String> _getSecondaryInfo(String url) {
+  List<String> _getSecondaryInfo(String? url) {
     var result = <String>[];
     if (url != null && url.contains(':')) {
       var arr = url.split(':');

@@ -18,21 +18,21 @@ class AtLookupImpl implements AtLookUp {
   final logger = AtSignLogger('AtLookup');
 
   /// Listener for reading verb responses from the remote server
-  OutboundMessageListener messageListener;
+  late OutboundMessageListener messageListener;
 
   bool _isPkamAuthenticated = false;
 
   bool _isCramAuthenticated = false;
 
-  OutboundConnection _connection;
+  OutboundConnection? _connection;
 
-  OutboundConnection get connection => _connection;
+  OutboundConnection? get connection => _connection;
 
   var _currentAtSign;
 
   var _rootDomain;
 
-  var _rootPort;
+  late var _rootPort;
 
   var privateKey;
 
@@ -44,8 +44,8 @@ class AtLookupImpl implements AtLookUp {
     String atSign,
     String rootDomain,
     int rootPort, {
-    String privateKey,
-    String cramSecret,
+    String? privateKey,
+    String? cramSecret,
   }) {
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
@@ -54,16 +54,16 @@ class AtLookupImpl implements AtLookUp {
     _cramSecret = cramSecret;
   }
 
-  static Future<String> findSecondary(
-      String atsign, String rootDomain, int rootPort) async {
-    String response;
-    SecureSocket socket;
+  static Future<String?> findSecondary(
+      String atsign, String? rootDomain, int rootPort) async {
+    String? response;
+    SecureSocket? socket;
     try {
       AtSignLogger('AtLookup')
           .finer('AtLookup.findSecondary received atsign: $atsign');
       if (atsign.startsWith('@')) atsign = atsign.replaceFirst('@', '');
       var answer = '';
-      String secondary;
+      String? secondary;
       var ans = false;
       var prompt = false;
       var once = true;
@@ -75,7 +75,7 @@ class AtLookupImpl implements AtLookUp {
 
         if (answer.endsWith('@') && prompt == false && once == true) {
           prompt = true;
-          socket.write('$atsign\n');
+          socket!.write('$atsign\n');
           await socket.flush();
           once = false;
         }
@@ -110,7 +110,7 @@ class AtLookupImpl implements AtLookUp {
       throw Exception('AtLookup.findSecondary timed out');
     } on Exception catch (exception) {
       AtSignLogger('AtLookup').severe('AtLookup.findSecondary connection to ' +
-          rootDomain +
+          rootDomain! +
           ' exception: ' +
           exception.toString());
       if (socket != null) {
@@ -128,7 +128,7 @@ class AtLookupImpl implements AtLookUp {
 
   @override
   Future<bool> delete(String key,
-      {String sharedWith, bool isPublic = false}) async {
+      {String? sharedWith, bool isPublic = false}) async {
     var builder = DeleteVerbBuilder()
       ..isPublic = isPublic
       ..sharedWith = sharedWith
@@ -140,7 +140,7 @@ class AtLookupImpl implements AtLookUp {
 
   @override
   Future<String> llookup(String key,
-      {String sharedBy, String sharedWith, bool isPublic = false}) async {
+      {String? sharedBy, String? sharedWith, bool isPublic = false}) async {
     var builder;
     if (sharedWith != null) {
       builder = LLookupVerbBuilder()
@@ -157,7 +157,7 @@ class AtLookupImpl implements AtLookUp {
         ..atKey = key
         ..sharedBy = _currentAtSign;
     }
-    var llookupResult = await executeVerb(builder);
+    var llookupResult = await (executeVerb(builder) as FutureOr<String>);
     llookupResult = VerbUtil.getFormattedValue(llookupResult);
     return llookupResult;
   }
@@ -173,7 +173,7 @@ class AtLookupImpl implements AtLookUp {
       ..auth = auth
       ..operation = metadata == true ? 'all' : null;
     if (verifyData == null || verifyData == false) {
-      var lookupResult = await executeVerb(builder);
+      var lookupResult = await (executeVerb(builder) as FutureOr<String>);
       lookupResult = VerbUtil.getFormattedValue(lookupResult);
       return lookupResult;
     }
@@ -184,12 +184,12 @@ class AtLookupImpl implements AtLookUp {
         ..sharedBy = sharedBy
         ..auth = false
         ..operation = 'all';
-      var lookupResult = await executeVerb(builder);
+      var lookupResult = await (executeVerb(builder) as FutureOr<String>);
       lookupResult = lookupResult.replaceFirst('data:', '');
       var resultJson = json.decode(lookupResult);
       logger.finer(resultJson);
 
-      var publicKeyResult = '';
+      String? publicKeyResult = '';
       if (auth) {
         publicKeyResult = await plookup('publickey', sharedBy);
       } else {
@@ -198,7 +198,7 @@ class AtLookupImpl implements AtLookUp {
           ..sharedBy = sharedBy;
         publicKeyResult = await executeVerb(publicKeyLookUpBuilder);
       }
-      publicKeyResult = publicKeyResult.replaceFirst('data:', '');
+      publicKeyResult = publicKeyResult!.replaceFirst('data:', '');
       logger.finer('public key of $sharedBy :$publicKeyResult');
 
       var publicKey = RSAPublicKey.fromString(publicKeyResult);
@@ -207,7 +207,7 @@ class AtLookupImpl implements AtLookUp {
       value = VerbUtil.getFormattedValue(value);
       logger.finer('value: ${value} dataSignature:${dataSignature}');
       var isDataValid = publicKey.verifySHA256Signature(
-          utf8.encode(value), base64Decode(dataSignature));
+          utf8.encode(value) as Uint8List, base64Decode(dataSignature));
       logger.finer('atlookup data verify result: ${isDataValid}');
       return 'data:$value';
     } on Exception catch (e) {
@@ -222,14 +222,14 @@ class AtLookupImpl implements AtLookUp {
     var builder = PLookupVerbBuilder()
       ..atKey = key
       ..sharedBy = sharedBy;
-    var plookupResult = await executeVerb(builder);
+    var plookupResult = await (executeVerb(builder) as FutureOr<String>);
     plookupResult = VerbUtil.getFormattedValue(plookupResult);
     return plookupResult;
   }
 
   @override
   Future<List<String>> scan(
-      {String regex, String sharedBy, bool auth = true}) async {
+      {String? regex, String? sharedBy, bool auth = true}) async {
     var builder = ScanVerbBuilder()
       ..sharedBy = sharedBy
       ..regex = regex
@@ -245,7 +245,7 @@ class AtLookupImpl implements AtLookUp {
 
   @override
   Future<bool> update(String key, String value,
-      {String sharedWith, Metadata metadata}) async {
+      {String? sharedWith, Metadata? metadata}) async {
     var builder = UpdateVerbBuilder()
       ..atKey = key
       ..sharedBy = _currentAtSign
@@ -255,7 +255,7 @@ class AtLookupImpl implements AtLookUp {
       builder.ttl = metadata.ttl;
       builder.ttb = metadata.ttb;
       builder.ttr = metadata.ttr;
-      builder.isPublic = metadata.isPublic;
+      builder.isPublic = metadata.isPublic!;
       if (metadata.isHidden) {
         builder.atKey = '_' + key;
       }
@@ -286,7 +286,7 @@ class AtLookupImpl implements AtLookUp {
   /// Executes the command returned by [VerbBuilder] build command on a remote secondary server.
   /// Optionally [privateKey] is passed for verb builders which require authentication.
   @override
-  Future<String> executeVerb(VerbBuilder builder, {sync = false}) async {
+  Future<String?> executeVerb(VerbBuilder builder, {sync = false}) async {
     var verbResult;
     try {
       if (builder is UpdateVerbBuilder) {
@@ -329,11 +329,11 @@ class AtLookupImpl implements AtLookUp {
     return verbResult;
   }
 
-  bool _isError(String verbResult) {
+  bool _isError(String? verbResult) {
     return verbResult != null && verbResult.startsWith('error:');
   }
 
-  Future<String> _update(UpdateVerbBuilder builder) async {
+  Future<String?> _update(UpdateVerbBuilder builder) async {
     var atCommand;
     if (builder.operation == at_constants.UPDATE_META) {
       atCommand = builder.buildCommandForMeta();
@@ -344,59 +344,59 @@ class AtLookupImpl implements AtLookUp {
     return await _process(atCommand, auth: true);
   }
 
-  Future<String> _notify(NotifyVerbBuilder builder) async {
+  Future<String?> _notify(NotifyVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
     logger.finer('notify to remote: ${atCommand}');
     return await _process(atCommand, auth: true);
   }
 
-  Future<String> _scan(ScanVerbBuilder builder) async {
+  Future<String?> _scan(ScanVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
     return await _process(atCommand, auth: builder.auth);
   }
 
-  Future<String> _stats(StatsVerbBuilder builder) async {
+  Future<String?> _stats(StatsVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
     return await _process(atCommand, auth: true);
   }
 
-  Future<String> _config(ConfigVerbBuilder builder) async {
+  Future<String?> _config(ConfigVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
     return await _process(atCommand, auth: true);
   }
 
-  Future<String> _notifyStatus(NotifyStatusVerbBuilder builder) async {
+  Future<String?> _notifyStatus(NotifyStatusVerbBuilder builder) async {
     var command = builder.buildCommand();
     return await _process(command, auth: true);
   }
 
-  Future<String> _notifyList(NotifyListVerbBuilder builder) async {
+  Future<String?> _notifyList(NotifyListVerbBuilder builder) async {
     var command = builder.buildCommand();
     return await _process(command, auth: true);
   }
 
-  Future<String> _notifyAll(NotifyAllVerbBuilder builder) async {
+  Future<String?> _notifyAll(NotifyAllVerbBuilder builder) async {
     var command = builder.buildCommand();
     return await _process(command, auth: true);
   }
 
-  Future<String> executeCommand(String atCommand, {bool auth = false}) async {
+  Future<String?> executeCommand(String atCommand, {bool auth = false}) async {
     return await _process(atCommand, auth: auth);
   }
 
   /// Generates digest using from verb response and [privateKey] and performs a PKAM authentication to
   /// secondary server. This method is executed for all verbs that requires authentication.
-  Future<bool> authenticate(String privateKey) async {
+  Future<bool> authenticate(String? privateKey) async {
     if (privateKey == null) {
       throw UnAuthenticatedException('Private key not passed');
     }
     await _sendCommand('from:$_currentAtSign\n');
-    var fromResponse = await messageListener.read();
+    var fromResponse = await (messageListener.read() as FutureOr<String>);
     logger.finer('from result:${fromResponse}');
     fromResponse = fromResponse.trim().replaceAll('data:', '');
     logger.finer('fromResponse $fromResponse');
     var key = RSAPrivateKey.fromString(privateKey);
-    var sha256signature = key.createSHA256Signature(utf8.encode(fromResponse));
+    var sha256signature = key.createSHA256Signature(utf8.encode(fromResponse) as Uint8List);
     var signature = base64Encode(sha256signature);
     logger.finer('Sending command pkam:$signature');
     await _sendCommand('pkam:$signature\n');
@@ -418,7 +418,7 @@ class AtLookupImpl implements AtLookUp {
       throw UnAuthenticatedException('Cram secret not passed');
     }
     await _sendCommand('from:$_currentAtSign\n');
-    var fromResponse = await messageListener.read();
+    var fromResponse = await (messageListener.read() as FutureOr<String>);
     logger.info('from result:${fromResponse}');
     fromResponse = fromResponse.trim().replaceAll('data:', '');
     var digestInput = '${secret}${fromResponse}';
@@ -435,22 +435,22 @@ class AtLookupImpl implements AtLookUp {
     return _isCramAuthenticated;
   }
 
-  Future<String> _plookup(PLookupVerbBuilder builder) async {
+  Future<String?> _plookup(PLookupVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
     return await _process(atCommand, auth: true);
   }
 
-  Future<String> _lookup(LookupVerbBuilder builder) async {
+  Future<String?> _lookup(LookupVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
     return await _process(atCommand, auth: builder.auth);
   }
 
-  Future<String> _llookup(LLookupVerbBuilder builder) async {
+  Future<String?> _llookup(LLookupVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
     return await _process(atCommand, auth: true);
   }
 
-  Future<String> _delete(DeleteVerbBuilder builder, {String privateKey}) async {
+  Future<String?> _delete(DeleteVerbBuilder builder, {String? privateKey}) async {
     var atCommand = builder.buildCommand();
     return await _process(
       atCommand,
@@ -458,7 +458,7 @@ class AtLookupImpl implements AtLookUp {
     );
   }
 
-  Future<String> _process(String command, {bool auth = false}) async {
+  Future<String?> _process(String command, {bool auth = false}) async {
     if (auth != null && auth && _isAuthRequired()) {
       if (privateKey != null) {
         await authenticate(privateKey);
@@ -489,7 +489,7 @@ class AtLookupImpl implements AtLookUp {
       var secureSocket = await SecureSocket.connect(host, int.parse(port));
       _connection = OutboundConnectionImpl(secureSocket);
       if (outboundConnectionTimeout != null) {
-        _connection.setIdleTime(outboundConnectionTimeout);
+        _connection!.setIdleTime(outboundConnectionTimeout);
       }
     } on SocketException {
       throw SecondaryConnectException('unable to connect to secondary');
@@ -498,19 +498,19 @@ class AtLookupImpl implements AtLookUp {
   }
 
   bool _isConnectionAvailable() {
-    return _connection != null && !_connection.isInValid();
+    return _connection != null && !_connection!.isInValid();
   }
 
   bool isInValid() {
-    return _connection.isInValid();
+    return _connection!.isInValid();
   }
 
   Future<void> close() async {
-    await _connection.close();
+    await _connection!.close();
   }
 
   void _sendCommand(String command) async {
     await _createConnection();
-    await _connection.write(command);
+    await _connection!.write(command);
   }
 }
