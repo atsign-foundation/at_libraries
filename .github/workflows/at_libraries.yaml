@@ -46,6 +46,11 @@ jobs:
         working-directory: at_lookup
         run: dart analyze
 
+      # Run unit tests in at_lookup library
+      - name: Run unit test
+        working-directory: at_lookup
+        run: dart test --concurrency=1
+
       # Install dependencies in at_server_status status
       - name: Install dependencies in at_server_status library
         working-directory: at_server_status
