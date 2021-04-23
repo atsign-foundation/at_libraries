@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
@@ -80,8 +82,8 @@ class MonitorClient {
     var signature = base64Encode(sha256signature);
     logger.info('Sending command pkam:$signature');
     await _monitorConnection.write('pkam:$signature\n');
-    var pkamResponse = await (_getQueueResponse() as FutureOr<String>);
-    if (!pkamResponse.contains('success')) {
+    var pkamResponse = await _getQueueResponse();
+    if (pkamResponse == null || !pkamResponse.contains('success')) {
       throw UnAuthenticatedException('Auth failed');
     }
     logger.info('auth success');

@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
@@ -98,7 +100,7 @@ class AtLookupImpl implements AtLookUp {
           response = secondary;
           socket.write('@exit\n');
           await socket.flush();
-          await socket.destroy();
+          socket.destroy();
           AtSignLogger('AtLookup').finer(
               'AtLookup.findSecondary got answer: $secondary and closing connection');
           return response;
@@ -157,7 +159,7 @@ class AtLookupImpl implements AtLookUp {
         ..atKey = key
         ..sharedBy = _currentAtSign;
     }
-    var llookupResult = await (executeVerb(builder) as FutureOr<String>);
+    var llookupResult = await executeVerb(builder) as String;
     llookupResult = VerbUtil.getFormattedValue(llookupResult);
     return llookupResult;
   }
@@ -234,7 +236,7 @@ class AtLookupImpl implements AtLookUp {
       ..sharedBy = sharedBy
       ..regex = regex
       ..auth = auth;
-    var scanResult = await executeVerb(builder);
+    var scanResult = await (executeVerb(builder) as FutureOr<String>);
     if (scanResult != null) {
       scanResult = scanResult.replaceFirst('data:', '');
     }
@@ -264,7 +266,7 @@ class AtLookupImpl implements AtLookUp {
     return putResult != null;
   }
 
-  void _createConnection() async {
+  Future<void> _createConnection() async {
     if (!_isConnectionAvailable()) {
       //1. find secondary url for atsign from lookup library
       var secondaryUrl =
@@ -509,7 +511,7 @@ class AtLookupImpl implements AtLookUp {
     await _connection!.close();
   }
 
-  void _sendCommand(String command) async {
+  Future<void> _sendCommand(String command) async {
     await _createConnection();
     await _connection!.write(command);
   }

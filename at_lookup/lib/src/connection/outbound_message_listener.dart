@@ -95,7 +95,7 @@ class OutboundMessageListener {
     await _closeConnection();
   }
 
-  void _closeConnection() async {
+  Future<void> _closeConnection() async {
     if (!_connection.isInValid()) {
       await _connection.close();
     }
