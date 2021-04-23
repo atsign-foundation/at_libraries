@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_server_status/src/model/at_status.dart';
 import 'at_server_status.dart';
@@ -97,7 +99,7 @@ class AtStatusImpl implements AtServerStatus {
         if(keysList.isNotEmpty) {
           if(keysList.contains(testKey)) {
             var value = await atLookupImpl.lookup('publickey', atSign, auth: false);
-            value = value?.replaceFirst('data:', '');
+            value = value.replaceFirst('data:', '');
             if(value != null && value != 'null') {
               // @server has root location, is running and is activated
               atStatus.serverStatus = ServerStatus.activated;
