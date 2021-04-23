@@ -159,7 +159,7 @@ class AtLookupImpl implements AtLookUp {
         ..atKey = key
         ..sharedBy = _currentAtSign;
     }
-    var llookupResult = await executeVerb(builder) as String;
+    var llookupResult = await executeVerb(builder);
     llookupResult = VerbUtil.getFormattedValue(llookupResult);
     return llookupResult;
   }
@@ -175,7 +175,7 @@ class AtLookupImpl implements AtLookUp {
       ..auth = auth
       ..operation = metadata == true ? 'all' : null;
     if (verifyData == null || verifyData == false) {
-      var lookupResult = await (executeVerb(builder) as FutureOr<String>);
+      var lookupResult = await executeVerb(builder);
       lookupResult = VerbUtil.getFormattedValue(lookupResult);
       return lookupResult;
     }
@@ -186,7 +186,7 @@ class AtLookupImpl implements AtLookUp {
         ..sharedBy = sharedBy
         ..auth = false
         ..operation = 'all';
-      var lookupResult = await (executeVerb(builder) as FutureOr<String>);
+      String? lookupResult = await executeVerb(builder);
       lookupResult = lookupResult.replaceFirst('data:', '');
       var resultJson = json.decode(lookupResult);
       logger.finer(resultJson);
@@ -224,7 +224,7 @@ class AtLookupImpl implements AtLookUp {
     var builder = PLookupVerbBuilder()
       ..atKey = key
       ..sharedBy = sharedBy;
-    var plookupResult = await (executeVerb(builder) as FutureOr<String>);
+    var plookupResult = await executeVerb(builder);
     plookupResult = VerbUtil.getFormattedValue(plookupResult);
     return plookupResult;
   }
@@ -236,7 +236,7 @@ class AtLookupImpl implements AtLookUp {
       ..sharedBy = sharedBy
       ..regex = regex
       ..auth = auth;
-    var scanResult = await (executeVerb(builder) as FutureOr<String>);
+    var scanResult = await executeVerb(builder);
     if (scanResult != null) {
       scanResult = scanResult.replaceFirst('data:', '');
     }
@@ -288,8 +288,8 @@ class AtLookupImpl implements AtLookUp {
   /// Executes the command returned by [VerbBuilder] build command on a remote secondary server.
   /// Optionally [privateKey] is passed for verb builders which require authentication.
   @override
-  Future<String?> executeVerb(VerbBuilder builder, {sync = false}) async {
-    var verbResult;
+  Future<String> executeVerb(VerbBuilder builder, {sync = false}) async {
+    late var verbResult;
     try {
       if (builder is UpdateVerbBuilder) {
         verbResult = await _update(builder);
