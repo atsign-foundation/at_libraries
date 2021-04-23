@@ -7,7 +7,7 @@ import 'package:uuid/uuid.dart';
 
 void main() {
   group('Known @sign tests', () {
-    AtStatus atStatus;
+    late AtStatus atStatus;
     AtStatusImpl atStatusImpl;
     var atSign = '@13majorfishtaco';
     setUp(() async {
@@ -34,7 +34,7 @@ void main() {
   });
 
   group('@sign activation not started tests', () {
-    AtStatus atStatus;
+    late AtStatus atStatus;
     AtStatusImpl atStatusImpl;
     var atSign = '@small73sepia';
     setUp(() async {
@@ -61,7 +61,7 @@ void main() {
   });
 
   group('@sign ready for activation but not activated tests', () {
-    AtStatus atStatus;
+    late AtStatus atStatus;
     AtStatusImpl atStatusImpl;
     var atSign = '@bullridingcapable';
     setUp(() async {
@@ -89,7 +89,7 @@ void main() {
 
   group('@sign does not exist tests', () {
     var uuid = Uuid();
-    AtStatus atStatus;
+    late AtStatus atStatus;
     AtStatusImpl atStatusImpl;
     var atSign = uuid.v4();
     print(atSign);
