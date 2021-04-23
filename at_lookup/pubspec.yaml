@@ -11,8 +11,8 @@ dependencies:
   path: ^1.6.0
   crypton: ^1.1.0
   crypto: ^2.1.5
-  at_utils: ^1.0.1+5
-  at_commons: ^1.0.1+5
+  at_utils: ^1.0.1+6
+  at_commons: ^1.0.1+6
 
 dev_dependencies:
   pedantic: ^1.8.0
