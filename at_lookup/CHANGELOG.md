@@ -1,3 +1,4 @@
+
 ## 1.0.0
 - Initial version, created by Stagehand
 ## 1.0.0+1
@@ -13,3 +14,5 @@
 - at_utils and at_commons version changes
 ## 1.0.0+6
 - at_utils and at_commons version changes
+## 1.0.0+7
+- Call back to auto restart monitor connection
