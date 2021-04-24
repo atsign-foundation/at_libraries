@@ -93,7 +93,7 @@ class AtLookupImpl implements AtLookUp {
       });
       // wait 5 seconds
       for (var i = 0; i < 100; i++) {
-        await Future.delayed(Duration(milliseconds: 50));
+        await Future.delayed(Duration(seconds: 5));
         if (ans) {
           response = secondary;
           socket.write('@exit\n');
