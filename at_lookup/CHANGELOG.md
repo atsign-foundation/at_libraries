@@ -15,4 +15,4 @@
 ## 1.0.0+6
 - at_utils and at_commons version changes
 ## 1.0.0+7
-- Callback to restart outbound connection
+- Call back to auto restart monitor connection
