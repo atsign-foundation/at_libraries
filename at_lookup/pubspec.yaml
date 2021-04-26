@@ -15,7 +15,7 @@ dependencies:
     git:
       url: https://github.com/atsign-foundation/at_tools.git
       path: at_utils
-      ref: package_upgrade
+      ref: dev_env
       version: ^1.0.1+4
 
 dev_dependencies:
