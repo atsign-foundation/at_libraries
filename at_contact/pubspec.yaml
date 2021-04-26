@@ -9,9 +9,12 @@ environment:
 
 dependencies:
   intl: ^0.16.1
-  at_client: ^1.0.1+8
-  at_commons: ^1.0.1+6
-  at_utils: ^1.0.1+6
+  at_client:
+    git:
+      url: https://github.com/atsign-foundation/at_client_sdk.git
+      path: at_client
+      ref: dev_env
+      version: ^1.0.1+8
   uuid: ^2.0.2
 
 dev_dependencies:
