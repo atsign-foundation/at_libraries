@@ -11,3 +11,7 @@
 ## 1.0.0+5
 - atsign validation changes
 - at_utils and at_commons version changes
+## 1.0.0+6
+- at_utils and at_commons version changes
+## 1.0.0+7
+- Third party package dependency upgrade
