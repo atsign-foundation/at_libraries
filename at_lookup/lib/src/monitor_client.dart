@@ -25,10 +25,8 @@ class MonitorClient {
       String _rootDomain, int _rootPort, Function notificationCallBack,
       {bool auth = true, Function restartCallBack}) async {
     //1. Get a new outbound connection dedicated to monitor verb.
-    logger.finer('before monitor create connection');
     var _monitorConnection =
         await _createNewConnection(_atSign, _rootDomain, _rootPort);
-    logger.finer('after monitor create connection');
     //2. Listener on _monitorConnection.
     _monitorConnection.getSocket().listen((event) {
       response = utf8.decode(event);
