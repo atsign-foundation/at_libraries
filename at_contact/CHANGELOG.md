@@ -8,3 +8,5 @@
 - Reverted groupMembersKey to groupMembers
 ## 1.0.0+3
 - Added listGroupIds method
+## 1.0.0+4
+- Third party package dependency upgrade
