@@ -12,6 +12,12 @@ dependencies:
   path: ^1.6.0
   crypton: ^2.0.1
   crypto: ^3.0.0
+  at_commons:
+    git:
+      url: https://github.com/atsign-foundation/at_tools.git
+      path: at_commons
+      ref: dev_env
+      version: ^1.0.1+7
   at_utils:
     git:
       url: https://github.com/atsign-foundation/at_tools.git
