@@ -3,6 +3,7 @@ description: A starting point for Dart libraries or applications.
 version: 1.0.0+4
 repository: https://github.com/atsign-foundation/at_libraries
 homepage: https://atsign.dev
+publish_to: none
 
 environment:
   sdk: '>=2.7.0 <3.0.0'
@@ -15,7 +16,6 @@ dependencies:
       path: at_client
       ref: dev_env
       version: ^1.0.1+9
-
   uuid: ^3.0.4
 
 dev_dependencies:

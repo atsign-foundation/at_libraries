@@ -1,6 +1,5 @@
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
-import 'package:at_lookup/src/connection/outbound_connection.dart';
 
 abstract class AtLookUp {
   /// update
