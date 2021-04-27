@@ -2,6 +2,7 @@ import 'package:at_client/at_client.dart';
 import 'package:at_contact/at_contact.dart';
 import 'package:at_contact/src/model/at_contact.dart';
 import 'package:test/test.dart';
+
 import 'test_util.dart';
 
 Future<void> main() async {
@@ -41,7 +42,7 @@ Future<void> main() async {
 
     // test get contact
     test(' test get contact by atSign', () async {
-      var result = await atContact.get('$atSign');
+      var result = await atContact.get(atSign);
       print('get result : $result');
       expect(result is AtContact, true);
       expect(result.atSign, atSign);
@@ -121,7 +122,7 @@ Future<void> main() async {
 
     //delete contact
     test(' test delete contact by atSign', () async {
-      var result = await atContact.delete('$atSign');
+      var result = await atContact.delete(atSign);
       print('delete result : $result');
       expect(result, true);
     });

@@ -14,7 +14,7 @@ Future<void> main() async {
   try {
     await AtClientImpl.createClient(atSign, 'me', preference);
     var atClient = await AtClientImpl.getClient(atSign);
-    await atClient.getSyncManager().init(atSign, preference,
+    atClient.getSyncManager().init(atSign, preference,
         atClient.getRemoteSecondary(), atClient.getLocalSecondary());
 
     atContactsImpl = await AtContactsImpl.getInstance(atSign);
