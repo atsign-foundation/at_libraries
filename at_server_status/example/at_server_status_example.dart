@@ -27,5 +27,4 @@ void main() async {
   await getAtStatus(activationNotStarted);
   await getAtStatus(readyToActivate);
   await getAtStatus(paired);
-
 }

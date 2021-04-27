@@ -1,9 +1,9 @@
 import 'dart:io';
+
 import 'package:at_server_status/at_server_status.dart';
 import 'package:at_server_status/at_status_impl.dart';
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
-
 
 void main() {
   group('Known @sign tests', () {
@@ -30,7 +30,6 @@ void main() {
     test('httpStatus()', () {
       expect(atStatus.httpStatus(), equals(HttpStatus.ok));
     });
-
   });
 
   group('@sign activation not started tests', () {
@@ -57,7 +56,6 @@ void main() {
     test('httpStatus()', () {
       expect(atStatus.httpStatus(), equals(HttpStatus.notFound));
     });
-
   });
 
   group('@sign ready for activation but not activated tests', () {
@@ -84,7 +82,6 @@ void main() {
     test('httpStatus', () {
       expect(atStatus.httpStatus(), equals(418));
     });
-
   });
 
   group('@sign does not exist tests', () {
@@ -113,6 +110,5 @@ void main() {
     test('httpStatus', () {
       expect(atStatus.httpStatus(), equals(HttpStatus.notFound));
     });
-
   });
 }

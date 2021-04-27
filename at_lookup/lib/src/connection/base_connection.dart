@@ -1,6 +1,7 @@
 import 'dart:io';
-import 'package:at_lookup/src/connection/at_connection.dart';
+
 import 'package:at_commons/at_commons.dart';
+import 'package:at_lookup/src/connection/at_connection.dart';
 
 /// Base class for common socket operations
 abstract class BaseConnection extends AtConnection {
@@ -37,7 +38,7 @@ abstract class BaseConnection extends AtConnection {
   }
 
   @override
-  void write(String data) async {
+  Future<void> write(String data) async {
     if (isInValid()) {
       //# Replace with specific exception
       throw ConnectionInvalidException('Connection is invalid');

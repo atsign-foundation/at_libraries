@@ -199,8 +199,8 @@ class AtContactsImpl implements AtContactsLibrary {
       }
     }
     //create groupID
-    var groupId = (id == null) ? Uuid().v1() : id;
-    // create key from group name.
+    var groupId = Uuid().v1();
+    atGroup.groupId = groupId;
     var groupName = atGroup.groupName;
     // set metadata
     var metadata = Metadata()
@@ -210,7 +210,6 @@ class AtContactsImpl implements AtContactsLibrary {
       ..key = groupId
       ..metadata = metadata;
     //update atGroup
-    atGroup.displayName ??= groupName;
     atGroup.createdBy = AtUtils.fixAtSign(atSign);
     atGroup.updatedBy = AtUtils.fixAtSign(atSign);
     atGroup.createdOn = DateTime.now();
@@ -253,7 +252,6 @@ class AtContactsImpl implements AtContactsLibrary {
       ..key = atGroup.groupId
       ..metadata = metadata;
     //update atGroup
-    atGroup.displayName ??= atGroup.groupName;
     atGroup.updatedOn = DateTime.now();
 
     var json = atGroup.toJson();
@@ -313,6 +311,32 @@ class AtContactsImpl implements AtContactsLibrary {
     return groupNames;
   }
 
+  /// fetches all the group Ids as a list
+  /// on success return List of Group Ids otherwise []
+  @override
+  Future<List<String>> listGroupIds() async {
+    var groupsListKey = getGroupsListKey();
+    var metadata = Metadata()
+      ..isPublic = false
+      ..namespaceAware = false;
+    var atKey = AtKey()
+      ..key = groupsListKey
+      ..metadata = metadata;
+    var result = await atClient.get(atKey);
+    // get name from AtGroupBasicInfo for all the groups.
+    var list = [];
+    if (result != null) {
+      list = (result.value != null) ? jsonDecode(result.value) : [];
+    }
+    list = List<String>.from(list);
+    var groupIds = <String>[];
+    list.forEach((group) {
+      var groupInfo = AtGroupBasicInfo.fromJson(jsonDecode(group));
+      groupIds.add(groupInfo.atGroupId);
+    });
+    return groupIds;
+  }
+
   /// takes groupName as an input and
   /// get the group details
   /// on success return AtGroup otherwise null
@@ -354,6 +378,9 @@ class AtContactsImpl implements AtContactsLibrary {
     if (atContacts.isEmpty || atGroup == null) {
       return false;
     }
+    if (atGroup.groupId == null) {
+      throw GroupNotExistsException('Group ID is null');
+    }
     // set metadata
     var metadata = Metadata()
       ..isPublic = false
@@ -383,7 +410,9 @@ class AtContactsImpl implements AtContactsLibrary {
     if (atContacts.isEmpty || atGroup == null) {
       return false;
     }
-
+    if (atGroup.groupId == null) {
+      throw GroupNotExistsException('Group ID is null');
+    }
     // set metadata
     var metadata = Metadata()
       ..isPublic = false
