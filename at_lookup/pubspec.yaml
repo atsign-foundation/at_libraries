@@ -10,8 +10,8 @@ environment:
 
 dependencies:
   path: ^1.6.0
-  crypton: ^1.1.0
-  crypto: ^2.1.5
+  crypton: ^2.0.1
+  crypto: ^3.0.0
   at_utils:
     git:
       url: https://github.com/atsign-foundation/at_tools.git

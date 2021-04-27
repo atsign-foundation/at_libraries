@@ -8,3 +8,6 @@
 - public data signing, at_utils and at_commons version changes
 ## 1.0.0+4
 - at_utils and at_commons version changes
+## 1.0.0+5
+- atsign validation changes
+- at_utils and at_commons version changes
