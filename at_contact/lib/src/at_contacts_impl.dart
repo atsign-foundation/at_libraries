@@ -12,17 +12,11 @@ import 'package:uuid/uuid.dart';
 
 class AtContactsImpl implements AtContactsLibrary {
   AtClientImpl _atClient;
-  String _atSign;
+  String atSign;
   var logger;
 
-  String get atSign => _atSign;
-
-  set atSign(String value) {
-    _atSign = value;
-  }
-
   AtContactsImpl(AtClient atClient, String atSign) {
-    _atSign = atSign;
+    this.atSign = atSign;
     _atClient = atClient;
     logger = AtSignLogger(runtimeType.toString());
   }
@@ -94,8 +88,7 @@ class AtContactsImpl implements AtContactsLibrary {
           try {
             json = jsonDecode(value);
           } on FormatException catch (e) {
-            logger
-                .severe('Invalid JSON. ${e.message} found in JSON : ${value}');
+            logger.severe('Invalid JSON. ${e.message} found in JSON : $value');
             throw InvalidSyntaxException('Invalid JSON found');
           }
           if (json != null) {
@@ -139,7 +132,7 @@ class AtContactsImpl implements AtContactsLibrary {
   @override
   Future<List<AtContact>> listContacts() async {
     var contactList = <AtContact>[];
-    var atSign = _atSign.replaceFirst('@', '');
+    var atSign = this.atSign.replaceFirst('@', '');
     var regex =
         '${AppConstants.CONTACT_KEY_PREFIX}.*.${AppConstants.CONTACT_KEY_SUFFIX}.$atSign@$atSign'
             .toLowerCase();
@@ -153,7 +146,7 @@ class AtContactsImpl implements AtContactsLibrary {
       try {
         contact = await get(key);
       } on Exception catch (e) {
-        logger.severe('Invalid atsign contact found @${key} : ${e}');
+        logger.severe('Invalid atsign contact found @$key : $e');
       }
       if (contact != null) contactList.add(contact);
     }

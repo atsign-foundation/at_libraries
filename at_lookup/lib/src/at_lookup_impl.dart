@@ -205,10 +205,10 @@ class AtLookupImpl implements AtLookUp {
       var dataSignature = resultJson['metaData']['dataSignature'];
       var value = resultJson['data'];
       value = VerbUtil.getFormattedValue(value);
-      logger.finer('value: ${value} dataSignature:${dataSignature}');
+      logger.finer('value: $value dataSignature:$dataSignature');
       var isDataValid = publicKey.verifySHA256Signature(
           utf8.encode(value), base64Decode(dataSignature));
-      logger.finer('atlookup data verify result: ${isDataValid}');
+      logger.finer('atlookup data verify result: $isDataValid');
       return 'data:$value';
     } on Exception catch (e) {
       logger.severe(
@@ -340,13 +340,13 @@ class AtLookupImpl implements AtLookUp {
     } else {
       atCommand = builder.buildCommand();
     }
-    logger.finer('update to remote: ${atCommand}');
+    logger.finer('update to remote: $atCommand');
     return await _process(atCommand, auth: true);
   }
 
   Future<String> _notify(NotifyVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
-    logger.finer('notify to remote: ${atCommand}');
+    logger.finer('notify to remote: $atCommand');
     return await _process(atCommand, auth: true);
   }
 
@@ -392,7 +392,7 @@ class AtLookupImpl implements AtLookUp {
     }
     await _sendCommand('from:$_currentAtSign\n');
     var fromResponse = await messageListener.read();
-    logger.finer('from result:${fromResponse}');
+    logger.finer('from result:$fromResponse');
     fromResponse = fromResponse.trim().replaceAll('data:', '');
     logger.finer('fromResponse $fromResponse');
     var key = RSAPrivateKey.fromString(privateKey);
@@ -419,9 +419,9 @@ class AtLookupImpl implements AtLookUp {
     }
     await _sendCommand('from:$_currentAtSign\n');
     var fromResponse = await messageListener.read();
-    logger.info('from result:${fromResponse}');
+    logger.info('from result:$fromResponse');
     fromResponse = fromResponse.trim().replaceAll('data:', '');
-    var digestInput = '${secret}${fromResponse}';
+    var digestInput = '$secret$fromResponse';
     var bytes = utf8.encode(digestInput);
     var digest = sha512.convert(bytes);
     await _sendCommand('cram:$digest\n');
