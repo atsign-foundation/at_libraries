@@ -9,9 +9,8 @@ on:
   pull_request:
     branches:
       - master
-      - prod_staging
+      - trunk
       - dev_env
-      - dev_env_staging
 
 jobs:
   build:
@@ -24,7 +23,9 @@ jobs:
       # You can specify other versions if desired, see documentation here:
       # https://github.com/dart-lang/setup-dart/blob/main/README.md
       # - uses: dart-lang/setup-dart@v1
-      - uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
 
       # Install dependencies in at_contacts library
       - name: Install dependencies in at_contact

@@ -1,5 +1,6 @@
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_server_status/src/model/at_status.dart';
+
 import 'at_server_status.dart';
 
 class AtStatusImpl implements AtServerStatus {
@@ -39,12 +40,12 @@ class AtStatusImpl implements AtServerStatus {
       atStatus.rootStatus = status.rootStatus;
       atStatus.serverLocation = status.serverLocation;
       // If the @sign serverLocation is found in root, check the status of the @server
-      if(atStatus.rootStatus == RootStatus.found
-          && atStatus.serverLocation != null
-          && atStatus.serverLocation.isNotEmpty
-      ) {
-        await _getServerStatus(atStatus.atSign, atStatus.serverLocation ).then((AtStatus status) async {
-            atStatus.serverStatus = status.serverStatus;
+      if (atStatus.rootStatus == RootStatus.found &&
+          atStatus.serverLocation != null &&
+          atStatus.serverLocation.isNotEmpty) {
+        await _getServerStatus(atStatus.atSign, atStatus.serverLocation)
+            .then((AtStatus status) async {
+          atStatus.serverStatus = status.serverStatus;
         }).catchError((error) {
           atStatus.serverStatus = ServerStatus.unavailable;
         });
@@ -82,23 +83,25 @@ class AtStatusImpl implements AtServerStatus {
     return atStatus;
   }
 
-  Future<AtStatus> _getServerStatus(String atSign, String serverLocation) async {
+  Future<AtStatus> _getServerStatus(
+      String atSign, String serverLocation) async {
     // ignore: omit_local_variable_types
     AtStatus atStatus = AtStatus();
     var testKey = 'publickey$atSign';
     // ignore: omit_local_variable_types
     // enum ServerStatus { started, running, stopped, notFound, ready, activated, unavailable }
-    if(serverLocation == null || serverLocation.isEmpty) {
+    if (serverLocation == null || serverLocation.isEmpty) {
       atStatus.rootStatus = RootStatus.notFound;
     } else {
       // ignore: omit_local_variable_types
       AtLookupImpl atLookupImpl = AtLookupImpl(atSign, _root_url, _root_port);
-      await atLookupImpl.scan( auth: false).then((keysList) async {
-        if(keysList.isNotEmpty) {
-          if(keysList.contains(testKey)) {
-            var value = await atLookupImpl.lookup('publickey', atSign, auth: false);
+      await atLookupImpl.scan(auth: false).then((keysList) async {
+        if (keysList.isNotEmpty) {
+          if (keysList.contains(testKey)) {
+            var value =
+                await atLookupImpl.lookup('publickey', atSign, auth: false);
             value = value?.replaceFirst('data:', '');
-            if(value != null && value != 'null') {
+            if (value != null && value != 'null') {
               // @server has root location, is running and is activated
               atStatus.serverStatus = ServerStatus.activated;
             } else {
