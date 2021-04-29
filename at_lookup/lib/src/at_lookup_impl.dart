@@ -200,7 +200,7 @@ class AtLookupImpl implements AtLookUp {
           ..sharedBy = sharedBy;
         publicKeyResult = await executeVerb(publicKeyLookUpBuilder);
       }
-      publicKeyResult = publicKeyResult!.replaceFirst('data:', '');
+      publicKeyResult = publicKeyResult.replaceFirst('data:', '');
       logger.finer('public key of $sharedBy :$publicKeyResult');
 
       var publicKey = RSAPublicKey.fromString(publicKeyResult);
