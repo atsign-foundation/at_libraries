@@ -420,10 +420,13 @@ class AtLookupImpl implements AtLookUp {
       throw UnAuthenticatedException('Cram secret not passed');
     }
     await _sendCommand('from:$_currentAtSign\n');
-    var fromResponse = await (messageListener.read() as FutureOr<String>);
-    logger.info('from result:${fromResponse}');
+    var fromResponse = await messageListener.read();
+    logger.info('from result:$fromResponse');
+    if (fromResponse == null) {
+      return false;
+    }
     fromResponse = fromResponse.trim().replaceAll('data:', '');
-    var digestInput = '${secret}${fromResponse}';
+    var digestInput = '$secret$fromResponse';
     var bytes = utf8.encode(digestInput);
     var digest = sha512.convert(bytes);
     await _sendCommand('cram:$digest\n');
