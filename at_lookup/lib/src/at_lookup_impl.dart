@@ -393,12 +393,16 @@ class AtLookupImpl implements AtLookUp {
       throw UnAuthenticatedException('Private key not passed');
     }
     await _sendCommand('from:$_currentAtSign\n');
-    var fromResponse = await (messageListener.read() as FutureOr<String>);
-    logger.finer('from result:${fromResponse}');
+    var fromResponse = await (messageListener.read());
+    logger.finer('from result:$fromResponse');
+    if (fromResponse == null) {
+      return false;
+    }
     fromResponse = fromResponse.trim().replaceAll('data:', '');
     logger.finer('fromResponse $fromResponse');
     var key = RSAPrivateKey.fromString(privateKey);
-    var sha256signature = key.createSHA256Signature(utf8.encode(fromResponse) as Uint8List);
+    var sha256signature =
+        key.createSHA256Signature(utf8.encode(fromResponse) as Uint8List);
     var signature = base64Encode(sha256signature);
     logger.finer('Sending command pkam:$signature');
     await _sendCommand('pkam:$signature\n');
@@ -455,7 +459,8 @@ class AtLookupImpl implements AtLookUp {
     return await _process(atCommand, auth: true);
   }
 
-  Future<String?> _delete(DeleteVerbBuilder builder, {String? privateKey}) async {
+  Future<String?> _delete(DeleteVerbBuilder builder,
+      {String? privateKey}) async {
     var atCommand = builder.buildCommand();
     return await _process(
       atCommand,
