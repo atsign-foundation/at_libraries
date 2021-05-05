@@ -73,12 +73,13 @@ class MonitorClient {
   Future<OutboundConnection> _authenticateConnection(
       String _atSign, OutboundConnection _monitorConnection) async {
     await _monitorConnection.write('from:$_atSign\n');
-    var fromResponse = await (_getQueueResponse() as FutureOr<String>);
+    var fromResponse = await _getQueueResponse();
     logger.info('from result:$fromResponse');
     fromResponse = fromResponse.trim().replaceAll('data:', '');
     logger.info('fromResponse $fromResponse');
     var key = RSAPrivateKey.fromString(_privateKey);
-    var sha256signature = key.createSHA256Signature(utf8.encode(fromResponse) as Uint8List);
+    var sha256signature =
+        key.createSHA256Signature(utf8.encode(fromResponse) as Uint8List);
     var signature = base64Encode(sha256signature);
     logger.info('Sending command pkam:$signature');
     await _monitorConnection.write('pkam:$signature\n');
@@ -91,9 +92,9 @@ class MonitorClient {
   }
 
   ///Returns the response of the monitor verb queue.
-  Future<String?> _getQueueResponse() async {
+  Future<String> _getQueueResponse() async {
     var maxWaitMilliSeconds = 5000;
-    String? result;
+    var result = '';
     //wait maxWaitMilliSeconds seconds for response from remote socket
     var loopCount = (maxWaitMilliSeconds / 50).round();
     for (var i = 0; i < loopCount; i++) {
