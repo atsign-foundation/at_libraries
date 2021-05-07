@@ -36,7 +36,7 @@ class AtLookupImpl implements AtLookUp {
 
   var privateKey;
 
-  var _cramSecret;
+  var cramSecret;
 
   var outboundConnectionTimeout;
 
@@ -51,7 +51,7 @@ class AtLookupImpl implements AtLookUp {
     _rootDomain = rootDomain;
     _rootPort = rootPort;
     this.privateKey = privateKey;
-    _cramSecret = cramSecret;
+    this.cramSecret = cramSecret;
   }
 
   static Future<String> findSecondary(
@@ -205,10 +205,10 @@ class AtLookupImpl implements AtLookUp {
       var dataSignature = resultJson['metaData']['dataSignature'];
       var value = resultJson['data'];
       value = VerbUtil.getFormattedValue(value);
-      logger.finer('value: ${value} dataSignature:${dataSignature}');
+      logger.finer('value: $value dataSignature:$dataSignature');
       var isDataValid = publicKey.verifySHA256Signature(
           utf8.encode(value), base64Decode(dataSignature));
-      logger.finer('atlookup data verify result: ${isDataValid}');
+      logger.finer('atlookup data verify result: $isDataValid');
       return 'data:$value';
     } on Exception catch (e) {
       logger.severe(
@@ -264,8 +264,8 @@ class AtLookupImpl implements AtLookUp {
     return putResult != null;
   }
 
-  Future<void> _createConnection() async {
-    if (!_isConnectionAvailable()) {
+  Future<void> createConnection() async {
+    if (!isConnectionAvailable()) {
       //1. find secondary url for atsign from lookup library
       var secondaryUrl =
           await findSecondary(_currentAtSign, _rootDomain, _rootPort);
@@ -276,7 +276,7 @@ class AtLookupImpl implements AtLookUp {
       var host = secondaryInfo[0];
       var port = secondaryInfo[1];
       //2. create a connection to secondary server
-      await _createOutBoundConnection(host, port, _currentAtSign);
+      await createOutBoundConnection(host, port, _currentAtSign);
       //3. listen to server response
       messageListener = OutboundMessageListener(_connection);
       messageListener.listen();
@@ -340,13 +340,13 @@ class AtLookupImpl implements AtLookUp {
     } else {
       atCommand = builder.buildCommand();
     }
-    logger.finer('update to remote: ${atCommand}');
+    logger.finer('update to remote: $atCommand');
     return await _process(atCommand, auth: true);
   }
 
   Future<String> _notify(NotifyVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
-    logger.finer('notify to remote: ${atCommand}');
+    logger.finer('notify to remote: $atCommand');
     return await _process(atCommand, auth: true);
   }
 
@@ -392,7 +392,7 @@ class AtLookupImpl implements AtLookUp {
     }
     await _sendCommand('from:$_currentAtSign\n');
     var fromResponse = await messageListener.read();
-    logger.finer('from result:${fromResponse}');
+    logger.finer('from result:$fromResponse');
     fromResponse = fromResponse.trim().replaceAll('data:', '');
     logger.finer('fromResponse $fromResponse');
     var key = RSAPrivateKey.fromString(privateKey);
@@ -413,15 +413,15 @@ class AtLookupImpl implements AtLookUp {
   /// Generates digest using from verb response and [secret] and performs a CRAM authentication to
   /// secondary server
   Future<bool> authenticate_cram(var secret) async {
-    secret ??= _cramSecret;
+    secret ??= cramSecret;
     if (secret == null) {
       throw UnAuthenticatedException('Cram secret not passed');
     }
     await _sendCommand('from:$_currentAtSign\n');
     var fromResponse = await messageListener.read();
-    logger.info('from result:${fromResponse}');
+    logger.info('from result:$fromResponse');
     fromResponse = fromResponse.trim().replaceAll('data:', '');
-    var digestInput = '${secret}${fromResponse}';
+    var digestInput = '$secret$fromResponse';
     var bytes = utf8.encode(digestInput);
     var digest = sha512.convert(bytes);
     await _sendCommand('cram:$digest\n');
@@ -462,8 +462,8 @@ class AtLookupImpl implements AtLookUp {
     if (auth != null && auth && _isAuthRequired()) {
       if (privateKey != null) {
         await authenticate(privateKey);
-      } else if (_cramSecret != null) {
-        await authenticate_cram(_cramSecret);
+      } else if (cramSecret != null) {
+        await authenticate_cram(cramSecret);
       } else {
         throw UnAuthenticatedException(
             'Unable to perform atlookup auth. Private key/cram secret is not set');
@@ -480,11 +480,11 @@ class AtLookupImpl implements AtLookUp {
   }
 
   bool _isAuthRequired() {
-    return !_isConnectionAvailable() ||
+    return !isConnectionAvailable() ||
         !(_isPkamAuthenticated || _isCramAuthenticated);
   }
 
-  Future<bool> _createOutBoundConnection(host, port, toAtSign) async {
+  Future<bool> createOutBoundConnection(host, port, toAtSign) async {
     try {
       var secureSocket = await SecureSocket.connect(host, int.parse(port));
       _connection = OutboundConnectionImpl(secureSocket);
@@ -497,7 +497,7 @@ class AtLookupImpl implements AtLookUp {
     return true;
   }
 
-  bool _isConnectionAvailable() {
+  bool isConnectionAvailable() {
     return _connection != null && !_connection.isInValid();
   }
 
@@ -510,7 +510,7 @@ class AtLookupImpl implements AtLookUp {
   }
 
   Future<void> _sendCommand(String command) async {
-    await _createConnection();
+    await createConnection();
     await _connection.write(command);
   }
 }

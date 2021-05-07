@@ -37,22 +37,22 @@ describe.
 
 To prepare your dedicated GitHub repository:
 
-1. Fork in GitHub https://github.com/atsign-foundation/REPO
-2. Clone *your forked repository* (e.g., `git clone git@github.com:yourname/REPO`)
+1. Fork in GitHub https://github.com/atsign-foundation/at_libraries
+2. Clone *your forked repository* (e.g., `git clone git@github.com:yourname/at_libraries`)
 3. Set your remotes as follows:
 
    ```sh
-   cd REPO
-   git remote add upstream git@github.com:atsign-foundation/REPO.git
+   cd at_libraries
+   git remote add upstream git@github.com:atsign-foundation/at_libraries.git
    git remote set-url upstream --push DISABLED
    ```
 
    Running `git remote -v` should give something similar to:
 
    ```text
-   origin  git@github.com:yourname/REPO.git (fetch)
-   origin  git@github.com:yourname/REPO.git (push)
-   upstream        git@github.com:atsign-foundation/REPO.git (fetch)
+   origin  git@github.com:yourname/at_libraries.git (fetch)
+   origin  git@github.com:yourname/at_libraries.git (push)
+   upstream        git@github.com:atsign-foundation/at_libraries.git (fetch)
    upstream        DISABLED (push)
    ```
 
@@ -68,16 +68,17 @@ To prepare your dedicated GitHub repository:
    git fetch upstream
    ```
 
-1. Reset your fork's `master` branch to exactly match upstream `master`:
+
+1. Reset your fork's `trunk` branch to exactly match upstream `trunk`:
 
    ```sh
-   git checkout master
-   git reset --hard upstream/master
+   git checkout trunk
+   git reset --hard upstream/trunk
    git push --force
    ```
 
    **IMPORTANT**: Do this only once, when you start working on new feature as
-   the commands above will completely overwrite any local changes in `master` content.
+   the commands above will completely overwrite any local changes in `trunk` content.
 1. Edit, edit, edit, and commit your changes to Git:
 
    ```sh
@@ -93,4 +94,4 @@ To prepare your dedicated GitHub repository:
    # explain tests here
    ```
 
-1. Open a new Pull Request to the main repository using your `master` branch
+1. Open a new Pull Request to the main repository using your `trunk` branch
