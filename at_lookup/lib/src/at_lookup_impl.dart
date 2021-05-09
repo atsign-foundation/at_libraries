@@ -264,6 +264,20 @@ class AtLookupImpl implements AtLookUp {
     return putResult != null;
   }
 
+  @override
+  Future<String> index(String data) async {
+    var builder = IndexVerbBuilder()..data = data;
+    var indexResult = await executeVerb(builder);
+    return indexResult;
+  }
+
+  @override
+  Future<String> search(String keys) async {
+    var builder = SearchVerbBuilder()..keys = keys;
+    var searchResult = await executeVerb(builder);
+    return searchResult;
+  }
+
   Future<void> createConnection() async {
     if (!isConnectionAvailable()) {
       //1. find secondary url for atsign from lookup library
@@ -313,6 +327,10 @@ class AtLookupImpl implements AtLookUp {
         verbResult = await _notifyList(builder);
       } else if (builder is NotifyAllVerbBuilder) {
         verbResult = await _notifyAll(builder);
+      } else if (builder is IndexVerbBuilder) {
+        verbResult = await _index(builder);
+      } else if (builder is SearchVerbBuilder) {
+        verbResult = await _search(builder);
       }
     } on Exception catch (e) {
       logger.severe('Error in remote verb execution ${e.toString()}');
@@ -376,6 +394,16 @@ class AtLookupImpl implements AtLookUp {
   }
 
   Future<String> _notifyAll(NotifyAllVerbBuilder builder) async {
+    var command = builder.buildCommand();
+    return await _process(command, auth: true);
+  }
+
+  Future<String> _index(IndexVerbBuilder builder) async {
+    var command = builder.buildCommand();
+    return await _process(command, auth: true);
+  }
+
+  Future<String> _search(SearchVerbBuilder builder) async {
     var command = builder.buildCommand();
     return await _process(command, auth: true);
   }
