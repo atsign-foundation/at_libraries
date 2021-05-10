@@ -68,6 +68,7 @@ To prepare your dedicated GitHub repository:
    git fetch upstream
    ```
 
+
 1. Reset your fork's `trunk` branch to exactly match upstream `trunk`:
 
    ```sh
