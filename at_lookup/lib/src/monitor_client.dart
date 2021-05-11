@@ -104,7 +104,7 @@ class MonitorClient {
         result = _monitorVerbResponseQueue.removeFirst();
         // result from another secondary is either data or a @<atSign>@ denoting complete
         // of the handshake
-        if (result!.startsWith('data:')) {
+        if (result.startsWith('data:')) {
           var index = result.indexOf(':');
           result = result.substring(index + 1, result.length - 2);
           break;
