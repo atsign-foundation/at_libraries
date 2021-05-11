@@ -10,7 +10,7 @@ abstract class AtConnection {
   Socket getSocket();
 
   /// closes the underlying connection
-  void close();
+  Future<void> close();
 
   /// Returns true if the connection is invalid
   bool isInValid();
