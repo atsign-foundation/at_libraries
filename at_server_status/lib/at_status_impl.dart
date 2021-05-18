@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_server_status/src/model/at_status.dart';
+
 import 'at_server_status.dart';
 
 class AtStatusImpl implements AtServerStatus {
@@ -90,7 +91,7 @@ class AtStatusImpl implements AtServerStatus {
     var testKey = 'publickey$atSign';
     // ignore: omit_local_variable_types
     // enum ServerStatus { started, running, stopped, notFound, ready, activated, unavailable }
-    if(serverLocation == null || serverLocation.isEmpty) {
+    if (serverLocation == null || serverLocation.isEmpty) {
       atStatus.rootStatus = RootStatus.notFound;
     } else {
       // ignore: omit_local_variable_types

@@ -9,12 +9,12 @@ import 'test_util.dart';
 Future<void> main() async {
   AtContactsImpl atContactsImpl;
   AtGroup atGroup;
-  var atSign = '@sitaram';
+  var atSign = '@sitaram🛠';
   var preference = TestUtil.getPreferenceLocal();
   try {
     await AtClientImpl.createClient(atSign, 'me', preference);
     var atClient = await AtClientImpl.getClient(atSign);
-    await atClient.getSyncManager().init(atSign, preference,
+    atClient.getSyncManager().init(atSign, preference,
         atClient.getRemoteSecondary(), atClient.getLocalSecondary());
 
     atContactsImpl = await AtContactsImpl.getInstance(atSign);
