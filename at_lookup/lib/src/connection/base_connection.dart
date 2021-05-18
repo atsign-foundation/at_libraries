@@ -19,9 +19,9 @@ abstract class BaseConnection extends AtConnection {
   }
 
   @override
-  Future<void> close() async {
+  void close() {
     try {
-      await _socket.close();
+      _socket.destroy();
       getMetaData().isClosed = true;
     } on Exception {
       getMetaData().isStale = true;
@@ -38,7 +38,7 @@ abstract class BaseConnection extends AtConnection {
   }
 
   @override
-  Future<void> write(String data) async {
+  void write(String data) {
     if (isInValid()) {
       //# Replace with specific exception
       throw ConnectionInvalidException('Connection is invalid');
@@ -46,8 +46,15 @@ abstract class BaseConnection extends AtConnection {
     try {
       getSocket().write(data);
       getMetaData().lastAccessed = DateTime.now().toUtc();
+    } on StateError {
+      getMetaData().isStale = true;
+      throw ConnectionInvalidException('StateError on write');
+    } on SocketException {
+      getMetaData().isStale = true;
+      throw ConnectionInvalidException('Socket exception on write');
     } on Exception {
       getMetaData().isStale = true;
+      throw ConnectionInvalidException('Exception on write');
     }
   }
 }
