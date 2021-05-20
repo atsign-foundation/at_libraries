@@ -127,11 +127,15 @@ class AtContactsImpl implements AtContactsLibrary {
     Set contactSet = <String>{};
     var contactList = <AtContact>[];
     var atSign = this.atSign.replaceFirst('@', '');
-    var appNamespace = atClient.preference.namespace;
+    var appNamespace = atClient.preference.namespace != null
+        ? '.${atClient.preference.namespace}'
+        : '';
     var regex =
-        '${AppConstants.CONTACT_KEY_PREFIX}.*.(${AppConstants.CONTACT_KEY_SUFFIX})?.$atSign(.${AppConstants.LIBRARY_NAMESPACE}.$appNamespace)?@$atSign'
+        '${AppConstants.CONTACT_KEY_PREFIX}.*.(${AppConstants.CONTACT_KEY_SUFFIX}.$atSign|$atSign.${AppConstants.LIBRARY_NAMESPACE}$appNamespace)@$atSign'
             .toLowerCase();
     var scanList = await atClient.getAtKeys(regex: regex);
+    scanList.retainWhere((scanKeys) =>
+        !scanKeys.key.contains(AppConstants.GROUPS_LIST_KEY_PREFIX));
     if (scanList == null && scanList.isEmpty) {
       return contactList;
     }
@@ -139,7 +143,7 @@ class AtContactsImpl implements AtContactsLibrary {
       var atsign = reduceKey(key.key);
       var contact;
       try {
-        contact = await get(atsign, getAtKey: key);
+        contact = await get(atsign);
       } on Exception catch (e) {
         logger.severe('Invalid atsign contact found @$key : $e');
       }
@@ -269,13 +273,15 @@ class AtContactsImpl implements AtContactsLibrary {
 
     //check for old key if new key data is not present.
     if (result.value == null) {
-      atKey = _formKey(KeyType.groupList, key: atSign, isOld: true);
+      atKey = _formKey(KeyType.groupList, isOld: true);
       result = await atClient.get(atKey);
     }
 
     //migrate key to new keyformat.
     if (result.value != null && _isOldKey(atKey)) {
-      var newAtKey = _formKey(KeyType.groupList, key: atSign);
+      var newAtKey = _formKey(
+        KeyType.groupList,
+      );
       await atClient.put(newAtKey, result.value);
       result = await atClient.get(newAtKey);
       if (result != null) await atClient.delete(atKey);
@@ -303,12 +309,12 @@ class AtContactsImpl implements AtContactsLibrary {
 
     //check for old key if new key data is not present.
     if (result.value == null) {
-      atKey = _formKey(KeyType.groupList, key: atSign, isOld: true);
+      atKey = _formKey(KeyType.groupList, isOld: true);
       result = await atClient.get(atKey);
     }
     //migrate key to new keyformat.
     if (result.value != null && _isOldKey(atKey)) {
-      var newAtKey = _formKey(KeyType.groupList, key: atSign);
+      var newAtKey = _formKey(KeyType.groupList);
       await atClient.put(newAtKey, result.value);
       result = await atClient.get(newAtKey);
       if (result != null) await atClient.delete(atKey);
@@ -341,12 +347,12 @@ class AtContactsImpl implements AtContactsLibrary {
     var atValue = await atClient.get(atKey);
     //check for old key if new key data is not present.
     if (atValue.value == null) {
-      atKey = _formKey(KeyType.contact, key: atSign, isOld: true);
+      atKey = _formKey(KeyType.group, key: groupId, isOld: true);
       atValue = await atClient.get(atKey);
     }
     //migrate key to new keyformat.
     if (atValue.value != null && _isOldKey(atKey)) {
-      var newAtKey = _formKey(KeyType.group, key: atSign);
+      var newAtKey = _formKey(KeyType.group, key: groupId);
       await atClient.put(newAtKey, atValue.value);
       atValue = await atClient.get(newAtKey);
       if (atValue != null) await atClient.delete(atKey);
@@ -490,12 +496,12 @@ class AtContactsImpl implements AtContactsLibrary {
     var result = await atClient.get(atKey);
     //check for old key if new key data is not present.
     if (result.value == null) {
-      var oldatKey = _formKey(KeyType.groupList, key: atSign, isOld: true);
+      var oldatKey = _formKey(KeyType.groupList, isOld: true);
       result = await atClient.get(oldatKey);
     }
     //migrate key to new keyformat.
     if (result.value != null && _isOldKey(atKey)) {
-      var newAtKey = _formKey(KeyType.groupList, key: atSign);
+      var newAtKey = _formKey(KeyType.groupList);
       await atClient.put(newAtKey, result.value);
       result = await atClient.get(newAtKey);
       if (result != null) await atClient.delete(atKey);
