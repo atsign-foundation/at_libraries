@@ -23,4 +23,10 @@ abstract class AtLookUp {
   Future<List<String>> scan({String regex, String sharedBy});
 
   Future<String> executeVerb(VerbBuilder builder, {bool sync = false});
+
+  /// index
+  Future<String> index(String data);
+
+  /// search
+  Future<String> search(String keys);
 }
