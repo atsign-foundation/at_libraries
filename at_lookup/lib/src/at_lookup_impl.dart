@@ -264,7 +264,7 @@ class AtLookupImpl implements AtLookUp {
     return putResult != null;
   }
 
-  Future<void> createConnection() async {
+  Future<OutboundConnection> createConnection() async {
     if (!isConnectionAvailable()) {
       //1. find secondary url for atsign from lookup library
       var secondaryUrl =
@@ -281,6 +281,7 @@ class AtLookupImpl implements AtLookUp {
       messageListener = OutboundMessageListener(_connection);
       messageListener.listen();
     }
+    return _connection;
   }
 
   /// Executes the command returned by [VerbBuilder] build command on a remote secondary server.
