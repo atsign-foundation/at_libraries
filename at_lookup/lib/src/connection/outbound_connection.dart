@@ -1,6 +1,6 @@
 import 'dart:io';
-import 'package:at_lookup/src/connection/at_connection.dart';
-import 'package:at_lookup/src/connection/base_connection.dart';
+
+import 'package:at_commons/at_commons.dart';
 
 abstract class OutboundConnection extends BaseConnection {
   OutboundConnection(Socket socket) : super(socket);

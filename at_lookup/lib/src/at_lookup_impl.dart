@@ -1,10 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_commons/src/at_constants.dart' as at_constants;
-import 'package:at_lookup/src/at_lookup.dart';
+import 'package:at_lookup/at_lookup.dart';
 import 'package:at_lookup/src/connection/outbound_connection.dart';
 import 'package:at_lookup/src/connection/outbound_connection_impl.dart';
 import 'package:at_lookup/src/connection/outbound_message_listener.dart';
@@ -13,6 +12,7 @@ import 'package:at_lookup/src/util/lookup_util.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:crypto/crypto.dart';
 import 'package:crypton/crypton.dart';
+
 
 class AtLookupImpl implements AtLookUp {
   final logger = AtSignLogger('AtLookup');
@@ -264,7 +264,7 @@ class AtLookupImpl implements AtLookUp {
     return putResult != null;
   }
 
-  Future<void> createConnection() async {
+  Future<OutboundConnection> createConnection() async {
     if (!isConnectionAvailable()) {
       //1. find secondary url for atsign from lookup library
       var secondaryUrl =
@@ -281,6 +281,7 @@ class AtLookupImpl implements AtLookUp {
       messageListener = OutboundMessageListener(_connection);
       messageListener.listen();
     }
+    return _connection;
   }
 
   /// Executes the command returned by [VerbBuilder] build command on a remote secondary server.

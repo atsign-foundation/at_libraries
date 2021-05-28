@@ -1,5 +1,6 @@
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
+import 'package:at_lookup/src/connection/outbound_connection.dart';
 import 'package:at_lookup/src/connection/outbound_sync_message_listener.dart';
 import 'package:at_lookup/src/util/lookup_util.dart';
 
@@ -23,7 +24,7 @@ class AtLookupSync extends AtLookupImpl {
   }
 
   @override
-  Future<void> createConnection() async {
+  Future<OutboundConnection> createConnection() async {
     if (!isConnectionAvailable()) {
       //1. find secondary url for atsign from lookup library
       var secondaryUrl = await AtLookupImpl.findSecondary(
@@ -40,6 +41,7 @@ class AtLookupSync extends AtLookupImpl {
       messageListener.syncCallback = syncCallback;
       messageListener.listen();
     }
+    return connection;
   }
 
   @override
