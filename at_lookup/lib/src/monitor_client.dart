@@ -10,6 +10,7 @@ import 'package:at_utils/at_logger.dart';
 import 'package:crypton/crypton.dart';
 
 /// Utility class to execute monitor verb.
+/// [Deprecated] Use monitor from at_client sdk
 class MonitorClient {
   final _monitorVerbResponseQueue = Queue();
   var response;
