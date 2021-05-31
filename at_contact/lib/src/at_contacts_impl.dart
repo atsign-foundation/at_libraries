@@ -131,7 +131,7 @@ class AtContactsImpl implements AtContactsLibrary {
         ? '.${atClient.preference.namespace}'
         : '';
     var regex =
-        '${AppConstants.CONTACT_KEY_PREFIX}.*.(${AppConstants.CONTACT_KEY_SUFFIX}.$atSign|$atSign.${AppConstants.LIBRARY_NAMESPACE}$appNamespace)@$atSign'
+        '${AppConstants.CONTACT_KEY_PREFIX}.*.(${AppConstants.CONTACT_KEY_SUFFIX}.$atSign|$atSign$appNamespace.${AppConstants.LIBRARY_NAMESPACE})@$atSign'
             .toLowerCase();
     var scanList = await atClient.getAtKeys(regex: regex);
     scanList.retainWhere((scanKeys) =>
@@ -433,32 +433,38 @@ class AtContactsImpl implements AtContactsLibrary {
       }
       key = key.replaceFirst('@', '');
     }
+    var appNamespace = atClient.preference.namespace != null
+        ? '.${atClient.preference.namespace}'
+        : '';
     var modifiedKey;
     switch (keyType) {
       case KeyType.contact:
         modifiedKey = isOld
             ? '${AppConstants.CONTACT_KEY_PREFIX}.$key.${AppConstants.CONTACT_KEY_SUFFIX}.${atSign.replaceFirst('@', '')}'
-            : '${AppConstants.CONTACT_KEY_PREFIX}.$key.${atSign.replaceFirst('@', '')}.${AppConstants.LIBRARY_NAMESPACE}';
+            : '${AppConstants.CONTACT_KEY_PREFIX}.$key.${atSign.replaceFirst('@', '')}$appNamespace.${AppConstants.LIBRARY_NAMESPACE}';
         break;
       case KeyType.groupList:
         modifiedKey = isOld
             ? '${AppConstants.CONTACT_KEY_PREFIX}.${AppConstants.GROUPS_LIST_KEY_PREFIX}.${atSign.replaceFirst('@', '')}'
-            : '${AppConstants.CONTACT_KEY_PREFIX}.${AppConstants.GROUPS_LIST_KEY_PREFIX}.${atSign.replaceFirst('@', '')}.${AppConstants.LIBRARY_NAMESPACE}';
+            : '${AppConstants.CONTACT_KEY_PREFIX}.${AppConstants.GROUPS_LIST_KEY_PREFIX}.${atSign.replaceFirst('@', '')}$appNamespace.${AppConstants.LIBRARY_NAMESPACE}';
         break;
       case KeyType.group:
-        modifiedKey = isOld ? key : '$key.${AppConstants.LIBRARY_NAMESPACE}';
+        modifiedKey =
+            isOld ? key : '$key$appNamespace${AppConstants.LIBRARY_NAMESPACE}';
         break;
       default:
         break;
     }
-    var atKey = _formAtKey(modifiedKey, isOld: isOld);
+    var atKey = _formAtKey(
+      modifiedKey,
+    );
     return atKey;
   }
 
-  AtKey _formAtKey(String key, {bool isOld = false}) {
+  AtKey _formAtKey(String key) {
     var metadata = Metadata()
       ..isPublic = false
-      ..namespaceAware = !isOld;
+      ..namespaceAware = false;
     var atKey = AtKey()
       ..key = key
       ..metadata = metadata;
@@ -475,6 +481,7 @@ class AtContactsImpl implements AtContactsLibrary {
       return element != AppConstants.CONTACT_KEY_PREFIX.toLowerCase() &&
           element != AppConstants.CONTACT_KEY_SUFFIX.toLowerCase() &&
           element != AppConstants.LIBRARY_NAMESPACE.toLowerCase() &&
+          element != atClient.preference.namespace &&
           !atSign.contains(element);
     }).join('');
     return modifiedKey;

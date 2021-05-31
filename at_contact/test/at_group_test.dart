@@ -140,9 +140,8 @@ Future<void> main() async {
       expect(result, true);
 
       //adding oldnamespace key to groupList.
-      metadata.namespaceAware = true;
       var groupListKey = AtKey()
-        ..key = 'atconnections.groupslist.alice🛠.at_contact'
+        ..key = 'atconnections.groupslist.alice🛠.buzz.at_contact'
         ..metadata = metadata;
       var groupInfo = AtGroupBasicInfo(atGroup1.groupId, 'aliceNT');
 

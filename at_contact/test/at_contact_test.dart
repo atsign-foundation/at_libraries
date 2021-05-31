@@ -11,6 +11,7 @@ import 'test_util.dart';
 Future<void> main() async {
   AtContactsImpl atContact;
   AtContact contact;
+  var newNamespace = 'buzz.at_contact';
   var atSign = '@bob🛠';
   var currentAtSign = '@alice🛠';
   try {
@@ -148,6 +149,8 @@ Future<void> main() async {
 
     //test update contact
     test('update oldnamespace contact', () async {
+      var deleteResult = await atContact.delete('@kevin🛠');
+      expect(deleteResult, true);
       var kevinContact = AtContact(
         atSign: '@kevin🛠',
         personas: ['persona1', 'persona22', 'persona33'],
@@ -160,8 +163,8 @@ Future<void> main() async {
         ..metadata = atMetadata;
       var result = await atContact.atClient
           .put(oldAtKey, jsonEncode(kevinContact.toJson()));
-      var atContactResult = await atContact.atClient
-          .getAtKeys(regex: 'kevin🛠.*.at_contact.buzz');
+      var atContactResult =
+          await atContact.atClient.getAtKeys(regex: 'kevin🛠.*.$newNamespace');
       expect(atContactResult.length, 0);
 
       // update the contact type
@@ -169,10 +172,10 @@ Future<void> main() async {
       result = await atContact.update(kevinContact);
       expect(result, true);
 
-      atContactResult = await atContact.atClient
-          .getAtKeys(regex: 'kevin🛠.*.at_contact.buzz');
+      atContactResult =
+          await atContact.atClient.getAtKeys(regex: 'kevin🛠.*.$newNamespace');
       expect(atContactResult.length, greaterThan(0));
-      var deleteResult = await atContact.delete('@kevin🛠');
+      deleteResult = await atContact.delete('@kevin🛠');
       expect(deleteResult, true);
     });
 
@@ -190,14 +193,14 @@ Future<void> main() async {
       var result = await atContact.atClient
           .put(oldAtKey, jsonEncode(barbaraContact.toJson()));
       var atContactResult = await atContact.atClient
-          .getAtKeys(regex: 'barbara🛠.*.at_contact.buzz');
+          .getAtKeys(regex: 'barbara🛠.*.$newNamespace');
       expect(atContactResult.length, 0);
       var atContactresult = await atContact.get('@barbara🛠');
       print('get result : $result');
       expect(atContactresult is AtContact, true);
       expect(atContactresult.atSign, '@barbara🛠');
       atContactResult = await atContact.atClient
-          .getAtKeys(regex: 'barbara🛠.*.at_contact.buzz');
+          .getAtKeys(regex: 'barbara🛠.*.$newNamespace');
       expect(atContactResult.length, greaterThan(0));
 
       var deleteResult = await atContact.delete('@barbara🛠');
@@ -218,7 +221,7 @@ Future<void> main() async {
       var result = await atContact.atClient
           .put(oldAtKey, jsonEncode(kevinContact.toJson()));
       var atContactResult = await atContact.atClient
-          .getAtKeys(regex: 'sameeraja🛠.*.at_contact.buzz');
+          .getAtKeys(regex: 'sameeraja🛠.*.$newNamespace');
       expect(atContactResult.length, 0);
       var atContactresult = await atContact.get('@sameeraja🛠');
       expect(atContactresult is AtContact, true);
@@ -284,7 +287,7 @@ Future<void> main() async {
           .put(oldAtKey, jsonEncode(barbaraContact.toJson()));
       expect(result, true);
       var atContactResult = await atContact.atClient
-          .getAtKeys(regex: 'sameeraja🛠.*.at_contact.buzz');
+          .getAtKeys(regex: 'sameeraja🛠.*.$newNamespace');
       expect(atContactResult.length, 0);
 
       var resultList = await atContact.listActiveContacts();
@@ -462,6 +465,21 @@ Future<void> main() async {
       var getResult = await atContact.listContacts();
       print('getAll getResult : $getResult');
       expect(getResult.length, greaterThan(0));
+    });
+
+    test(' delete contact by atSign', () async {
+      var result = await atContact.delete(atSign);
+      print('delete result : $result');
+      expect(result, true);
+      result = await atContact.delete('kevin🛠');
+      print('delete result : $result');
+      expect(result, true);
+      result = await atContact.delete('barbara🛠');
+      print('delete result : $result');
+      expect(result, true);
+      result = await atContact.delete('sameeraja🛠');
+      print('delete result : $result');
+      expect(result, true);
     });
   });
 }
