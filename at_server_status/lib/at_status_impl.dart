@@ -42,21 +42,12 @@ class AtStatusImpl implements AtServerStatus {
       atStatus.rootStatus = status.rootStatus;
       atStatus.serverLocation = status.serverLocation;
       // If the @sign serverLocation is found in root, check the status of the @server
-<<<<<<< HEAD
-      if(atStatus.rootStatus == RootStatus.found
-          && atStatus.serverLocation != null
-          && atStatus.serverLocation!.isNotEmpty
-      ) {
-        await _getServerStatus(atStatus.atSign, atStatus.serverLocation ).then((AtStatus status) async {
-            atStatus.serverStatus = status.serverStatus;
-=======
       if (atStatus.rootStatus == RootStatus.found &&
           atStatus.serverLocation != null &&
-          atStatus.serverLocation.isNotEmpty) {
+          atStatus.serverLocation!.isNotEmpty) {
         await _getServerStatus(atStatus.atSign, atStatus.serverLocation)
             .then((AtStatus status) async {
           atStatus.serverStatus = status.serverStatus;
->>>>>>> d0ca9c290a1e385b3ab629c9e53ca59bbe7e2279
         }).catchError((error) {
           atStatus.serverStatus = ServerStatus.unavailable;
         });
@@ -94,12 +85,8 @@ class AtStatusImpl implements AtServerStatus {
     return atStatus;
   }
 
-<<<<<<< HEAD
-  Future<AtStatus> _getServerStatus(String? atSign, String? serverLocation) async {
-=======
   Future<AtStatus> _getServerStatus(
-      String atSign, String serverLocation) async {
->>>>>>> d0ca9c290a1e385b3ab629c9e53ca59bbe7e2279
+      String? atSign, String? serverLocation) async {
     // ignore: omit_local_variable_types
     AtStatus atStatus = AtStatus();
     var testKey = 'publickey$atSign';
@@ -109,24 +96,15 @@ class AtStatusImpl implements AtServerStatus {
       atStatus.rootStatus = RootStatus.notFound;
     } else {
       // ignore: omit_local_variable_types
-<<<<<<< HEAD
-      AtLookupImpl atLookupImpl = AtLookupImpl(atSign!, _root_url!, _root_port!);
-      await atLookupImpl.scan( auth: false).then((keysList) async {
-        if(keysList.isNotEmpty) {
-          if(keysList.contains(testKey)) {
-            var value = await atLookupImpl.lookup('publickey', atSign, auth: false);
-            value = value.replaceFirst('data:', '');
-            if(value != null && value != 'null') {
-=======
-      AtLookupImpl atLookupImpl = AtLookupImpl(atSign, _root_url, _root_port);
+      AtLookupImpl atLookupImpl =
+          AtLookupImpl(atSign!, _root_url!, _root_port!);
       await atLookupImpl.scan(auth: false).then((keysList) async {
         if (keysList.isNotEmpty) {
           if (keysList.contains(testKey)) {
             var value =
                 await atLookupImpl.lookup('publickey', atSign, auth: false);
-            value = value?.replaceFirst('data:', '');
+            value = value.replaceFirst('data:', '');
             if (value != null && value != 'null') {
->>>>>>> d0ca9c290a1e385b3ab629c9e53ca59bbe7e2279
               // @server has root location, is running and is activated
               atStatus.serverStatus = ServerStatus.activated;
             } else {

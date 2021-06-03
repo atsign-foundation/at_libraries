@@ -210,7 +210,7 @@ class AtLookupImpl implements AtLookUp {
       logger.finer('value: $value dataSignature:$dataSignature');
       var isDataValid = publicKey.verifySHA256Signature(
           utf8.encode(value) as Uint8List, base64Decode(dataSignature));
-      logger.finer('atlookup data verify result: ${isDataValid}');
+      logger.finer('atlookup data verify result: $isDataValid');
       return 'data:$value';
     } on Exception catch (e) {
       logger.severe(
@@ -512,8 +512,6 @@ class AtLookupImpl implements AtLookUp {
     bool _isConnectionAvailable() {
     return _connection != null && !_connection!.isInValid();
     }
-
-
 
     bool isInValid() {
     return _connection!.isInValid();

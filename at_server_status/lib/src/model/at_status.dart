@@ -56,12 +56,8 @@ import 'dart:io';
 ///
 
 class AtStatus {
-<<<<<<< HEAD
 
   String? atSign;
-=======
-  String atSign;
->>>>>>> d0ca9c290a1e385b3ab629c9e53ca59bbe7e2279
 
   String? serverLocation;
 
@@ -73,10 +69,10 @@ class AtStatus {
 
   AtStatus(
       {this.atSign,
-      this.serverLocation,
-      this.rootStatus,
-      this.serverStatus,
-      this.atSignStatus}) {
+        this.serverLocation,
+        this.rootStatus,
+        this.serverStatus,
+        this.atSignStatus}) {
     rootStatus ??= RootStatus.unavailable;
     serverStatus ??= ServerStatus.unavailable;
     atSignStatus ??= AtSignStatus.unavailable;
