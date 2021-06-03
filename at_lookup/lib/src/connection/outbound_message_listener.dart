@@ -11,6 +11,7 @@ class OutboundMessageListener {
   Queue _queue;
   final _connection;
   Function syncCallback;
+  String name;
 
   OutboundMessageListener(this._connection);
 
@@ -34,6 +35,7 @@ class OutboundMessageListener {
       }
       //ignore prompt(@ or @<atSign>@) after '\n'
       if (data.last == 64 && data.contains(10)) {
+        logger.finer('data in outbound message: $data');
         data = data.sublist(0, data.lastIndexOf(10) + 1);
       }
       _buffer.append(data);

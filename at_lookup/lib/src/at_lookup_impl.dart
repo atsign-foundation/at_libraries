@@ -279,6 +279,7 @@ class AtLookupImpl implements AtLookUp {
       await createOutBoundConnection(host, port, _currentAtSign);
       //3. listen to server response
       messageListener = OutboundMessageListener(_connection);
+      messageListener.name = 'AtLookUpImpl';
       messageListener.listen();
     }
     return _connection;
@@ -390,6 +391,9 @@ class AtLookupImpl implements AtLookUp {
   Future<bool> authenticate(String privateKey) async {
     if (privateKey == null) {
       throw UnAuthenticatedException('Private key not passed');
+    }
+    if (messageListener != null) {
+      logger.info('Message listener Name: ${messageListener.name}');
     }
     await _sendCommand('from:$_currentAtSign\n');
     var fromResponse = await messageListener.read();

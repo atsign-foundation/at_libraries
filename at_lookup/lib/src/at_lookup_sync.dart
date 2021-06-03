@@ -38,6 +38,7 @@ class AtLookupSync extends AtLookupImpl {
           secondaryInfo[0], secondaryInfo[1], _currentAtSign);
       //3. listen to server response
       messageListener = SyncMessageListener(connection);
+      messageListener.name = 'AtLookupSync';
       messageListener.syncCallback = syncCallback;
       messageListener.listen();
     }
