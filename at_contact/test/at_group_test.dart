@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:at_client/at_client.dart';
 import 'package:at_contact/src/at_contacts_impl.dart';
 import 'package:at_contact/src/model/at_contact.dart';
 import 'package:at_contact/src/model/at_group.dart';
@@ -14,16 +13,9 @@ Future<void> main() async {
   AtContactsImpl atContactsImpl;
   AtGroup atGroup;
   var currentAtSign = '@alice🛠';
-  var preference = TestUtil.getPreferenceLocal(currentAtSign, 'buzz');
   try {
-    await AtClientImpl.createClient(currentAtSign, 'buzz', preference);
-    var atClient = await AtClientImpl.getClient(currentAtSign);
-    atClient.getSyncManager().init(currentAtSign, preference,
-        atClient.getRemoteSecondary(), atClient.getLocalSecondary());
-    await atClient.getSyncManager().sync();
-    await TestUtil.setEncryptionKeys(atClient, currentAtSign);
-
-    atContactsImpl = await AtContactsImpl.getInstance(currentAtSign);
+    atContactsImpl =
+        await TestUtil.initializeAndGetContact('buzz', currentAtSign);
     // set contact details
     atGroup = AtGroup(currentAtSign, description: 'test', displayName: 'test1');
   } on Exception catch (e, trace) {
@@ -180,6 +172,85 @@ Future<void> main() async {
       var result = await atContactsImpl.deleteMembers(atContacts, atGroup);
       print('create result : $result');
       expect(result, true);
+    });
+  });
+
+  group('test groups for different apps', () {
+    test('create group in buzz namespace and fetch in mosphere namespace',
+        () async {
+      // set contact details
+      var atContact =
+          await TestUtil.initializeAndGetContact('buzz', currentAtSign);
+      var group =
+          AtGroup(currentAtSign, description: 'test', displayName: 'test1');
+
+      //creates group.
+      var result = await atContact.createGroup(group);
+      print('create result : $result');
+      expect(result is AtGroup, true);
+
+      var contact1 =
+          AtContact(type: ContactType.Individual, atSign: '@colin🛠');
+      var contact2 = AtContact(type: ContactType.Individual, atSign: '@bob🛠');
+      var atContacts = <AtContact>{};
+      atContacts.add(contact1);
+      atContacts.add(contact2);
+      var boolResult = await atContact.addMembers(atContacts, group);
+      print('create result : $boolResult');
+      expect(boolResult, true);
+
+      var resultList = await atContact.listGroupNames();
+      print('create result : $result');
+      expect((resultList.length), greaterThan(0));
+
+      var mosphereContact =
+          await TestUtil.initializeAndGetContact('mosphere', currentAtSign);
+      resultList = await mosphereContact.listGroupNames();
+      print(resultList);
+      expect(resultList.length, greaterThan(0));
+    });
+
+    test(
+        'delete group members in buzz namespace and fetch in mosphere namespace',
+        () async {
+      var atContact =
+          await TestUtil.initializeAndGetContact('buzz', currentAtSign);
+      var group =
+          AtGroup(currentAtSign, description: 'test', displayName: 'test1');
+
+      //creates group.
+      var result = await atContact.createGroup(group);
+      print('create result : $result');
+      expect(result is AtGroup, true);
+
+      var contact1 =
+          AtContact(type: ContactType.Individual, atSign: '@colin🛠');
+      var contact2 = AtContact(type: ContactType.Individual, atSign: '@bob🛠');
+      var atContacts = <AtContact>{};
+      atContacts.add(contact1);
+      atContacts.add(contact2);
+      var boolResult = await atContact.addMembers(atContacts, group);
+      print('create result : $boolResult');
+      expect(boolResult, true);
+
+      contact1 = AtContact(type: ContactType.Individual, atSign: '@colin🛠');
+      atContacts = <AtContact>{};
+      atContacts.add(contact1);
+      boolResult = await atContact.deleteMembers(atContacts, group);
+      print('delete result : $boolResult');
+      expect(boolResult, true);
+
+      var resultList = await atContact.listGroupNames();
+      print('create result : $result');
+      expect((resultList.length), greaterThan(0));
+      expect(resultList.contains('@bob🛠'), isFalse);
+
+      var mosphereContact =
+          await TestUtil.initializeAndGetContact('mosphere', currentAtSign);
+      resultList = await mosphereContact.listGroupNames();
+      print(resultList);
+      expect(resultList.length, greaterThan(0));
+      expect(resultList.contains('@bob🛠'), isFalse);
     });
   });
 }

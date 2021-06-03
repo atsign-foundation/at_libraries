@@ -12,14 +12,19 @@ import 'package:uuid/uuid.dart';
 
 import 'config/AppConstants.dart';
 
+enum RegexType { all, appSpecific }
+
 class AtContactsImpl implements AtContactsLibrary {
   AtClientImpl _atClient;
   String atSign;
   var logger;
+  RegexType _regexType;
+  String _regex;
 
-  AtContactsImpl(AtClient atClient, String atSign) {
+  AtContactsImpl(AtClient atClient, String atSign, {RegexType regexType}) {
     this.atSign = atSign;
     _atClient = atClient;
+    _regexType = regexType ?? RegexType.appSpecific;
     logger = AtSignLogger(runtimeType.toString());
   }
 
@@ -29,14 +34,15 @@ class AtContactsImpl implements AtContactsLibrary {
     _atClient = value;
   }
 
-  static Future<AtContactsImpl> getInstance(String atSign) async {
+  static Future<AtContactsImpl> getInstance(String atSign,
+      {RegexType regexType}) async {
     try {
       atSign = AtUtils.fixAtSign(AtUtils.formatAtSign(atSign));
     } on Exception {
       rethrow;
     }
     var atClient = await AtClientImpl.getClient(atSign);
-    return AtContactsImpl(atClient, atSign);
+    return AtContactsImpl(atClient, atSign, regexType: regexType);
   }
 
   /// returns  true on success otherwise false.
@@ -66,7 +72,11 @@ class AtContactsImpl implements AtContactsLibrary {
   @override
   Future<AtContact> get(String atSign, {AtKey getAtKey}) async {
     var contact;
-    var atKey = getAtKey ?? _formKey(KeyType.contact, key: atSign);
+    var atKey = getAtKey ?? _formKey(KeyType.contact, key: atSign, isGet: true);
+    if (_regexType == RegexType.all) {
+      var scanList = await atClient.getAtKeys(regex: atKey.key);
+      atKey = scanList.isNotEmpty ? _formAtKeyFromScanKeys(scanList[0]) : atKey;
+    }
     var atValue = await atClient.get(atKey);
     //check for old key if new key data is not present.
     if (atValue.value == null) {
@@ -130,8 +140,11 @@ class AtContactsImpl implements AtContactsLibrary {
     var appNamespace = atClient.preference.namespace != null
         ? '.${atClient.preference.namespace}'
         : '';
+    var subRegex = _regexType == RegexType.appSpecific
+        ? '$atSign$appNamespace.${AppConstants.LIBRARY_NAMESPACE}'
+        : '$atSign.*.${AppConstants.LIBRARY_NAMESPACE}';
     var regex =
-        '${AppConstants.CONTACT_KEY_PREFIX}.*.(${AppConstants.CONTACT_KEY_SUFFIX}.$atSign|$atSign$appNamespace.${AppConstants.LIBRARY_NAMESPACE})@$atSign'
+        '${AppConstants.CONTACT_KEY_PREFIX}.*.(${AppConstants.CONTACT_KEY_SUFFIX}.$atSign|$subRegex)@$atSign'
             .toLowerCase();
     var scanList = await atClient.getAtKeys(regex: regex);
     scanList.retainWhere((scanKeys) =>
@@ -141,9 +154,10 @@ class AtContactsImpl implements AtContactsLibrary {
     }
     for (var key in scanList) {
       var atsign = reduceKey(key.key);
+      var atKey = _formAtKeyFromScanKeys(key);
       var contact;
       try {
-        contact = await get(atsign);
+        contact = await get(atsign, getAtKey: atKey);
       } on Exception catch (e) {
         logger.severe('Invalid atsign contact found @$key : $e');
       }
@@ -268,7 +282,11 @@ class AtContactsImpl implements AtContactsLibrary {
   /// on success return List of Group names otherwise []
   @override
   Future<List<String>> listGroupNames() async {
-    var atKey = _formKey(KeyType.groupList);
+    var atKey = _formKey(KeyType.groupList, isGet: true);
+    if (_regexType == RegexType.all) {
+      var scanList = await atClient.getAtKeys(regex: atKey.key);
+      atKey = scanList.isNotEmpty ? _formAtKeyFromScanKeys(scanList[0]) : atKey;
+    }
     var result = await atClient.get(atKey);
 
     //check for old key if new key data is not present.
@@ -304,7 +322,11 @@ class AtContactsImpl implements AtContactsLibrary {
   /// on success return List of Group Ids otherwise []
   @override
   Future<List<String>> listGroupIds() async {
-    var atKey = _formKey(KeyType.groupList);
+    var atKey = _formKey(KeyType.groupList, isGet: true);
+    if (_regexType == RegexType.all) {
+      var scanList = await atClient.getAtKeys(regex: atKey.key);
+      atKey = scanList.isNotEmpty ? _formAtKeyFromScanKeys(scanList[0]) : atKey;
+    }
     var result = await atClient.get(atKey);
 
     //check for old key if new key data is not present.
@@ -343,7 +365,11 @@ class AtContactsImpl implements AtContactsLibrary {
       return null;
     }
 
-    var atKey = _formKey(KeyType.group, key: groupId);
+    var atKey = _formKey(KeyType.group, key: groupId, isGet: true);
+    if (_regexType == RegexType.all) {
+      var scanList = await atClient.getAtKeys(regex: atKey.key);
+      atKey = scanList.isNotEmpty ? _formAtKeyFromScanKeys(scanList[0]) : atKey;
+    }
     var atValue = await atClient.get(atKey);
     //check for old key if new key data is not present.
     if (atValue.value == null) {
@@ -424,7 +450,8 @@ class AtContactsImpl implements AtContactsLibrary {
 
   /// Throw Exceptions on Invalid AtSigns.
   /// Returns 'AtKey' for [key].
-  AtKey _formKey(KeyType keyType, {String key, bool isOld = false}) {
+  AtKey _formKey(KeyType keyType,
+      {bool isGet = false, String key, bool isOld = false}) {
     if (key != null) {
       try {
         key = AtUtils.fixAtSign(AtUtils.formatAtSign(key));
@@ -433,9 +460,11 @@ class AtContactsImpl implements AtContactsLibrary {
       }
       key = key.replaceFirst('@', '');
     }
-    var appNamespace = atClient.preference.namespace != null
-        ? '.${atClient.preference.namespace}'
-        : '';
+    var appNamespace = isGet && _regexType == RegexType.all
+        ? '.*'
+        : atClient.preference.namespace != null
+            ? '.${atClient.preference.namespace}'
+            : '';
     var modifiedKey;
     switch (keyType) {
       case KeyType.contact:
@@ -450,7 +479,7 @@ class AtContactsImpl implements AtContactsLibrary {
         break;
       case KeyType.group:
         modifiedKey =
-            isOld ? key : '$key$appNamespace${AppConstants.LIBRARY_NAMESPACE}';
+            isOld ? key : '$key$appNamespace.${AppConstants.LIBRARY_NAMESPACE}';
         break;
       default:
         break;
@@ -499,7 +528,11 @@ class AtContactsImpl implements AtContactsLibrary {
 
   ///Adds a group to group list
   Future<bool> _addToGroupList(AtGroupBasicInfo atGroupBasicInfo) async {
-    var atKey = _formKey(KeyType.groupList);
+    var atKey = _formKey(KeyType.groupList, isGet: true);
+    if (_regexType == RegexType.all) {
+      var scanList = await atClient.getAtKeys(regex: atKey.key);
+      atKey = scanList.isNotEmpty ? _formAtKeyFromScanKeys(scanList[0]) : atKey;
+    }
     var result = await atClient.get(atKey);
     //check for old key if new key data is not present.
     if (result.value == null) {
@@ -525,7 +558,11 @@ class AtContactsImpl implements AtContactsLibrary {
   Future<bool> _deleteFromGroupList(AtGroupBasicInfo atGroupBasicInfo) async {
     if (atGroupBasicInfo == null || atGroupBasicInfo.atGroupId == null) ;
     var groupId = atGroupBasicInfo.atGroupId;
-    var atKey = _formKey(KeyType.groupList);
+    var atKey = _formKey(KeyType.groupList, isGet: true);
+    if (_regexType == RegexType.all) {
+      var scanList = await atClient.getAtKeys(regex: atKey.key);
+      atKey = scanList.isNotEmpty ? _formAtKeyFromScanKeys(scanList[0]) : atKey;
+    }
     var result = await atClient.get(atKey);
     // get name from AtGroupBasicInfo for all the groups.
     var list = [];
@@ -542,6 +579,14 @@ class AtContactsImpl implements AtContactsLibrary {
     var groupsListKey =
         '${AppConstants.CONTACT_KEY_PREFIX}.${AppConstants.GROUPS_LIST_KEY_PREFIX}.${atSign.replaceFirst('@', '')}';
     return groupsListKey;
+  }
+
+  ///appends namespace for new format keys from scan key
+  AtKey _formAtKeyFromScanKeys(AtKey key) {
+    var atKey = key;
+    atKey.key = key.key + '.' + key.namespace;
+    atKey.metadata.namespaceAware = false;
+    return atKey;
   }
 
   @override

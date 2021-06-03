@@ -2,6 +2,7 @@
 
 import 'package:at_client/at_client.dart';
 import 'package:at_client/src/preference/at_client_preference.dart';
+import 'package:at_contact/at_contact.dart';
 import 'at_demo_credentials.dart' as demo_data;
 import 'package:at_commons/at_commons.dart';
 
@@ -68,4 +69,21 @@ class TestUtil {
 //    var secretAsUint8List = Uint8List.fromList(hiveSecretString.codeUnits);
 //    return secretAsUint8List;
 //  }
+
+  static Future<AtContactsImpl> initializeAndGetContact(
+      String namespace, String currentAtSign,
+      {RegexType regexType}) async {
+    var currentAtSignPreference =
+        TestUtil.getPreferenceLocal(currentAtSign, namespace);
+    await AtClientImpl.createClient(
+        currentAtSign, namespace, currentAtSignPreference);
+    var atClient = await AtClientImpl.getClient(currentAtSign);
+    atClient.getSyncManager().init(currentAtSign, currentAtSignPreference,
+        atClient.getRemoteSecondary(), atClient.getLocalSecondary());
+    await atClient.getSyncManager().sync();
+    await TestUtil.setEncryptionKeys(atClient, currentAtSign);
+    var atContact =
+        await AtContactsImpl.getInstance(currentAtSign, regexType: regexType);
+    return atContact;
+  }
 }

@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:at_client/at_client.dart';
 import 'package:at_contact/at_contact.dart';
 import 'package:at_contact/src/model/at_contact.dart';
 import 'package:test/test.dart';
@@ -14,17 +13,9 @@ Future<void> main() async {
   var newNamespace = 'buzz.at_contact';
   var atSign = '@bob🛠';
   var currentAtSign = '@alice🛠';
+
   try {
-    var currentAtSignPreference =
-        TestUtil.getPreferenceLocal(currentAtSign, 'buzz');
-    await AtClientImpl.createClient(
-        currentAtSign, 'buzz', currentAtSignPreference);
-    var atClient = await AtClientImpl.getClient(currentAtSign);
-    atClient.getSyncManager().init(currentAtSign, currentAtSignPreference,
-        atClient.getRemoteSecondary(), atClient.getLocalSecondary());
-    await atClient.getSyncManager().sync();
-    await TestUtil.setEncryptionKeys(atClient, currentAtSign);
-    atContact = await AtContactsImpl.getInstance(currentAtSign);
+    atContact = await TestUtil.initializeAndGetContact('buzz', currentAtSign);
     // set contact details
     contact = AtContact(
       atSign: atSign,
@@ -34,6 +25,7 @@ Future<void> main() async {
     print(e.toString());
     print(trace);
   }
+
   group('A group of at_contact  tests', () {
     //test create contact
     test(' test create a contact ', () async {
@@ -480,6 +472,63 @@ Future<void> main() async {
       result = await atContact.delete('sameeraja🛠');
       print('delete result : $result');
       expect(result, true);
+    });
+  });
+
+  group('test contacts for different apps', () {
+    test('create contact in buzz namespace and fetch in mosphere namespace',
+        () async {
+      // set contact details
+      var atContact =
+          await TestUtil.initializeAndGetContact('buzz', currentAtSign);
+      contact = AtContact(
+        atSign: atSign,
+        personas: ['persona1', 'persona22', 'persona33'],
+      );
+
+      //creates contact.
+      var result = await atContact.add(contact);
+      print('create result : $result');
+      expect(result, true);
+
+      var contactResult = await atContact.get(atSign);
+      print(contactResult);
+      expect(contactResult.atSign, atSign);
+
+      var mosphereContact =
+          await TestUtil.initializeAndGetContact('mosphere', currentAtSign);
+      contactResult = await mosphereContact.get(atSign);
+      print(contactResult);
+      expect(contactResult.atSign, atSign);
+    });
+
+    test('delete contact in buzz namespace and fetch in mosphere namespace',
+        () async {
+      // set contact details
+      var atContact =
+          await TestUtil.initializeAndGetContact('buzz', currentAtSign);
+      contact = AtContact(
+        atSign: atSign,
+        personas: ['persona1', 'persona22', 'persona33'],
+      );
+
+      //creates contact.
+      var result = await atContact.add(contact);
+      print('create result : $result');
+      expect(result, true);
+
+      var contactResult = await atContact.get(atSign);
+      print(contactResult);
+      expect(contactResult.atSign, atSign);
+
+      result = await atContact.delete(atSign);
+      expect(result, true);
+
+      var mosphereContact =
+          await TestUtil.initializeAndGetContact('mosphere', currentAtSign);
+      contactResult = await mosphereContact.get(atSign);
+      print(contactResult);
+      expect(contactResult, null);
     });
   });
 }
