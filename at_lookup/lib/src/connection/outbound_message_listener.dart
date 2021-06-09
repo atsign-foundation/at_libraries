@@ -1,6 +1,5 @@
 import 'dart:collection';
 import 'dart:convert';
-
 import 'package:at_commons/at_commons.dart';
 import 'package:at_utils/at_logger.dart';
 
@@ -8,9 +7,8 @@ import 'package:at_utils/at_logger.dart';
 class OutboundMessageListener {
   final logger = AtSignLogger('OutboundMessageListener');
   final _buffer = ByteBuffer(capacity: 10240000);
-  Queue _queue;
+  late Queue _queue;
   final _connection;
-  Function syncCallback;
 
   OutboundMessageListener(this._connection);
 
@@ -52,11 +50,11 @@ class OutboundMessageListener {
 
   /// Reads the response sent by remote socket from the queue.
   /// If there is no message in queue after [maxWaitMilliSeconds], return null
-  Future<String> read({int maxWaitMilliSeconds = 120000}) async {
+  Future<String?> read({int maxWaitMilliSeconds = 120000}) async {
     return _read(maxWaitMillis: maxWaitMilliSeconds);
   }
 
-  Future<String> _read({int maxWaitMillis = 120000, int retryCount = 1}) async {
+  Future<String?> _read({int maxWaitMillis = 120000, int retryCount = 1}) async {
     var result;
     var maxIterations = maxWaitMillis / 10;
     if (retryCount == maxIterations) {

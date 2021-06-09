@@ -18,7 +18,7 @@ class TestUtil {
     preference.isLocalStoreRequired = true;
     preference.syncStrategy = SyncStrategy.IMMEDIATE;
     preference.cramSecret = '<cram_secret>';
-    preference.rootDomain = 'test.do-sf2.atsign.zone';
+    preference.rootDomain = 'vip.ve.atsign.zone';
     return preference;
   }
 

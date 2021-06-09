@@ -6,7 +6,9 @@ name: at_libraries
 on:
   push:
     tags:
-      - v**
+      - 'v*.*.*'
+    branches:
+      - trunk
   pull_request:
     branches:
       - trunk
@@ -41,11 +43,6 @@ jobs:
       - name: Analyze project source in at_lookup
         working-directory: at_lookup
         run: dart analyze
-
-      # Run unit tests in at_lookup library
-      - name: Run unit test
-        working-directory: at_lookup
-        run: dart test --concurrency=1
 
       # Install dependencies in at_server_status status
       - name: Install dependencies in at_server_status library

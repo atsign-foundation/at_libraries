@@ -56,29 +56,30 @@ import 'dart:io';
 ///
 
 class AtStatus {
-  String atSign;
 
-  String serverLocation;
+  String? atSign;
 
-  RootStatus rootStatus;
+  String? serverLocation;
 
-  ServerStatus serverStatus;
+  RootStatus? rootStatus;
 
-  AtSignStatus atSignStatus;
+  ServerStatus? serverStatus;
+
+  AtSignStatus? atSignStatus;
 
   AtStatus(
       {this.atSign,
-      this.serverLocation,
-      this.rootStatus,
-      this.serverStatus,
-      this.atSignStatus}) {
+        this.serverLocation,
+        this.rootStatus,
+        this.serverStatus,
+        this.atSignStatus}) {
     rootStatus ??= RootStatus.unavailable;
     serverStatus ??= ServerStatus.unavailable;
     atSignStatus ??= AtSignStatus.unavailable;
   }
 
-  AtSignStatus status() {
-    AtSignStatus status;
+  AtSignStatus? status() {
+    AtSignStatus? status;
     // enum RootStatus { found, notFound, running, stopped, unavailable }
     // @server has no root location
     if (rootStatus == RootStatus.notFound) {

@@ -5,6 +5,5 @@ library at_lookup;
 
 export 'src/at_lookup.dart';
 export 'src/at_lookup_impl.dart';
-export 'src/at_lookup_sync.dart';
 export 'src/exception/at_lookup_exception.dart';
 export 'src/monitor_client.dart';
