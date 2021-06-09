@@ -6,7 +6,9 @@ name: at_libraries
 on:
   push:
     tags:
-      - v**
+      - 'v*.*.*'
+    branches:
+      - trunk
   pull_request:
     branches:
       - trunk

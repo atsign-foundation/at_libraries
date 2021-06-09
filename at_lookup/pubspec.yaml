@@ -12,6 +12,10 @@ dependencies:
   path: ^1.8.0
   crypton: ^2.0.1
   crypto: ^3.0.1
+  at_commons: ^1.0.1+8
+  at_utils: ^1.0.1+8
+
+dependency_overrides:
   at_commons:
     git:
       url: https://github.com/atsign-foundation/at_tools.git
