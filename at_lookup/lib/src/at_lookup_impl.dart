@@ -2,11 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_commons/src/at_constants.dart' as at_constants;
-import 'package:at_lookup/src/at_lookup.dart';
+import 'package:at_lookup/at_lookup.dart';
 import 'package:at_lookup/src/connection/outbound_connection.dart';
 import 'package:at_lookup/src/connection/outbound_connection_impl.dart';
 import 'package:at_lookup/src/connection/outbound_message_listener.dart';
@@ -56,6 +55,7 @@ class AtLookupImpl implements AtLookUp {
     this.cramSecret = cramSecret;
   }
 
+  //#TODO move this static method out
   static Future<String?> findSecondary(
       String atsign, String? rootDomain, int rootPort) async {
     String? response;
@@ -137,6 +137,7 @@ class AtLookupImpl implements AtLookUp {
       ..atKey = key
       ..sharedBy = _currentAtSign;
     var deleteResult = await executeVerb(builder);
+    // ignore: unnecessary_null_comparison
     return deleteResult != null; //replace with call back
   }
 
@@ -174,7 +175,7 @@ class AtLookupImpl implements AtLookUp {
       ..sharedBy = sharedBy
       ..auth = auth
       ..operation = metadata == true ? 'all' : null;
-    if (verifyData == null || verifyData == false) {
+    if (verifyData == false) {
       var lookupResult = await executeVerb(builder);
       lookupResult = VerbUtil.getFormattedValue(lookupResult);
       return lookupResult;
@@ -237,10 +238,8 @@ class AtLookupImpl implements AtLookUp {
       ..regex = regex
       ..auth = auth;
     var scanResult = await executeVerb(builder);
-    if (scanResult != null) {
-      scanResult = scanResult.replaceFirst('data:', '');
-    }
-    return (scanResult != null && scanResult.isNotEmpty)
+    scanResult = scanResult.replaceFirst('data:', '');
+    return (scanResult.isNotEmpty)
         ? List.from(jsonDecode(scanResult))
         : [];
   }
@@ -263,11 +262,12 @@ class AtLookupImpl implements AtLookUp {
       }
     }
     var putResult = await executeVerb(builder);
+    // ignore: unnecessary_null_comparison
     return putResult != null;
   }
 
-  Future<void> _createConnection() async {
-    if (!_isConnectionAvailable()) {
+  Future<void> createConnection() async {
+    if (!isConnectionAvailable()) {
       //1. find secondary url for atsign from lookup library
       var secondaryUrl =
           await findSecondary(_currentAtSign, _rootDomain, _rootPort);
@@ -281,6 +281,7 @@ class AtLookupImpl implements AtLookUp {
       await createOutBoundConnection(host, port, _currentAtSign);
       //3. listen to server response
       messageListener = OutboundMessageListener(_connection);
+      messageListener.name = 'AtLookUpImpl';
       messageListener.listen();
     }
   }
@@ -392,6 +393,7 @@ class AtLookupImpl implements AtLookUp {
     if (privateKey == null) {
       throw UnAuthenticatedException('Private key not passed');
     }
+    logger.info('Message listener Name: ${messageListener.name}');
     await _sendCommand('from:$_currentAtSign\n');
     var fromResponse = await (messageListener.read());
     logger.finer('from result:$fromResponse');
@@ -459,8 +461,7 @@ class AtLookupImpl implements AtLookUp {
     return await _process(atCommand, auth: true);
   }
 
-  Future<String?> _delete(DeleteVerbBuilder builder,
-      {String? privateKey}) async {
+  Future<String?> _delete(DeleteVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
     return await _process(
       atCommand,
@@ -469,7 +470,7 @@ class AtLookupImpl implements AtLookUp {
   }
 
   Future<String?> _process(String command, {bool auth = false}) async {
-    if (auth != null && auth && _isAuthRequired()) {
+    if (auth && _isAuthRequired()) {
       if (privateKey != null) {
         await authenticate(privateKey);
       } else if (cramSecret != null) {
@@ -491,7 +492,7 @@ class AtLookupImpl implements AtLookUp {
 
 
     bool _isAuthRequired() {
-    return !_isConnectionAvailable() ||
+    return !isConnectionAvailable() ||
         !(_isPkamAuthenticated || _isCramAuthenticated);
   }
 
@@ -509,7 +510,7 @@ class AtLookupImpl implements AtLookUp {
   }
 
 
-    bool _isConnectionAvailable() {
+    bool isConnectionAvailable() {
     return _connection != null && !_connection!.isInValid();
     }
 
@@ -517,12 +518,12 @@ class AtLookupImpl implements AtLookUp {
     return _connection!.isInValid();
   }
 
-  Future<void> close() async {
-    await _connection!.close();
+  void close() {
+    _connection!.close();
   }
 
   Future<void> _sendCommand(String command) async {
-    await _createConnection();
-    await _connection!.write(command);
+    await createConnection();
+    _connection!.write(command);
   }
 }
