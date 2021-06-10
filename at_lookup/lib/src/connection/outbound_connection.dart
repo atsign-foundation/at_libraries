@@ -6,4 +6,7 @@ abstract class OutboundConnection extends BaseConnection {
 }
 
 /// Metadata information for [OutboundConnection]
-class OutboundConnectionMetadata extends AtConnectionMetaData {}
+class OutboundConnectionMetadata extends AtConnectionMetaData {
+  String? toAtSign;
+  bool isHandShakeSuccess = false;
+}
