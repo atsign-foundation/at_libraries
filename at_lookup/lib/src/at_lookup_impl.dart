@@ -391,7 +391,6 @@ class AtLookupImpl implements AtLookUp {
     if (privateKey == null) {
       throw UnAuthenticatedException('Private key not passed');
     }
-    logger.info('Message listener Name: ${messageListener!.name}');
     await _sendCommand('from:$_currentAtSign\n');
     var fromResponse = await (messageListener!.read());
     logger.finer('from result:$fromResponse');
