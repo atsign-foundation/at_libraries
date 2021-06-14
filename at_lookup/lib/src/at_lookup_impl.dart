@@ -19,7 +19,7 @@ class AtLookupImpl implements AtLookUp {
   final logger = AtSignLogger('AtLookup');
 
   /// Listener for reading verb responses from the remote server
-  late OutboundMessageListener messageListener;
+  OutboundMessageListener? messageListener;
 
   bool _isPkamAuthenticated = false;
 
@@ -239,9 +239,7 @@ class AtLookupImpl implements AtLookUp {
       ..auth = auth;
     var scanResult = await executeVerb(builder);
     scanResult = scanResult.replaceFirst('data:', '');
-    return (scanResult.isNotEmpty)
-        ? List.from(jsonDecode(scanResult))
-        : [];
+    return (scanResult.isNotEmpty) ? List.from(jsonDecode(scanResult)) : [];
   }
 
   @override
@@ -281,8 +279,8 @@ class AtLookupImpl implements AtLookUp {
       await createOutBoundConnection(host, port, _currentAtSign);
       //3. listen to server response
       messageListener = OutboundMessageListener(_connection);
-      messageListener.name = 'AtLookUpImpl';
-      messageListener.listen();
+      messageListener!.name = 'AtLookUpImpl';
+      messageListener!.listen();
     }
   }
 
@@ -393,9 +391,9 @@ class AtLookupImpl implements AtLookUp {
     if (privateKey == null) {
       throw UnAuthenticatedException('Private key not passed');
     }
-    logger.info('Message listener Name: ${messageListener.name}');
+    logger.info('Message listener Name: ${messageListener!.name}');
     await _sendCommand('from:$_currentAtSign\n');
-    var fromResponse = await (messageListener.read());
+    var fromResponse = await (messageListener!.read());
     logger.finer('from result:$fromResponse');
     if (fromResponse == null) {
       return false;
@@ -408,7 +406,7 @@ class AtLookupImpl implements AtLookUp {
     var signature = base64Encode(sha256signature);
     logger.finer('Sending command pkam:$signature');
     await _sendCommand('pkam:$signature\n');
-    var pkamResponse = await messageListener.read();
+    var pkamResponse = await messageListener!.read();
     if (pkamResponse == 'data:success') {
       logger.info('auth success');
       _isPkamAuthenticated = true;
@@ -426,7 +424,7 @@ class AtLookupImpl implements AtLookUp {
       throw UnAuthenticatedException('Cram secret not passed');
     }
     await _sendCommand('from:$_currentAtSign\n');
-    var fromResponse = await messageListener.read();
+    var fromResponse = await messageListener!.read();
     logger.info('from result:$fromResponse');
     if (fromResponse == null) {
       return false;
@@ -436,7 +434,7 @@ class AtLookupImpl implements AtLookUp {
     var bytes = utf8.encode(digestInput);
     var digest = sha512.convert(bytes);
     await _sendCommand('cram:$digest\n');
-    var cramResponse = await messageListener.read();
+    var cramResponse = await messageListener!.read();
     if (cramResponse == 'data:success') {
       logger.info('auth success');
       _isCramAuthenticated = true;
@@ -482,7 +480,7 @@ class AtLookupImpl implements AtLookUp {
     }
     try {
       await _sendCommand(command);
-      var result = await messageListener.read();
+      var result = await messageListener!.read();
       return result;
     } on Exception catch (e) {
       logger.severe('Exception in sending to server, ${e.toString()}');
@@ -490,8 +488,7 @@ class AtLookupImpl implements AtLookUp {
     }
   }
 
-
-    bool _isAuthRequired() {
+  bool _isAuthRequired() {
     return !isConnectionAvailable() ||
         !(_isPkamAuthenticated || _isCramAuthenticated);
   }
@@ -509,12 +506,11 @@ class AtLookupImpl implements AtLookUp {
     return true;
   }
 
-
-    bool isConnectionAvailable() {
+  bool isConnectionAvailable() {
     return _connection != null && !_connection!.isInValid();
-    }
+  }
 
-    bool isInValid() {
+  bool isInValid() {
     return _connection!.isInValid();
   }
 
