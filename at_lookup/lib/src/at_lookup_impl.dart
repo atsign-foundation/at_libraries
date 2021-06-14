@@ -489,8 +489,7 @@ class AtLookupImpl implements AtLookUp {
     }
   }
 
-
-    bool _isAuthRequired() {
+  bool _isAuthRequired() {
     return !_isConnectionAvailable() ||
         !(_isPkamAuthenticated || _isCramAuthenticated);
   }
@@ -508,12 +507,11 @@ class AtLookupImpl implements AtLookUp {
     return true;
   }
 
-
-    bool _isConnectionAvailable() {
+  bool _isConnectionAvailable() {
     return _connection != null && !_connection!.isInValid();
-    }
+  }
 
-    bool isInValid() {
+  bool isInValid() {
     return _connection!.isInValid();
   }
 
