@@ -11,7 +11,7 @@ void main() {
     AtStatusImpl atStatusImpl;
     var atSign = '@13majorfishtaco';
     setUp(() async {
-      atStatusImpl = AtStatusImpl();
+      atStatusImpl = AtStatusImpl(atSign);
       atStatus = await atStatusImpl.get(atSign);
     });
 
@@ -37,7 +37,7 @@ void main() {
     AtStatusImpl atStatusImpl;
     var atSign = '@small73sepia';
     setUp(() async {
-      atStatusImpl = AtStatusImpl();
+      atStatusImpl = AtStatusImpl(atSign);
       atStatus = await atStatusImpl.get(atSign);
     });
 
@@ -63,7 +63,7 @@ void main() {
     AtStatusImpl atStatusImpl;
     var atSign = '@bullridingcapable';
     setUp(() async {
-      atStatusImpl = AtStatusImpl();
+      atStatusImpl = AtStatusImpl(atSign);
       atStatus = await atStatusImpl.get(atSign);
     });
 
@@ -91,7 +91,7 @@ void main() {
     var atSign = uuid.v4();
     print(atSign);
     setUp(() async {
-      atStatusImpl = AtStatusImpl();
+      atStatusImpl = AtStatusImpl(atSign);
       atStatus = await atStatusImpl.get(atSign);
     });
 
