@@ -8,7 +8,6 @@ import 'at_server_status.dart';
 class AtStatusImpl implements AtServerStatus {
   String? _root_url;
   int? _root_port;
-  AtLookupImpl? atLookupImpl;
 
   String? get rootUrl => _root_url;
 
@@ -24,12 +23,11 @@ class AtStatusImpl implements AtServerStatus {
     _root_port = value;
   }
 
-  AtStatusImpl(String atSign, {String? rootUrl, int? rootPort}) {
+  AtStatusImpl({String? rootUrl, int? rootPort}) {
     rootUrl ??= 'root.atsign.org';
     _root_url = rootUrl;
     rootPort ??= 64;
     _root_port = rootPort;
-    atLookupImpl = AtLookupImpl(atSign, _root_url!, _root_port!);
   }
 
   @override
@@ -98,12 +96,14 @@ class AtStatusImpl implements AtServerStatus {
       atStatus.rootStatus = RootStatus.notFound;
     } else {
       // ignore: omit_local_variable_types
-      await atLookupImpl?.scan(auth: false).then((keysList) async {
+      AtLookupImpl atLookupImpl =
+          AtLookupImpl(atSign!, _root_url!, _root_port!);
+      await atLookupImpl.scan(auth: false).then((keysList) async {
         if (keysList.isNotEmpty) {
           if (keysList.contains(testKey)) {
             var value =
-                await atLookupImpl?.lookup('publickey', atSign!, auth: false);
-            value = value!.replaceFirst('data:', '');
+                await atLookupImpl.lookup('publickey', atSign, auth: false);
+            value = value.replaceFirst('data:', '');
             if (value != null && value != 'null') {
               // @server has root location, is running and is activated
               atStatus.serverStatus = ServerStatus.activated;
@@ -119,12 +119,13 @@ class AtStatusImpl implements AtServerStatus {
         } else {
           atStatus.serverStatus = ServerStatus.teapot;
         }
-      }).catchError((error) {
+      }).catchError((error) async {
         // @server has root location, is not running and is not activated
         atStatus.serverStatus = ServerStatus.unavailable;
         print('_getServerStatus error: $error');
+        await atLookupImpl.close();
       });
-      await atLookupImpl?.close();
+      await atLookupImpl.close();
     }
     return atStatus;
   }
