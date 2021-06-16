@@ -123,9 +123,7 @@ class AtStatusImpl implements AtServerStatus {
         // @server has root location, is not running and is not activated
         atStatus.serverStatus = ServerStatus.unavailable;
         print('_getServerStatus error: $error');
-        await atLookupImpl.close();
-      });
-      await atLookupImpl.close();
+      }).whenComplete(() async => await atLookupImpl.close());
     }
     return atStatus;
   }
