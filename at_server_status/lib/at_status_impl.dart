@@ -9,7 +9,6 @@ class AtStatusImpl implements AtServerStatus {
   String? _root_url;
   int? _root_port;
   AtLookupImpl? atLookupImpl;
-  Map atStatusImplMap = {};
 
   String? get rootUrl => _root_url;
 
