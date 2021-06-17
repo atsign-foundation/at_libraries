@@ -119,11 +119,11 @@ class AtStatusImpl implements AtServerStatus {
         } else {
           atStatus.serverStatus = ServerStatus.teapot;
         }
-      }).catchError((error) {
+      }).catchError((error) async {
         // @server has root location, is not running and is not activated
         atStatus.serverStatus = ServerStatus.unavailable;
         print('_getServerStatus error: $error');
-      });
+      }).whenComplete(() async => await atLookupImpl.close());
     }
     return atStatus;
   }
