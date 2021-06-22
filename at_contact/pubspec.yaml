@@ -8,7 +8,7 @@ environment:
   sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  intl: ^0.17.1
+  intl: ^0.17.0
   at_client: ^2.0.0
   at_commons: ^2.0.0
   at_utils: ^2.0.0
