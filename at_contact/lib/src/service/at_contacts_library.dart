@@ -18,7 +18,7 @@ abstract class AtContactsLibrary {
   Future<List<AtContact>> listContacts();
 
   //get contact by atSign
-  Future<AtContact> get(String atSign);
+  Future<AtContact?> get(String atSign);
 
   // fetch all active contacts
   Future<List<AtContact>> listActiveContacts();
@@ -30,22 +30,22 @@ abstract class AtContactsLibrary {
   Future<List<AtContact>> listFavoriteContacts();
 
   // creates Group
-  Future<AtGroup> createGroup(AtGroup atGroup);
+  Future<AtGroup?> createGroup(AtGroup atGroup);
 
   // creates Group
-  Future<AtGroup> updateGroup(AtGroup atGroup);
+  Future<AtGroup?> updateGroup(AtGroup atGroup);
 
   // deletes Group
   Future<bool> deleteGroup(AtGroup atGroup);
 
   // fetches all the group names
-  Future<List<String>> listGroupNames();
+  Future<List<String?>> listGroupNames();
 
   // fetches all the group Ids
-  Future<List<String>> listGroupIds();
+  Future<List<String?>> listGroupIds();
 
   // fetches group from groupName
-  Future<AtGroup> getGroup(String groupName);
+  Future<AtGroup?> getGroup(String groupName);
 
   Future<bool> addMembers(Set<AtContact> atContacts, AtGroup atGroup);
 

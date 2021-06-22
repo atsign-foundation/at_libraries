@@ -6,8 +6,8 @@ import 'package:test/test.dart';
 import 'test_util.dart';
 
 Future<void> main() async {
-  AtContactsImpl atContact;
-  AtContact contact;
+  late AtContactsImpl atContact;
+  late AtContact contact;
   var atSign = '@vinod';
   try {
     await AtClientImpl.createClient(
@@ -42,10 +42,10 @@ Future<void> main() async {
 
     // test get contact
     test(' test get contact by atSign', () async {
-      var result = await atContact.get(atSign);
+      var result = await (atContact.get(atSign));
       print('get result : $result');
       expect(result is AtContact, true);
-      expect(result.atSign, atSign);
+      expect(result!.atSign, atSign);
     });
 
     // test active contact
@@ -57,9 +57,9 @@ Future<void> main() async {
       print('update result : $updateResult');
       expect(updateResult, true);
 
-      var result = await atContact.get(atSign);
+      var result = await (atContact.get(atSign));
       expect(result is AtContact, true);
-      expect(result.blocked, false);
+      expect(result!.blocked, false);
     });
 
     // test get all active contacts
@@ -78,10 +78,10 @@ Future<void> main() async {
       print('update result : $updateResult');
       expect(updateResult, true);
 
-      var result = await atContact.get(atSign);
+      var result = await (atContact.get(atSign));
       print(result);
       expect(result is AtContact, true);
-      expect(result.blocked, true);
+      expect(result!.blocked, true);
     });
 
     //test get all blocked contacts
@@ -100,10 +100,10 @@ Future<void> main() async {
       print('update result : $updateResult');
       expect(updateResult, true);
 
-      var result = await atContact.get(atSign);
+      var result = await (atContact.get(atSign));
       print(result);
       expect(result is AtContact, true);
-      expect(result.favourite, true);
+      expect(result!.favourite, true);
     });
 
     // test get all favorite contacts
