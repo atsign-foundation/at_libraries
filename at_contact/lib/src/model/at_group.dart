@@ -2,37 +2,37 @@ import 'package:at_contact/src/model/at_contact.dart';
 
 class AtGroup {
   //Group id
-  String groupId;
+  String? groupId;
 
   //Group name
-  String groupName;
+  String? groupName;
 
   //Group display name
-  String displayName;
+  String? displayName;
 
   // Group description
-  String description;
+  String? description;
 
   // Group picture
   dynamic groupPicture;
 
   //Group members set
-  Set<AtContact> members = {};
+  Set<AtContact>? members = {};
 
   //Additional tags if any
-  Map<dynamic, dynamic> tags;
+  Map<dynamic, dynamic>? tags;
 
   // Group Creation time stamp
-  DateTime createdOn;
+  DateTime? createdOn;
 
   // Group update time stamp
-  DateTime updatedOn;
+  DateTime? updatedOn;
 
   //group created by
-  String createdBy;
+  String? createdBy;
 
   //group updated by
-  String updatedBy;
+  String? updatedBy;
 
   AtGroup(this.groupName,
       {this.groupId,
@@ -57,29 +57,29 @@ class AtGroup {
       'displayName': displayName,
       'description': description,
       'groupPicture': groupPicture,
-      'members': members.toList(),
+      'members': members!.toList(),
       'tags': tags,
-      'createdOn': createdOn.toIso8601String(),
-      'updatedOn': updatedOn.toIso8601String(),
+      'createdOn': createdOn!.toIso8601String(),
+      'updatedOn': updatedOn!.toIso8601String(),
       'createdBy': createdBy,
       'updatedBy': updatedBy,
     };
   }
 
   AtGroup.fromJson(Map json) {
-    groupId = json['groupId'] as String;
-    groupName = json['groupName'] as String;
-    displayName = json['displayName'] as String;
-    description = json['description'] as String;
+    groupId = json['groupId'] as String?;
+    groupName = json['groupName'] as String?;
+    displayName = json['displayName'] as String?;
+    description = json['description'] as String?;
     groupPicture = json['groupPicture'];
     members = (json['members'] as List)
         .map((e) => AtContact.fromJson(e as Map<String, dynamic>))
         .toSet();
-    tags = json['tags'] as Map<String, dynamic>;
+    tags = json['tags'] as Map<String, dynamic>?;
     createdOn = DateTime.parse(json['createdOn'] as String);
     updatedOn = DateTime.parse(json['updatedOn'] as String);
-    createdBy = json['createdBy'] as String;
-    updatedBy = json['updatedBy'] as String;
+    createdBy = json['createdBy'] as String?;
+    updatedBy = json['updatedBy'] as String?;
   }
 
   @override
@@ -89,8 +89,8 @@ class AtGroup {
 }
 
 class AtGroupBasicInfo {
-  String atGroupId;
-  String atGroupName;
+  String? atGroupId;
+  String? atGroupName;
 
   AtGroupBasicInfo(this.atGroupId, this.atGroupName);
 

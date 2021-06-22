@@ -11,25 +11,25 @@ import 'package:at_utils/at_utils.dart';
 import 'package:uuid/uuid.dart';
 
 class AtContactsImpl implements AtContactsLibrary {
-  AtClientImpl _atClient;
-  String atSign;
-  var logger;
+  AtClientImpl? _atClient;
+  late String atSign;
+  late var logger;
 
-  AtContactsImpl(AtClient atClient, String atSign) {
+  AtContactsImpl(AtClient? atClient, String atSign) {
     this.atSign = atSign;
-    _atClient = atClient;
+    _atClient = atClient as AtClientImpl?;
     logger = AtSignLogger(runtimeType.toString());
   }
 
-  AtClientImpl get atClient => _atClient;
+  AtClientImpl? get atClient => _atClient;
 
-  set atClient(AtClient value) {
-    _atClient = value;
+  set atClient(AtClient? value) {
+    _atClient = value as AtClientImpl?;
   }
 
   static Future<AtContactsImpl> getInstance(String atSign) async {
     try {
-      atSign = AtUtils.fixAtSign(AtUtils.formatAtSign(atSign));
+      atSign = AtUtils.fixAtSign(AtUtils.formatAtSign(atSign)!);
     } on Exception {
       rethrow;
     }
@@ -56,7 +56,7 @@ class AtContactsImpl implements AtContactsLibrary {
     var atKey = AtKey()
       ..key = modifiedKey
       ..metadata = metadata;
-    return await atClient.put(atKey, value);
+    return await atClient!.put(atKey, value);
   }
 
   ///update the existing contact
@@ -70,7 +70,7 @@ class AtContactsImpl implements AtContactsLibrary {
   /// Throws [FormatException] on invalid json
   /// Throws class extending [AtException] on invalid atsign.
   @override
-  Future<AtContact> get(String atSign) async {
+  Future<AtContact?> get(String atSign) async {
     var contact;
     var modifiedKey = _formKey(atSign);
     var metadata = Metadata()
@@ -79,21 +79,19 @@ class AtContactsImpl implements AtContactsLibrary {
     var atKey = AtKey()
       ..key = modifiedKey
       ..metadata = metadata;
-    await atClient.get(atKey).then((atValue) {
-      if (atValue != null) {
-        var value = atValue.value;
-        value = value?.replaceAll('data:', '');
-        if (value != null && value != 'null') {
-          var json;
-          try {
-            json = jsonDecode(value);
-          } on FormatException catch (e) {
-            logger.severe('Invalid JSON. ${e.message} found in JSON : $value');
-            throw InvalidSyntaxException('Invalid JSON found');
-          }
-          if (json != null) {
-            contact = AtContact.fromJson(json);
-          }
+    await atClient!.get(atKey).then((atValue) {
+      var value = atValue.value;
+      value = value?.replaceAll('data:', '');
+      if (value != null && value != 'null') {
+        var json;
+        try {
+          json = jsonDecode(value);
+        } on FormatException catch (e) {
+          logger.severe('Invalid JSON. ${e.message} found in JSON : $value');
+          throw InvalidSyntaxException('Invalid JSON found');
+        }
+        if (json != null) {
+          contact = AtContact.fromJson(json);
         }
       }
     });
@@ -113,7 +111,7 @@ class AtContactsImpl implements AtContactsLibrary {
     var atKey = AtKey()
       ..key = modifiedKey
       ..metadata = metadata;
-    return atClient.delete(atKey);
+    return atClient!.delete(atKey);
   }
 
   /// takes   [AtContact]  as an input and
@@ -136,8 +134,8 @@ class AtContactsImpl implements AtContactsLibrary {
     var regex =
         '${AppConstants.CONTACT_KEY_PREFIX}.*.${AppConstants.CONTACT_KEY_SUFFIX}.$atSign@$atSign'
             .toLowerCase();
-    var scanList = await atClient.getKeys(regex: regex);
-    if (scanList != null && scanList.isNotEmpty && scanList[0] == '') {
+    var scanList = await atClient!.getKeys(regex: regex);
+    if (scanList.isNotEmpty && scanList[0] == '') {
       return contactList;
     }
     for (var key in scanList) {
@@ -158,7 +156,7 @@ class AtContactsImpl implements AtContactsLibrary {
   @override
   Future<List<AtContact>> listActiveContacts() async {
     var contactList = await listContacts();
-    return contactList.where((element) => !element.blocked).toList();
+    return contactList.where((element) => !element.blocked!).toList();
   }
 
   /// fetch all blocked contacts in the list
@@ -166,7 +164,7 @@ class AtContactsImpl implements AtContactsLibrary {
   @override
   Future<List<AtContact>> listBlockedContacts() async {
     var contactList = await listContacts();
-    return contactList.where((element) => element.blocked).toList();
+    return contactList.where((element) => element.blocked!).toList();
   }
 
   /// fetch all Favorite contacts in the list
@@ -174,13 +172,13 @@ class AtContactsImpl implements AtContactsLibrary {
   @override
   Future<List<AtContact>> listFavoriteContacts() async {
     var contactList = await listContacts();
-    return contactList.where((element) => element.favourite).toList();
+    return contactList.where((element) => element.favourite!).toList();
   }
 
   /// takes AtGroup as an input and creates the group
   /// on success return AtGroup otherwise null
   @override
-  Future<AtGroup> createGroup(AtGroup atGroup) async {
+  Future<AtGroup?> createGroup(AtGroup? atGroup) async {
     if (atGroup == null || atGroup.groupName == null) {
       throw Exception('Group name is null or empty String');
     }
@@ -210,7 +208,7 @@ class AtContactsImpl implements AtContactsLibrary {
 
     var json = atGroup.toJson();
     var value = jsonEncode(json);
-    var result = await atClient.put(atKey, value);
+    var result = await atClient!.put(atKey, value);
     if (result) {
       print('Group creation successful. Adding to group list');
       var atGroupBasicInfo = AtGroupBasicInfo(groupId, groupName);
@@ -225,8 +223,8 @@ class AtContactsImpl implements AtContactsLibrary {
   /// takes AtGroup as an input and updates the group
   /// on success return AtGroup otherwise null
   @override
-  Future<AtGroup> updateGroup(AtGroup atGroup) async {
-    if (atGroup == null || atGroup.groupName == null) {
+  Future<AtGroup?> updateGroup(AtGroup atGroup) async {
+    if (atGroup.groupName == null) {
       throw Exception('Group name is null or empty String');
     }
     var groupId = atGroup.groupId;
@@ -249,7 +247,7 @@ class AtContactsImpl implements AtContactsLibrary {
 
     var json = atGroup.toJson();
     var value = jsonEncode(json);
-    var success = await atClient.put(atKey, value);
+    var success = await atClient!.put(atKey, value);
     var result = success ? atGroup : null;
     return result;
   }
@@ -258,7 +256,7 @@ class AtContactsImpl implements AtContactsLibrary {
   /// on success return AtGroup otherwise null
   @override
   Future<bool> deleteGroup(AtGroup atGroup) async {
-    if (atGroup == null || atGroup.groupName == null) {
+    if (atGroup.groupName == null) {
       throw Exception('Group name is null or empty String');
     }
     var groupId = atGroup.groupId;
@@ -270,7 +268,7 @@ class AtContactsImpl implements AtContactsLibrary {
     var atKey = AtKey()
       ..key = atGroup.groupId
       ..metadata = metadata;
-    var result = await atClient.delete(atKey);
+    var result = await atClient!.delete(atKey);
     if (result) {
       var atGroupBasicInfo = AtGroupBasicInfo(groupId, groupName);
       return await _deleteFromGroupList(atGroupBasicInfo);
@@ -281,7 +279,7 @@ class AtContactsImpl implements AtContactsLibrary {
   /// fetches all the group names as a list
   /// on success return List of Group names otherwise []
   @override
-  Future<List<String>> listGroupNames() async {
+  Future<List<String?>> listGroupNames() async {
     var groupsListKey = getGroupsListKey();
     var metadata = Metadata()
       ..isPublic = false
@@ -289,14 +287,12 @@ class AtContactsImpl implements AtContactsLibrary {
     var atKey = AtKey()
       ..key = groupsListKey
       ..metadata = metadata;
-    var result = await atClient.get(atKey);
+    var result = await atClient!.get(atKey);
     // get name from AtGroupBasicInfo for all the groups.
-    var list = [];
-    if (result != null) {
-      list = (result.value != null) ? jsonDecode(result.value) : [];
-    }
-    list = List<String>.from(list);
-    var groupNames = <String>[];
+    List<dynamic>? list = [];
+    list = (result.value != null) ? jsonDecode(result.value) : [];
+    list = List<String>.from(list!);
+    var groupNames = <String?>[];
     list.forEach((group) {
       var groupInfo = AtGroupBasicInfo.fromJson(jsonDecode(group));
       groupNames.add(groupInfo.atGroupName);
@@ -307,7 +303,7 @@ class AtContactsImpl implements AtContactsLibrary {
   /// fetches all the group Ids as a list
   /// on success return List of Group Ids otherwise []
   @override
-  Future<List<String>> listGroupIds() async {
+  Future<List<String?>> listGroupIds() async {
     var groupsListKey = getGroupsListKey();
     var metadata = Metadata()
       ..isPublic = false
@@ -315,14 +311,12 @@ class AtContactsImpl implements AtContactsLibrary {
     var atKey = AtKey()
       ..key = groupsListKey
       ..metadata = metadata;
-    var result = await atClient.get(atKey);
+    var result = await atClient!.get(atKey);
     // get name from AtGroupBasicInfo for all the groups.
-    var list = [];
-    if (result != null) {
-      list = (result.value != null) ? jsonDecode(result.value) : [];
-    }
-    list = List<String>.from(list);
-    var groupIds = <String>[];
+    List<dynamic>? list = [];
+    list = (result.value != null) ? jsonDecode(result.value) : [];
+    list = List<String>.from(list!);
+    var groupIds = <String?>[];
     list.forEach((group) {
       var groupInfo = AtGroupBasicInfo.fromJson(jsonDecode(group));
       groupIds.add(groupInfo.atGroupId);
@@ -334,7 +328,7 @@ class AtContactsImpl implements AtContactsLibrary {
   /// get the group details
   /// on success return AtGroup otherwise null
   @override
-  Future<AtGroup> getGroup(String groupId) async {
+  Future<AtGroup?> getGroup(String? groupId) async {
     if (groupId == null || groupId.isEmpty) {
       return null;
     }
@@ -348,15 +342,13 @@ class AtContactsImpl implements AtContactsLibrary {
       ..key = groupId
       ..metadata = metadata;
     var group;
-    await atClient.get(atKey).then((atValue) {
-      if (atValue != null) {
-        var value = atValue.value;
-        value = value?.replaceAll('data:', '');
-        if (value != null && value != 'null') {
-          var json = jsonDecode(value);
-          if (json != null) {
-            group = AtGroup.fromJson(json);
-          }
+    await atClient!.get(atKey).then((atValue) {
+      var value = atValue.value;
+      value = value?.replaceAll('data:', '');
+      if (value != null && value != 'null') {
+        var json = jsonDecode(value);
+        if (json != null) {
+          group = AtGroup.fromJson(json);
         }
       }
     });
@@ -367,7 +359,7 @@ class AtContactsImpl implements AtContactsLibrary {
   /// Adds the contacts to the group members
   /// on success return true otherwise false
   @override
-  Future<bool> addMembers(Set<AtContact> atContacts, AtGroup atGroup) async {
+  Future<bool> addMembers(Set<AtContact> atContacts, AtGroup? atGroup) async {
     if (atContacts.isEmpty || atGroup == null) {
       return false;
     }
@@ -385,21 +377,22 @@ class AtContactsImpl implements AtContactsLibrary {
     // Add all contacts in atContacts from atGroup
     atContacts.forEach((contact) {
       if (!isMember(contact, atGroup)) {
-        atGroup.members.add(contact);
+        atGroup.members!.add(contact);
       }
     });
     atGroup.updatedBy = AtUtils.fixAtSign(atSign);
     atGroup.updatedOn = DateTime.now();
     var json = atGroup.toJson();
     var value = jsonEncode(json);
-    return await atClient.put(atKey, value);
+    return await atClient!.put(atKey, value);
   }
 
   /// takes Set of AtContacts as an input and
   /// deletes the contacts to the group members
   /// on success return true otherwise false
   @override
-  Future<bool> deleteMembers(Set<AtContact> atContacts, AtGroup atGroup) async {
+  Future<bool> deleteMembers(
+      Set<AtContact> atContacts, AtGroup? atGroup) async {
     if (atContacts.isEmpty || atGroup == null) {
       return false;
     }
@@ -418,20 +411,20 @@ class AtContactsImpl implements AtContactsLibrary {
     var members = atGroup.members;
     for (var atContact in atContacts) {
       var contactName = atContact.atSign;
-      members.removeWhere((contact) => (contact.atSign == contactName));
+      members!.removeWhere((contact) => (contact.atSign == contactName));
     }
     atGroup.members = members;
     atGroup.updatedBy = AtUtils.fixAtSign(atSign);
     atGroup.updatedOn = DateTime.now();
     var json = atGroup.toJson();
     var value = jsonEncode(json);
-    return await atClient.put(atKey, value);
+    return await atClient!.put(atKey, value);
   }
 
   /// Throw Exceptions on Invalid AtSigns.
   String _formKey(String key) {
     try {
-      key = AtUtils.fixAtSign(AtUtils.formatAtSign(key));
+      key = AtUtils.fixAtSign(AtUtils.formatAtSign(key)!);
     } on Exception {
       rethrow;
     }
@@ -454,7 +447,7 @@ class AtContactsImpl implements AtContactsLibrary {
 
   /// Created group key from the group name provided
   String formGroupKey(String groupName) {
-    var key = AtUtils.formatAtSign(groupName);
+    var key = AtUtils.formatAtSign(groupName)!;
     key = AtUtils.fixAtSign(key);
     key = key.replaceFirst('@', '');
     var modifiedKey =
@@ -471,18 +464,16 @@ class AtContactsImpl implements AtContactsLibrary {
     var atKey = AtKey()
       ..key = groupsListKey
       ..metadata = metadata;
-    var result = await atClient.get(atKey);
-    var list = [];
-    if (result != null) {
-      list = (result.value != null) ? jsonDecode(result.value) : [];
-    }
-    list.add(jsonEncode(atGroupBasicInfo));
-    return await atClient.put(atKey, jsonEncode(list));
+    var result = await atClient!.get(atKey);
+    List<dynamic>? list = [];
+    list = (result.value != null) ? jsonDecode(result.value) : [];
+    list!.add(jsonEncode(atGroupBasicInfo));
+    return await atClient!.put(atKey, jsonEncode(list));
   }
 
   ///Adds a group to group list
   Future<bool> _deleteFromGroupList(AtGroupBasicInfo atGroupBasicInfo) async {
-    if (atGroupBasicInfo == null || atGroupBasicInfo.atGroupId == null) ;
+    if (atGroupBasicInfo.atGroupId == null) ;
     var groupId = atGroupBasicInfo.atGroupId;
     var groupsListKey = getGroupsListKey();
     var metadata = Metadata()
@@ -491,16 +482,14 @@ class AtContactsImpl implements AtContactsLibrary {
     var atKey = AtKey()
       ..key = groupsListKey
       ..metadata = metadata;
-    var result = await atClient.get(atKey);
+    var result = await atClient!.get(atKey);
     // get name from AtGroupBasicInfo for all the groups.
-    var list = [];
-    if (result != null) {
-      list = (result.value != null) ? jsonDecode(result.value) : [];
-    }
-    list = List<String>.from(list);
+    List<dynamic>? list = [];
+    list = (result.value != null) ? jsonDecode(result.value) : [];
+    list = List<String>.from(list!);
     list.removeWhere((group) =>
         (AtGroupBasicInfo.fromJson(jsonDecode(group)).atGroupId == groupId));
-    return await atClient.put(atKey, jsonEncode(list));
+    return await atClient!.put(atKey, jsonEncode(list));
   }
 
   String getGroupsListKey() {
@@ -511,11 +500,8 @@ class AtContactsImpl implements AtContactsLibrary {
 
   @override
   bool isMember(AtContact atContact, AtGroup atGroup) {
-    if (atGroup == null || atContact == null) {
-      return false;
-    }
     var result = false;
-    var members = atGroup.members;
+    var members = atGroup.members!;
     for (var contact in members) {
       if (contact.atSign.toString() == atContact.atSign.toString()) {
         return true;
