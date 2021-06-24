@@ -23,4 +23,8 @@
 ## 2.0.0
 - Null safety upgrade
 ## 2.0.1
+<<<<<<< HEAD
 - Stream sync and connection refactoring changes
+=======
+- at_utils and at_commons version change
+>>>>>>> 2ddf2e47da50515a64c13486cf0813472844b198

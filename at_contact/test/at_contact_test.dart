@@ -8,8 +8,8 @@ import 'package:at_commons/at_commons.dart';
 import 'test_util.dart';
 
 Future<void> main() async {
-  AtContactsImpl atContact;
-  AtContact contact;
+  late AtContactsImpl atContact;
+  late AtContact contact;
   var newNamespace = 'buzz.at_contact';
   var atSign = '@bob🛠';
   var currentAtSign = '@alice🛠';
@@ -48,7 +48,7 @@ Future<void> main() async {
       var result = await atContact.get(atSign);
       print('get result : $result');
       expect(result is AtContact, true);
-      expect(result.atSign, atSign);
+      expect(result!.atSign, atSign);
     });
 
     // test active contact
@@ -62,7 +62,7 @@ Future<void> main() async {
 
       var result = await atContact.get(atSign);
       expect(result is AtContact, true);
-      expect(result.blocked, false);
+      expect(result!.blocked, false);
     });
 
     // test get all active contacts
@@ -84,7 +84,7 @@ Future<void> main() async {
       var result = await atContact.get(atSign);
       print(result);
       expect(result is AtContact, true);
-      expect(result.blocked, true);
+      expect(result!.blocked, true);
     });
 
     //test get all blocked contacts
@@ -106,7 +106,7 @@ Future<void> main() async {
       var result = await atContact.get(atSign);
       print(result);
       expect(result is AtContact, true);
-      expect(result.favourite, true);
+      expect(result!.favourite, true);
     });
 
     // test get all favorite contacts
@@ -135,7 +135,7 @@ Future<void> main() async {
     test(' test create a contact ', () async {
       var result = await atContact.add(contact);
       expect(result, true);
-      var atContactResult = await atContact.atClient.getAtKeys(regex: '.buzz');
+      var atContactResult = await atContact.atClient!.getAtKeys(regex: '.buzz');
       expect(atContactResult.length, greaterThan(0));
     });
 
@@ -153,10 +153,10 @@ Future<void> main() async {
       var oldAtKey = AtKey()
         ..key = 'atconnections.kevin🛠.contacts.alice🛠'
         ..metadata = atMetadata;
-      var result = await atContact.atClient
+      var result = await atContact.atClient!
           .put(oldAtKey, jsonEncode(kevinContact.toJson()));
       var atContactResult =
-          await atContact.atClient.getAtKeys(regex: 'kevin🛠.*.$newNamespace');
+          await atContact.atClient!.getAtKeys(regex: 'kevin🛠.*.$newNamespace');
       expect(atContactResult.length, 0);
 
       // update the contact type
@@ -165,7 +165,7 @@ Future<void> main() async {
       expect(result, true);
 
       atContactResult =
-          await atContact.atClient.getAtKeys(regex: 'kevin🛠.*.$newNamespace');
+          await atContact.atClient!.getAtKeys(regex: 'kevin🛠.*.$newNamespace');
       expect(atContactResult.length, greaterThan(0));
       deleteResult = await atContact.delete('@kevin🛠');
       expect(deleteResult, true);
@@ -182,16 +182,16 @@ Future<void> main() async {
       var oldAtKey = AtKey()
         ..key = 'atconnections.barbara🛠.contacts.alice🛠'
         ..metadata = atMetadata;
-      var result = await atContact.atClient
+      var result = await atContact.atClient!
           .put(oldAtKey, jsonEncode(barbaraContact.toJson()));
-      var atContactResult = await atContact.atClient
+      var atContactResult = await atContact.atClient!
           .getAtKeys(regex: 'barbara🛠.*.$newNamespace');
       expect(atContactResult.length, 0);
       var atContactresult = await atContact.get('@barbara🛠');
       print('get result : $result');
       expect(atContactresult is AtContact, true);
-      expect(atContactresult.atSign, '@barbara🛠');
-      atContactResult = await atContact.atClient
+      expect(atContactresult!.atSign, '@barbara🛠');
+      atContactResult = await atContact.atClient!
           .getAtKeys(regex: 'barbara🛠.*.$newNamespace');
       expect(atContactResult.length, greaterThan(0));
 
@@ -210,20 +210,20 @@ Future<void> main() async {
       var oldAtKey = AtKey()
         ..key = 'atconnections.sameeraja🛠.contacts.alice🛠'
         ..metadata = atMetadata;
-      var result = await atContact.atClient
+      var result = await atContact.atClient!
           .put(oldAtKey, jsonEncode(kevinContact.toJson()));
-      var atContactResult = await atContact.atClient
+      var atContactResult = await atContact.atClient!
           .getAtKeys(regex: 'sameeraja🛠.*.$newNamespace');
       expect(atContactResult.length, 0);
       var atContactresult = await atContact.get('@sameeraja🛠');
       expect(atContactresult is AtContact, true);
-      expect(atContactresult.atSign, '@sameeraja🛠');
+      expect(atContactresult!.atSign, '@sameeraja🛠');
       result = await atContact.delete('@sameeraja🛠');
       print('delete result : $result');
       expect(result, true);
 
       await atContact.add(contact);
-      result = await atContact.delete(contact.atSign);
+      result = await atContact.delete(contact.atSign!);
       expect(result, true);
     });
     // test active contact
@@ -239,13 +239,13 @@ Future<void> main() async {
       var oldAtKey = AtKey()
         ..key = 'atconnections.barbara🛠.contacts.alice🛠'
         ..metadata = atMetadata;
-      var result = await atContact.atClient
+      var result = await atContact.atClient!
           .put(oldAtKey, jsonEncode(barbaraContact.toJson()));
       expect(result, true);
 
       var getResult = await atContact.get('@barbara🛠');
       expect(getResult is AtContact, true);
-      expect(getResult.blocked, false);
+      expect(getResult!.blocked, false);
 
       //test new namespace contact
       contact.type = ContactType.Institute;
@@ -255,7 +255,7 @@ Future<void> main() async {
       expect(updateResult, true);
       getResult = await atContact.get(atSign);
       expect(getResult is AtContact, true);
-      expect(getResult.blocked, false);
+      expect(getResult!.blocked, false);
 
       var deleteResult = await atContact.delete('@barbara🛠');
       expect(deleteResult, true);
@@ -275,10 +275,10 @@ Future<void> main() async {
       var oldAtKey = AtKey()
         ..key = 'atconnections.sameeraja🛠.contacts.alice🛠'
         ..metadata = atMetadata;
-      var result = await atContact.atClient
+      var result = await atContact.atClient!
           .put(oldAtKey, jsonEncode(barbaraContact.toJson()));
       expect(result, true);
-      var atContactResult = await atContact.atClient
+      var atContactResult = await atContact.atClient!
           .getAtKeys(regex: 'sameeraja🛠.*.$newNamespace');
       expect(atContactResult.length, 0);
 
@@ -305,11 +305,11 @@ Future<void> main() async {
       var oldAtKey = AtKey()
         ..key = 'atconnections.barbara🛠.contacts.alice🛠'
         ..metadata = atMetadata;
-      var result = await atContact.atClient
+      var result = await atContact.atClient!
           .put(oldAtKey, jsonEncode(barbaraContact.toJson()));
       expect(result, true);
       var getResult = await atContact.get('barbara🛠');
-      expect(getResult.blocked, true);
+      expect(getResult!.blocked, true);
 
       //testing new namespace.
       // update the contact type
@@ -322,7 +322,7 @@ Future<void> main() async {
       getResult = await atContact.get(atSign);
       print(getResult);
       expect(getResult is AtContact, true);
-      expect(getResult.blocked, true);
+      expect(getResult!.blocked, true);
 
       var deleteResult = await atContact.delete('@barbara🛠');
       expect(deleteResult, true);
@@ -342,7 +342,7 @@ Future<void> main() async {
         var oldAtKey = AtKey()
           ..key = 'atconnections.barbara🛠.contacts.alice🛠'
           ..metadata = atMetadata;
-        var result = await atContact.atClient
+        var result = await atContact.atClient!
             .put(oldAtKey, jsonEncode(barbaraContact.toJson()));
         expect(result, true);
 
@@ -374,13 +374,13 @@ Future<void> main() async {
       var oldAtKey = AtKey()
         ..key = 'atconnections.barbara🛠.contacts.alice🛠'
         ..metadata = atMetadata;
-      var result = await atContact.atClient
+      var result = await atContact.atClient!
           .put(oldAtKey, jsonEncode(barbaraContact.toJson()));
       expect(result, true);
       var getResult = await atContact.get('@barbara🛠');
       print(getResult);
       expect(getResult is AtContact, true);
-      expect(getResult.favourite, true);
+      expect(getResult!.favourite, true);
       // update the contact type
       contact.type = ContactType.Institute;
       contact.favourite = true;
@@ -391,7 +391,7 @@ Future<void> main() async {
       getResult = await atContact.get(atSign);
       print(getResult);
       expect(getResult is AtContact, true);
-      expect(getResult.favourite, true);
+      expect(getResult!.favourite, true);
 
       var deleteResult = await atContact.delete('@barbara🛠');
       expect(deleteResult, true);
@@ -410,13 +410,13 @@ Future<void> main() async {
       var oldAtKey = AtKey()
         ..key = 'atconnections.barbara🛠.contacts.alice🛠'
         ..metadata = atMetadata;
-      var result = await atContact.atClient
+      var result = await atContact.atClient!
           .put(oldAtKey, jsonEncode(barbaraContact.toJson()));
       expect(result, true);
       var getResult = await atContact.get('@barbara🛠');
       print(getResult);
       expect(getResult is AtContact, true);
-      expect(getResult.favourite, true);
+      expect(getResult!.favourite, true);
 
       contact.type = ContactType.Institute;
       contact.favourite = true;
@@ -427,7 +427,7 @@ Future<void> main() async {
       getResult = await atContact.get(atSign);
       print(getResult);
       expect(getResult is AtContact, true);
-      expect(getResult.favourite, true);
+      expect(getResult!.favourite, true);
 
       var getResultList = await atContact.listFavoriteContacts();
       print('getResultList : $getResultList');
@@ -451,7 +451,7 @@ Future<void> main() async {
       var oldAtKey = AtKey()
         ..key = 'atconnections.barbara🛠.contacts.alice🛠'
         ..metadata = atMetadata;
-      var putResult = await atContact.atClient
+      var putResult = await atContact.atClient!
           .put(oldAtKey, jsonEncode(barbaraContact.toJson()));
       expect(putResult, true);
       var getResult = await atContact.listContacts();
@@ -493,13 +493,13 @@ Future<void> main() async {
 
       var contactResult = await atContact.get(atSign);
       print(contactResult);
-      expect(contactResult.atSign, atSign);
+      expect(contactResult!.atSign, atSign);
 
       var mosphereContact =
           await TestUtil.initializeAndGetContact('mosphere', currentAtSign);
       contactResult = await mosphereContact.get(atSign);
       print(contactResult);
-      expect(contactResult.atSign, atSign);
+      expect(contactResult!.atSign, atSign);
     });
 
     test('delete contact in buzz namespace and fetch in mosphere namespace',
@@ -519,7 +519,7 @@ Future<void> main() async {
 
       var contactResult = await atContact.get(atSign);
       print(contactResult);
-      expect(contactResult.atSign, atSign);
+      expect(contactResult!.atSign, atSign);
 
       result = await atContact.delete(atSign);
       expect(result, true);

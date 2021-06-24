@@ -37,19 +37,20 @@ class TestUtil {
       var result;
       // set pkam private key
       result = await atClient
-          .getLocalSecondary()
-          .putValue(AT_PKAM_PRIVATE_KEY, demo_data.pkamPrivateKeyMap[atsign]);
+          .getLocalSecondary()!
+          .putValue(AT_PKAM_PRIVATE_KEY, demo_data.pkamPrivateKeyMap[atsign]!);
       // set pkam public key
       result = await atClient
-          .getLocalSecondary()
-          .putValue(AT_PKAM_PUBLIC_KEY, demo_data.pkamPublicKeyMap[atsign]);
+          .getLocalSecondary()!
+          .putValue(AT_PKAM_PUBLIC_KEY, demo_data.pkamPublicKeyMap[atsign]!);
       // set encryption private key
-      result = await atClient.getLocalSecondary().putValue(
-          AT_ENCRYPTION_PRIVATE_KEY, demo_data.encryptionPrivateKeyMap[atsign]);
+      result = await atClient.getLocalSecondary()!.putValue(
+          AT_ENCRYPTION_PRIVATE_KEY,
+          demo_data.encryptionPrivateKeyMap[atsign]!);
       //set aesKey
       result = await atClient
-          .getLocalSecondary()
-          .putValue(AT_ENCRYPTION_SELF_KEY, demo_data.aesKeyMap[atsign]);
+          .getLocalSecondary()!
+          .putValue(AT_ENCRYPTION_SELF_KEY, demo_data.aesKeyMap[atsign]!);
 
       // set encryption public key. should be synced
       metadata.isPublic = true;
@@ -72,18 +73,20 @@ class TestUtil {
 
   static Future<AtContactsImpl> initializeAndGetContact(
       String namespace, String currentAtSign,
-      {RegexType regexType}) async {
+      {RegexType? regexType}) async {
     var currentAtSignPreference =
         TestUtil.getPreferenceLocal(currentAtSign, namespace);
     await AtClientImpl.createClient(
         currentAtSign, namespace, currentAtSignPreference);
     var atClient = await AtClientImpl.getClient(currentAtSign);
-    atClient.getSyncManager().init(currentAtSign, currentAtSignPreference,
-        atClient.getRemoteSecondary(), atClient.getLocalSecondary());
-    await atClient.getSyncManager().sync();
-    await TestUtil.setEncryptionKeys(atClient, currentAtSign);
+    await atClient!.getSyncManager()!.sync(_syncDone);
+    await TestUtil.setEncryptionKeys(atClient as AtClientImpl, currentAtSign);
     var atContact =
-        await AtContactsImpl.getInstance(currentAtSign, regexType: regexType);
+        await AtContactsImpl.getInstance(currentAtSign, regexType: regexType!);
     return atContact;
+  }
+
+  static _syncDone(var value) {
+    print('sync done: $value');
   }
 }

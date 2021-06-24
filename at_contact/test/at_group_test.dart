@@ -10,8 +10,8 @@ import 'package:uuid/uuid.dart';
 import 'test_util.dart';
 
 Future<void> main() async {
-  AtContactsImpl atContactsImpl;
-  AtGroup atGroup;
+  late AtContactsImpl atContactsImpl;
+  AtGroup? atGroup;
   var currentAtSign = '@alice🛠';
   try {
     atContactsImpl =
@@ -86,7 +86,7 @@ Future<void> main() async {
       atGroup1.groupId = groupId;
       var json = atGroup1.toJson();
       var value = jsonEncode(json);
-      var result = await atContactsImpl.atClient.put(atKey, value);
+      var result = await atContactsImpl.atClient!.put(atKey, value);
       expect(result, true);
     });
 
@@ -101,7 +101,7 @@ Future<void> main() async {
       var result = await atContactsImpl.addMembers(atContacts, atGroup);
 
       //new namespace check
-      var getResult = await atContactsImpl.getGroup(atGroup.groupId);
+      var getResult = await atContactsImpl.getGroup(atGroup!.groupId);
       print('get result : $getResult');
       expect(getResult is AtGroup, true);
       var contact3 =
@@ -128,7 +128,7 @@ Future<void> main() async {
       atGroup1.groupId = groupId;
       var json = atGroup1.toJson();
       var value = jsonEncode(json);
-      var result = await atContactsImpl.atClient.put(atKey, value);
+      var result = await atContactsImpl.atClient!.put(atKey, value);
       expect(result, true);
 
       //adding oldnamespace key to groupList.
@@ -137,7 +137,7 @@ Future<void> main() async {
         ..metadata = metadata;
       var groupInfo = AtGroupBasicInfo(atGroup1.groupId, 'aliceNT');
 
-      var groupListResult = await atContactsImpl.atClient.get(groupListKey);
+      var groupListResult = await atContactsImpl.atClient!.get(groupListKey);
       var list = [];
       if (groupListResult != null) {
         list = (groupListResult.value != null)
@@ -146,7 +146,7 @@ Future<void> main() async {
       }
       list.add(jsonEncode(groupInfo));
       var putResult =
-          await atContactsImpl.atClient.put(groupListKey, jsonEncode(list));
+          await atContactsImpl.atClient!.put(groupListKey, jsonEncode(list));
       expect(putResult, true);
 
       //fetching grouplist.

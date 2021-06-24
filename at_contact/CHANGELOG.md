@@ -12,3 +12,5 @@
 - Third party package dependency upgrade
 ## 1.0.0+5
 - at_client version upgrade
+## 2.0.0
+- Null safety changes
