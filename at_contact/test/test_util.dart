@@ -1,25 +1,68 @@
 //import 'dart:typed_data';
+
+import 'package:at_client/at_client.dart';
 import 'package:at_client/src/preference/at_client_preference.dart';
+import 'package:at_contact/at_contact.dart';
+import 'at_demo_credentials.dart' as demo_data;
+import 'package:at_commons/at_commons.dart';
 
 class TestUtil {
   static AtClientPreference getPreferenceRemote() {
     var preference = AtClientPreference();
     preference.isLocalStoreRequired = false;
     preference.cramSecret = '<cram_secret>';
-    preference.rootDomain = 'test.do-sf2.atsign.zone';
+    preference.rootDomain = 'vip.ve.atsign.zone';
     preference.outboundConnectionTimeout = 60000;
     return preference;
   }
 
-  static AtClientPreference getPreferenceLocal() {
+  static AtClientPreference getPreferenceLocal(
+      String atsign, String namespace) {
     var preference = AtClientPreference();
     preference.hiveStoragePath = 'hive/client';
     preference.commitLogPath = 'hive/client/commit';
     preference.isLocalStoreRequired = true;
     preference.syncStrategy = SyncStrategy.IMMEDIATE;
-    preference.cramSecret = '<cram_secret>';
+    preference.privateKey = demo_data.pkamPrivateKeyMap[atsign];
     preference.rootDomain = 'vip.ve.atsign.zone';
+    preference.namespace = namespace;
     return preference;
+  }
+
+  static Future<void> setEncryptionKeys(
+      AtClientImpl atClient, String atsign) async {
+    try {
+      var metadata = Metadata();
+      metadata.namespaceAware = false;
+      var result;
+      // set pkam private key
+      result = await atClient
+          .getLocalSecondary()!
+          .putValue(AT_PKAM_PRIVATE_KEY, demo_data.pkamPrivateKeyMap[atsign]!);
+      // set pkam public key
+      result = await atClient
+          .getLocalSecondary()!
+          .putValue(AT_PKAM_PUBLIC_KEY, demo_data.pkamPublicKeyMap[atsign]!);
+      // set encryption private key
+      result = await atClient.getLocalSecondary()!.putValue(
+          AT_ENCRYPTION_PRIVATE_KEY,
+          demo_data.encryptionPrivateKeyMap[atsign]!);
+      //set aesKey
+      result = await atClient
+          .getLocalSecondary()!
+          .putValue(AT_ENCRYPTION_SELF_KEY, demo_data.aesKeyMap[atsign]!);
+
+      // set encryption public key. should be synced
+      metadata.isPublic = true;
+      var atKey = AtKey()
+        ..key = 'publickey'
+        ..metadata = metadata;
+      result =
+          await atClient.put(atKey, demo_data.encryptionPublicKeyMap[atsign]);
+      print(result);
+    } catch (e) {
+      print('setting localKeys throws $e');
+    }
   }
 
 //  static List<int> _getKeyStoreSecret(String filePath) {
@@ -27,4 +70,23 @@ class TestUtil {
 //    var secretAsUint8List = Uint8List.fromList(hiveSecretString.codeUnits);
 //    return secretAsUint8List;
 //  }
+
+  static Future<AtContactsImpl> initializeAndGetContact(
+      String namespace, String currentAtSign,
+      {RegexType? regexType}) async {
+    var currentAtSignPreference =
+        TestUtil.getPreferenceLocal(currentAtSign, namespace);
+    await AtClientImpl.createClient(
+        currentAtSign, namespace, currentAtSignPreference);
+    var atClient = await AtClientImpl.getClient(currentAtSign);
+    await atClient!.getSyncManager()!.sync(_syncDone);
+    await TestUtil.setEncryptionKeys(atClient as AtClientImpl, currentAtSign);
+    var atContact =
+        await AtContactsImpl.getInstance(currentAtSign, regexType: regexType!);
+    return atContact;
+  }
+
+  static _syncDone(var value) {
+    print('sync done: $value');
+  }
 }
