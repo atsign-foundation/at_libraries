@@ -2,8 +2,8 @@ import 'package:at_commons/at_commons.dart';
 
 /// AtLookUpException class
 class AtLookUpException implements Exception {
-  String errorCode;
-  String errorMessage;
+  String? errorCode;
+  String? errorMessage;
   AtLookUpException(this.errorCode, this.errorMessage);
 }
 
@@ -17,7 +17,7 @@ class AtLookUpExceptionUtil {
   }
 
   /// Returns ErrorDescription String
-  static String getErrorDescription(String error_code) {
+  static String? getErrorDescription(String error_code) {
     return error_description[error_code];
   }
 }

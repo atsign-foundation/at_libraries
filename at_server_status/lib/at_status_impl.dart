@@ -1,27 +1,29 @@
+import 'dart:async';
+
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_server_status/src/model/at_status.dart';
 
 import 'at_server_status.dart';
 
 class AtStatusImpl implements AtServerStatus {
-  String _root_url;
-  int _root_port;
+  String? _root_url;
+  int? _root_port;
 
-  String get rootUrl => _root_url;
+  String? get rootUrl => _root_url;
 
-  set rootUrl(String value) {
+  set rootUrl(String? value) {
     value ??= 'root.atsign.org';
     _root_url = value;
   }
 
-  int get rootPort => _root_port;
+  int? get rootPort => _root_port;
 
-  set rootPort(int value) {
+  set rootPort(int? value) {
     value ??= 64;
     _root_port = value;
   }
 
-  AtStatusImpl({String rootUrl, int rootPort}) {
+  AtStatusImpl({String? rootUrl, int? rootPort}) {
     rootUrl ??= 'root.atsign.org';
     _root_url = rootUrl;
     rootPort ??= 64;
@@ -42,7 +44,7 @@ class AtStatusImpl implements AtServerStatus {
       // If the @sign serverLocation is found in root, check the status of the @server
       if (atStatus.rootStatus == RootStatus.found &&
           atStatus.serverLocation != null &&
-          atStatus.serverLocation.isNotEmpty) {
+          atStatus.serverLocation!.isNotEmpty) {
         await _getServerStatus(atStatus.atSign, atStatus.serverLocation)
             .then((AtStatus status) async {
           atStatus.serverStatus = status.serverStatus;
@@ -67,7 +69,7 @@ class AtStatusImpl implements AtServerStatus {
     // ignore: omit_local_variable_types
     AtStatus atStatus = AtStatus();
     atStatus.atSign = atSign;
-    await AtLookupImpl.findSecondary(atSign, _root_url, _root_port)
+    await AtLookupImpl.findSecondary(atSign, _root_url, _root_port!)
         .then((serverLocation) async {
       // enum RootStatus { running, stopped, unavailable, found, notFound }
       if (serverLocation != null && serverLocation.isNotEmpty) {
@@ -84,7 +86,7 @@ class AtStatusImpl implements AtServerStatus {
   }
 
   Future<AtStatus> _getServerStatus(
-      String atSign, String serverLocation) async {
+      String? atSign, String? serverLocation) async {
     // ignore: omit_local_variable_types
     AtStatus atStatus = AtStatus();
     var testKey = 'publickey$atSign';
@@ -94,13 +96,14 @@ class AtStatusImpl implements AtServerStatus {
       atStatus.rootStatus = RootStatus.notFound;
     } else {
       // ignore: omit_local_variable_types
-      AtLookupImpl atLookupImpl = AtLookupImpl(atSign, _root_url, _root_port);
+      AtLookupImpl atLookupImpl =
+          AtLookupImpl(atSign!, _root_url!, _root_port!);
       await atLookupImpl.scan(auth: false).then((keysList) async {
         if (keysList.isNotEmpty) {
           if (keysList.contains(testKey)) {
             var value =
                 await atLookupImpl.lookup('publickey', atSign, auth: false);
-            value = value?.replaceFirst('data:', '');
+            value = value.replaceFirst('data:', '');
             if (value != null && value != 'null') {
               // @server has root location, is running and is activated
               atStatus.serverStatus = ServerStatus.activated;
@@ -120,7 +123,7 @@ class AtStatusImpl implements AtServerStatus {
         // @server has root location, is not running and is not activated
         atStatus.serverStatus = ServerStatus.unavailable;
         print('_getServerStatus error: $error');
-      });
+      }).whenComplete(() => atLookupImpl.close());
     }
     return atStatus;
   }

@@ -19,7 +19,6 @@ class AtContactsImpl implements AtContactsLibrary {
   String atSign;
   var logger;
   RegexType _regexType;
-  String _regex;
 
   AtContactsImpl(AtClient atClient, String atSign, {RegexType regexType}) {
     this.atSign = atSign;
@@ -141,8 +140,8 @@ class AtContactsImpl implements AtContactsLibrary {
         ? '.${atClient.preference.namespace}'
         : '';
     var subRegex = _regexType == RegexType.appSpecific
-        ? '$atSign$appNamespace.${AppConstants.LIBRARY_NAMESPACE}'
-        : '$atSign.*.${AppConstants.LIBRARY_NAMESPACE}';
+        ? '$atSign.${AppConstants.LIBRARY_NAMESPACE}$appNamespace'
+        : '$atSign.${AppConstants.LIBRARY_NAMESPACE}.*';
     var regex =
         '${AppConstants.CONTACT_KEY_PREFIX}.*.(${AppConstants.CONTACT_KEY_SUFFIX}.$atSign|$subRegex)@$atSign'
             .toLowerCase();
@@ -470,27 +469,25 @@ class AtContactsImpl implements AtContactsLibrary {
       case KeyType.contact:
         modifiedKey = isOld
             ? '${AppConstants.CONTACT_KEY_PREFIX}.$key.${AppConstants.CONTACT_KEY_SUFFIX}.${atSign.replaceFirst('@', '')}'
-            : '${AppConstants.CONTACT_KEY_PREFIX}.$key.${atSign.replaceFirst('@', '')}$appNamespace.${AppConstants.LIBRARY_NAMESPACE}';
+            : '${AppConstants.CONTACT_KEY_PREFIX}.$key.${atSign.replaceFirst('@', '')}.${AppConstants.LIBRARY_NAMESPACE}$appNamespace';
         break;
       case KeyType.groupList:
         modifiedKey = isOld
             ? '${AppConstants.CONTACT_KEY_PREFIX}.${AppConstants.GROUPS_LIST_KEY_PREFIX}.${atSign.replaceFirst('@', '')}'
-            : '${AppConstants.CONTACT_KEY_PREFIX}.${AppConstants.GROUPS_LIST_KEY_PREFIX}.${atSign.replaceFirst('@', '')}$appNamespace.${AppConstants.LIBRARY_NAMESPACE}';
+            : '${AppConstants.CONTACT_KEY_PREFIX}.${AppConstants.GROUPS_LIST_KEY_PREFIX}.${atSign.replaceFirst('@', '')}.${AppConstants.LIBRARY_NAMESPACE}$appNamespace';
         break;
       case KeyType.group:
         modifiedKey =
-            isOld ? key : '$key$appNamespace.${AppConstants.LIBRARY_NAMESPACE}';
+            isOld ? key : '$key.${AppConstants.LIBRARY_NAMESPACE}$appNamespace';
         break;
       default:
         break;
     }
-    var atKey = _formAtKey(
-      modifiedKey,
-    );
+    var atKey = _formAtKey(modifiedKey, isOld: isOld);
     return atKey;
   }
 
-  AtKey _formAtKey(String key) {
+  AtKey _formAtKey(String key, {bool isOld = false}) {
     var metadata = Metadata()
       ..isPublic = false
       ..namespaceAware = false;

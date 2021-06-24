@@ -9,8 +9,8 @@ class SyncMessageListener extends OutboundMessageListener {
   final AT_UTF_CODE = '@'.codeUnitAt(0);
   final DOLLAR_UTF_CODE = '\$'.codeUnitAt(0);
   final NEWLINE_UTF_CODE = '\n'.codeUnitAt(0);
-  final HASH_UTF_CODE = '#'.codeUnitAt(0);
-  static const HASH_SIGN = '#';
+  final TILDE_UTF_CODE = '~'.codeUnitAt(0);
+  static const TILDE_SIGN = '~';
   var bytesBuilder = BytesBuilder();
 
   SyncMessageListener(connection) : super(connection);
@@ -42,7 +42,7 @@ class SyncMessageListener extends OutboundMessageListener {
     // Send bytes that has complete json record to process method and add remaining bytes to pendingData.
     if (sync_data.contains(DOLLAR_UTF_CODE)) {
       var hashIndex = int.parse(
-          utf8.decode(sync_data.sublist(0, sync_data.indexOf(HASH_UTF_CODE))));
+          utf8.decode(sync_data.sublist(0, sync_data.indexOf(TILDE_UTF_CODE))));
       // If sync_data length is less than the hash index, incomplete data is received. Add to pendingData.
       if (sync_data.length < hashIndex) {
         pendingData.addLast(sync_data);
@@ -55,7 +55,7 @@ class SyncMessageListener extends OutboundMessageListener {
       bytesBuilder
           .add(sync_data.sublist(0, sync_data.lastIndexOf(DOLLAR_UTF_CODE)));
       var incompleteData =
-          sync_data.sublist(sync_data.lastIndexOf(DOLLAR_UTF_CODE) + 1);
+      sync_data.sublist(sync_data.lastIndexOf(DOLLAR_UTF_CODE) + 1);
       pendingData.addLast(incompleteData);
       _process(bytesBuilder.takeBytes());
     }
@@ -71,15 +71,15 @@ class SyncMessageListener extends OutboundMessageListener {
     var recordsReceived = utf8.decode(sync_records);
     while (startIndex < recordsReceived.length &&
         endIndex < recordsReceived.length) {
-      var startOfRecord = recordsReceived.indexOf(HASH_SIGN, startIndex) + 1;
+      var startOfRecord = recordsReceived.indexOf(TILDE_SIGN, startIndex) + 1;
       if (startOfRecord == 0) break;
       var recordLengthStr =
-          recordsReceived.substring(startIndex, startOfRecord - 1);
+      recordsReceived.substring(startIndex, startOfRecord - 1);
       startIndex = startIndex + recordLengthStr.length + 1;
       endIndex = startIndex + int.parse(recordLengthStr);
       var jsonString = recordsReceived.substring(startIndex, endIndex);
       var jsonRecord = jsonDecode(jsonString);
-      syncCallback(jsonRecord);
+      syncCallback!(jsonRecord);
       startIndex = endIndex + 1;
     }
   }

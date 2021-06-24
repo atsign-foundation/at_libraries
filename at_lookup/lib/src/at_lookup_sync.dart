@@ -7,16 +7,16 @@ class AtLookupSync extends AtLookupImpl {
   var _currentAtSign;
   var _rootDomain;
   var _rootPort;
-  Function syncCallback;
+  Function? syncCallback;
 
   AtLookupSync(
-    String atSign,
-    String rootDomain,
-    int rootPort, {
-    String privateKey,
-    String cramSecret,
-  }) : super(atSign, rootDomain, rootPort,
-            privateKey: privateKey, cramSecret: cramSecret) {
+      String atSign,
+      String rootDomain,
+      int rootPort, {
+        String? privateKey,
+        String? cramSecret,
+      }) : super(atSign, rootDomain, rootPort,
+      privateKey: privateKey, cramSecret: cramSecret) {
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
@@ -37,15 +37,16 @@ class AtLookupSync extends AtLookupImpl {
           secondaryInfo[0], secondaryInfo[1], _currentAtSign);
       //3. listen to server response
       messageListener = SyncMessageListener(connection);
-      messageListener.syncCallback = syncCallback;
-      messageListener.listen();
+      messageListener!.name = 'AtLookupSync';
+      messageListener!.syncCallback = syncCallback;
+      messageListener!.listen();
     }
   }
 
   @override
   // ignore: missing_return
-  Future<String> executeCommand(String atCommand, {bool auth = false}) async {
-    if (auth != null && auth) {
+  Future<String?> executeCommand(String atCommand, {bool auth = false}) async {
+    if (auth) {
       if (privateKey != null) {
         await authenticate(privateKey);
       } else if (cramSecret != null) {
@@ -56,7 +57,7 @@ class AtLookupSync extends AtLookupImpl {
       }
     }
     try {
-      await connection.write(atCommand);
+       connection!.write(atCommand);
     } on Exception catch (e) {
       logger.severe('Exception in sending to server, ${e.toString()}');
       rethrow;

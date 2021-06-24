@@ -17,3 +17,10 @@
 ## 1.0.0+7
 - Third party package dependency upgrade
 - Call back to auto restart monitor connection
+## 1.0.0+8
+- Refactor code with dart lint rules
+- at_utils and at_commons version changes
+## 2.0.0
+- Null safety upgrade
+## 2.0.1
+- Stream sync and connection refactoring changes

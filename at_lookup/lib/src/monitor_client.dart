@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
@@ -10,10 +12,11 @@ import 'package:at_utils/at_logger.dart';
 import 'package:crypton/crypton.dart';
 
 /// Utility class to execute monitor verb.
+/// [Deprecated] Use monitor from at_client sdk
 class MonitorClient {
   final _monitorVerbResponseQueue = Queue();
   var response;
-  var _privateKey;
+  late var _privateKey;
   var logger = AtSignLogger('MonitorVerbManager');
 
   MonitorClient(String privateKey) {
@@ -23,7 +26,7 @@ class MonitorClient {
   ///Monitor Verb
   Future<OutboundConnection> executeMonitorVerb(String _command, String _atSign,
       String _rootDomain, int _rootPort, Function notificationCallBack,
-      {bool auth = true, Function restartCallBack}) async {
+      {bool auth = true, Function? restartCallBack}) async {
     //1. Get a new outbound connection dedicated to monitor verb.
     var _monitorConnection =
         await _createNewConnection(_atSign, _rootDomain, _rootPort);
@@ -40,11 +43,11 @@ class MonitorClient {
       _errorHandler(error, _monitorConnection);
     }, onDone: () {
       _finishedHandler(_monitorConnection);
-      restartCallBack(_command, notificationCallBack, _privateKey);
+      restartCallBack!(_command, notificationCallBack, _privateKey);
     });
     await _authenticateConnection(_atSign, _monitorConnection);
     //3. Write monitor verb to connection
-    await _monitorConnection.write(_command);
+    _monitorConnection.write(_command);
     return _monitorConnection;
   }
 
@@ -68,16 +71,17 @@ class MonitorClient {
   /// To authenticate connection via PKAM verb.
   Future<OutboundConnection> _authenticateConnection(
       String _atSign, OutboundConnection _monitorConnection) async {
-    await _monitorConnection.write('from:$_atSign\n');
+    _monitorConnection.write('from:$_atSign\n');
     var fromResponse = await _getQueueResponse();
     logger.info('from result:$fromResponse');
     fromResponse = fromResponse.trim().replaceAll('data:', '');
     logger.info('fromResponse $fromResponse');
     var key = RSAPrivateKey.fromString(_privateKey);
-    var sha256signature = key.createSHA256Signature(utf8.encode(fromResponse));
+    var sha256signature =
+        key.createSHA256Signature(utf8.encode(fromResponse) as Uint8List);
     var signature = base64Encode(sha256signature);
     logger.info('Sending command pkam:$signature');
-    await _monitorConnection.write('pkam:$signature\n');
+    _monitorConnection.write('pkam:$signature\n');
     var pkamResponse = await _getQueueResponse();
     if (!pkamResponse.contains('success')) {
       throw UnAuthenticatedException('Auth failed');
@@ -89,7 +93,7 @@ class MonitorClient {
   ///Returns the response of the monitor verb queue.
   Future<String> _getQueueResponse() async {
     var maxWaitMilliSeconds = 5000;
-    String result;
+    var result = '';
     //wait maxWaitMilliSeconds seconds for response from remote socket
     var loopCount = (maxWaitMilliSeconds / 50).round();
     for (var i = 0; i < loopCount; i++) {
@@ -109,7 +113,7 @@ class MonitorClient {
     return result;
   }
 
-  List<String> _getSecondaryInfo(String url) {
+  List<String> _getSecondaryInfo(String? url) {
     var result = <String>[];
     if (url != null && url.contains(':')) {
       var arr = url.split(':');
@@ -131,7 +135,7 @@ class MonitorClient {
 
   Future<void> _closeConnection(OutboundConnection _connection) async {
     if (!_connection.isInValid()) {
-      await _connection.close();
+      _connection.close();
     }
   }
 }
