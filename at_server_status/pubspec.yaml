@@ -3,21 +3,16 @@ description: The at_server_status library provides an easy means to check on the
 documentation: https://atsign.dev/apidocs
 repository: https://github.com/atsign-foundation/at_libraries
 homepage: https://atsign.dev
-publish_to: none
-version: 0.2.0
+version: 1.0.0
 
 environment:
   sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  at_lookup: ^2.0.0
-  at_utils: ^2.0.0
-  at_commons: ^2.0.0
+  at_lookup: ^2.0.1
+  at_utils: ^2.0.1
+  at_commons: ^2.0.1
   uuid: ^3.0.4
-
-#dependency_overrides:
-#  at_lookup:
-#    path: ../at_lookup
 
 dev_dependencies:
   pedantic: ^1.11.0
