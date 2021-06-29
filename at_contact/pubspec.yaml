@@ -9,9 +9,9 @@ environment:
 
 dependencies:
   intl: ^0.17.0
-  at_client: ^2.0.0
-  at_commons: ^2.0.0
-  at_utils: ^2.0.0
+  at_client: ^2.0.1
+  at_commons: ^2.0.1
+  at_utils: ^2.0.1
   uuid: ^3.0.4
 
 dev_dependencies:
