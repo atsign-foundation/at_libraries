@@ -9,6 +9,8 @@ class OutboundMessageListener {
   final _buffer = ByteBuffer(capacity: 10240000);
   late Queue _queue;
   final _connection;
+  Function? syncCallback;
+  String? name;
 
   OutboundMessageListener(this._connection);
 

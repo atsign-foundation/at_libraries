@@ -9,8 +9,8 @@ class OutboundConnectionImpl extends OutboundConnection {
   }
 
   int _getIdleTimeMillis() {
-    var lastAccessedTime = getMetaData()!.lastAccessed;
-    lastAccessedTime ??= getMetaData()!.created;
+    var lastAccessedTime = getMetaData().lastAccessed;
+    lastAccessedTime ??= getMetaData().created;
     var currentTime = DateTime.now().toUtc();
     return currentTime.difference(lastAccessedTime!).inMilliseconds;
   }
@@ -21,7 +21,7 @@ class OutboundConnectionImpl extends OutboundConnection {
 
   @override
   bool isInValid() {
-    return _isIdle() || getMetaData()!.isClosed || getMetaData()!.isStale;
+    return _isIdle() || getMetaData().isClosed || getMetaData().isStale;
   }
 
   @override
