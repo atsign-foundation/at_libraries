@@ -7,12 +7,16 @@ import 'package:test/test.dart';
 import 'test_util.dart';
 
 Future<void> main() async {
-  AtContactsImpl atContactsImpl;
-  AtGroup atGroup;
+  late AtContactsImpl atContactsImpl;
+  AtGroup? atGroup;
   var atSign = '@sitaram🛠';
   var preference = TestUtil.getPreferenceLocal();
   try {
     await AtClientImpl.createClient(atSign, 'me', preference);
+    var atClient = await (AtClientImpl.getClient(atSign));
+    atClient!.getSyncManager()!.init(atSign, preference,
+        atClient.getRemoteSecondary(), atClient.getLocalSecondary());
+
     atContactsImpl = await AtContactsImpl.getInstance(atSign);
     // set contact details
     atGroup = AtGroup(atSign, description: 'test', displayName: 'test1');

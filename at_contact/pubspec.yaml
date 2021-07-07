@@ -5,13 +5,14 @@ repository: https://github.com/atsign-foundation/at_libraries
 homepage: https://atsign.dev
 
 environment:
-  sdk: '>=2.7.0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  intl: ^0.16.1
+  intl: ^0.17.0
   at_client: ^2.0.1
   at_commons: ^2.0.1
   at_utils: ^2.0.1
+  uuid: ^3.0.4
 
 dependency_overrides:
   at_client:
@@ -50,7 +51,6 @@ dependency_overrides:
       path: at_commons
       ref: trunk
       version: ^2.0.1
-  uuid: ^3.0.4
 
 dev_dependencies:
   pedantic: ^1.9.0

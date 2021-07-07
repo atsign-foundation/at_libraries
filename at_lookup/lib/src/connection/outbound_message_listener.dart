@@ -56,7 +56,8 @@ class OutboundMessageListener {
     return _read(maxWaitMillis: maxWaitMilliSeconds);
   }
 
-  Future<String?> _read({int maxWaitMillis = 120000, int retryCount = 1}) async {
+  Future<String?> _read(
+      {int maxWaitMillis = 120000, int retryCount = 1}) async {
     var result;
     var maxIterations = maxWaitMillis / 10;
     if (retryCount == maxIterations) {

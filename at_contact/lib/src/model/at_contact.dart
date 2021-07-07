@@ -1,34 +1,34 @@
 import 'package:at_contact/src/service/util_service.dart';
 
 class AtContact {
-  String atSign;
+  String? atSign;
 
   //ContactType.Individual
-  ContactType type;
+  ContactType? type;
 
   // [ContactCategory.Other];
-  List<ContactCategory> categories;
+  List<ContactCategory>? categories;
 
   //default false
-  bool favourite;
+  bool? favourite;
 
   //default false
-  bool blocked;
+  bool? blocked;
 
-  List<String> personas = [];
+  List<String>? personas = [];
 
   //
-  Map<dynamic, dynamic> tags;
+  Map<dynamic, dynamic>? tags;
 
 // Ex:: com.atSign.AtContact
-  String clazz;
+  String? clazz;
 
 // version default '1'
-  int version;
+  int? version;
 
-  DateTime createdOn;
+  DateTime? createdOn;
 
-  DateTime updatedOn;
+  DateTime? updatedOn;
 
   AtContact(
       {this.type,
@@ -57,15 +57,15 @@ class AtContact {
     return {
       'atSign': atSign,
       'type': type.toString(),
-      'categories': categories.map((e) => e.toString()).toList(),
+      'categories': categories!.map((e) => e.toString()).toList(),
       'favourite': favourite,
       'blocked': blocked,
       'personas': personas,
       'tags': tags,
       'clazz': clazz,
       'version': version,
-      'createdOn': UtilServices.dateToString(createdOn),
-      'updatedOn': UtilServices.dateToString(updatedOn),
+      'createdOn': UtilServices.dateToString(createdOn!),
+      'updatedOn': UtilServices.dateToString(updatedOn!),
     };
   }
 
@@ -73,14 +73,14 @@ class AtContact {
     atSign = json['atSign'];
     type = ContactType.values
         .firstWhere((element) => element.toString() == json['type']);
-    categories = (json['categories'] as List<dynamic>)
+    categories = (json['categories'] as List<dynamic>?)
         ?.cast<String>()
-        ?.map((value) => ContactCategory.values
+        .map((value) => ContactCategory.values
             .firstWhere((element) => element.toString() == value))
-        ?.toList();
+        .toList();
     favourite = json['favourite'];
     blocked = json['blocked'];
-    personas = (json['personas'] as List<dynamic>)?.cast<String>();
+    personas = (json['personas'] as List<dynamic>?)?.cast<String>();
     tags = json['tags'];
     clazz = json['clazz'];
     version = json['version'];

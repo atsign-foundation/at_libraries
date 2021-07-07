@@ -505,6 +505,7 @@ class AtLookupImpl implements AtLookUp {
     return true;
   }
 
+
   bool isConnectionAvailable() {
     return _connection != null && !_connection!.isInValid();
   }
