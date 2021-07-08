@@ -11,22 +11,9 @@ dependencies:
   path: ^1.8.0
   crypton: ^2.0.1
   crypto: ^3.0.1
-  at_commons: ^2.0.1
   at_utils: ^2.0.1
+  at_commons: ^2.0.1
 
-dependency_overrides:
-  at_commons:
-    git:
-      url: https://github.com/atsign-foundation/at_tools.git
-      path: at_commons
-      ref: trunk
-      version: ^2.0.1
-  at_utils:
-    git:
-      url: https://github.com/atsign-foundation/at_tools.git
-      path: at_utils
-      ref: trunk
-      version: ^2.0.1
 
 dev_dependencies:
   pedantic: ^1.11.0
