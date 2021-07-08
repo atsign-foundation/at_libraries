@@ -13,7 +13,9 @@ Future<void> main() async {
   var preference = TestUtil.getPreferenceLocal();
   try {
     await AtClientImpl.createClient(atSign, 'me', preference);
-    await (AtClientImpl.getClient(atSign));
+    var atClient = await (AtClientImpl.getClient(atSign));
+    atClient!.getSyncManager()!.init(atSign, preference,
+        atClient.getRemoteSecondary(), atClient.getLocalSecondary());
 
     atContactsImpl = await AtContactsImpl.getInstance(atSign);
     // set contact details

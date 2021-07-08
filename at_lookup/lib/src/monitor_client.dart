@@ -12,7 +12,6 @@ import 'package:at_utils/at_logger.dart';
 import 'package:crypton/crypton.dart';
 
 /// Utility class to execute monitor verb.
-/// [Deprecated] Use monitor from at_client sdk
 class MonitorClient {
   final _monitorVerbResponseQueue = Queue();
   var response;
@@ -47,7 +46,7 @@ class MonitorClient {
     });
     await _authenticateConnection(_atSign, _monitorConnection);
     //3. Write monitor verb to connection
-    _monitorConnection.write(_command);
+    await _monitorConnection.write(_command);
     return _monitorConnection;
   }
 
@@ -71,7 +70,7 @@ class MonitorClient {
   /// To authenticate connection via PKAM verb.
   Future<OutboundConnection> _authenticateConnection(
       String _atSign, OutboundConnection _monitorConnection) async {
-    _monitorConnection.write('from:$_atSign\n');
+    await _monitorConnection.write('from:$_atSign\n');
     var fromResponse = await _getQueueResponse();
     logger.info('from result:$fromResponse');
     fromResponse = fromResponse.trim().replaceAll('data:', '');
@@ -81,9 +80,9 @@ class MonitorClient {
         key.createSHA256Signature(utf8.encode(fromResponse) as Uint8List);
     var signature = base64Encode(sha256signature);
     logger.info('Sending command pkam:$signature');
-    _monitorConnection.write('pkam:$signature\n');
+    await _monitorConnection.write('pkam:$signature\n');
     var pkamResponse = await _getQueueResponse();
-    if (!pkamResponse.contains('success')) {
+    if (pkamResponse == null || !pkamResponse.contains('success')) {
       throw UnAuthenticatedException('Auth failed');
     }
     logger.info('auth success');
@@ -135,7 +134,7 @@ class MonitorClient {
 
   Future<void> _closeConnection(OutboundConnection _connection) async {
     if (!_connection.isInValid()) {
-      _connection.close();
+      await _connection.close();
     }
   }
 }
