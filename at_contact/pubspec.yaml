@@ -1,5 +1,6 @@
 name: at_contact
-description: A starting point for Dart libraries or applications.
+description: A Dart library for managing contact data that developers can use for their applications.
+documentation: https://atsign.dev/docs/
 version: 2.0.1
 repository: https://github.com/atsign-foundation/at_libraries
 homepage: https://atsign.dev
