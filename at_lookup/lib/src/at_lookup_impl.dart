@@ -459,8 +459,7 @@ class AtLookupImpl implements AtLookUp {
     return await _process(atCommand, auth: true);
   }
 
-  Future<String?> _delete(DeleteVerbBuilder builder,
-      {String? privateKey}) async {
+  Future<String?> _delete(DeleteVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
     return await _process(
       atCommand,
