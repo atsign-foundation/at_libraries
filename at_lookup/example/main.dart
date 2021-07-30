@@ -3,7 +3,7 @@ import 'package:at_lookup/at_lookup.dart';
 void main(List<String> arguments) async {
   var atLookUpImpl = AtLookupImpl(
     '@alice',
-    'root.atsign.com',
+    'root.atsign.org',
     64,
     privateKey: 'privateKey',
     cramSecret: 'cramSecret',
