@@ -2,11 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_commons/src/at_constants.dart' as at_constants;
-import 'package:at_lookup/src/at_lookup.dart';
+import 'package:at_lookup/at_lookup.dart';
 import 'package:at_lookup/src/connection/outbound_connection.dart';
 import 'package:at_lookup/src/connection/outbound_connection_impl.dart';
 import 'package:at_lookup/src/connection/outbound_message_listener.dart';
@@ -266,8 +265,8 @@ class AtLookupImpl implements AtLookUp {
     return putResult != null;
   }
 
-  Future<void> _createConnection() async {
-    if (!_isConnectionAvailable()) {
+  Future<void> createConnection() async {
+    if (!isConnectionAvailable()) {
       //1. find secondary url for atsign from lookup library
       var secondaryUrl =
           await findSecondary(_currentAtSign, _rootDomain, _rootPort);
@@ -459,8 +458,7 @@ class AtLookupImpl implements AtLookUp {
     return await _process(atCommand, auth: true);
   }
 
-  Future<String?> _delete(DeleteVerbBuilder builder,
-      {String? privateKey}) async {
+  Future<String?> _delete(DeleteVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
     return await _process(
       atCommand,
@@ -490,7 +488,7 @@ class AtLookupImpl implements AtLookUp {
   }
 
   bool _isAuthRequired() {
-    return !_isConnectionAvailable() ||
+    return !isConnectionAvailable() ||
         !(_isPkamAuthenticated || _isCramAuthenticated);
   }
 
@@ -507,7 +505,7 @@ class AtLookupImpl implements AtLookUp {
     return true;
   }
 
-  bool _isConnectionAvailable() {
+  bool isConnectionAvailable() {
     return _connection != null && !_connection!.isInValid();
   }
 
@@ -520,7 +518,7 @@ class AtLookupImpl implements AtLookUp {
   }
 
   Future<void> _sendCommand(String command) async {
-    await _createConnection();
+    await createConnection();
     await _connection!.write(command);
   }
 }

@@ -104,7 +104,7 @@ class AtStatusImpl implements AtServerStatus {
             var value =
                 await atLookupImpl.lookup('publickey', atSign, auth: false);
             value = value.replaceFirst('data:', '');
-            if (value != null && value != 'null') {
+            if (value != 'null') {
               // @server has root location, is running and is activated
               atStatus.serverStatus = ServerStatus.activated;
             } else {

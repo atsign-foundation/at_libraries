@@ -82,7 +82,7 @@ class MonitorClient {
     logger.info('Sending command pkam:$signature');
     await _monitorConnection.write('pkam:$signature\n');
     var pkamResponse = await _getQueueResponse();
-    if (pkamResponse == null || !pkamResponse.contains('success')) {
+    if (!pkamResponse.contains('success')) {
       throw UnAuthenticatedException('Auth failed');
     }
     logger.info('auth success');
