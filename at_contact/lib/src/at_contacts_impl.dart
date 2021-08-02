@@ -42,7 +42,7 @@ class AtContactsImpl implements AtContactsLibrary {
       rethrow;
     }
     var atClient = await AtClientImpl.getClient(atSign);
-    return AtContactsImpl(atClient, atSign, regexType: regexType!);
+    return AtContactsImpl(atClient, atSign, regexType: regexType);
   }
 
   /// returns  true on success otherwise false.
