@@ -27,3 +27,5 @@
 - at_utils and at_commons version change
 ## 2.0.3
 - at_utils and at_commons version change for stream resume
+## 2.0.4
+- at_commons version change
