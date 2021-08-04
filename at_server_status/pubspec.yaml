@@ -3,15 +3,15 @@ description: A Dart library that provides a means to check on the status of the 
 documentation: https://atsign.dev/apidocs
 repository: https://github.com/atsign-foundation/at_libraries
 homepage: https://atsign.dev
-version: 1.0.1
+version: 1.0.2
 
 environment:
   sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  at_lookup: ^2.0.3
-  at_utils: ^2.0.3
-  at_commons: ^2.0.3
+  at_lookup: ^2.0.4
+  at_utils: ^2.0.4
+  at_commons: ^2.0.4
   uuid: ^3.0.4
 
 dev_dependencies:
