@@ -11,7 +11,7 @@ environment:
 dependencies:
   intl: ^0.17.0
   at_client: ^2.0.3
-  at_commons: ^2.0.5
+  at_commons: ^2.0.4
   at_utils: ^2.0.4
   uuid: ^3.0.4
 
