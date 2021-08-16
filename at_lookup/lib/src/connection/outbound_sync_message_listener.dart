@@ -55,7 +55,7 @@ class SyncMessageListener extends OutboundMessageListener {
       bytesBuilder
           .add(sync_data.sublist(0, sync_data.lastIndexOf(DOLLAR_UTF_CODE)));
       var incompleteData =
-      sync_data.sublist(sync_data.lastIndexOf(DOLLAR_UTF_CODE) + 1);
+          sync_data.sublist(sync_data.lastIndexOf(DOLLAR_UTF_CODE) + 1);
       pendingData.addLast(incompleteData);
       _process(bytesBuilder.takeBytes());
     }
@@ -74,7 +74,7 @@ class SyncMessageListener extends OutboundMessageListener {
       var startOfRecord = recordsReceived.indexOf(TILDE_SIGN, startIndex) + 1;
       if (startOfRecord == 0) break;
       var recordLengthStr =
-      recordsReceived.substring(startIndex, startOfRecord - 1);
+          recordsReceived.substring(startIndex, startOfRecord - 1);
       startIndex = startIndex + recordLengthStr.length + 1;
       endIndex = startIndex + int.parse(recordLengthStr);
       var jsonString = recordsReceived.substring(startIndex, endIndex);

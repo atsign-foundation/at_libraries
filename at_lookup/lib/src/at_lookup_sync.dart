@@ -10,13 +10,13 @@ class AtLookupSync extends AtLookupImpl {
   Function? syncCallback;
 
   AtLookupSync(
-      String atSign,
-      String rootDomain,
-      int rootPort, {
-        String? privateKey,
-        String? cramSecret,
-      }) : super(atSign, rootDomain, rootPort,
-      privateKey: privateKey, cramSecret: cramSecret) {
+    String atSign,
+    String rootDomain,
+    int rootPort, {
+    String? privateKey,
+    String? cramSecret,
+  }) : super(atSign, rootDomain, rootPort,
+            privateKey: privateKey, cramSecret: cramSecret) {
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
@@ -56,7 +56,7 @@ class AtLookupSync extends AtLookupImpl {
       }
     }
     try {
-       await connection!.write(atCommand);
+      await connection!.write(atCommand);
     } on Exception catch (e) {
       logger.severe('Exception in sending to server, ${e.toString()}');
       rethrow;
