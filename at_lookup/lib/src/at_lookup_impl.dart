@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_commons/src/at_constants.dart' as at_constants;
@@ -314,6 +315,8 @@ class AtLookupImpl implements AtLookUp {
         verbResult = await _notifyList(builder);
       } else if (builder is NotifyAllVerbBuilder) {
         verbResult = await _notifyAll(builder);
+      }else if(builder is SyncVerbBuilder){
+        verbResult = await _sync(builder);
       }
     } on Exception catch (e) {
       logger.severe('Error in remote verb execution ${e.toString()}');
@@ -381,6 +384,11 @@ class AtLookupImpl implements AtLookUp {
     return await _process(command, auth: true);
   }
 
+  Future<String?> _sync(SyncVerbBuilder builder) async {
+    var atCommand = builder.buildCommand();
+    return await _process(atCommand, auth: true);
+  }
+
   Future<String?> executeCommand(String atCommand, {bool auth = false}) async {
     return await _process(atCommand, auth: auth);
   }
@@ -390,6 +398,10 @@ class AtLookupImpl implements AtLookUp {
   Future<bool> authenticate(String? privateKey) async {
     if (privateKey == null) {
       throw UnAuthenticatedException('Private key not passed');
+    }
+    // If connection is already authenticated, return true.
+    if(_isPkamAuthenticated){
+      return true;
     }
     await _sendCommand('from:$_currentAtSign\n');
     var fromResponse = await (messageListener.read());
