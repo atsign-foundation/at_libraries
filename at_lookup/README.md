@@ -9,7 +9,7 @@ The AtLookup Library is the low-level direct implementation of the @protocol ver
 To use this library in your app, first add it to your pubspec.yaml
 ```  
 dependencies:
-  at_lookup: ^2.0.3
+  at_lookup: ^3.0.0
 ```
 ### Add to your project 
 ```
