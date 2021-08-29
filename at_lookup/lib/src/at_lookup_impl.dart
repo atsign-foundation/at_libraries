@@ -289,7 +289,7 @@ class AtLookupImpl implements AtLookUp {
   /// Optionally [privateKey] is passed for verb builders which require authentication.
   @override
   Future<String> executeVerb(VerbBuilder builder, {sync = false}) async {
-    late var verbResult;
+    var verbResult;
     try {
       if (builder is UpdateVerbBuilder) {
         verbResult = await _update(builder);
@@ -330,7 +330,7 @@ class AtLookupImpl implements AtLookUp {
       var errorMessage = verbResult.split('-')[1];
       return Future.error(AtLookUpException(errorCode, errorMessage));
     }
-    return verbResult;
+    return verbResult ?? '';
   }
 
   bool _isError(String? verbResult) {

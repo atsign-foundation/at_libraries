@@ -144,11 +144,11 @@ class AtContactsImpl implements AtContactsLibrary {
         ? '$atSign.${AppConstants.LIBRARY_NAMESPACE}$appNamespace'
         : '$atSign.${AppConstants.LIBRARY_NAMESPACE}.*';
     var regex =
-    '${AppConstants.CONTACT_KEY_PREFIX}.*.(${AppConstants.CONTACT_KEY_SUFFIX}.$atSign|$subRegex)@$atSign'
-        .toLowerCase();
+        '${AppConstants.CONTACT_KEY_PREFIX}.*.(${AppConstants.CONTACT_KEY_SUFFIX}.$atSign|$subRegex)@$atSign'
+            .toLowerCase();
     var scanList = await atClient!.getAtKeys(regex: regex);
     scanList.retainWhere((scanKeys) =>
-    !scanKeys.key!.contains(AppConstants.GROUPS_LIST_KEY_PREFIX));
+        !scanKeys.key!.contains(AppConstants.GROUPS_LIST_KEY_PREFIX));
     if (scanList.isEmpty) {
       return contactList;
     }
@@ -460,8 +460,8 @@ class AtContactsImpl implements AtContactsLibrary {
     var appNamespace = isGet && _regexType == RegexType.all
         ? '.*'
         : atClient!.preference!.namespace != null
-        ? '.${atClient!.preference!.namespace}'
-        : '';
+            ? '.${atClient!.preference!.namespace}'
+            : '';
     var modifiedKey;
     switch (keyType) {
       case KeyType.contact:
@@ -476,7 +476,7 @@ class AtContactsImpl implements AtContactsLibrary {
         break;
       case KeyType.group:
         modifiedKey =
-        isOld ? key : '$key.${AppConstants.LIBRARY_NAMESPACE}$appNamespace';
+            isOld ? key : '$key.${AppConstants.LIBRARY_NAMESPACE}$appNamespace';
         break;
       default:
         break;
@@ -564,7 +564,7 @@ class AtContactsImpl implements AtContactsLibrary {
     list = (result.value != null) ? jsonDecode(result.value) : [];
     list = List<String>.from(list!);
     list.removeWhere((group) =>
-    (AtGroupBasicInfo.fromJson(jsonDecode(group)).atGroupId == groupId));
+        (AtGroupBasicInfo.fromJson(jsonDecode(group)).atGroupId == groupId));
     return await atClient!.put(atKey, jsonEncode(list));
   }
 
