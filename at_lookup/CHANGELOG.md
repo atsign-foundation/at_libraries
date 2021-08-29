@@ -1,3 +1,5 @@
+## 3.0.0
+- Sync pagination feature
 ## 2.0.5
 - bug fix for no verb response
 ## 2.0.4
