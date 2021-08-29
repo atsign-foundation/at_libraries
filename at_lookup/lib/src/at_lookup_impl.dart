@@ -315,7 +315,7 @@ class AtLookupImpl implements AtLookUp {
         verbResult = await _notifyList(builder);
       } else if (builder is NotifyAllVerbBuilder) {
         verbResult = await _notifyAll(builder);
-      }else if(builder is SyncVerbBuilder){
+      } else if (builder is SyncVerbBuilder) {
         verbResult = await _sync(builder);
       }
     } on Exception catch (e) {
