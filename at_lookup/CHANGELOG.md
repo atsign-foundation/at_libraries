@@ -1,5 +1,7 @@
 ## 3.0.0
 - Sync pagination feature
+## 2.0.5
+- bug fix for no verb response
 ## 2.0.4
 - at_commons version change
 ## 2.0.3
@@ -31,7 +33,3 @@
 - at_utils version changes
 ## 1.0.0
 - Initial version, created by Stagehand
-
-
-
-

@@ -330,7 +330,7 @@ class AtLookupImpl implements AtLookUp {
       var errorMessage = verbResult.split('-')[1];
       return Future.error(AtLookUpException(errorCode, errorMessage));
     }
-    return verbResult ?? '';
+    return verbResult ??= '';
   }
 
   bool _isError(String? verbResult) {
