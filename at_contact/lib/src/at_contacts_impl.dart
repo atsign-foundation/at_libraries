@@ -15,33 +15,25 @@ import 'config/AppConstants.dart';
 enum RegexType { all, appSpecific }
 
 class AtContactsImpl implements AtContactsLibrary {
-  AtClientImpl? _atClient;
+  AtClient? atClient;
   late String atSign;
   late var logger;
   late RegexType _regexType;
 
   AtContactsImpl(AtClient? atClient, String atSign, {RegexType? regexType}) {
     this.atSign = atSign;
-    _atClient = atClient as AtClientImpl?;
+    atClient = atClient;
     _regexType = regexType ?? RegexType.appSpecific;
 
     logger = AtSignLogger(runtimeType.toString());
   }
-
-  AtClientImpl? get atClient => _atClient;
-
-  set atClient(AtClient? value) {
-    _atClient = value as AtClientImpl?;
-  }
-
-  static Future<AtContactsImpl> getInstance(String atSign,
-      {RegexType? regexType}) async {
+  static Future<AtContactsImpl> getInstance(String atSign, {RegexType? regexType}) async {
     try {
       atSign = AtUtils.fixAtSign(AtUtils.formatAtSign(atSign)!);
     } on Exception {
       rethrow;
     }
-    var atClient = await AtClientImpl.getClient(atSign);
+    var atClient = AtClientManager.getInstance().atClient;
     return AtContactsImpl(atClient, atSign, regexType: regexType);
   }
 
@@ -134,21 +126,18 @@ class AtContactsImpl implements AtContactsLibrary {
   ///returns the list of [AtContact]
   @override
   Future<List<AtContact>> listContacts() async {
+    var preference = atClient!.getPreferences();
     Set contactSet = <String>{};
     var contactList = <AtContact>[];
     var atSign = this.atSign.replaceFirst('@', '');
-    var appNamespace = atClient!.preference!.namespace != null
-        ? '.${atClient!.preference!.namespace}'
-        : '';
+    var appNamespace = preference!.namespace == null ? '' : '.${preference.namespace}';
     var subRegex = _regexType == RegexType.appSpecific
         ? '$atSign.${AppConstants.LIBRARY_NAMESPACE}$appNamespace'
         : '$atSign.${AppConstants.LIBRARY_NAMESPACE}.*';
-    var regex =
-        '${AppConstants.CONTACT_KEY_PREFIX}.*.(${AppConstants.CONTACT_KEY_SUFFIX}.$atSign|$subRegex)@$atSign'
-            .toLowerCase();
+    var regex = '${AppConstants.CONTACT_KEY_PREFIX}.*.(${AppConstants.CONTACT_KEY_SUFFIX}.$atSign|$subRegex)@$atSign'
+        .toLowerCase();
     var scanList = await atClient!.getAtKeys(regex: regex);
-    scanList.retainWhere((scanKeys) =>
-        !scanKeys.key!.contains(AppConstants.GROUPS_LIST_KEY_PREFIX));
+    scanList.retainWhere((scanKeys) => !scanKeys.key!.contains(AppConstants.GROUPS_LIST_KEY_PREFIX));
     if (scanList.isEmpty) {
       return contactList;
     }
@@ -246,8 +235,7 @@ class AtContactsImpl implements AtContactsLibrary {
     var groupId = atGroup.groupId;
     var group = await getGroup(groupId);
     if (group == null) {
-      throw GroupNotExistsException(
-          'There is no Group exisits with Id $groupId');
+      throw GroupNotExistsException('There is no Group exisits with Id $groupId');
     }
     var atKey = _formKey(KeyType.group, key: atGroup.groupId!);
     //update atGroup
@@ -423,8 +411,7 @@ class AtContactsImpl implements AtContactsLibrary {
   /// deletes the contacts to the group members
   /// on success return true otherwise false
   @override
-  Future<bool> deleteMembers(
-      Set<AtContact> atContacts, AtGroup? atGroup) async {
+  Future<bool> deleteMembers(Set<AtContact> atContacts, AtGroup? atGroup) async {
     if (atContacts.isEmpty || atGroup == null) {
       return false;
     }
@@ -447,8 +434,9 @@ class AtContactsImpl implements AtContactsLibrary {
 
   /// Throw Exceptions on Invalid AtSigns.
   /// Returns 'AtKey' for [key].
-  AtKey _formKey(KeyType keyType,
-      {bool isGet = false, String? key, bool isOld = false}) {
+  AtKey _formKey(KeyType keyType, {bool isGet = false, String? key, bool isOld = false}) {
+    var preference = atClient!.getPreferences();
+
     if (key != null) {
       try {
         key = AtUtils.fixAtSign(AtUtils.formatAtSign(key)!);
@@ -459,8 +447,8 @@ class AtContactsImpl implements AtContactsLibrary {
     }
     var appNamespace = isGet && _regexType == RegexType.all
         ? '.*'
-        : atClient!.preference!.namespace != null
-            ? '.${atClient!.preference!.namespace}'
+        : preference!.namespace != null
+            ? '.${preference.namespace}'
             : '';
     var modifiedKey;
     switch (keyType) {
@@ -475,8 +463,7 @@ class AtContactsImpl implements AtContactsLibrary {
             : '${AppConstants.CONTACT_KEY_PREFIX}.${AppConstants.GROUPS_LIST_KEY_PREFIX}.${atSign.replaceFirst('@', '')}.${AppConstants.LIBRARY_NAMESPACE}$appNamespace';
         break;
       case KeyType.group:
-        modifiedKey =
-            isOld ? key : '$key.${AppConstants.LIBRARY_NAMESPACE}$appNamespace';
+        modifiedKey = isOld ? key : '$key.${AppConstants.LIBRARY_NAMESPACE}$appNamespace';
         break;
       default:
         break;
@@ -505,7 +492,7 @@ class AtContactsImpl implements AtContactsLibrary {
       return element != AppConstants.CONTACT_KEY_PREFIX.toLowerCase() &&
           element != AppConstants.CONTACT_KEY_SUFFIX.toLowerCase() &&
           element != AppConstants.LIBRARY_NAMESPACE.toLowerCase() &&
-          element != atClient!.preference!.namespace &&
+          element != atClient!.getPreferences()!.namespace &&
           !atSign.contains(element);
     }).join('');
     return modifiedKey;
@@ -539,7 +526,7 @@ class AtContactsImpl implements AtContactsLibrary {
       var newAtKey = _formKey(KeyType.groupList);
       await atClient!.put(newAtKey, result.value);
       result = await atClient!.get(newAtKey);
-      if (result != null) await atClient!.delete(atKey);
+      if (result.toString() != 'null') await atClient!.delete(atKey);
     }
     var list = [];
     if (result.value != null) {
@@ -563,8 +550,7 @@ class AtContactsImpl implements AtContactsLibrary {
     List<dynamic>? list = [];
     list = (result.value != null) ? jsonDecode(result.value) : [];
     list = List<String>.from(list!);
-    list.removeWhere((group) =>
-        (AtGroupBasicInfo.fromJson(jsonDecode(group)).atGroupId == groupId));
+    list.removeWhere((group) => (AtGroupBasicInfo.fromJson(jsonDecode(group)).atGroupId == groupId));
     return await atClient!.put(atKey, jsonEncode(list));
   }
 
