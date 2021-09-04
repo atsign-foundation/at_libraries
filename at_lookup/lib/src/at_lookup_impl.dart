@@ -137,7 +137,7 @@ class AtLookupImpl implements AtLookUp {
       ..atKey = key
       ..sharedBy = _currentAtSign;
     var deleteResult = await executeVerb(builder);
-    return deleteResult != null; //replace with call back
+    return deleteResult.isNotEmpty; //replace with call back
   }
 
   @override
@@ -174,7 +174,7 @@ class AtLookupImpl implements AtLookUp {
       ..sharedBy = sharedBy
       ..auth = auth
       ..operation = metadata == true ? 'all' : null;
-    if (verifyData == null || verifyData == false) {
+    if (verifyData == false) {
       var lookupResult = await executeVerb(builder);
       lookupResult = VerbUtil.getFormattedValue(lookupResult);
       return lookupResult;
@@ -237,10 +237,10 @@ class AtLookupImpl implements AtLookUp {
       ..regex = regex
       ..auth = auth;
     var scanResult = await executeVerb(builder);
-    if (scanResult != null) {
+    if (scanResult.isNotEmpty) {
       scanResult = scanResult.replaceFirst('data:', '');
     }
-    return (scanResult != null && scanResult.isNotEmpty)
+    return (scanResult.isNotEmpty)
         ? List.from(jsonDecode(scanResult))
         : [];
   }
@@ -263,7 +263,7 @@ class AtLookupImpl implements AtLookUp {
       }
     }
     var putResult = await executeVerb(builder);
-    return putResult != null;
+    return putResult.isNotEmpty;
   }
 
   Future<void> createConnection() async {
@@ -475,7 +475,7 @@ class AtLookupImpl implements AtLookUp {
   }
 
   Future<String?> _process(String command, {bool auth = false}) async {
-    if (auth != null && auth && _isAuthRequired()) {
+    if (auth && _isAuthRequired()) {
       if (privateKey != null) {
         await authenticate(privateKey);
       } else if (cramSecret != null) {
