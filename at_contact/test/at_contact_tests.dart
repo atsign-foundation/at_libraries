@@ -10,9 +10,7 @@ Future<void> main() async {
   late AtContact contact;
   var atSign = '@vinod';
   try {
-    await AtClientImpl.createClient(
-        '@colin', '', TestUtil.getPreferenceLocal());
-
+    await AtClientManager.getInstance().setCurrentAtSign(atSign, 'me', TestUtil.getPreferenceLocal());
     atContact = await AtContactsImpl.getInstance('@colin');
     // set contact details
     contact = AtContact(
