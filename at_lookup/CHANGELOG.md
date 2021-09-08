@@ -1,3 +1,5 @@
+## 3.0.1
+- connection close replaced with destroy
 ## 3.0.0
 - Sync pagination feature
 ## 2.0.5

@@ -21,7 +21,7 @@ abstract class BaseConnection extends AtConnection {
   @override
   Future<void> close() async {
     try {
-      await _socket.close();
+      _socket.destroy();
       getMetaData()!.isClosed = true;
     } on Exception {
       getMetaData()!.isStale = true;
