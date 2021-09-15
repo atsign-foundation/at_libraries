@@ -1,5 +1,6 @@
 import 'dart:collection';
 import 'dart:convert';
+
 import 'package:at_commons/at_commons.dart';
 import 'package:at_utils/at_logger.dart';
 
@@ -32,7 +33,8 @@ class OutboundMessageListener {
         return;
       }
       //ignore prompt(@ or @<atSign>@) after '\n'
-      if (data.last == 64 && data.contains(10)) {
+      // If data contains 10(utf8 character for '\n'), trim the string after the '\n'
+      if (data.contains(10)) {
         data = data.sublist(0, data.lastIndexOf(10) + 1);
       }
       _buffer.append(data);
@@ -50,16 +52,16 @@ class OutboundMessageListener {
   }
 
   /// Reads the response sent by remote socket from the queue.
-  /// If there is no message in queue after [maxWaitMilliSeconds], return null
-  Future<String?> read({int maxWaitMilliSeconds = 120000}) async {
+  /// If there is no message in queue after [maxWaitMilliSeconds], return null. Defaults to 30 seconds.
+  Future<String?> read({int maxWaitMilliSeconds = 30000}) async {
     return _read(maxWaitMillis: maxWaitMilliSeconds);
   }
 
-  Future<String?> _read(
-      {int maxWaitMillis = 120000, int retryCount = 1}) async {
+  Future<String?> _read({int maxWaitMillis = 30000, int retryCount = 1}) async {
     var result;
     var maxIterations = maxWaitMillis / 10;
     if (retryCount == maxIterations) {
+      _buffer.clear();
       return null;
     }
     var queueLength = _queue.length;
@@ -71,6 +73,7 @@ class OutboundMessageListener {
         return result;
       } else {
         //ignore any other response
+        _buffer.clear();
         return '';
       }
     }
