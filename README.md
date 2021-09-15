@@ -2,6 +2,10 @@
 
 ### Now for a little internet optimism
 
+[![Build Status](https://github.com/atsign-foundation/at_libraries/actions/workflows/at_libraries.yaml/badge.svg?branch=trunk)](https://github.com/atsign-foundation/at_libraries/actions/workflows/at_libraries.yaml)
+[![GitHub License](https://img.shields.io/badge/license-BSD3-blue.svg)](./LICENSE)
+
+
 # at_libraries
 Welcome to at_libraries. This project is open with intent—we encourage contributions, and we want pull requests to hear about issues.
 
@@ -18,4 +22,5 @@ This repository contains three @protocol libraries for developers building their
 All installation guidelines are written in their respective directories and pub.dev sites. Click on the links above for those details.
 
 ## Maintainers
-**TODO**: Please identify who created this repository and how to contact them.
+
+[Sitaram Pavan Kumar Kalluri](https://github.com/kalluriramkumar), [Muralidharan](https://github.com/murali-shris), [Naresh Gurijala](https://github.com/naresh0689)
