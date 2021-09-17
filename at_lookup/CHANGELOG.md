@@ -1,3 +1,5 @@
+## 3.0.2
+- Reduce wait time on server response
 ## 3.0.1
 - connection close replaced with destroy
 ## 3.0.0

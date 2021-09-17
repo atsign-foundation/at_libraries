@@ -240,9 +240,7 @@ class AtLookupImpl implements AtLookUp {
     if (scanResult.isNotEmpty) {
       scanResult = scanResult.replaceFirst('data:', '');
     }
-    return (scanResult.isNotEmpty)
-        ? List.from(jsonDecode(scanResult))
-        : [];
+    return (scanResult.isNotEmpty) ? List.from(jsonDecode(scanResult)) : [];
   }
 
   @override
