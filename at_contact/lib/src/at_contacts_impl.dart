@@ -22,7 +22,7 @@ class AtContactsImpl implements AtContactsLibrary {
 
   AtContactsImpl(AtClient? atClient, String atSign, {RegexType? regexType}) {
     this.atSign = atSign;
-    atClient = atClient;
+    this.atClient = atClient;
     _regexType = regexType ?? RegexType.appSpecific;
 
     logger = AtSignLogger(runtimeType.toString());
