@@ -1,3 +1,5 @@
+## 3.0.3
+- Reduce wait time on address lookup to root server 
 ## 3.0.2
 - Reduce wait time on server response
 ## 3.0.1
