@@ -1,3 +1,5 @@
+## 3.0.1
+- at_client version upgrade
 ## 3.0.0
 - RSDK uptake
 ## 2.0.3
