@@ -1,3 +1,5 @@
+## 3.0.4
+- at_utils and at_commons version change for AtKey validations. 
 ## 3.0.3
 - Reduce wait time on address lookup to root server 
 ## 3.0.2
