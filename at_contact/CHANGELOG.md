@@ -1,3 +1,5 @@
+## 3.0.2
+- uptake AtKey validations from at_commons package. 
 ## 3.0.1
 - at_client version upgrade
 ## 3.0.0

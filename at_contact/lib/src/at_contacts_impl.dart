@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:at_client/at_client.dart';
 import 'package:at_commons/at_commons.dart';
-import 'package:at_contact/src/config/AppConstants.dart';
+import 'package:at_contact/src/config/app_constants.dart';
 import 'package:at_contact/src/model/at_contact.dart';
 import 'package:at_contact/src/model/at_group.dart';
 import 'package:at_contact/src/service/at_contacts_library.dart';
@@ -10,7 +10,7 @@ import 'package:at_utils/at_logger.dart';
 import 'package:at_utils/at_utils.dart';
 import 'package:uuid/uuid.dart';
 
-import 'config/AppConstants.dart';
+import 'config/app_constants.dart';
 
 enum RegexType { all, appSpecific }
 
