@@ -1,3 +1,5 @@
+## 3.0.4
+- at_commons and at_utils version change
 ## 3.0.3
 - Reduce wait time on address lookup to root server 
 ## 3.0.2
