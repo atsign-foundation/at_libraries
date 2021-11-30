@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:at_client/at_client.dart';
 import 'package:at_commons/at_commons.dart';
-import 'package:at_contact/src/config/AppConstants.dart';
+import 'package:at_contact/src/config/app_constants.dart';
 import 'package:at_contact/src/model/at_contact.dart';
 import 'package:at_contact/src/model/at_group.dart';
 import 'package:at_contact/src/service/at_contacts_library.dart';
@@ -10,7 +10,7 @@ import 'package:at_utils/at_logger.dart';
 import 'package:at_utils/at_utils.dart';
 import 'package:uuid/uuid.dart';
 
-import 'config/AppConstants.dart';
+import 'config/app_constants.dart';
 
 enum RegexType { all, appSpecific }
 
@@ -27,7 +27,8 @@ class AtContactsImpl implements AtContactsLibrary {
 
     logger = AtSignLogger(runtimeType.toString());
   }
-  static Future<AtContactsImpl> getInstance(String atSign, {RegexType? regexType}) async {
+  static Future<AtContactsImpl> getInstance(String atSign,
+      {RegexType? regexType}) async {
     try {
       atSign = AtUtils.fixAtSign(AtUtils.formatAtSign(atSign)!);
     } on Exception {
@@ -130,14 +131,17 @@ class AtContactsImpl implements AtContactsLibrary {
     Set contactSet = <String>{};
     var contactList = <AtContact>[];
     var atSign = this.atSign.replaceFirst('@', '');
-    var appNamespace = preference!.namespace == null ? '' : '.${preference.namespace}';
+    var appNamespace =
+        preference!.namespace == null ? '' : '.${preference.namespace}';
     var subRegex = _regexType == RegexType.appSpecific
         ? '$atSign.${AppConstants.LIBRARY_NAMESPACE}$appNamespace'
         : '$atSign.${AppConstants.LIBRARY_NAMESPACE}.*';
-    var regex = '${AppConstants.CONTACT_KEY_PREFIX}.*.(${AppConstants.CONTACT_KEY_SUFFIX}.$atSign|$subRegex)@$atSign'
-        .toLowerCase();
+    var regex =
+        '${AppConstants.CONTACT_KEY_PREFIX}.*.(${AppConstants.CONTACT_KEY_SUFFIX}.$atSign|$subRegex)@$atSign'
+            .toLowerCase();
     var scanList = await atClient!.getAtKeys(regex: regex);
-    scanList.retainWhere((scanKeys) => !scanKeys.key!.contains(AppConstants.GROUPS_LIST_KEY_PREFIX));
+    scanList.retainWhere((scanKeys) =>
+        !scanKeys.key!.contains(AppConstants.GROUPS_LIST_KEY_PREFIX));
     if (scanList.isEmpty) {
       return contactList;
     }
@@ -235,7 +239,8 @@ class AtContactsImpl implements AtContactsLibrary {
     var groupId = atGroup.groupId;
     var group = await getGroup(groupId);
     if (group == null) {
-      throw GroupNotExistsException('There is no Group exisits with Id $groupId');
+      throw GroupNotExistsException(
+          'There is no Group exisits with Id $groupId');
     }
     var atKey = _formKey(KeyType.group, key: atGroup.groupId!);
     //update atGroup
@@ -411,7 +416,8 @@ class AtContactsImpl implements AtContactsLibrary {
   /// deletes the contacts to the group members
   /// on success return true otherwise false
   @override
-  Future<bool> deleteMembers(Set<AtContact> atContacts, AtGroup? atGroup) async {
+  Future<bool> deleteMembers(
+      Set<AtContact> atContacts, AtGroup? atGroup) async {
     if (atContacts.isEmpty || atGroup == null) {
       return false;
     }
@@ -434,7 +440,8 @@ class AtContactsImpl implements AtContactsLibrary {
 
   /// Throw Exceptions on Invalid AtSigns.
   /// Returns 'AtKey' for [key].
-  AtKey _formKey(KeyType keyType, {bool isGet = false, String? key, bool isOld = false}) {
+  AtKey _formKey(KeyType keyType,
+      {bool isGet = false, String? key, bool isOld = false}) {
     var preference = atClient!.getPreferences();
 
     if (key != null) {
@@ -463,7 +470,8 @@ class AtContactsImpl implements AtContactsLibrary {
             : '${AppConstants.CONTACT_KEY_PREFIX}.${AppConstants.GROUPS_LIST_KEY_PREFIX}.${atSign.replaceFirst('@', '')}.${AppConstants.LIBRARY_NAMESPACE}$appNamespace';
         break;
       case KeyType.group:
-        modifiedKey = isOld ? key : '$key.${AppConstants.LIBRARY_NAMESPACE}$appNamespace';
+        modifiedKey =
+            isOld ? key : '$key.${AppConstants.LIBRARY_NAMESPACE}$appNamespace';
         break;
       default:
         break;
@@ -550,7 +558,8 @@ class AtContactsImpl implements AtContactsLibrary {
     List<dynamic>? list = [];
     list = (result.value != null) ? jsonDecode(result.value) : [];
     list = List<String>.from(list!);
-    list.removeWhere((group) => (AtGroupBasicInfo.fromJson(jsonDecode(group)).atGroupId == groupId));
+    list.removeWhere((group) =>
+        (AtGroupBasicInfo.fromJson(jsonDecode(group)).atGroupId == groupId));
     return await atClient!.put(atKey, jsonEncode(list));
   }
 
