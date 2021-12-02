@@ -3,25 +3,44 @@
 ### Now for a little internet optimism
 
 # at_lookup library
-The AtLookup Library is the low-level direct implementation of the @protocol verbs
 
-## Installation:
-To use this library in your app, first add it to your pubspec.yaml
-```  
+## Overview:
+
+The AtLookup Library is the low-level direct implementation of the @protocol verbs. The AtClient packages depends on
+this package to execute commands(scan, update, lookup, llookup, plookup, etc) on the secondary server.
+
+## Get started:
+
+### Installation:
+
+To use this library in your app, add it to your pubspec.yaml
+
+```dart  
 dependencies:
-  at_lookup: ^3.0.0
+  at_lookup: ^3.0.5
 ```
-### Add to your project 
-```
+
+#### Add to your project
+
+```sh
 pub get 
 ```
-### Import in your application code
-```
+
+#### Import in your application code
+
+```dart
 import 'package:at_lookup/at_lookup.dart';
 ```
+
+### Clone it from github
+
+Feel free to fork a copy of the source from the [GitHub Repo](https://github.com/atsign-foundation/at_libraries)
+
 ## Usage
-```
-var atLookUpImpl = AtLookupImpl(
+
+```dart
+void main() async {
+  var atLookUpImpl = AtLookupImpl(
     '@alice',
     'root.atsign.com',
     64,
@@ -29,22 +48,63 @@ var atLookUpImpl = AtLookupImpl(
     cramSecret: 'cramSecret',
   );
 
-  var key = 'test_key';
-  var sharedBy = '@alice';
-  var sharedWith = '@bob';
-  var result =
-      await atLookUpImpl.update(key, 'test_value', sharedWith: sharedWith);
-// lookup
-  var lookup_result = await atLookUpImpl.lookup(key, sharedBy);
-// plookup
-  var plookup_result = await atLookUpImpl.plookup(key, sharedBy);
-// llookup
-  var llookup_result = await atLookUpImpl.llookup(key,
-      sharedBy: sharedBy, sharedWith: sharedWith, isPublic: true);
-// delete
-  var delete_result =
-      await atLookUpImpl.delete(key, sharedWith: '@bob', isPublic: false);
-// scan
-  var scan_result_list =
-      await atLookUpImpl.scan(regex: '*', sharedBy: '@alice');
+  /// To update a key into secondary server
+  //Build update verb builder
+  var updateVerbBuilder = UpdateVerbBuilder()
+    ..atKey = 'phone'
+    ..sharedBy = '@alice'
+    ..sharedWith = '@bob'
+    ..value = '+1 889 886 7879';
+
+  // Sends update command to secondary server
+  // Set sync attribute to true sync the value to secondary server.
+  var updateResult = await atLookupImpl.executeVerb(updateVerbBuilder, sync: true);
+
+  /// To lookup a value of a key sharedBy a specific atSign
+  var lookupVerbBuilder = LookupVerbBuilder()
+    ..atKey = 'phone'
+    ..sharedBy = '@bob'
+    ..auth = true;
+  var lookupResult = await atLookupImpl.executeVerb(lookupVerbBuilder);
+
+  /// To lookup a value of a public key
+  var pLookupBuilder = PLookupVerbBuilder()
+    ..atKey = 'lastName'
+    ..sharedBy = '@bob';
+  var pLookupResult = await atLookupImpl.executeVerb(pLookupBuilder);
+
+  /// To retrieve the value of key created by self.
+  var lLookupVerbBuilder = LLookupVerbBuilder()
+    ..sharedWith = '@bob'
+    ..atKey = 'phone'
+    ..sharedBy = '@alice';
+  var lLookupResult = await atLookupImpl.executeVerb(lLookupVerbBuilder);
+
+  ///To remove a key from secondary server
+  var deleteVerbBuilder = DeleteVerbBuilder()
+    ..sharedWith = '@bob'
+    ..atKey = 'phone'
+    ..sharedBy = '@alice';
+  var deleteResult = await atLookUpImpl.executeVerb(deleteVerbBuilder, sync: true);
+
+  /// To retrieve keys from the secondary server
+  var scanVerbBuilder = ScanVerbBuilder();
+  var scanResult = await atLookUpImpl.executeVerb(scanVerbBuilder);
+
+  ///To notify key to another atSign
+  var notifyVerbBuilder = NotifyVerbBuilder()
+    ..atKey = 'phone'
+    ..sharedBy = '@alice'
+    ..sharedWith = '@bob';
+  var notifyResult = await atLookupImpl.executeVerb(notifyVerbBuilder);
+
+  ///To retrieve the notifications received
+  var notifyListVerbBuilder = NotifyListVerbBuilder();
+  var notifyListResult = await atLookupImpl.executeVerb(notifyListVerbBuilder);
+}
 ```
+
+## Open source usage and contributions
+
+This is freely licensed open source code, so feel free to use it as is, suggest changes or enhancements or create your
+own version. See CONTRIBUTING.md for detailed guidance on how to setup tools, tests and make a pull request.
