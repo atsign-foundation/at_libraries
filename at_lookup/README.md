@@ -6,14 +6,14 @@
 
 ## Overview:
 
-The AtLookup Library is the low-level direct implementation of the @protocol verbs. The AtClient packages depends on
-this package to execute commands(scan, update, lookup, llookup, plookup, etc) on the secondary server.
+The AtLookup Library is the low-level direct implementation of the @protocol verbs. The AtLookup package is an interface
+to interact with the secondary server to execute commands(scan, update, lookup, llookup, plookup, etc).
 
 ## Get started:
 
 ### Installation:
 
-To use this library in your app, add it to your pubspec.yaml
+To add this package as the dependency, add it to your pubspec.yaml
 
 ```dart  
 dependencies:
