@@ -1,4 +1,4 @@
-<img src="https://atsign.dev/assets/img/@developersmall.png?sanitize=true">
+<img src="https://atsign.dev/assets/img/@platform_logo_grey.svg?sanitize=true">
 
 ### Now for a little internet optimism
 
@@ -49,7 +49,7 @@ AtLookUp atLookUp = AtLookupImpl(
   cramSecret: 'cramSecret',
 );
 ```
-Please refer to [examples](example.dart) for more details.
+Please refer to [examples](https://github.com/atsign-foundation/at_libraries/blob/doc_at_lookup/at_lookup/example/bin/example.dart) for more details.
 
 ## Open source usage and contributions
 

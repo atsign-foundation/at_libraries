@@ -1,13 +1,11 @@
-<img src="https://atsign.dev/assets/img/@developersmall.png?sanitize=true">
+<img src="https://atsign.dev/assets/img/@platform_logo_grey.svg?sanitize=true">
 
 ### Now for a little internet optimism
 
 # at_lookup_example library
 
-## Overview:
-Demonstrates how to use the at_lookup package.
+The atlookup package is an interface between the Client SDK and the cloud secondary.
 
-## Open source usage and contributions
+## Give it a try
 
-This is freely licensed open source code, so feel free to use it as is, suggest changes or enhancements or create your
-own version. See CONTRIBUTING.md for detailed guidance on how to setup tools, tests and make a pull request.
+This package includes a sample code in the [example](https://github.com/atsign-foundation/at_libraries/blob/doc_at_lookup/at_lookup/example/bin/example.dart) directory for usage of the at_lookup library.
