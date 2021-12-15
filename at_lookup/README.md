@@ -1,50 +1,57 @@
-<img src="https://atsign.dev/assets/img/@developersmall.png?sanitize=true">
+<img src="https://atsign.dev/assets/img/@platform_logo_grey.svg?sanitize=true">
 
 ### Now for a little internet optimism
 
 # at_lookup library
-The AtLookup Library is the low-level direct implementation of the @protocol verbs
 
-## Installation:
-To use this library in your app, first add it to your pubspec.yaml
-```  
+## Overview:
+
+The AtLookup Library is the low-level direct implementation of the @protocol verbs. The AtLookup package is an interface
+to interact with the secondary server to execute commands(scan, update, lookup, llookup, plookup, etc).
+
+## Get started:
+
+### Installation:
+
+To add this package as the dependency, add it to your pubspec.yaml
+
+```dart  
 dependencies:
-  at_lookup: ^3.0.0
+  at_lookup: ^3.0.5
 ```
-### Add to your project 
-```
+
+#### Add to your project
+
+```sh
 pub get 
 ```
-### Import in your application code
-```
+
+#### Import in your application code
+
+```dart
 import 'package:at_lookup/at_lookup.dart';
 ```
-## Usage
-```
-var atLookUpImpl = AtLookupImpl(
-    '@alice',
-    'root.atsign.com',
-    64,
-    privateKey: 'privateKey',
-    cramSecret: 'cramSecret',
-  );
 
-  var key = 'test_key';
-  var sharedBy = '@alice';
-  var sharedWith = '@bob';
-  var result =
-      await atLookUpImpl.update(key, 'test_value', sharedWith: sharedWith);
-// lookup
-  var lookup_result = await atLookUpImpl.lookup(key, sharedBy);
-// plookup
-  var plookup_result = await atLookUpImpl.plookup(key, sharedBy);
-// llookup
-  var llookup_result = await atLookUpImpl.llookup(key,
-      sharedBy: sharedBy, sharedWith: sharedWith, isPublic: true);
-// delete
-  var delete_result =
-      await atLookUpImpl.delete(key, sharedWith: '@bob', isPublic: false);
-// scan
-  var scan_result_list =
-      await atLookUpImpl.scan(regex: '*', sharedBy: '@alice');
+### Clone it from github
+
+Feel free to fork a copy of the source from the [GitHub Repo](https://github.com/atsign-foundation/at_libraries)
+
+## Usage
+
+### To get the instance of at_lookup
+
+```dart
+AtLookUp atLookUp = AtLookupImpl(
+  '@alice',
+  'root.atsign.com',
+  64,
+  privateKey: 'privateKey',
+  cramSecret: 'cramSecret',
+);
 ```
+Please refer to [examples](https://github.com/atsign-foundation/at_libraries/blob/doc_at_lookup/at_lookup/example/bin/example.dart) for more details.
+
+## Open source usage and contributions
+
+This is freely licensed open source code, so feel free to use it as is, suggest changes or enhancements or create your
+own version. See CONTRIBUTING.md for detailed guidance on how to setup tools, tests and make a pull request.
