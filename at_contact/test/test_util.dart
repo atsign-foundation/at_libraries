@@ -16,7 +16,6 @@ class TestUtil {
     preference.hiveStoragePath = 'hive/client';
     preference.commitLogPath = 'hive/client/commit';
     preference.isLocalStoreRequired = true;
-    preference.syncStrategy = SyncStrategy.IMMEDIATE;
     preference.cramSecret = '<cram_secret>';
     preference.rootDomain = 'vip.ve.atsign.zone';
     return preference;
