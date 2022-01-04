@@ -35,26 +35,20 @@ AtContactsImpl _atContact = AtContactsImpl(atClientInstance, atClientInstance.ge
 - If the user wants to add a contact, call `add()` method. 
 
 ```dart
-// ... Code ... //
 
-TextButton(
-    onPressed:() async {
+Future<void> _addContact() async {
     // Pass the user input data to respective fields of AtContact.
     AtContact contact = AtContact()
-      // Pass the user atSign here
-      ..atSign = atSign
-      ..createdOn = DateTime.now()
-      // Pass this value if you want to make the contact your favourite.
-      ..favourite = _isFavouriteSelected
-      // Contact type can be - Individual / Institute / Other
-      ..type = ContactType.Individual;
-        bool isContactAdded = await _atContact.add(contact);
-        print(isContactAdded ? 'Contact added successfully' : 'Failed to add contact');
-    }
-    child: Text('Add contact')
-),
-
-// ... Rest Code continues ... //
+    // Pass the user atSign here
+    ..atSign = atSign
+    ..createdOn = DateTime.now()
+    // Pass this value if you want to make the contact your favourite.
+    ..favourite = _isFavouriteSelected
+    // Contact type can be - Individual / Institute / Other
+    ..type = ContactType.Individual;
+    bool isContactAdded = await _atContact.add(contact);
+    print(isContactAdded ? 'Contact added successfully' : 'Failed to add contact');
+}
 ```
 
 - If user wants to get the data of a contact, call `get()` method by passing the user's atSign as the positional argument.
@@ -63,24 +57,17 @@ TextButton(
 AtContact? userContact;
 
 @override
-Widget build(BuildContext context) {
-// ... Code ... //
-TextButton(
-    onPressed:() async {
-        AtContact? _contact = await _atContact.get(atSign);
-        if(_contact == null){
-            print("Failed to fetch contact data.");
-        } else {
-            // Assign the fetched contact value to userContact.
-            // And use the value accordingly in the UI.
-            setState(() => userContact = _contact);
-        }
+Future<void> _getContactDetails() async {
+    AtContact? _contact = await _atContact.get(atSign);
+    if(_contact == null){
+        print("Failed to fetch contact data.");
+    } else {
+        // Assign the fetched contact value to userContact.
+        // And use the value accordingly in the UI.
+        setState(() => userContact = _contact);
     }
-    child: Text('Get details')
-),
-
-// ... Rest Code continues ... //
 }
+
 ```
 
 - If user wants to delete a contact, Call `deleteContact()` or `delete()` method.
@@ -95,49 +82,29 @@ TextButton(
 
 ```dart
 /// Using `delete()` method
-
 String? _atSign;
-TextEditingController? _atSignController;
 
-@override
-Widget build(BuildContext context){
-
-// ... Code ... //
-
-TextField(
-  onChanged: (value) {
-    setState(() => _atSign = value);
-  },
-  controller: _atSignController,
-),
-// ... If any code Exists ... //
-TextButton(
-    onPressed:() async {
-        if(_atSign == null || _atSign.isEmpty){
-            print("AtSign was't passed or empty.");
-        } else {
-            bool _isContactDeleted = await _atContact.delete(_atSign);
-            print(_isContactDeleted ? 'Contact deleted successfully' : 'Failed to delete contact.');
-        }
+Future<void> _deleteContact() async {
+    if(_atSign == null || _atSign.isEmpty){
+        print("AtSign was't passed or empty.");
+    } else {
+        bool _isContactDeleted = await _atContact.delete(_atSign);
+        print(_isContactDeleted ? 'Contact deleted successfully' : 'Failed to delete contact.');
     }
-    child: Text('Delete contact')
-),
+}
 ```
 
 ```dart
 /// Using `deleteContact()` method.
-TextButton(
-    onPressed:() async {
-        AtContact? _contact = await _atContact.get(atSign);
-        if(_contact == null){
-            print("Failed to fetch contact data.");
-        } else {
-            bool _isContactDeleted = await _atContact.deleteContact(_contact);
-            print(_isContactDeleted ? 'Contact deleted successfully' : 'Failed to delete contact.');
-        }
+Future<void> _deleteContact() async {
+    AtContact? _contact = await _atContact.get(atSign);
+    if(_contact == null){
+        print("Failed to fetch contact data.");
+    } else {
+        bool _isContactDeleted = await _atContact.deleteContact(_contact);
+        print(_isContactDeleted ? 'Contact deleted successfully' : 'Failed to delete contact.');
     }
-    child: Text('Delete contact')
-),
+}
 ```
 
 - Show the list of the user's contacts. Then call the `listContacts()` method.
@@ -153,17 +120,14 @@ List<AtContact> contactsList = await _atContact.listContacts();
 - If the user wants to list out their favorite contacts, Then call `listFavoriteContacts()` method.
 
 ```dart
-TextButton(
-    onPressed:() async {
-        List<AtContact> _favContactsList = await _atContact.listFavoriteContacts();
-        if(_favContactsList.isEmpty){
-            print("No favorite contacts found");
-        } else {
-            setState(() => favContactsList = _favContactsList);
-        }
+Future<void> _listFavoriteContacts() async {
+    List<AtContact> _favContactsList = await _atContact.listFavoriteContacts();
+    if(_favContactsList.isEmpty){
+        print("No favorite contacts found");
+    } else {
+        setState(() => favContactsList = _favContactsList);
     }
-    child: Text('Load favorite contacts')
-),
+}
 ```
 
 ### Groups
@@ -173,29 +137,22 @@ TextButton(
 - If the user wants to create a group, Then call `createGroup()` method.
 
 ```dart
-// ... Code ... //
-
-TextButton(
-    onPressed:() async {
-        // Pass the user input data to respective fields of AtGroup.
-        AtGroup group = AtGroup('The @platform team')
-            ..createdBy = _myAtSign
-            ..createdOn = DateTime.now()
-            ..description = 'Team with awesome spirit'
-            ..updatedOn = DateTime.now()
-            ..groupId = 'T@PT101'
-            ..displayName = 'at_contact team';
-        AtGroup? myGroup = await _atContact.createGroup(group);
-        if(myGroup == null){
-            print('Failed to create group')
-        } else {
-            print(group.id + ' has been created successfully');
-        }
+Future<void> _createGroup() async {
+    // Pass the user input data to respective fields of AtGroup.
+    AtGroup group = AtGroup('The @platform team')
+        ..createdBy = _myAtSign
+        ..createdOn = DateTime.now()
+        ..description = 'Team with awesome spirit'
+        ..updatedOn = DateTime.now()
+        ..groupId = 'T@PT101'
+        ..displayName = 'at_contact team';
+    AtGroup? myGroup = await _atContact.createGroup(group);
+    if(myGroup == null){
+        print('Failed to create group')
+    } else {
+        print(group.id + ' has been created successfully');
     }
-    child: Text('Create group')
-),
-
-// ... Rest Code continues ... //
+}
 ```
 
 - If the user wants to get the details about group, Then call `getGroup()` method.
@@ -204,76 +161,63 @@ TextButton(
 
 String groupName = 'The @platform team';
 
-TextButton(
-    onPressed:() async {
-        AtGroup? myGroup = await _atContact.getGroup(groupName);
-        if(myGroup == null){
-            print('Failed to get group details')
-        } else {
-            print('Group Name: ${myGroup.groupName}\n'
-            'Group ID : ${myGroup.groupId}\n'
-            'Created by : ${myGroup.createdBy}\n'
-            'Created on : ${myGroup.createdOn}');
-        }
+Future<void> _getGroup() async {
+    AtGroup? myGroup = await _atContact.getGroup(groupName);
+    if(myGroup == null){
+        print('Failed to get group details')
+    } else {
+        print('Group Name: ${myGroup.groupName}\n'
+        'Group ID : ${myGroup.groupId}\n'
+        'Created by : ${myGroup.createdBy}\n'
+        'Created on : ${myGroup.createdOn}');
     }
-    child: Text('Get group details'),
-),
+}
 ```
 
 - If the user wants to delete the group, Then call `deleteGroup()` method.
 
 ```dart
-TextButton(
-    onPressed:() async {
-        AtGroup? _myGroup = await _atContact.getGroup(groupName);
-        if(_myGroup == null){
-            print('Failed to get group details');
-        } else {
-            bool _isGroupDeleted = await _atContact.deleteGroup(_myGroup);
-            print(_isGroupDeleted ? _myGroup.groupName + ' group deleted' : 'Failed to delete group');
-        }
+Future<void> _deleteGroup() async {
+    AtGroup? _myGroup = await _atContact.getGroup(groupName);
+    if(_myGroup == null){
+        print('Failed to get group details');
+    } else {
+        bool _isGroupDeleted = await _atContact.deleteGroup(_myGroup);
+        print(_isGroupDeleted ? _myGroup.groupName + ' group deleted' : 'Failed to delete group');
     }
-    child: Text('Group deleted'),
-),
+}
 ```
 
 - If user wants to get the list of group names, Then call `listGroupNames()` method.
 
 ```dart
-TextButton(
-    onPressed:() async {
-        List<String?> _groupNames = await _atContact.listGroupNames();
-        if(_groupNames.isEmpty){
-            print('No groups found');
-        } else {
-            // Iterate through the list and print names 
-            for(String _groupName in _groupNames){
-                print(_groupName);
-            }
+Future<void> _listGroupNames() async {
+    List<String?> _groupNames = await _atContact.listGroupNames();
+    if(_groupNames.isEmpty){
+        print('No groups found');
+    } else {
+        // Iterate through the list and print names 
+        for(String _groupName in _groupNames){
+            print(_groupName);
         }
     }
-    child: Text('Get all group names'),
-),
+}
 ```
-
-
 
 - If user wants to get the list of group names, Then call `listGroupIds()` method.
 
 ```dart
-TextButton(
-    onPressed:() async {
-        List<String?> _groupIds = await _atContact.listGroupIds();
-        if(_groupIds == null){
-            print('No groups found');
-        } else {
-            // Iterate through the list and print ids 
-            for(String _groupId in _groupIds){
-                print(_groupId);
-            }
+Future<void> _listGroupIds() async {
+    List<String?> _groupIds = await _atContact.listGroupIds();
+    if(_groupIds == null){
+        print('No groups found');
+    } else {
+        // Iterate through the list and print ids 
+        for(String _groupId in _groupIds){
+            print(_groupId);
         }
     }
-    child: Text('Group all group IDs'),
+}
 ```
 
 - If user wants to add someone to the group, then call `addMembers()` method.
@@ -281,45 +225,39 @@ TextButton(
 ```dart
 Set<AtContact> selectedContacts = <AtContact>{};
 
-TextButton(
-    onPressed:() async {
-        for(String _atSign in selectedAtSignsList){
-            AtContact? _fetchedContact = await _atContact.get(_atSign);
-            if(_fetchedContact != null){
-                selectedContacts.add(_fetchedContact);
-            } else{
-                print('Failed to get contact for $_atSign');
-            }
+Future<void> _addMembers() async {
+    for(String _atSign in selectedAtSignsList){
+        AtContact? _fetchedContact = await _atContact.get(_atSign);
+        if(_fetchedContact != null){
+            selectedContacts.add(_fetchedContact);
+        } else{
+            print('Failed to get contact for $_atSign');
         }
-        AtGroup? _myGroup = await _atContact.getGroup(groupName);
-        bool _isMembersAdded = await _atContact.addMembers(selectedContacts, _myGroup);
-        print(_isMembersAdded ? 'Members added to the group' : 'Failed to add members to the group');
     }
-    child: Text('Add members'),
-),
+    AtGroup? _myGroup = await _atContact.getGroup(groupName);
+    bool _isMembersAdded = await _atContact.addMembers(selectedContacts, _myGroup);
+    print(_isMembersAdded ? 'Members added to the group' : 'Failed to add members to the group');
+}
 ``` 
-
 
 - If a user wants to delete a contact from the group , Then call `deleteMembers()` method
 
 ```dart
 Set<AtContact> selectedContacts = <AtContact>{};
 
-TextButton(
-    onPressed:() async {
-        for(String _atSign in selectedAtSignsList){
-            AtContact? _fetchedContact = await _atContact.get(_atSign);
-            if(_fetchedContact != null){
-                selectedContacts.add(_fetchedContact);
-            } else{
-                print('Failed to get contact for $_atSign');
-            }
+Future<void> _deleteMembers() async {
+    for(String _atSign in selectedAtSignsList){
+        AtContact? _fetchedContact = await _atContact.get(_atSign);
+        if(_fetchedContact != null){
+            selectedContacts.add(_fetchedContact);
+        } else{
+            print('Failed to get contact for $_atSign');
         }
-        AtGroup? _myGroup = await _atContact.getGroup(groupName);
-        bool _isMembersRemoved = await _atContact.deleteMembers(selectedContacts, _myGroup);
-        print(_isMembersRemoved ? 'Member removed from the group' : 'Failed to remove member from the group')
     }
-    child: Text('Remove members'),
+    AtGroup? _myGroup = await _atContact.getGroup(groupName);
+    bool _isMembersRemoved = await _atContact.deleteMembers(selectedContacts, _myGroup);
+    print(_isMembersRemoved ? 'Member removed from the group' : 'Failed to remove member from the group')
+}
 ```
 
 - To check if the user is a member of the group you are looking for, Then call `isMember()` method.
@@ -335,3 +273,5 @@ print(atSign + ' is ${isAMember ? '' : 'not'} a member of ' + groupName);
 ## Additional content
 
 - We have developed some realtime Applications using this library called [@mosphere-pro](https://atsign.com/apps/atmosphere-pro/), [@buzz](https://atsign.com/apps/buzz/), [@rrive (Google play store)](https://play.google.com/store/apps/details?id=com.atsign.arrive) / [@rrive (App Store)](https://apps.apple.com/in/app/rrive/id1542050548).
+
+- Flutter implementation of this library can be found in [at_contacts_flutter](https://pub.dev/packages/at_contacts_flutter) package.
