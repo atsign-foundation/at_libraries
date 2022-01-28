@@ -1,3 +1,5 @@
+## 3.0.6
+- at_commons and at_utils version change
 ## 3.0.5
 - at_commons and at_utils version change
 ## 3.0.4
