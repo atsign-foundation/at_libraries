@@ -1,16 +1,17 @@
 import 'dart:io';
-
-import 'package:at_onboarding_cli/at_onboarding_cli.dart' as at_onboarding_cli;
 import 'package:at_onboarding_cli/src/at_onboarding_service.dart';
 import 'package:at_onboarding_cli/src/config_utils/config_util.dart';
 import 'package:yaml/yaml.dart';
+import 'package:at_utils/at_logger.dart';
 
 Future<void> main(List<String> arguments) async {
+  AtSignLogger.root_level = 'finest';
   String atSign = arguments[0];
-  OnboardingService onboardingService = OnboardingService(atSign);
+  OnboardingService onboardingService = OnboardingService(atSign, getRootServerDomain(), getRootServerPort());
   String? filePath = getStringValueFromYaml(['auth', 'atKeysPath']);
   String jsonData = await getAuthData(filePath!);
-  onboardingService.authenticate(atSign, jsonData);
+  onboardingService.decryptKeys(jsonData);
+  await onboardingService.authenticate();
 }
 
 dynamic getConfigValueFromYaml(List<String> args) {
@@ -59,10 +60,10 @@ Future<String> getAuthData(String atKeysFilePath) async {
   return atAuthData;
 }
 
-Future<dynamic> getRootServerUrl() {
+String getRootServerDomain() {
   return getConfigValueFromYaml(['root_server', 'url']);
 }
 
-Future<dynamic> getRootServerPort() {
+int getRootServerPort() {
   return getConfigValueFromYaml(['root_server', 'port']);
 }
