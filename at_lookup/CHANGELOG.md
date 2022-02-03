@@ -1,3 +1,5 @@
+## 3.0.7
+- at_utils version change for fix formatAtSign bug for null value
 ## 3.0.6
 - at_commons and at_utils version change
 ## 3.0.5
