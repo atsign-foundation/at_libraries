@@ -1,5 +1,8 @@
 import 'config_utils/config_util.dart';
 import 'package:yaml/yaml.dart';
+import 'package:zxing2/qrcode.dart';
+import 'package:image/image.dart';
+import 'dart:io';
 
 class AtOnboardingConfig {
   dynamic getConfigValueFromYaml(List<String> args) {
@@ -52,5 +55,21 @@ class AtOnboardingConfig {
 
   String? getAtKeysFilePath() {
     return getStringValueFromYaml(['auth', 'atKeysPath']);
+  }
+
+  String? getQrCodePath() {
+    return getStringValueFromYaml(['auth', 'qrPath']);
+  }
+
+  dynamic getQrData(String path) {
+    var image = decodePng(File(path).readAsBytesSync());
+
+    LuminanceSource source = RGBLuminanceSource(image!.width, image.height,
+        image.getBytes(format: Format.abgr).buffer.asInt32List());
+
+    var bitmap = BinaryBitmap(HybridBinarizer(source));
+    var result = QRCodeReader().decode(bitmap);
+
+    return result;
   }
 }

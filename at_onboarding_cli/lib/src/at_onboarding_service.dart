@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:at_client/at_client.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
-import 'package:at_onboarding_cli/src/auth_key_type.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:at_lookup/at_lookup.dart';
 
@@ -21,7 +20,11 @@ class OnboardingService {
   }
 
   Future<bool> onboard() async {
-    return true;
+    var qrPath = atOnboardingConfig.getQrCodePath();
+    var qrData = atOnboardingConfig.getQrData(qrPath!);
+    String secret = qrData.split(":")[1];
+    var result = await _atLookup.authenticate_cram(secret);
+    return result;
   }
 
   Future<String> _readAuthData(String atKeysFilePath) async {
