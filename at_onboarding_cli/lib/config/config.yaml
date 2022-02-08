@@ -4,4 +4,4 @@ root_server:
 
 auth:
   atKeysPath: 'lib/config/@resultingantarmahal7_key.atKeys'
-  qrPath: 'lib/config/qrCode.png'
+  qrPath: 'lib/config/qr.png'

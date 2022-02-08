@@ -7,4 +7,5 @@ Future<void> main(List<String> arguments) async {
   String atSign = arguments[0];
   OnboardingService onboardingService = OnboardingService(atSign);
   await onboardingService.authenticate();
+  await onboardingService.onboard();
 }

@@ -17,7 +17,7 @@ class AtOnboardingConfig {
         }
       }
     }
-    if (value == null || value == Null) {
+    if (value == null) {
       throw Exception('Specified config not found');
     }
     return value;
