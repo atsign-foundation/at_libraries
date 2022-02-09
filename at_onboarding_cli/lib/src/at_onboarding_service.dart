@@ -38,27 +38,29 @@ class OnboardingService {
   }
 
   Future<void> generateEncryptionKeyPairs() async {
-    RSAKeypair pkamRsaKeypair;
-    RSAKeypair encryptionKeyPair;
-    var selfEncryptionKey;
+    RSAKeypair _pkamRsaKeypair;
+    RSAKeypair _encryptionKeyPair;
+    String _selfEncryptionKey;
+    Map _atKeysMap;
+
     logger.finer('generating pkam keypair');
-    pkamRsaKeypair = generateRsaKeypair();
+    _pkamRsaKeypair = generateRsaKeypair();
     logger.finer('updating pkam public key to remote secondary');
     var updateCommand =
-        'update:$AT_PKAM_PUBLIC_KEY ${pkamRsaKeypair.publicKey}';
+        'update:$AT_PKAM_PUBLIC_KEY ${_pkamRsaKeypair.publicKey}';
     var pkamUpdateResult = _atLookup.executeCommand(updateCommand);
     logger.finer('pkam update result: $pkamUpdateResult');
 
     var pkamAuth =
-        await _atLookup.authenticate(pkamRsaKeypair.privateKey.toString());
+        await _atLookup.authenticate(_pkamRsaKeypair.privateKey.toString());
 
     if (pkamAuth) {
       _isPkamAuthenticated = true;
-      selfEncryptionKey = generateAESKey();
+      _selfEncryptionKey = generateAESKey();
       logger.finer('generating encryption keypair');
-      encryptionKeyPair = generateRsaKeypair();
+      _encryptionKeyPair = generateRsaKeypair();
       updateCommand =
-          'update:$AT_ENCRYPTION_PUBLIC_KEY ${encryptionKeyPair.publicKey}';
+          'update:$AT_ENCRYPTION_PUBLIC_KEY ${_encryptionKeyPair.publicKey}';
       var encryptKeyUpdateResult =
           await _atLookup.executeCommand(updateCommand);
       logger
@@ -66,23 +68,23 @@ class OnboardingService {
       var deleteBuilder = DeleteVerbBuilder()..atKey = AT_CRAM_SECRET;
       var deleteResponse = await _atLookup.executeVerb(deleteBuilder);
       logger.finer('cram secret delete response : $deleteResponse');
+      _atKeysMap = {
+        "aesPkamPublicKey": EncryptionUtil.encryptValue(
+            _pkamRsaKeypair.publicKey.toString(), _selfEncryptionKey),
+        "aesPkamPrivateKey": EncryptionUtil.encryptValue(
+            _pkamRsaKeypair.privateKey.toString(), _selfEncryptionKey),
+        "aes-EncryptPublicKey": EncryptionUtil.encryptValue(
+            _encryptionKeyPair.publicKey.toString(), _selfEncryptionKey),
+        "aesEncryptPrivateKey": EncryptionUtil.encryptValue(
+            _encryptionKeyPair.privateKey.toString(), _selfEncryptionKey),
+        "selfEncryptionKey": _selfEncryptionKey,
+        _atSign: _selfEncryptionKey,
+      };
+
+      IOSink atKeysFile =
+          File('/home/srie/Documents/genFile.atKeys').openWrite();
+      atKeysFile.write(jsonEncode(_atKeysMap));
     }
-
-    Map _atKeysData() => {
-          "aesPkamPublicKey": EncryptionUtil.encryptValue(
-              pkamRsaKeypair.publicKey.toString(), selfEncryptionKey),
-          "aesPkamPrivateKey": EncryptionUtil.encryptValue(
-              pkamRsaKeypair.privateKey.toString(), selfEncryptionKey),
-          "aes-EncryptPublicKey": EncryptionUtil.encryptValue(
-              encryptionKeyPair.publicKey.toString(), selfEncryptionKey),
-          "aesEncryptPrivateKey": EncryptionUtil.encryptValue(
-              encryptionKeyPair.privateKey.toString(), selfEncryptionKey),
-          "selfEncryptionKey": selfEncryptionKey,
-          _atSign: selfEncryptionKey,
-        };
-
-    IOSink atKeysFile = File('/home/srie/Documents/genFile.atKeys').openWrite();
-    atKeysFile.write(jsonEncode(_atKeysData));
   }
 
   Future<String> _readAuthData(String atKeysFilePath) async {
