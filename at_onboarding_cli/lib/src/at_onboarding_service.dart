@@ -8,36 +8,35 @@ import 'package:at_utils/at_logger.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:crypton/crypton.dart';
 import 'package:encrypt/encrypt.dart';
+import 'package:zxing2/qrcode.dart';
+import 'package:image/image.dart';
 
 class OnboardingService {
-  late final String _rootDomain;
-  late final int _rootPort;
   late String _atSign;
   bool _isPkamAuthenticated = false;
-  late final AtLookupImpl _atLookup =
-      AtLookupImpl(_atSign, _rootDomain, _rootPort);
+  late final AtLookupImpl _atLookup;
   AtSignLogger logger = AtSignLogger('Onboarding CLI');
-  AtOnboardingConfig atOnboardingConfig = AtOnboardingConfig();
+  AtOnboardingConfig atOnboardingConfig;
 
-  OnboardingService(this._atSign) {
-    _rootDomain = atOnboardingConfig.getRootServerDomain();
-    _rootPort = atOnboardingConfig.getRootServerPort();
+  OnboardingService(this._atSign, this.atOnboardingConfig) {
+    _atLookup = AtLookupImpl(_atSign, atOnboardingConfig.rootDomain, atOnboardingConfig.rootPort);
   }
 
   Future<bool> onboard() async {
-    var qrPath = atOnboardingConfig.getQrCodePath();
-    var qrData = atOnboardingConfig.getQrData(qrPath!);
-    String secret = qrData.text;
-    secret = secret.split(":")[1];
-    logger.severe(secret);
-    var isCramSuccessful = await _atLookup.authenticate_cram(secret);
-    if (isCramSuccessful) {
-      generateEncryptionKeyPairs();
+    String? secret = atOnboardingConfig.cramSecret ?? getSecretFromQr(atOnboardingConfig.qrCodePath!);
+    if(secret != null) {
+      var isCramSuccessful = await _atLookup.authenticate_cram(secret);
+      if (isCramSuccessful) {
+        _generateEncryptionKeyPairs();
+        logger.finer('cram authentication successful');
+      }
+      return isCramSuccessful;
+    } else {
+      throw('Either of cram secret or qr code containing cram secret not provided');
     }
-    return isCramSuccessful;
   }
 
-  Future<void> generateEncryptionKeyPairs() async {
+  Future<void> _generateEncryptionKeyPairs() async {
     RSAKeypair _pkamRsaKeypair;
     RSAKeypair _encryptionKeyPair;
     String _selfEncryptionKey;
@@ -80,43 +79,52 @@ class OnboardingService {
         "selfEncryptionKey": _selfEncryptionKey,
         _atSign: _selfEncryptionKey,
       };
-
+      //mechanism needed to store files when save location is not provided
       IOSink atKeysFile =
-          File('/home/srie/Documents/genFile.atKeys').openWrite();
+          File('${atOnboardingConfig.downloadPath}/$_atSign.atKeys').openWrite();
       atKeysFile.write(jsonEncode(_atKeysMap));
+    } else {
+      logger.finer('could not complete pkam authentication. atKeys file not generated');
     }
   }
 
-  Future<String> _readAuthData(String atKeysFilePath) async {
-    File atKeysFile = File(atKeysFilePath);
-    String atAuthData = await atKeysFile.readAsString();
-    return atAuthData;
+  Future<bool> authenticate(String? filePath) async {
+    String? privateKey = atOnboardingConfig.pkamPrivateKey ?? _getPkamPrivateKey(await _readAuthData(atOnboardingConfig.atKeysFilePath));
+    if (privateKey != null) {
+      _isPkamAuthenticated =
+          await _atLookup.authenticate(privateKey);
+      print(_isPkamAuthenticated);
+    } else {
+      throw('Either of pkam private key or path to .atKeysFile not provided');
+    }
+    return _isPkamAuthenticated;
   }
 
-  String _getPkamPrivateKey(String jsonData) {
-    var jsonDecodedData = jsonDecode(jsonData);
-    return EncryptionUtil.decryptValue(
-        jsonDecodedData[AuthKeyType.PKAM_PRIVATE_KEY_FROM_KEY_FILE],
-        _getDecryptionKey(jsonData));
+  Future<String?> _readAuthData(String? atKeysFilePath) async {
+    if (atKeysFilePath != null) {
+      File atKeysFile = File(atKeysFilePath);
+      String atAuthData = await atKeysFile.readAsString();
+      return atAuthData;
+    } else {
+      return null;
+    }
+  }
+
+  String? _getPkamPrivateKey(String? jsonData) {
+    if (jsonData != null) {
+      var jsonDecodedData = jsonDecode(jsonData);
+      return EncryptionUtil.decryptValue(
+          jsonDecodedData[AuthKeyType.PKAM_PRIVATE_KEY_FROM_KEY_FILE],
+          _getDecryptionKey(jsonData));
+    } else {
+      return null;
+    }
   }
 
   String _getDecryptionKey(String jsonData) {
     var jsonDecodedData = jsonDecode(jsonData);
     var key = jsonDecodedData[AuthKeyType.SELF_ENCRYPTION_KEY_FROM_FILE];
     return key;
-  }
-
-  Future<bool> authenticate() async {
-    String? filePath = atOnboardingConfig.getAtKeysFilePath();
-    if (filePath != null) {
-      String atAuthData = await _readAuthData(filePath);
-      _isPkamAuthenticated =
-          await _atLookup.authenticate(_getPkamPrivateKey(atAuthData));
-      print(_isPkamAuthenticated);
-    } else if (filePath == null) {
-      logger.severe('AtKeysFile path is null');
-    }
-    return _isPkamAuthenticated;
   }
 
   AtLookupImpl getAtLookup() {
@@ -131,5 +139,22 @@ class OnboardingService {
     var aesKey = AES(Key.fromSecureRandom(32));
     var keyString = aesKey.key.base64;
     return keyString;
+  }
+
+  dynamic getSecretFromQr(String? path) {
+    if (path != null) {
+      var image = decodePng(File(path).readAsBytesSync());
+      LuminanceSource source = RGBLuminanceSource(image!.width, image.height,
+          image
+              .getBytes(format: Format.abgr)
+              .buffer
+              .asInt32List());
+      var bitmap = BinaryBitmap(HybridBinarizer(source));
+      var result = QRCodeReader().decode(bitmap);
+      String secret = result.text.split(':')[1];
+      return secret;
+    } else {
+      return null;
+    }
   }
 }

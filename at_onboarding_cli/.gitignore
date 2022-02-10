@@ -7,4 +7,7 @@ build/
 
 #Configuration
 lib/src/config/config_util.dart
-@resultingantarmahal7_keys.atKeys
+lib/config/@resultingantarmahal7_keys.atKeys
+/.vscode/
+/lib/config/
+/lib/src/config_utils/
