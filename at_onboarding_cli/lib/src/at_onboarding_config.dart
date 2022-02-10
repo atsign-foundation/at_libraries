@@ -9,5 +9,4 @@ class AtOnboardingConfig {
   String? downloadPath;
   String? atKeysFilePath;
   String? qrCodePath;
-
 }

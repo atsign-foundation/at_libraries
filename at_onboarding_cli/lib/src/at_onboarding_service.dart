@@ -19,12 +19,14 @@ class OnboardingService {
   AtOnboardingConfig atOnboardingConfig;
 
   OnboardingService(this._atSign, this.atOnboardingConfig) {
-    _atLookup = AtLookupImpl(_atSign, atOnboardingConfig.rootDomain, atOnboardingConfig.rootPort);
+    _atLookup = AtLookupImpl(
+        _atSign, atOnboardingConfig.rootDomain, atOnboardingConfig.rootPort);
   }
 
   Future<bool> onboard() async {
-    String? secret = atOnboardingConfig.cramSecret ?? getSecretFromQr(atOnboardingConfig.qrCodePath!);
-    if(secret != null) {
+    String? secret = atOnboardingConfig.cramSecret ??
+        getSecretFromQr(atOnboardingConfig.qrCodePath!);
+    if (secret != null) {
       var isCramSuccessful = await _atLookup.authenticate_cram(secret);
       if (isCramSuccessful) {
         _generateEncryptionKeyPairs();
@@ -32,7 +34,7 @@ class OnboardingService {
       }
       return isCramSuccessful;
     } else {
-      throw('Either of cram secret or qr code containing cram secret not provided');
+      throw Exception('Either of cram secret or qr code containing cram secret not provided');
     }
   }
 
@@ -81,21 +83,23 @@ class OnboardingService {
       };
       //mechanism needed to store files when save location is not provided
       IOSink atKeysFile =
-          File('${atOnboardingConfig.downloadPath}/$_atSign.atKeys').openWrite();
+          File('${atOnboardingConfig.downloadPath}/${_atSign}_key.atKeys')
+              .openWrite();
       atKeysFile.write(jsonEncode(_atKeysMap));
     } else {
-      logger.finer('could not complete pkam authentication. atKeys file not generated');
+      logger.finer(
+          'could not complete pkam authentication. atKeys file not generated');
     }
   }
 
-  Future<bool> authenticate(String? filePath) async {
-    String? privateKey = atOnboardingConfig.pkamPrivateKey ?? _getPkamPrivateKey(await _readAuthData(atOnboardingConfig.atKeysFilePath));
+  Future<bool> authenticate() async {
+    String? privateKey = atOnboardingConfig.pkamPrivateKey ??
+        _getPkamPrivateKey(
+            await _readAuthData(atOnboardingConfig.atKeysFilePath));
     if (privateKey != null) {
-      _isPkamAuthenticated =
-          await _atLookup.authenticate(privateKey);
-      print(_isPkamAuthenticated);
+      _isPkamAuthenticated = await _atLookup.authenticate(privateKey);
     } else {
-      throw('Either of pkam private key or path to .atKeysFile not provided');
+      throw Exception('Either of pkam private key or path to .atKeysFile not provided');
     }
     return _isPkamAuthenticated;
   }
@@ -145,10 +149,7 @@ class OnboardingService {
     if (path != null) {
       var image = decodePng(File(path).readAsBytesSync());
       LuminanceSource source = RGBLuminanceSource(image!.width, image.height,
-          image
-              .getBytes(format: Format.abgr)
-              .buffer
-              .asInt32List());
+          image.getBytes(format: Format.abgr).buffer.asInt32List());
       var bitmap = BinaryBitmap(HybridBinarizer(source));
       var result = QRCodeReader().decode(bitmap);
       String secret = result.text.split(':')[1];
