@@ -17,13 +17,13 @@ class AtLookUpException implements Exception {
 class AtLookUpExceptionUtil {
   /// Returns ErrorCode String
   static String getErrorCode(Exception exception) {
-    var error_code = error_codes[exception.runtimeType.toString()];
-    error_code ??= 'AT0014';
-    return error_code;
+    var errorCode = error_codes[exception.runtimeType.toString()];
+    errorCode ??= 'AT0014';
+    return errorCode;
   }
 
   /// Returns ErrorDescription String
-  static String? getErrorDescription(String error_code) {
-    return error_description[error_code];
+  static String? getErrorDescription(String errorCode) {
+    return error_description[errorCode];
   }
 }

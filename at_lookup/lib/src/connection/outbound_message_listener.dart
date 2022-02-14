@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:convert';
 
 import 'package:at_commons/at_commons.dart';
+import 'package:at_lookup/at_lookup.dart';
 import 'package:at_utils/at_logger.dart';
 
 ///Listener class for messages received by [RemoteSecondary]
@@ -53,16 +54,17 @@ class OutboundMessageListener {
 
   /// Reads the response sent by remote socket from the queue.
   /// If there is no message in queue after [maxWaitMilliSeconds], return null. Defaults to 30 seconds.
-  Future<String?> read({int maxWaitMilliSeconds = 30000}) async {
+  Future<String> read({int maxWaitMilliSeconds = 30000}) async {
     return _read(maxWaitMillis: maxWaitMilliSeconds);
   }
 
-  Future<String?> _read({int maxWaitMillis = 30000, int retryCount = 1}) async {
-    var result;
+  Future<String> _read({int maxWaitMillis = 30000, int retryCount = 1}) async {
+    String result;
     var maxIterations = maxWaitMillis / 10;
     if (retryCount == maxIterations) {
       _buffer.clear();
-      return null;
+      throw AtTimeoutException(
+          'No response after $maxWaitMillis millis from remote secondary');
     }
     var queueLength = _queue.length;
     if (queueLength > 0) {
@@ -71,11 +73,10 @@ class OutboundMessageListener {
       // of the handshake
       if (_isValidResponse(result)) {
         return result;
-      } else {
-        //ignore any other response
-        _buffer.clear();
-        return '';
       }
+      //ignore any other response
+      _buffer.clear();
+      throw AtLookUpException('AT0014', 'Unexpected response found');
     }
     return Future.delayed(Duration(milliseconds: 10))
         .then((value) => _read(retryCount: ++retryCount));
