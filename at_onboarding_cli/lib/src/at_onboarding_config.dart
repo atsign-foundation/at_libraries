@@ -6,7 +6,9 @@ class AtOnboardingConfig {
   String? nameSpace;
   String rootDomain = 'root.atsign.org';
   int rootPort = 64;
-  String? downloadPath;
+  String? atKeysDownloadPath;
   String? atKeysFilePath;
   String? qrCodePath;
+  String? hiveStoragePath;
+  String? commitLogPath;
 }
