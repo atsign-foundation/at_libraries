@@ -13,6 +13,7 @@ dependencies:
   crypto: ^3.0.1
   at_utils: ^3.0.5
   at_commons: ^3.0.3
+  mutex: ^3.0.0
 
 dev_dependencies:
   lints: ^1.0.1
