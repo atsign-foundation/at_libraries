@@ -1,14 +1,8 @@
 import 'dart:core';
 
-class AtOnboardingConfig {
-  String? pkamPrivateKey;
-  String? cramSecret;
-  String? nameSpace;
-  String rootDomain = 'root.atsign.org';
-  int rootPort = 64;
-  String? atKeysDownloadPath;
+import 'package:at_client/at_client.dart';
+
+class AtOnboardingConfig extends AtClientPreference {
   String? atKeysFilePath;
   String? qrCodePath;
-  String? hiveStoragePath;
-  String? commitLogPath;
 }
