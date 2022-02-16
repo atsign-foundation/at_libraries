@@ -328,8 +328,18 @@ class AtLookupImpl implements AtLookUp {
     // If response starts with error:, throw AtLookupException.
     if (_isError(verbResult)) {
       verbResult = verbResult.replaceAll('error:', '');
-      throw AtLookUpException(
-          verbResult.split('-')[0], verbResult.split('-')[1]);
+      // Setting the errorCode and errorDescription to default values.
+      var errorCode = 'AT0014';
+      var errorDescription = 'Unknown server error';
+      if (verbResult.contains('-')) {
+        if (verbResult.split('-')[0].isNotEmpty) {
+          errorCode = verbResult.split('-')[0];
+        }
+        if (verbResult.split('-')[1].isNotEmpty) {
+          errorDescription = verbResult.split('-')[1];
+        }
+      }
+      throw AtLookUpException(errorCode, errorDescription);
     }
     // Return the verb result.
     return verbResult;
