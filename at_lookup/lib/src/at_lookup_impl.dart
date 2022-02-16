@@ -476,25 +476,27 @@ class AtLookupImpl implements AtLookUp {
   Mutex requestResponseMutex = Mutex();
 
   Future<String?> _process(String command, {bool auth = false}) async {
-    await requestResponseMutex.acquire();
-
-    if (auth && _isAuthRequired()) {
-      if (privateKey != null) {
-        await authenticate(privateKey);
-      } else if (cramSecret != null) {
-        await authenticate_cram(cramSecret);
-      } else {
-        throw UnAuthenticatedException(
-            'Unable to perform atlookup auth. Private key/cram secret is not set');
-      }
-    }
     try {
-      await _sendCommand(command);
-      var result = await messageListener.read();
-      return result;
-    } on Exception catch (e) {
-      logger.severe('Exception in sending to server, ${e.toString()}');
-      rethrow;
+      await requestResponseMutex.acquire();
+
+      if (auth && _isAuthRequired()) {
+        if (privateKey != null) {
+          await authenticate(privateKey);
+        } else if (cramSecret != null) {
+          await authenticate_cram(cramSecret);
+        } else {
+          throw UnAuthenticatedException(
+              'Unable to perform atlookup auth. Private key/cram secret is not set');
+        }
+      }
+      try {
+        await _sendCommand(command);
+        var result = await messageListener.read();
+        return result;
+      } on Exception catch (e) {
+        logger.severe('Exception in sending to server, ${e.toString()}');
+        rethrow;
+      }
     } finally {
       requestResponseMutex.release();
     }
