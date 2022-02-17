@@ -5,12 +5,8 @@ import 'dart:typed_data';
 
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
-import 'package:at_commons/src/at_constants.dart' as at_constants;
 import 'package:at_lookup/at_lookup.dart';
-import 'package:at_lookup/src/connection/outbound_connection.dart';
-import 'package:at_lookup/src/connection/outbound_connection_impl.dart';
 import 'package:at_lookup/src/connection/outbound_message_listener.dart';
-import 'package:at_lookup/src/exception/at_lookup_exception.dart';
 import 'package:at_lookup/src/util/lookup_util.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:crypto/crypto.dart';
@@ -143,7 +139,7 @@ class AtLookupImpl implements AtLookUp {
   @override
   Future<String> llookup(String key,
       {String? sharedBy, String? sharedWith, bool isPublic = false}) async {
-    var builder;
+    LLookupVerbBuilder builder;
     if (sharedWith != null) {
       builder = LLookupVerbBuilder()
         ..isPublic = isPublic
@@ -285,9 +281,11 @@ class AtLookupImpl implements AtLookUp {
 
   /// Executes the command returned by [VerbBuilder] build command on a remote secondary server.
   /// Optionally [privateKey] is passed for verb builders which require authentication.
+  ///
+  /// Catches any exception and throws [AtLookUpException]
   @override
   Future<String> executeVerb(VerbBuilder builder, {sync = false}) async {
-    var verbResult;
+    String verbResult = '';
     try {
       if (builder is UpdateVerbBuilder) {
         verbResult = await _update(builder);
@@ -319,25 +317,41 @@ class AtLookupImpl implements AtLookUp {
     } on Exception catch (e) {
       logger.severe('Error in remote verb execution ${e.toString()}');
       var errorCode = AtLookUpExceptionUtil.getErrorCode(e);
-      return Future.error(AtLookUpException(
-          errorCode, AtLookUpExceptionUtil.getErrorDescription(errorCode)));
+      throw AtLookUpException(
+          errorCode, AtLookUpExceptionUtil.getErrorDescription(errorCode));
     }
+    // If connection time-out, do not return empty verbResult;
+    // throw AtLookupException.
+    if (verbResult.isEmpty) {
+      throw AtLookUpException('AT0014', 'Request timed out');
+    }
+    // If response starts with error:, throw AtLookupException.
     if (_isError(verbResult)) {
       verbResult = verbResult.replaceAll('error:', '');
-      var errorCode = verbResult.split('-')[0];
-      var errorMessage = verbResult.split('-')[1];
-      return Future.error(AtLookUpException(errorCode, errorMessage));
+      // Setting the errorCode and errorDescription to default values.
+      var errorCode = 'AT0014';
+      var errorDescription = 'Unknown server error';
+      if (verbResult.contains('-')) {
+        if (verbResult.split('-')[0].isNotEmpty) {
+          errorCode = verbResult.split('-')[0];
+        }
+        if (verbResult.split('-')[1].isNotEmpty) {
+          errorDescription = verbResult.split('-')[1];
+        }
+      }
+      throw AtLookUpException(errorCode, errorDescription);
     }
-    return verbResult ??= '';
+    // Return the verb result.
+    return verbResult;
   }
 
-  bool _isError(String? verbResult) {
-    return verbResult != null && verbResult.startsWith('error:');
+  bool _isError(String verbResult) {
+    return verbResult.startsWith('error:');
   }
 
-  Future<String?> _update(UpdateVerbBuilder builder) async {
-    var atCommand;
-    if (builder.operation == at_constants.UPDATE_META) {
+  Future<String> _update(UpdateVerbBuilder builder) async {
+    String atCommand;
+    if (builder.operation == UPDATE_META) {
       atCommand = builder.buildCommandForMeta();
     } else {
       atCommand = builder.buildCommand();
@@ -346,43 +360,43 @@ class AtLookupImpl implements AtLookUp {
     return await _process(atCommand, auth: true);
   }
 
-  Future<String?> _notify(NotifyVerbBuilder builder) async {
+  Future<String> _notify(NotifyVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
     logger.finer('notify to remote: $atCommand');
     return await _process(atCommand, auth: true);
   }
 
-  Future<String?> _scan(ScanVerbBuilder builder) async {
+  Future<String> _scan(ScanVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
     return await _process(atCommand, auth: builder.auth);
   }
 
-  Future<String?> _stats(StatsVerbBuilder builder) async {
+  Future<String> _stats(StatsVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
     return await _process(atCommand, auth: true);
   }
 
-  Future<String?> _config(ConfigVerbBuilder builder) async {
+  Future<String> _config(ConfigVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
     return await _process(atCommand, auth: true);
   }
 
-  Future<String?> _notifyStatus(NotifyStatusVerbBuilder builder) async {
+  Future<String> _notifyStatus(NotifyStatusVerbBuilder builder) async {
     var command = builder.buildCommand();
     return await _process(command, auth: true);
   }
 
-  Future<String?> _notifyList(NotifyListVerbBuilder builder) async {
+  Future<String> _notifyList(NotifyListVerbBuilder builder) async {
     var command = builder.buildCommand();
     return await _process(command, auth: true);
   }
 
-  Future<String?> _notifyAll(NotifyAllVerbBuilder builder) async {
+  Future<String> _notifyAll(NotifyAllVerbBuilder builder) async {
     var command = builder.buildCommand();
     return await _process(command, auth: true);
   }
 
-  Future<String?> _sync(SyncVerbBuilder builder) async {
+  Future<String> _sync(SyncVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
     return await _process(atCommand, auth: true);
   }
@@ -400,7 +414,7 @@ class AtLookupImpl implements AtLookUp {
     await _sendCommand('from:$_currentAtSign\n');
     var fromResponse = await (messageListener.read());
     logger.finer('from result:$fromResponse');
-    if (fromResponse == null) {
+    if (fromResponse.isEmpty) {
       return false;
     }
     fromResponse = fromResponse.trim().replaceAll('data:', '');
@@ -431,7 +445,7 @@ class AtLookupImpl implements AtLookUp {
     await _sendCommand('from:$_currentAtSign\n');
     var fromResponse = await messageListener.read();
     logger.info('from result:$fromResponse');
-    if (fromResponse == null) {
+    if (fromResponse.isEmpty) {
       return false;
     }
     fromResponse = fromResponse.trim().replaceAll('data:', '');
@@ -449,22 +463,22 @@ class AtLookupImpl implements AtLookUp {
     return _isCramAuthenticated;
   }
 
-  Future<String?> _plookup(PLookupVerbBuilder builder) async {
+  Future<String> _plookup(PLookupVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
     return await _process(atCommand, auth: true);
   }
 
-  Future<String?> _lookup(LookupVerbBuilder builder) async {
+  Future<String> _lookup(LookupVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
     return await _process(atCommand, auth: builder.auth);
   }
 
-  Future<String?> _llookup(LLookupVerbBuilder builder) async {
+  Future<String> _llookup(LLookupVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
     return await _process(atCommand, auth: true);
   }
 
-  Future<String?> _delete(DeleteVerbBuilder builder) async {
+  Future<String> _delete(DeleteVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
     return await _process(
       atCommand,
@@ -472,7 +486,7 @@ class AtLookupImpl implements AtLookUp {
     );
   }
 
-  Future<String?> _process(String command, {bool auth = false}) async {
+  Future<String> _process(String command, {bool auth = false}) async {
     if (auth && _isAuthRequired()) {
       if (privateKey != null) {
         await authenticate(privateKey);
