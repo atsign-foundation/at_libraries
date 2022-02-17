@@ -489,7 +489,7 @@ class AtLookupImpl implements AtLookUp {
 
   Mutex requestResponseMutex = Mutex();
 
-  Future<String?> _process(String command, {bool auth = false}) async {
+  Future<String> _process(String command, {bool auth = false}) async {
     try {
       await requestResponseMutex.acquire();
 
