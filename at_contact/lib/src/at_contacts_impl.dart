@@ -68,9 +68,9 @@ class AtContactsImpl implements AtContactsLibrary {
       try {
         scanList = await atClient!.getAtKeys(regex: atKey.key);
       } on KeyNotFoundException {
-        logger.info('${atKey.key} on found in the keystore');
+        logger.info('${atKey.key} on not found in the keystore');
       } on AtClientException {
-        logger.info('${atKey.key} on found in the keystore');
+        logger.info('${atKey.key} on not found in the keystore');
       }
       atKey = (scanList != null && scanList.isNotEmpty)
           ? _formAtKeyFromScanKeys(scanList[0])
@@ -80,9 +80,9 @@ class AtContactsImpl implements AtContactsLibrary {
     try {
       atValue = await atClient!.get(atKey);
     } on KeyNotFoundException {
-      logger.info('${atKey.key} on found in the keystore');
+      logger.info('${atKey.key} on not found in the keystore');
     } on AtClientException {
-      logger.info('${atKey.key} on found in the keystore');
+      logger.info('${atKey.key} on not found in the keystore');
     }
 
     //check for old key if new key data is not present.
@@ -91,23 +91,23 @@ class AtContactsImpl implements AtContactsLibrary {
       try {
         atValue = await atClient!.get(atKey);
       } on KeyNotFoundException {
-        logger.info('${atKey.key} on found in the keystore');
+        logger.info('${atKey.key} on not found in the keystore');
       } on AtClientException {
-        logger.info('${atKey.key} on found in the keystore');
+        logger.info('${atKey.key} on not found in the keystore');
       }
     }
     //migrate key to new keyformat if atKey is old.
     if (atValue?.value != null && _isOldKey(atKey)) {
       var newAtKey = _formKey(KeyType.contact, key: atSign);
       await atClient!.put(newAtKey, atValue?.value);
-     AtValue? getValue;
-      try{
+      AtValue? getValue;
+      try {
         getValue = await atClient!.get(newAtKey);
-    } on KeyNotFoundException {
-      logger.info('${atKey.key} on found in the keystore');
-    } on AtClientException {
-      logger.info('${atKey.key} on found in the keystore');
-    }
+      } on KeyNotFoundException {
+        logger.info('${atKey.key} on not found in the keystore');
+      } on AtClientException {
+        logger.info('${atKey.key} on not found in the keystore');
+      }
       if (getValue?.value != null) await atClient!.delete(atKey);
     }
     if (atValue?.value != null) {
