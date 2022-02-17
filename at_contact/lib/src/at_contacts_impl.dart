@@ -77,41 +77,23 @@ class AtContactsImpl implements AtContactsLibrary {
           : atKey;
     }
     AtValue? atValue;
-    try {
-      atValue = await atClient!.get(atKey);
-    } on KeyNotFoundException {
-      logger.info('${atKey.key} on not found in the keystore');
-    } on AtClientException {
-      logger.info('${atKey.key} on not found in the keystore');
-    }
+    atValue = await _get(atKey);
 
     //check for old key if new key data is not present.
-    if (atValue?.value == null) {
+    if (atValue.value == null) {
       atKey = _formKey(KeyType.contact, key: atSign, isOld: true);
-      try {
-        atValue = await atClient!.get(atKey);
-      } on KeyNotFoundException {
-        logger.info('${atKey.key} on not found in the keystore');
-      } on AtClientException {
-        logger.info('${atKey.key} on not found in the keystore');
-      }
+      atValue = await _get(atKey);
     }
     //migrate key to new keyformat if atKey is old.
-    if (atValue?.value != null && _isOldKey(atKey)) {
+    if (atValue.value != null && _isOldKey(atKey)) {
       var newAtKey = _formKey(KeyType.contact, key: atSign);
-      await atClient!.put(newAtKey, atValue?.value);
+      await atClient!.put(newAtKey, atValue.value);
       AtValue? getValue;
-      try {
-        getValue = await atClient!.get(newAtKey);
-      } on KeyNotFoundException {
-        logger.info('${atKey.key} on not found in the keystore');
-      } on AtClientException {
-        logger.info('${atKey.key} on not found in the keystore');
-      }
-      if (getValue?.value != null) await atClient!.delete(atKey);
+      getValue = await _get(newAtKey);
+      if (getValue.value != null) await atClient!.delete(atKey);
     }
-    if (atValue?.value != null) {
-      var value = atValue?.value;
+    if (atValue.value != null) {
+      var value = atValue.value;
       value = value?.replaceAll('data:', '');
       if (value != null && value != 'null') {
         var json;
@@ -307,45 +289,26 @@ class AtContactsImpl implements AtContactsLibrary {
       atKey = scanList.isNotEmpty ? _formAtKeyFromScanKeys(scanList[0]) : atKey;
     }
     AtValue? result;
-    try {
-      result = await atClient!.get(atKey);
-    } on KeyNotFoundException {
-      logger.info('$atKey is not found the keystore.');
-    } on AtClientException {
-      logger.info('$atKey is not found the keystore.');
-    }
+    result = await _get(atKey);
     //check for old key if new key data is not present.
-    if (result?.value == null) {
+    if (result.value == null) {
       atKey = _formKey(KeyType.groupList, isOld: true);
-      try {
-        result = await atClient!.get(atKey);
-      } on KeyNotFoundException {
-        logger.info('$atKey is not found the keystore.');
-      } on AtClientException {
-        logger.info('$atKey is not found the keystore.');
-      }
+      result = await _get(atKey);
     }
-
     //migrate key to new keyformat.
-    if (result?.value != null && _isOldKey(atKey)) {
+    if (result.value != null && _isOldKey(atKey)) {
       var newAtKey = _formKey(
         KeyType.groupList,
       );
-      await atClient!.put(newAtKey, result?.value);
+      await atClient!.put(newAtKey, result.value);
       AtValue? getValue;
-      try {
-        getValue = await atClient!.get(newAtKey);
-      } on KeyNotFoundException {
-        logger.info('$atKey is not found the keystore.');
-      } on AtClientException {
-        logger.info('$atKey is not found the keystore.');
-      }
+      getValue = await _get(newAtKey);
       // If new key is stored successfully, remove the old key.
-      if (getValue?.value != null) await atClient!.delete(atKey);
+      if (getValue.value != null) await atClient!.delete(atKey);
     }
     // get name from AtGroupBasicInfo for all the groups.
     List<dynamic>? list = [];
-    list = (result?.value != null) ? jsonDecode(result?.value) : [];
+    list = (result.value != null) ? jsonDecode(result.value) : [];
     list = List<String>.from(list!);
     var groupNames = <String?>[];
     list.forEach((group) {
@@ -365,43 +328,25 @@ class AtContactsImpl implements AtContactsLibrary {
       atKey = scanList.isNotEmpty ? _formAtKeyFromScanKeys(scanList[0]) : atKey;
     }
     AtValue? result;
-    try {
-      result = await atClient!.get(atKey);
-    } on KeyNotFoundException {
-      logger.info('$atKey is not found the keystore.');
-    } on AtClientException {
-      logger.info('$atKey is not found the keystore.');
-    }
+    result = await _get(atKey);
     //check for old key if new key data is not present.
-    if (result?.value == null) {
+    if (result.value == null) {
       atKey = _formKey(KeyType.groupList, isOld: true);
-      try {
-        result = await atClient!.get(atKey);
-      } on KeyNotFoundException {
-        logger.info('$atKey is not found the keystore.');
-      } on AtClientException {
-        logger.info('$atKey is not found the keystore.');
-      }
+      result = await _get(atKey);
     }
     //migrate key to new keyformat.
-    if (result?.value != null && _isOldKey(atKey)) {
+    if (result.value != null && _isOldKey(atKey)) {
       var newAtKey = _formKey(KeyType.groupList);
-      await atClient!.put(newAtKey, result?.value);
+      await atClient!.put(newAtKey, result.value);
       AtValue? getValue;
-      try {
-        getValue = await atClient!.get(newAtKey);
-      } on KeyNotFoundException {
-        logger.info('$atKey is not found the keystore.');
-      } on AtClientException {
-        logger.info('$atKey is not found the keystore.');
-      }
+      getValue = await _get(newAtKey);
       // If old is migrated to new successfully, remove the old key
-      if (getValue?.value != null) await atClient!.delete(atKey);
+      if (getValue.value != null) await atClient!.delete(atKey);
     }
 
     // get name from AtGroupBasicInfo for all the groups.
     List<dynamic>? list = [];
-    list = (result?.value != null) ? jsonDecode(result?.value) : [];
+    list = (result.value != null) ? jsonDecode(result.value) : [];
     list = List<String>.from(list!);
     var groupIds = <String?>[];
     list.forEach((group) {
@@ -434,40 +379,22 @@ class AtContactsImpl implements AtContactsLibrary {
           : atKey;
     }
     AtValue? atValue;
-    try {
-      atValue = await atClient!.get(atKey);
-    } on KeyNotFoundException {
-      logger.info('${atKey.key} does not exist in keystore');
-    } on AtClientException {
-      logger.info('${atKey.key} does not exist in keystore');
-    }
+    atValue = await _get(atKey);
     //check for old key if new key data is not present.
-    if (atValue?.value == null) {
+    if (atValue.value == null) {
       atKey = _formKey(KeyType.group, key: groupId, isOld: true);
-      try {
-        atValue = await atClient!.get(atKey);
-      } on KeyNotFoundException {
-        logger.info('${atKey.key} does not exist in keystore');
-      } on AtClientException {
-        logger.info('${atKey.key} does not exist in keystore');
-      }
+      atValue = await _get(atKey);
     }
     //migrate key to new keyformat.
-    if (atValue?.value != null && _isOldKey(atKey)) {
+    if (atValue.value != null && _isOldKey(atKey)) {
       var newAtKey = _formKey(KeyType.group, key: groupId);
-      await atClient!.put(newAtKey, atValue?.value);
-      try {
-        atValue = await atClient!.get(newAtKey);
-      } on KeyNotFoundException {
-        logger.info('${atKey.key} does not exist in keystore');
-      } on AtClientException {
-        logger.info('${atKey.key} does not exist in keystore');
-      }
-      if (atValue?.value != null) await atClient!.delete(atKey);
+      await atClient!.put(newAtKey, atValue.value);
+      atValue = await _get(newAtKey);
+      if (atValue.value != null) await atClient!.delete(atKey);
     }
     AtGroup? group;
-    if (atValue?.value != null) {
-      var value = atValue?.value;
+    if (atValue.value != null) {
+      var value = atValue.value;
       value = value?.replaceAll('data:', '');
       if (value != null && value != 'null') {
         var json = jsonDecode(value);
@@ -625,41 +552,23 @@ class AtContactsImpl implements AtContactsLibrary {
           : atKey;
     }
     AtValue? result;
-    try {
-      result = await atClient!.get(atKey);
-    } on KeyNotFoundException {
-      logger.info('$atKey does not exist in the keystore');
-    } on AtClientException {
-      logger.info('$atKey does not exist in the keystore');
-    }
+    result = await _get(atKey);
     //check for old key if new key data is not present.
-    if (result?.value == null) {
+    if (result.value == null) {
       var oldatKey = _formKey(KeyType.groupList, isOld: true);
-      try {
-        result = await atClient!.get(oldatKey);
-      } on KeyNotFoundException {
-        logger.info('$oldatKey does not exist in the keystore');
-      } on AtClientException {
-        logger.info('$oldatKey does not exist in the keystore');
-      }
+      result = await _get(oldatKey);
     }
     //migrate key to new keyformat.
-    if (result?.value != null && _isOldKey(atKey)) {
+    if (result.value != null && _isOldKey(atKey)) {
       var newAtKey = _formKey(KeyType.groupList);
-      await atClient!.put(newAtKey, result?.value);
+      await atClient!.put(newAtKey, result.value);
       AtValue? getValue;
-      try {
-        getValue = await atClient!.get(newAtKey);
-      } on KeyNotFoundException {
-        logger.info('$atKey is not found in keystore');
-      } on AtClientException {
-        logger.info('$atKey is not found in keystore');
-      }
-      if (getValue?.value.toString() != 'null') await atClient!.delete(atKey);
+      getValue = await _get(newAtKey);
+      if (getValue.value.toString() != 'null') await atClient!.delete(atKey);
     }
     var list = [];
-    if (result?.value != null) {
-      list = (result?.value != null) ? jsonDecode(result?.value) : [];
+    if (result.value != null) {
+      list = (result.value != null) ? jsonDecode(result.value) : [];
     }
     list.add(jsonEncode(atGroupBasicInfo));
     return await atClient!.put(atKey, jsonEncode(list));
@@ -675,16 +584,10 @@ class AtContactsImpl implements AtContactsLibrary {
       atKey = scanList.isNotEmpty ? _formAtKeyFromScanKeys(scanList[0]) : atKey;
     }
     AtValue? result;
-    try {
-      result = await atClient!.get(atKey);
-    } on KeyNotFoundException {
-      logger.info('$atKey is not found in keystore');
-    } on AtClientException {
-      logger.info('$atKey is not found in keystore');
-    }
+    result = await _get(atKey);
     // get name from AtGroupBasicInfo for all the groups.
     List<dynamic>? list = [];
-    list = (result?.value != null) ? jsonDecode(result?.value) : [];
+    list = (result.value != null) ? jsonDecode(result.value) : [];
     list = List<String>.from(list!);
     list.removeWhere((group) =>
         (AtGroupBasicInfo.fromJson(jsonDecode(group)).atGroupId == groupId));
@@ -715,6 +618,20 @@ class AtContactsImpl implements AtContactsLibrary {
       }
     }
     return result;
+  }
+
+  /// Returns the [AtValue] of the [AtKey]
+  Future<AtValue> _get(AtKey atKey) async {
+    // ignore:prefer_typing_uninitialized_variables
+    var atValue;
+    try {
+      atValue = await atClient!.get(atKey);
+    } on KeyNotFoundException {
+      logger.info('${atKey.key} does not exist in keystore');
+    } on AtClientException {
+      logger.info('${atKey.key} does not exist in keystore');
+    }
+    return atValue;
   }
 }
 
