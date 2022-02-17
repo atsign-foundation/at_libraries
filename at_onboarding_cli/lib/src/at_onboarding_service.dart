@@ -21,31 +21,30 @@ class OnboardingService {
   AtOnboardingConfig atOnboardingConfig;
 
   AtClient? get atClient => _atClient;
+  AtLookupImpl? get atLookup => _atLookup;
 
   OnboardingService(this._atSign, this.atOnboardingConfig);
 
   ///creates instance of [AtClient] using either of [AtClientPreference] or [AtOnboardingConfig]
-  Future<AtClient?> createAtClient(
-      AtClientPreference? atClientPreference) async {
-    atClientPreference ??= atOnboardingConfig;
+  Future<AtClient?> createAtClient() async {
     AtClientManager _atClientManager = AtClientManager.getInstance();
     await _atClientManager.setCurrentAtSign(
-            _atSign, atClientPreference.namespace, atClientPreference);
+            _atSign, atOnboardingConfig.namespace, atOnboardingConfig);
     var atClient = _atClientManager.atClient;
     _atLookup = atClient.getRemoteSecondary()?.atLookUp;
     return atClient;
   }
 
   ///method to perform one-time cram authentication
-  Future<bool> onboard({AtClientPreference? atClientPreference}) async {
-    if (_atClient == null) {
-      await createAtClient(atClientPreference);
-    }
+  Future<bool> onboard() async {
     //get cram_secret from either from AtOnboardingConfig or decode it from qr code whichever available
     var secret = atOnboardingConfig.privateKey ?? getSecretFromQr(atOnboardingConfig.qrCodePath);
+    //logger.severe(secret);
+    _atLookup = AtLookupImpl(_atSign, atOnboardingConfig.rootDomain, atOnboardingConfig.rootPort);
     bool? isCramSuccessful = await _atLookup?.authenticate_cram(secret);
+    //logger.severe('cram status $isCramSuccessful');
     if (isCramSuccessful == true) {
-      _generateEncryptionKeyPairs();
+      await  _generateEncryptionKeyPairs();
       logger.finer('cram authentication successful');
       return true;
     }
@@ -63,11 +62,14 @@ class OnboardingService {
     //creating pkamKeyPair
     _pkamRsaKeypair = generateRsaKeypair();
     logger.finer('updating pkam public key to remote secondary');
-    var updateCommand =
-        'update:$AT_PKAM_PUBLIC_KEY ${_pkamRsaKeypair.publicKey}';
+    // var updateCommand =
+    //     'update:$AT_PKAM_PUBLIC_KEY ${_pkamRsaKeypair.publicKey}';
     //updating pkamPublicKey to remote secondary
-    var pkamUpdateResult = _atLookup?.executeCommand(updateCommand);
+    // var pkamUpdateResult = await _atLookup?.executeCommand(updateCommand, auth: false);
+    var pkamUpdateResult = await _atLookup?.update(AT_PKAM_PUBLIC_KEY, _pkamRsaKeypair.publicKey.toString());
     logger.finer('pkam update result: $pkamUpdateResult');
+    atOnboardingConfig.privateKey = _pkamRsaKeypair.privateKey.toString();
+    logger.severe(await _atLookup?.llookup(AT_PKAM_PUBLIC_KEY));
     var pkamAuth = await authenticate();
     if (pkamAuth == true) {
       _isPkamAuthenticated = true;
@@ -76,11 +78,11 @@ class OnboardingService {
       logger.finer('generating encryption keypair');
       //generate user encryption keypair
       _encryptionKeyPair = generateRsaKeypair();
-      updateCommand =
-          'update:$AT_ENCRYPTION_PUBLIC_KEY ${_encryptionKeyPair.publicKey}';
+      // var updateCommand =
+      //     'update:$AT_ENCRYPTION_PUBLIC_KEY ${_encryptionKeyPair.publicKey}';
       //update user encryption public key to remote secondary
       var encryptKeyUpdateResult =
-          await _atLookup?.executeCommand(updateCommand);
+          await _atLookup?.update(AT_ENCRYPTION_PUBLIC_KEY, _encryptionKeyPair.publicKey.toString());
       logger
           .finer('encryption public key update result $encryptKeyUpdateResult');
       var deleteBuilder = DeleteVerbBuilder()..atKey = AT_CRAM_SECRET;
@@ -88,15 +90,15 @@ class OnboardingService {
       logger.finer('cram secret delete response : $deleteResponse');
       //mapping encryption keys pairs to their names
       _atKeysMap = {
-        "aesPkamPublicKey": EncryptionUtil.encryptValue(
+        AuthKeyType.pkamPublicKey: EncryptionUtil.encryptValue(
             _pkamRsaKeypair.publicKey.toString(), _selfEncryptionKey),
-        "aesPkamPrivateKey": EncryptionUtil.encryptValue(
+        AuthKeyType.pkamPrivateKey: EncryptionUtil.encryptValue(
             _pkamRsaKeypair.privateKey.toString(), _selfEncryptionKey),
-        "aes-EncryptPublicKey": EncryptionUtil.encryptValue(
+        AuthKeyType.encryptionPublicKey: EncryptionUtil.encryptValue(
             _encryptionKeyPair.publicKey.toString(), _selfEncryptionKey),
-        "aesEncryptPrivateKey": EncryptionUtil.encryptValue(
+        AuthKeyType.encryptionPrivateKey: EncryptionUtil.encryptValue(
             _encryptionKeyPair.privateKey.toString(), _selfEncryptionKey),
-        "selfEncryptionKey": _selfEncryptionKey,
+        AuthKeyType.selfEncryptionKey: _selfEncryptionKey,
         _atSign: _selfEncryptionKey,
       };
       //mechanism needed to store files when save location is not provided
@@ -112,10 +114,10 @@ class OnboardingService {
   }
 
   ///method to perform pkam authentication
-  Future<bool> authenticate({AtClientPreference? atClientPreference}) async {
-    _atClient ??= await createAtClient(atClientPreference);
-    var privateKey = atOnboardingConfig.privateKey ?? _getPkamPrivateKey(await _readAuthData(atOnboardingConfig.atKeysFilePath));
-    _isPkamAuthenticated = (await _atLookup?.authenticate(privateKey))!;
+  Future<bool> authenticate() async {
+    atOnboardingConfig.privateKey = atOnboardingConfig.privateKey ?? _getPkamPrivateKey(await _readAuthData(atOnboardingConfig.atKeysFilePath));
+    _atClient ??= await createAtClient();
+    _isPkamAuthenticated = (await _atLookup?.authenticate(atOnboardingConfig.privateKey))!;
     return _isPkamAuthenticated;
   }
 
@@ -135,7 +137,7 @@ class OnboardingService {
     if (jsonData != null) {
       var jsonDecodedData = jsonDecode(jsonData);
       return EncryptionUtil.decryptValue(
-          jsonDecodedData[AuthKeyType.PKAM_PRIVATE_KEY_FROM_KEY_FILE],
+          jsonDecodedData[AuthKeyType.pkamPrivateKey],
           _getDecryptionKey(jsonData));
     } else {
       return null;
@@ -145,7 +147,7 @@ class OnboardingService {
   ///method to extract decryption key from atKeysData
   String _getDecryptionKey(String jsonData) {
     var jsonDecodedData = jsonDecode(jsonData);
-    var key = jsonDecodedData[AuthKeyType.SELF_ENCRYPTION_KEY_FROM_FILE];
+    var key = jsonDecodedData[AuthKeyType.selfEncryptionKey];
     return key;
   }
 
