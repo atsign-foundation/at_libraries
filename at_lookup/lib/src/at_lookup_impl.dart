@@ -11,6 +11,7 @@ import 'package:at_lookup/src/util/lookup_util.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:crypto/crypto.dart';
 import 'package:crypton/crypton.dart';
+import 'package:mutex/mutex.dart';
 
 class AtLookupImpl implements AtLookUp {
   final logger = AtSignLogger('AtLookup');
@@ -486,24 +487,32 @@ class AtLookupImpl implements AtLookUp {
     );
   }
 
+  Mutex requestResponseMutex = Mutex();
+
   Future<String> _process(String command, {bool auth = false}) async {
-    if (auth && _isAuthRequired()) {
-      if (privateKey != null) {
-        await authenticate(privateKey);
-      } else if (cramSecret != null) {
-        await authenticate_cram(cramSecret);
-      } else {
-        throw UnAuthenticatedException(
-            'Unable to perform atlookup auth. Private key/cram secret is not set');
-      }
-    }
     try {
-      await _sendCommand(command);
-      var result = await messageListener.read();
-      return result;
-    } on Exception catch (e) {
-      logger.severe('Exception in sending to server, ${e.toString()}');
-      rethrow;
+      await requestResponseMutex.acquire();
+
+      if (auth && _isAuthRequired()) {
+        if (privateKey != null) {
+          await authenticate(privateKey);
+        } else if (cramSecret != null) {
+          await authenticate_cram(cramSecret);
+        } else {
+          throw UnAuthenticatedException(
+              'Unable to perform atlookup auth. Private key/cram secret is not set');
+        }
+      }
+      try {
+        await _sendCommand(command);
+        var result = await messageListener.read();
+        return result;
+      } on Exception catch (e) {
+        logger.severe('Exception in sending to server, ${e.toString()}');
+        rethrow;
+      }
+    } finally {
+      requestResponseMutex.release();
     }
   }
 

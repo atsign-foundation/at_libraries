@@ -1,3 +1,5 @@
+## 3.0.8
+- at_lookup fix race condition when not using await with lookup requests
 ## 3.0.7
 - at_utils version change for fix formatAtSign bug for null value
 ## 3.0.6
