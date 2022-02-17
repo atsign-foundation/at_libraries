@@ -6,7 +6,6 @@ import 'package:at_contact/src/config/app_constants.dart';
 import 'package:at_contact/src/model/at_contact.dart';
 import 'package:at_contact/src/model/at_group.dart';
 import 'package:at_contact/src/service/at_contacts_library.dart';
-import 'package:at_utils/at_logger.dart';
 import 'package:at_utils/at_utils.dart';
 import 'package:uuid/uuid.dart';
 
@@ -20,13 +19,11 @@ class AtContactsImpl implements AtContactsLibrary {
   late var logger;
   late RegexType _regexType;
 
-  AtContactsImpl(AtClient? atClient, String atSign, {RegexType? regexType}) {
-    this.atSign = atSign;
-    this.atClient = atClient;
+  AtContactsImpl(this.atClient, this.atSign, {RegexType? regexType}) {
     _regexType = regexType ?? RegexType.appSpecific;
-
     logger = AtSignLogger(runtimeType.toString());
   }
+
   static Future<AtContactsImpl> getInstance(String atSign,
       {RegexType? regexType}) async {
     try {
@@ -64,24 +61,36 @@ class AtContactsImpl implements AtContactsLibrary {
   /// Throws class extending [AtException] on invalid atsign.
   @override
   Future<AtContact?> get(String atSign, {AtKey? getAtKey}) async {
-    var contact;
+    AtContact? contact;
     var atKey = getAtKey ?? _formKey(KeyType.contact, key: atSign, isGet: true);
     if (_regexType == RegexType.all) {
-      var scanList = await atClient!.getAtKeys(regex: atKey.key);
-      atKey = scanList.isNotEmpty ? _formAtKeyFromScanKeys(scanList[0]) : atKey;
+      List<AtKey>? scanList;
+      try {
+        scanList = await atClient!.getAtKeys(regex: atKey.key);
+      } on KeyNotFoundException {
+        logger.info('${atKey.key} on not found in the keystore');
+      } on AtClientException {
+        logger.info('${atKey.key} on not found in the keystore');
+      }
+      atKey = (scanList != null && scanList.isNotEmpty)
+          ? _formAtKeyFromScanKeys(scanList[0])
+          : atKey;
     }
-    var atValue = await atClient!.get(atKey);
+    AtValue? atValue;
+    atValue = await _get(atKey);
+
     //check for old key if new key data is not present.
     if (atValue.value == null) {
       atKey = _formKey(KeyType.contact, key: atSign, isOld: true);
-      atValue = await atClient!.get(atKey);
+      atValue = await _get(atKey);
     }
     //migrate key to new keyformat if atKey is old.
     if (atValue.value != null && _isOldKey(atKey)) {
       var newAtKey = _formKey(KeyType.contact, key: atSign);
       await atClient!.put(newAtKey, atValue.value);
-      atValue = await atClient!.get(newAtKey);
-      if (atValue.value != null) await atClient!.delete(atKey);
+      AtValue? getValue;
+      getValue = await _get(newAtKey);
+      if (getValue.value != null) await atClient!.delete(atKey);
     }
     if (atValue.value != null) {
       var value = atValue.value;
@@ -99,7 +108,6 @@ class AtContactsImpl implements AtContactsLibrary {
         }
       }
     }
-
     return contact;
   }
 
@@ -148,7 +156,7 @@ class AtContactsImpl implements AtContactsLibrary {
     for (var key in scanList) {
       var atsign = reduceKey(key.key!);
       var atKey = _formAtKeyFromScanKeys(key);
-      var contact;
+      AtContact? contact;
       try {
         contact = await get(atsign, getAtKey: atKey);
       } on Exception catch (e) {
@@ -280,22 +288,23 @@ class AtContactsImpl implements AtContactsLibrary {
       var scanList = await atClient!.getAtKeys(regex: atKey.key);
       atKey = scanList.isNotEmpty ? _formAtKeyFromScanKeys(scanList[0]) : atKey;
     }
-    var result = await atClient!.get(atKey);
-
+    AtValue? result;
+    result = await _get(atKey);
     //check for old key if new key data is not present.
     if (result.value == null) {
       atKey = _formKey(KeyType.groupList, isOld: true);
-      result = await atClient!.get(atKey);
+      result = await _get(atKey);
     }
-
     //migrate key to new keyformat.
     if (result.value != null && _isOldKey(atKey)) {
       var newAtKey = _formKey(
         KeyType.groupList,
       );
       await atClient!.put(newAtKey, result.value);
-      result = await atClient!.get(newAtKey);
-      if (result.value != null) await atClient!.delete(atKey);
+      AtValue? getValue;
+      getValue = await _get(newAtKey);
+      // If new key is stored successfully, remove the old key.
+      if (getValue.value != null) await atClient!.delete(atKey);
     }
     // get name from AtGroupBasicInfo for all the groups.
     List<dynamic>? list = [];
@@ -318,19 +327,21 @@ class AtContactsImpl implements AtContactsLibrary {
       var scanList = await atClient!.getAtKeys(regex: atKey.key);
       atKey = scanList.isNotEmpty ? _formAtKeyFromScanKeys(scanList[0]) : atKey;
     }
-    var result = await atClient!.get(atKey);
-
+    AtValue? result;
+    result = await _get(atKey);
     //check for old key if new key data is not present.
     if (result.value == null) {
       atKey = _formKey(KeyType.groupList, isOld: true);
-      result = await atClient!.get(atKey);
+      result = await _get(atKey);
     }
     //migrate key to new keyformat.
     if (result.value != null && _isOldKey(atKey)) {
       var newAtKey = _formKey(KeyType.groupList);
       await atClient!.put(newAtKey, result.value);
-      result = await atClient!.get(newAtKey);
-      if (result.value != null) await atClient!.delete(atKey);
+      AtValue? getValue;
+      getValue = await _get(newAtKey);
+      // If old is migrated to new successfully, remove the old key
+      if (getValue.value != null) await atClient!.delete(atKey);
     }
 
     // get name from AtGroupBasicInfo for all the groups.
@@ -353,26 +364,35 @@ class AtContactsImpl implements AtContactsLibrary {
     if (groupId == null || groupId.isEmpty) {
       return null;
     }
-
     var atKey = _formKey(KeyType.group, key: groupId, isGet: true);
     if (_regexType == RegexType.all) {
-      var scanList = await atClient!.getAtKeys(regex: atKey.key);
-      atKey = scanList.isNotEmpty ? _formAtKeyFromScanKeys(scanList[0]) : atKey;
+      List<AtKey>? scanList;
+      try {
+        scanList = await atClient!.getAtKeys(regex: atKey.key);
+      } on KeyNotFoundException {
+        logger.info('${atKey.key} does not exist in keystore');
+      } on AtClientException {
+        logger.info('${atKey.key} does not exist in keystore');
+      }
+      atKey = (scanList != null && scanList.isNotEmpty)
+          ? _formAtKeyFromScanKeys(scanList[0])
+          : atKey;
     }
-    var atValue = await atClient!.get(atKey);
+    AtValue? atValue;
+    atValue = await _get(atKey);
     //check for old key if new key data is not present.
     if (atValue.value == null) {
       atKey = _formKey(KeyType.group, key: groupId, isOld: true);
-      atValue = await atClient!.get(atKey);
+      atValue = await _get(atKey);
     }
     //migrate key to new keyformat.
     if (atValue.value != null && _isOldKey(atKey)) {
       var newAtKey = _formKey(KeyType.group, key: groupId);
       await atClient!.put(newAtKey, atValue.value);
-      atValue = await atClient!.get(newAtKey);
+      atValue = await _get(newAtKey);
       if (atValue.value != null) await atClient!.delete(atKey);
     }
-    var group;
+    AtGroup? group;
     if (atValue.value != null) {
       var value = atValue.value;
       value = value?.replaceAll('data:', '');
@@ -383,7 +403,6 @@ class AtContactsImpl implements AtContactsLibrary {
         }
       }
     }
-
     return group;
   }
 
@@ -520,21 +539,32 @@ class AtContactsImpl implements AtContactsLibrary {
   Future<bool> _addToGroupList(AtGroupBasicInfo atGroupBasicInfo) async {
     var atKey = _formKey(KeyType.groupList, isGet: true);
     if (_regexType == RegexType.all) {
-      var scanList = await atClient!.getAtKeys(regex: atKey.key);
-      atKey = scanList.isNotEmpty ? _formAtKeyFromScanKeys(scanList[0]) : atKey;
+      List<AtKey>? scanList;
+      try {
+        scanList = await atClient!.getAtKeys(regex: atKey.key);
+      } on KeyNotFoundException {
+        logger.info('${atKey.key} does not exist in the keystore');
+      } on AtClientException {
+        logger.info('${atKey.key} does not exist in the keystore');
+      }
+      atKey = (scanList != null && scanList.isNotEmpty)
+          ? _formAtKeyFromScanKeys(scanList[0])
+          : atKey;
     }
-    var result = await atClient!.get(atKey);
+    AtValue? result;
+    result = await _get(atKey);
     //check for old key if new key data is not present.
     if (result.value == null) {
       var oldatKey = _formKey(KeyType.groupList, isOld: true);
-      result = await atClient!.get(oldatKey);
+      result = await _get(oldatKey);
     }
     //migrate key to new keyformat.
     if (result.value != null && _isOldKey(atKey)) {
       var newAtKey = _formKey(KeyType.groupList);
       await atClient!.put(newAtKey, result.value);
-      result = await atClient!.get(newAtKey);
-      if (result.toString() != 'null') await atClient!.delete(atKey);
+      AtValue? getValue;
+      getValue = await _get(newAtKey);
+      if (getValue.value.toString() != 'null') await atClient!.delete(atKey);
     }
     var list = [];
     if (result.value != null) {
@@ -553,7 +583,8 @@ class AtContactsImpl implements AtContactsLibrary {
       var scanList = await atClient!.getAtKeys(regex: atKey.key);
       atKey = scanList.isNotEmpty ? _formAtKeyFromScanKeys(scanList[0]) : atKey;
     }
-    var result = await atClient!.get(atKey);
+    AtValue? result;
+    result = await _get(atKey);
     // get name from AtGroupBasicInfo for all the groups.
     List<dynamic>? list = [];
     list = (result.value != null) ? jsonDecode(result.value) : [];
@@ -587,6 +618,20 @@ class AtContactsImpl implements AtContactsLibrary {
       }
     }
     return result;
+  }
+
+  /// Returns the [AtValue] of the [AtKey]
+  Future<AtValue> _get(AtKey atKey) async {
+    // ignore:prefer_typing_uninitialized_variables
+    var atValue;
+    try {
+      atValue = await atClient!.get(atKey);
+    } on KeyNotFoundException {
+      logger.info('${atKey.key} does not exist in keystore');
+    } on AtClientException {
+      logger.info('${atKey.key} does not exist in keystore');
+    }
+    return atValue;
   }
 }
 
