@@ -80,20 +80,20 @@ class AtContactsImpl implements AtContactsLibrary {
     atValue = await _get(atKey);
 
     //check for old key if new key data is not present.
-    if (atValue.value == null) {
+    if (atValue?.value == null) {
       atKey = _formKey(KeyType.contact, key: atSign, isOld: true);
       atValue = await _get(atKey);
     }
     //migrate key to new keyformat if atKey is old.
-    if (atValue.value != null && _isOldKey(atKey)) {
+    if (atValue?.value != null && _isOldKey(atKey)) {
       var newAtKey = _formKey(KeyType.contact, key: atSign);
-      await atClient!.put(newAtKey, atValue.value);
+      await atClient!.put(newAtKey, atValue?.value);
       AtValue? getValue;
       getValue = await _get(newAtKey);
-      if (getValue.value != null) await atClient!.delete(atKey);
+      if (getValue?.value != null) await atClient!.delete(atKey);
     }
-    if (atValue.value != null) {
-      var value = atValue.value;
+    if (atValue?.value != null) {
+      var value = atValue?.value;
       value = value?.replaceAll('data:', '');
       if (value != null && value != 'null') {
         var json;
@@ -291,24 +291,24 @@ class AtContactsImpl implements AtContactsLibrary {
     AtValue? result;
     result = await _get(atKey);
     //check for old key if new key data is not present.
-    if (result.value == null) {
+    if (result?.value == null) {
       atKey = _formKey(KeyType.groupList, isOld: true);
       result = await _get(atKey);
     }
     //migrate key to new keyformat.
-    if (result.value != null && _isOldKey(atKey)) {
+    if (result?.value != null && _isOldKey(atKey)) {
       var newAtKey = _formKey(
         KeyType.groupList,
       );
-      await atClient!.put(newAtKey, result.value);
+      await atClient!.put(newAtKey, result?.value);
       AtValue? getValue;
       getValue = await _get(newAtKey);
       // If new key is stored successfully, remove the old key.
-      if (getValue.value != null) await atClient!.delete(atKey);
+      if (getValue?.value != null) await atClient!.delete(atKey);
     }
     // get name from AtGroupBasicInfo for all the groups.
     List<dynamic>? list = [];
-    list = (result.value != null) ? jsonDecode(result.value) : [];
+    list = (result?.value != null) ? jsonDecode(result?.value) : [];
     list = List<String>.from(list!);
     var groupNames = <String?>[];
     list.forEach((group) {
@@ -330,23 +330,23 @@ class AtContactsImpl implements AtContactsLibrary {
     AtValue? result;
     result = await _get(atKey);
     //check for old key if new key data is not present.
-    if (result.value == null) {
+    if (result?.value == null) {
       atKey = _formKey(KeyType.groupList, isOld: true);
       result = await _get(atKey);
     }
     //migrate key to new keyformat.
-    if (result.value != null && _isOldKey(atKey)) {
+    if (result?.value != null && _isOldKey(atKey)) {
       var newAtKey = _formKey(KeyType.groupList);
-      await atClient!.put(newAtKey, result.value);
+      await atClient!.put(newAtKey, result?.value);
       AtValue? getValue;
       getValue = await _get(newAtKey);
       // If old is migrated to new successfully, remove the old key
-      if (getValue.value != null) await atClient!.delete(atKey);
+      if (getValue?.value != null) await atClient!.delete(atKey);
     }
 
     // get name from AtGroupBasicInfo for all the groups.
     List<dynamic>? list = [];
-    list = (result.value != null) ? jsonDecode(result.value) : [];
+    list = (result?.value != null) ? jsonDecode(result?.value) : [];
     list = List<String>.from(list!);
     var groupIds = <String?>[];
     list.forEach((group) {
@@ -381,20 +381,20 @@ class AtContactsImpl implements AtContactsLibrary {
     AtValue? atValue;
     atValue = await _get(atKey);
     //check for old key if new key data is not present.
-    if (atValue.value == null) {
+    if (atValue?.value == null) {
       atKey = _formKey(KeyType.group, key: groupId, isOld: true);
       atValue = await _get(atKey);
     }
     //migrate key to new keyformat.
-    if (atValue.value != null && _isOldKey(atKey)) {
+    if (atValue?.value != null && _isOldKey(atKey)) {
       var newAtKey = _formKey(KeyType.group, key: groupId);
-      await atClient!.put(newAtKey, atValue.value);
+      await atClient!.put(newAtKey, atValue?.value);
       atValue = await _get(newAtKey);
-      if (atValue.value != null) await atClient!.delete(atKey);
+      if (atValue?.value != null) await atClient!.delete(atKey);
     }
     AtGroup? group;
-    if (atValue.value != null) {
-      var value = atValue.value;
+    if (atValue?.value != null) {
+      var value = atValue?.value;
       value = value?.replaceAll('data:', '');
       if (value != null && value != 'null') {
         var json = jsonDecode(value);
@@ -554,21 +554,21 @@ class AtContactsImpl implements AtContactsLibrary {
     AtValue? result;
     result = await _get(atKey);
     //check for old key if new key data is not present.
-    if (result.value == null) {
+    if (result?.value == null) {
       var oldatKey = _formKey(KeyType.groupList, isOld: true);
       result = await _get(oldatKey);
     }
     //migrate key to new keyformat.
-    if (result.value != null && _isOldKey(atKey)) {
+    if (result?.value != null && _isOldKey(atKey)) {
       var newAtKey = _formKey(KeyType.groupList);
-      await atClient!.put(newAtKey, result.value);
+      await atClient!.put(newAtKey, result?.value);
       AtValue? getValue;
       getValue = await _get(newAtKey);
-      if (getValue.value.toString() != 'null') await atClient!.delete(atKey);
+      if (getValue?.value.toString() != 'null') await atClient!.delete(atKey);
     }
     var list = [];
-    if (result.value != null) {
-      list = (result.value != null) ? jsonDecode(result.value) : [];
+    if (result?.value != null) {
+      list = (result?.value != null) ? jsonDecode(result?.value) : [];
     }
     list.add(jsonEncode(atGroupBasicInfo));
     return await atClient!.put(atKey, jsonEncode(list));
@@ -587,7 +587,7 @@ class AtContactsImpl implements AtContactsLibrary {
     result = await _get(atKey);
     // get name from AtGroupBasicInfo for all the groups.
     List<dynamic>? list = [];
-    list = (result.value != null) ? jsonDecode(result.value) : [];
+    list = (result?.value != null) ? jsonDecode(result?.value) : [];
     list = List<String>.from(list!);
     list.removeWhere((group) =>
         (AtGroupBasicInfo.fromJson(jsonDecode(group)).atGroupId == groupId));
@@ -621,7 +621,7 @@ class AtContactsImpl implements AtContactsLibrary {
   }
 
   /// Returns the [AtValue] of the [AtKey]
-  Future<AtValue> _get(AtKey atKey) async {
+  Future<AtValue?> _get(AtKey atKey) async {
     // ignore:prefer_typing_uninitialized_variables
     var atValue;
     try {
