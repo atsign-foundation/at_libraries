@@ -1,3 +1,6 @@
+## 3.0.4
+- at_commons version upgrade for AtTimeoutException 
+- at_client version upgrade for refactor get and put methods.
 ## 3.0.3
 - at_client,at_commons,at_utils version upgrade
 ## 3.0.2
