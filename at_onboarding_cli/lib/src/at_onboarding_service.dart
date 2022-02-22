@@ -6,7 +6,7 @@ abstract class AtOnboardingService {
   ///to activate the atsign
   Future<bool> onboard();
 
-  ///authenticate using privateKey
+  ///authenticate into secondary server using privateKey
   Future<bool> authenticate();
 
   ///returns an authenticated instance of AtClient
