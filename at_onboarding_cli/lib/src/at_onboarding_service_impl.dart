@@ -12,48 +12,46 @@ import 'package:encrypt/encrypt.dart';
 import 'package:zxing2/qrcode.dart';
 import 'package:image/image.dart';
 
-///class containing service that can onboard/authenticate @signs
+///class containing service that can onboard/activate/authenticate @signs
 class AtOnboardingServiceImpl implements AtOnboardingService {
   String _atSign;
   bool _isPkamAuthenticated = false;
   bool _isAtsignOnboarded = false;
   AtLookupImpl? _atLookup;
   AtClient? _atClient;
-  AtSignLogger logger = AtSignLogger('Onboarding CLI');
+  AtSignLogger logger = AtSignLogger('Onboarding Cli');
   AtOnboardingPreference atOnboardingPreference;
-
-  AtClient? get atClient => _atClient;
-  AtLookupImpl? get atLookup => _atLookup;
 
   AtOnboardingServiceImpl(this._atSign, this.atOnboardingPreference);
 
-  ///creates and returns instance of [AtClient] using [AtOnboardingPreference]
+  @override
   Future<AtClient?> getAtClient() async {
     if (_atClient == null) {
       AtClientManager _atClientManager = AtClientManager.getInstance();
       await _atClientManager.setCurrentAtSign(
           _atSign, atOnboardingPreference.namespace, atOnboardingPreference);
-      var atClient = _atClientManager.atClient;
-      _atLookup = atClient.getRemoteSecondary()?.atLookUp;
-      return atClient;
+      _atLookup = _atClientManager.atClient.getRemoteSecondary()?.atLookUp;
+      return _atClientManager.atClient;
     }
   }
 
   @override
   Future<bool> onboard() async {
     //get cram_secret from either from AtOnboardingConfig or decode it from qr code whichever available
-    var secret = atOnboardingPreference.cramSecret ??
+    atOnboardingPreference.cramSecret ??=
         _getSecretFromQr(atOnboardingPreference.qrCodePath);
-    _atLookup = AtLookupImpl(_atSign, atOnboardingPreference.rootDomain,
-        atOnboardingPreference.rootPort);
-    _isAtsignOnboarded = (await _atLookup?.authenticate_cram(secret))!;
-    logger.severe('cram status $_isAtsignOnboarded');
-    if (_isAtsignOnboarded == true) {
-      await _generateEncryptionKeyPairs();
-      logger.finer('cram authentication successful');
-      return true;
+    if (atOnboardingPreference.cramSecret != null) {
+      _atLookup = AtLookupImpl(_atSign, atOnboardingPreference.rootDomain,
+          atOnboardingPreference.rootPort);
+      _isAtsignOnboarded = (await _atLookup?.authenticate_cram(atOnboardingPreference.cramSecret))!;
+      if (_isAtsignOnboarded == true) {
+        await _generateEncryptionKeyPairs();
+        logger.finer('cram authentication successful');
+        return true;
+      }
+      return false;
     }
-    return false;
+    throw UnAuthenticatedException('provide either cram secret or qr code containing cram secret');
   }
 
   ///method to generate/write/update encryption key-pairs
@@ -74,8 +72,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         await _atLookup?.executeCommand(updateCommand, auth: false);
     logger.finer('pkam update result: $pkamUpdateResult');
     atOnboardingPreference.privateKey = _pkamRsaKeypair.privateKey.toString();
-    var pubK = await _atLookup?.llookup(AT_PKAM_PUBLIC_KEY);
-    pubK = pubK?.split(':')[1];
     _isPkamAuthenticated = await authenticate();
     if (_isPkamAuthenticated) {
       _isPkamAuthenticated = true;
@@ -84,11 +80,14 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       logger.finer('generating encryption keypair');
       //generate user encryption keypair
       _encryptionKeyPair = generateRsaKeypair();
-      var updateCommand =
-          'update:$AT_ENCRYPTION_PUBLIC_KEY@$_atSign ${_encryptionKeyPair.publicKey}\n';
+      UpdateVerbBuilder updateBuilder = UpdateVerbBuilder()
+          ..atKey = 'publickey'
+          ..isPublic = true
+          ..value = _encryptionKeyPair.publicKey.toString()
+          ..sharedBy = _atSign;
       //update user encryption public key
       var encryptKeyUpdateResult =
-          await _atLookup?.executeCommand(updateCommand);
+          await _atLookup?.executeVerb(updateBuilder, sync: true);
       logger
           .finer('encryption public key update result $encryptKeyUpdateResult');
       var deleteBuilder = DeleteVerbBuilder()..atKey = AT_CRAM_SECRET;
@@ -123,15 +122,18 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   Future<bool> authenticate() async {
     atOnboardingPreference.privateKey = atOnboardingPreference.privateKey ??
         _getPkamPrivateKey(
-            await _readAuthData(atOnboardingPreference.atKeysFilePath));
-    _atClient ??= await getAtClient();
-    _isPkamAuthenticated =
-        (await _atLookup?.authenticate(atOnboardingPreference.privateKey))!;
-    return _isPkamAuthenticated;
+            await _readAtKeysFile(atOnboardingPreference.atKeysFilePath));
+    if (atOnboardingPreference.privateKey != null) {
+      _atClient ??= await getAtClient();
+      _isPkamAuthenticated =
+      (await _atLookup?.authenticate(atOnboardingPreference.privateKey))!;
+      return _isPkamAuthenticated;
+    }
+    throw UnAuthenticatedException('either of private key or .atKeys file not provided');
   }
 
   ///method to read and return data from .atKeysFile
-  Future<String?> _readAuthData(String? atKeysFilePath) async {
+  Future<String?> _readAtKeysFile(String? atKeysFilePath) async {
     if (atKeysFilePath != null) {
       File atKeysFile = File(atKeysFilePath);
       String atAuthData = await atKeysFile.readAsString();
@@ -141,7 +143,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
   }
 
-  ///method to extract pkamPrivateKey from atKeysData
+  ///method to extract and decrypt pkamPrivateKey from atKeysData
   String? _getPkamPrivateKey(String? jsonData) {
     if (jsonData != null) {
       var jsonDecodedData = jsonDecode(jsonData);
@@ -166,12 +168,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }
 
   ///generate random AES key
-  static String generateAESKey() {
+  String generateAESKey() {
     var aesKey = AES(Key.fromSecureRandom(32));
     var keyString = aesKey.key.base64;
     return keyString;
   }
 
+  ///returns secondary server status
   Future<AtStatus> getServerStatus() {
     AtServerStatus atServerStatus = AtStatusImpl(
         rootUrl: atOnboardingPreference.rootDomain,
@@ -180,7 +183,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }
 
   ///extracts cram secret from qrCode
-  dynamic _getSecretFromQr(String? path) {
+  String? _getSecretFromQr(String? path) {
     if (path != null) {
       var image = decodePng(File(path).readAsBytesSync());
       LuminanceSource source = RGBLuminanceSource(image!.width, image.height,
@@ -193,4 +196,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       return null;
     }
   }
+
+  @override
+  AtLookUp getAtLookup() {
+    return _atLookup as AtLookUp;
+  }
+
+
 }

@@ -1,3 +1,6 @@
+import 'package:at_client/at_client.dart';
+import 'package:at_lookup/at_lookup.dart';
+
 abstract class AtOnboardingService {
   ///perform initial one_time authentication
   ///to activate the atsign
@@ -5,4 +8,10 @@ abstract class AtOnboardingService {
 
   ///authenticate using privateKey
   Future<bool> authenticate();
+
+  ///returns an authenticated instance of AtClient
+  Future<AtClient?> getAtClient();
+
+  ///returns authenticated instance of AtLookup
+  AtLookUp? getAtLookup();
 }
