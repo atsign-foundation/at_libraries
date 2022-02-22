@@ -1,2 +1,1 @@
-A sample command-line application with an entrypoint in `bin/`, library code
-in `lib/`, and example unit test in `test/`.
+Library to authenticate and onboard @signs. Library implementation is present in /lib. Example on how to invoke the library present in /example.
