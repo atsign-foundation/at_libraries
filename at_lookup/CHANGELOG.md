@@ -1,3 +1,5 @@
+## 3.0.10
+- outbound listener bug fix
 ## 3.0.9
 - at_commons version change for AtTimeoutException
 - Handle error: responses from server
