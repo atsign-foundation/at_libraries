@@ -18,7 +18,7 @@ class OutboundMessageListener {
   /// Listens to the underlying connection's socket if the connection is created.
   /// @throws [AtConnectException] if the connection is not yet created
   void listen() {
-    _connection.getSocket().listen(messageHandler,
+    _connection.getSocket().listen(_messageHandler,
         onDone: _finishedHandler, onError: _errorHandler);
     _queue = Queue();
   }
@@ -26,7 +26,7 @@ class OutboundMessageListener {
   /// Handles messages on the inbound client's connection and calls the verb executor
   /// Closes the inbound connection in case of any error.
   /// Throw a [BufferOverFlowException] if buffer is unable to hold incoming data
-  Future<void> messageHandler(data) async {
+  Future<void> _messageHandler(data) async {
     String result;
     if (!_buffer.isOverFlow(data)) {
       // skip @ prompt
@@ -48,23 +48,23 @@ class OutboundMessageListener {
       result = utf8.decode(_buffer.getData());
       result = result.trim();
       _buffer.clear();
-      _queue.addFirst(result);
+      _queue.add(result);
     }
   }
 
   /// Reads the response sent by remote socket from the queue.
-  /// If there is no message in queue after [maxWaitMilliSeconds], return null. Defaults to 30 seconds.
-  Future<String> read({int maxWaitMilliSeconds = 30000}) async {
+  /// If there is no message in queue after [maxWaitMilliSeconds], return null. Defaults to 3 seconds.
+  Future<String> read({int maxWaitMilliSeconds = 3000}) async {
     return _read(maxWaitMillis: maxWaitMilliSeconds);
   }
 
-  Future<String> _read({int maxWaitMillis = 30000, int retryCount = 1}) async {
+  Future<String> _read({int maxWaitMillis = 3000, int retryCount = 1}) async {
     String result;
     var maxIterations = maxWaitMillis / 10;
     if (retryCount == maxIterations) {
       _buffer.clear();
-      throw AtTimeoutException(
-          'No response after $maxWaitMillis millis from remote secondary');
+//      throw AtTimeoutException(
+//          'No response after $maxWaitMillis millis from remote secondary');
     }
     var queueLength = _queue.length;
     if (queueLength > 0) {
