@@ -63,8 +63,8 @@ class OutboundMessageListener {
     var maxIterations = maxWaitMillis / 10;
     if (retryCount == maxIterations) {
       _buffer.clear();
-//      throw AtTimeoutException(
-//          'No response after $maxWaitMillis millis from remote secondary');
+      throw AtTimeoutException(
+          'No response after $maxWaitMillis millis from remote secondary');
     }
     var queueLength = _queue.length;
     if (queueLength > 0) {
