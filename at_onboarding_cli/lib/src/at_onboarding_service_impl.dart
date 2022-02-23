@@ -33,6 +33,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       _atLookup = _atClientManager.atClient.getRemoteSecondary()?.atLookUp;
       return _atClientManager.atClient;
     }
+    return _atClient
   }
 
   @override
