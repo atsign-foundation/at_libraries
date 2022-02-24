@@ -1,6 +1,6 @@
-<img width=250px src="https://atsign.dev/assets/img/@platform_logo_grey.svg?sanitize=true">
+<img width="250" src="https://atsign.dev/assets/img/@platform_logo_grey.svg?sanitize=true"/>
 
-## Now for some internet optimism.
+## Now for some internet optimism
 
 [![pub package](https://img.shields.io/pub/v/at_contact)](https://pub.dev/packages/at_contact) [![pub points](https://badges.bar/at_contact/pub%20points)](https://pub.dev/packages/at_contact/score) [![gitHub license](https://img.shields.io/badge/license-BSD3-blue.svg)](./LICENSE)
 
@@ -19,7 +19,7 @@ Initially to get a basic overview of the @protocol packages, You must read the [
 
 # Usage
 
-- Create an instance of `AtContactsImpl`, We make use of `AtClientManager`.
+- Create an instance of `AtContactsImpl`, We make use of `AtClientManager` for `AtClient` to be passed.
 
 ```dart
 // Create an instace of AtClient.
@@ -27,12 +27,13 @@ AtClient atClientInstance = AtClientManager.getInstance().atClient;
 
 // Create an instace of AtContactsImpl.
 // It takes 2 positional arguments called AtClient and atSign.
+// One optional argument called regexType.
 AtContactsImpl _atContact = AtContactsImpl(atClientInstance, atClientInstance.getCurrentAtSign());
 ```
 
 ### Contacts
 
-- If the user wants to add a contact, call `add()` method. 
+- If the user wants to add a contact, call `add()` function from the `_atContact` instance. Provide the contact details to `add()` function.
 
 ```dart
 
@@ -51,13 +52,14 @@ Future<void> _addContact() async {
 }
 ```
 
-- If user wants to get the data of a contact, call `get()` method by passing the user's atSign as the positional argument.
+- If user wants to get the data of a contact, call `get()` function by passing the user's atSign as the positional argument.
 
 ```dart
 AtContact? userContact;
 
 @override
 Future<void> _getContactDetails() async {
+    // Optionally pass the atKeys.
     AtContact? _contact = await _atContact.get(atSign);
     if(_contact == null){
         print("Failed to fetch contact data.");
@@ -67,24 +69,21 @@ Future<void> _getContactDetails() async {
         setState(() => userContact = _contact);
     }
 }
-
 ```
 
-- If user wants to delete a contact, Call `deleteContact()` or `delete()` method.
+- If user wants to delete a contact, Call `deleteContact()` or `delete()` function.
 
-- You can implement deleting a contact functionality using either of the methods.
+- You can implement deleting a contact functionality using either of the functions.
 
-    - If you use `deleteContact()` method, It needs the user's contact as a positional parameter.
+  - If you use `deleteContact()` function, It needs the user's contact as a positional parameter.
 
-    - If you use `delete()` method, It needs just the atSign of the user's contact. And it can be fetched from the user contact itself.
+  - If you use `delete()` function, It needs just the atSign of the user's contact. And it can be fetched from the user contact itself.
 
-    - Let us see the both implementations.
+  - Let us see the both implementations.
 
 ```dart
-/// Using `delete()` method
-String? _atSign;
-
-Future<void> _deleteContact() async {
+/// Using `delete()` function.
+Future<void> _deleteContact(String _atSign) async {
     if(_atSign == null || _atSign.isEmpty){
         print("AtSign was't passed or empty.");
     } else {
@@ -95,19 +94,14 @@ Future<void> _deleteContact() async {
 ```
 
 ```dart
-/// Using `deleteContact()` method.
-Future<void> _deleteContact() async {
-    AtContact? _contact = await _atContact.get(atSign);
-    if(_contact == null){
-        print("Failed to fetch contact data.");
-    } else {
-        bool _isContactDeleted = await _atContact.deleteContact(_contact);
-        print(_isContactDeleted ? 'Contact deleted successfully' : 'Failed to delete contact.');
-    }
+/// Using `deleteContact()` function.
+Future<void> _deleteContact(AtContact _contact) async {
+    bool _isContactDeleted = await _atContact.deleteContact(_contact);
+    print(_isContactDeleted ? 'Contact deleted successfully' : 'Failed to delete contact.');
 }
 ```
 
-- Show the list of the user's contacts. Then call the `listContacts()` method.
+- Show the list of the user's contacts. Then call the `listContacts()` function.
 
 ```dart
 /// In Contacts list screen, call the `listContacts()`.
@@ -117,7 +111,7 @@ List<AtContact> contactsList = await _atContact.listContacts();
 // Or use FutureBuilder and ListView to show the contact data as a list.
 ```
 
-- If the user wants to list out their favorite contacts, Then call `listFavoriteContacts()` method.
+- If the user wants to list out their favorite contacts, Then call `listFavoriteContacts()` function.
 
 ```dart
 Future<void> _listFavoriteContacts() async {
@@ -134,18 +128,18 @@ Future<void> _listFavoriteContacts() async {
 
 - So far we have looked into contacts, Now let us know how `AtGroup`s to be used.
 
-- If the user wants to create a group, Then call `createGroup()` method.
+- If the user wants to create a group, Then call `createGroup()` function where it take a `AtGroup` as a positional argument.
 
 ```dart
-Future<void> _createGroup() async {
-    // Pass the user input data to respective fields of AtGroup.
-    AtGroup group = AtGroup('The @platform team')
-        ..createdBy = _myAtSign
-        ..createdOn = DateTime.now()
-        ..description = 'Team with awesome spirit'
-        ..updatedOn = DateTime.now()
-        ..groupId = 'T@PT101'
-        ..displayName = 'at_contact team';
+// Pass the user input data to respective fields of AtGroup.
+AtGroup myGroup = AtGroup('The @platform team')
+    ..createdBy = _myAtSign
+    ..createdOn = DateTime.now()
+    ..description = 'Team with awesome spirit'
+    ..updatedOn = DateTime.now()
+    ..groupId = 'T@PT101'
+    ..displayName = 'at_contact team';
+Future<void> _createGroup(AtGroup group) async {
     AtGroup? myGroup = await _atContact.createGroup(group);
     if(myGroup == null){
         print('Failed to create group')
@@ -155,13 +149,41 @@ Future<void> _createGroup() async {
 }
 ```
 
-- If the user wants to get the details about group, Then call `getGroup()` method.
+- If the user wants to update a group, Then call `updateGroup()` function where it take a `AtGroup` as a positional argument.
 
 ```dart
+// Pass the user input data to respective fields of AtGroup.
+AtGroup myGroup = AtGroup('The @platform team')
+    ..createdBy = _myAtSign
+    ..createdOn = DateTime.now()
+    ..description = 'Team with awesome spirit'
+    ..updatedOn = DateTime.now()
+    ..groupId = 'T@PT101'
+    ..displayName = 'at_contact team';
+Future<void> _updateGroup(AtGroup group) async {
+    try{
+        AtGroup? myGroup = await _atContact.updateGroup(group);
+        if(myGroup == null){
+            print('Failed to create group')
+        } else {
+            print(group.id + ' has been created successfully');
+        }
+    } catch(e){
+        if(e is GroupNotExistsException){
+            print('Group not exists. Please create the group first.');
+        } else {
+            print('Failed to update group');
+        }
+    }
+}
+```
 
-String groupName = 'The @platform team';
+- If the user wants to get the details about group, Then call `getGroup()` function with `groupID` as positional argument.
 
-Future<void> _getGroup() async {
+```dart
+String myGroupId = 'T@PT101';
+
+Future<void> _getGroup(String groupId) async {
     AtGroup? myGroup = await _atContact.getGroup(groupName);
     if(myGroup == null){
         print('Failed to get group details')
@@ -174,10 +196,10 @@ Future<void> _getGroup() async {
 }
 ```
 
-- If the user wants to delete the group, Then call `deleteGroup()` method.
+- If the user wants to delete the group, Then call `deleteGroup()` function with `AtGroup` as positional argument.
 
 ```dart
-Future<void> _deleteGroup() async {
+Future<void> _deleteGroup(AtGroup groupName) async {
     AtGroup? _myGroup = await _atContact.getGroup(groupName);
     if(_myGroup == null){
         print('Failed to get group details');
@@ -188,7 +210,7 @@ Future<void> _deleteGroup() async {
 }
 ```
 
-- If user wants to get the list of group names, Then call `listGroupNames()` method.
+- If user wants to get the list of group names, Then call `listGroupNames()` function.
 
 ```dart
 Future<void> _listGroupNames() async {
@@ -204,7 +226,7 @@ Future<void> _listGroupNames() async {
 }
 ```
 
-- If user wants to get the list of group names, Then call `listGroupIds()` method.
+- If user wants to get the list of group names, Then call `listGroupIds()` function.
 
 ```dart
 Future<void> _listGroupIds() async {
@@ -220,52 +242,55 @@ Future<void> _listGroupIds() async {
 }
 ```
 
-- If user wants to add someone to the group, then call `addMembers()` method.
+- If user wants to add someone to the group, then call `addMembers()` function. This function needs `Set<AtContact>` and `AtGroup` as positional arguments.
 
 ```dart
 Set<AtContact> selectedContacts = <AtContact>{};
 
-Future<void> _addMembers() async {
-    for(String _atSign in selectedAtSignsList){
-        AtContact? _fetchedContact = await _atContact.get(_atSign);
-        if(_fetchedContact != null){
-            selectedContacts.add(_fetchedContact);
-        } else{
-            print('Failed to get contact for $_atSign');
-        }
+for(String _atSign in selectedAtSignsList){
+    AtContact? _fetchedContact = await _atContact.get(_atSign);
+    if(_fetchedContact != null){
+        selectedContacts.add(_fetchedContact);
+    } else{
+        print('Failed to get contact for $_atSign');
     }
-    AtGroup? _myGroup = await _atContact.getGroup(groupName);
-    bool _isMembersAdded = await _atContact.addMembers(selectedContacts, _myGroup);
+}
+// Get your group details if you have the group id
+AtGroup? _myGroup = await _atContact.getGroup(myGroupID);
+
+Future<void> _addMembers(Set<AtContact> contacts, AtGroup group) async {
+    bool _isMembersAdded = await _atContact.addMembers(contacts, group);
     print(_isMembersAdded ? 'Members added to the group' : 'Failed to add members to the group');
 }
-``` 
+```
 
-- If a user wants to delete a contact from the group , Then call `deleteMembers()` method
+- If a user wants to delete a contact from the group , Then call `deleteMembers()` function.
 
 ```dart
 Set<AtContact> selectedContacts = <AtContact>{};
 
-Future<void> _deleteMembers() async {
-    for(String _atSign in selectedAtSignsList){
-        AtContact? _fetchedContact = await _atContact.get(_atSign);
-        if(_fetchedContact != null){
-            selectedContacts.add(_fetchedContact);
-        } else{
-            print('Failed to get contact for $_atSign');
-        }
+for(String _atSign in selectedAtSignsList){
+    AtContact? _fetchedContact = await _atContact.get(_atSign);
+    if(_fetchedContact != null){
+        selectedContacts.add(_fetchedContact);
+    } else{
+        print('Failed to get contact for $_atSign');
     }
-    AtGroup? _myGroup = await _atContact.getGroup(groupName);
-    bool _isMembersRemoved = await _atContact.deleteMembers(selectedContacts, _myGroup);
+}
+AtGroup? _myGroup = await _atContact.getGroup(myGroupID);
+
+Future<void> _deleteMembers(Set<AtContact> contacts, AtGroup group) async {
+    bool _isMembersRemoved = await _atContact.deleteMembers(contacts, group);
     print(_isMembersRemoved ? 'Member removed from the group' : 'Failed to remove member from the group')
 }
 ```
 
-- To check if the user is a member of the group you are looking for, Then call `isMember()` method.
+- To check if the user is a member of the group you are looking for, Then call `isMember()` function.
 
 ```dart
 AtContact? _userContact = await _atContact.get(atSign);
-bool isAMember = await _atContact.isMember(_userContact, groupName);
-print(atSign + ' is ${isAMember ? '' : 'not'} a member of ' + groupName); 
+bool isAMember = await _atContact.isMember(_userContact, myGroup);
+print(atSign + ' is ${isAMember ? '' : 'not'} a member of ' + myGroup.groupName); 
 // @colin is a member of The @platform team 
 // @somerandomatsign is not a member of The @Platform team
 ```
