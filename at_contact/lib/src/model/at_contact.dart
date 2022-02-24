@@ -17,7 +17,7 @@ class AtContact {
 
   List<String>? personas = [];
 
-  //
+  // Additional/Optional context(Keys)
   Map<dynamic, dynamic>? tags;
 
 // Ex:: com.atSign.AtContact
