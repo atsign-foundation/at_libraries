@@ -22,10 +22,10 @@ Initially to get a basic overview of the @protocol packages, You must read the [
 - Create an instance of `AtContactsImpl`, We make use of `AtClientManager` for `AtClient` to be passed.
 
 ```dart
-// Create an instace of AtClient.
+// Create an instance of AtClient.
 AtClient atClientInstance = AtClientManager.getInstance().atClient;
 
-// Create an instace of AtContactsImpl.
+// Create an instance of AtContactsImpl.
 // It takes 2 positional arguments called AtClient and atSign.
 // One optional argument called regexType.
 AtContactsImpl _atContact = AtContactsImpl(atClientInstance, atClientInstance.getCurrentAtSign());
