@@ -1,3 +1,14 @@
+## 3.0.10
+- outbound listener bug fix
+## 3.0.9
+- at_commons version change for AtTimeoutException
+- Handle error: responses from server
+## 3.0.8
+- at_lookup fix race condition when not using await with lookup requests
+## 3.0.7
+- at_utils version change for fix formatAtSign bug for null value
+## 3.0.6
+- at_commons and at_utils version change
 ## 3.0.5
 - at_commons and at_utils version change
 ## 3.0.4
