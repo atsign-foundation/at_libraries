@@ -1,3 +1,5 @@
+## 3.0.5
+- at_client version upgrade for automatic sync trigger
 ## 3.0.4
 - at_commons version upgrade for AtTimeoutException 
 - at_client version upgrade for refactor get and put methods.
