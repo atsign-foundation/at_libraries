@@ -33,7 +33,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       _atLookup = _atClientManager.atClient.getRemoteSecondary()?.atLookUp;
       return _atClientManager.atClient;
     }
-    return _atClient
+    return _atClient;
   }
 
   @override
@@ -73,6 +73,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     String? pkamUpdateResult =
         await _atLookup?.executeCommand(updateCommand, auth: false);
     logger.finer('pkam update result: $pkamUpdateResult');
+    //updating values to local secondary
+    _persistKeysLocalSecondary(AT_PKAM_PUBLIC_KEY, _pkamRsaKeypair.publicKey.toString());
+    _persistKeysLocalSecondary(AT_PKAM_PRIVATE_KEY, _pkamRsaKeypair.publicKey.toString());
     atOnboardingPreference.privateKey = _pkamRsaKeypair.privateKey.toString();
     //authenticate using pkam to verify insertion of pkamPublicKey
     _isPkamAuthenticated = await authenticate();
@@ -81,6 +84,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       //generate selfEncryptionKey
       _selfEncryptionKey = generateAESKey();
       logger.finer('generating encryption keypair');
+      //update self encryptio key to local secondary
+      _persistKeysLocalSecondary(AT_ENCRYPTION_SELF_KEY, _selfEncryptionKey);
       //generate user encryption keypair
       _encryptionKeyPair = generateRsaKeypair();
       //update user encryption public key
@@ -93,6 +98,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
           await _atLookup?.executeVerb(updateBuilder);
       logger
           .finer('encryption public key update result $encryptKeyUpdateResult');
+      //update user encryption keys to local secondary
+      _persistKeysLocalSecondary(AT_ENCRYPTION_PUBLIC_KEY, _encryptionKeyPair.publicKey.toString());
+      _persistKeysLocalSecondary(AT_ENCRYPTION_PRIVATE_KEY, _encryptionKeyPair.privateKey.toString());
       //deleting cram secret from the keystore as cram auth is complete
       DeleteVerbBuilder deleteBuilder = DeleteVerbBuilder()
         ..atKey = AT_CRAM_SECRET;
@@ -115,6 +123,16 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       logger.finer(getServerStatus().toString());
     } else {
       logger.finer('could not complete pkam authentication');
+    }
+  }
+
+  void _persistKeysLocalSecondary(String key, dynamic value) async{
+    bool? response = await _atClient?.getLocalSecondary()?.putValue(key, value);
+    if (response == true){
+      logger.finer('$key stored to local secondary');
+    }
+    else{
+      logger.finer('$key could not be stored in the local secondary');
     }
   }
 
