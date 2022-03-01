@@ -1,3 +1,5 @@
+## 3.0.11
+- Add shared key to metadata
 ## 3.0.10
 - outbound listener bug fix
 ## 3.0.9
