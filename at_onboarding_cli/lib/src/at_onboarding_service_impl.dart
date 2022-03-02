@@ -127,14 +127,16 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
   }
 
-  void _persistKeysLocalSecondary(Map? _atKeysMap, bool isPkam) async{
-    if(isPkam) {
-      _atKeysMap = (await _decryptAtKeysFile(_readAtKeysFile(atOnboardingPreference.atKeysFilePath)));
+  void _persistKeysLocalSecondary(Map? _atKeysMap, bool isPkam) async {
+    if (isPkam) {
+      _atKeysMap = (await _decryptAtKeysFile(
+          _readAtKeysFile(atOnboardingPreference.atKeysFilePath)));
     }
-    if(!isPkam){
-      _atKeysMap = await _decryptAtKeysFile(_atKeysMap, decryptionKey: _atKeysMap![AuthKeyType.selfEncryptionKey]);
+    if (!isPkam) {
+      _atKeysMap = await _decryptAtKeysFile(_atKeysMap,
+          decryptionKey: _atKeysMap![AuthKeyType.selfEncryptionKey]);
     }
-    if(_atKeysMap != null) {
+    if (_atKeysMap != null) {
       bool? response = await _atClient?.getLocalSecondary()?.putValue(
           AuthKeyType.pkamPublicKey, _atKeysMap[AuthKeyType.pkamPublicKey]);
       logger.finer('pkamPublicKey persist status $response');
@@ -153,22 +155,21 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
           AuthKeyType.selfEncryptionKey,
           _atKeysMap[AuthKeyType.selfEncryptionKey]);
       logger.finer('self encryption key persist status $response');
-    }
-    else{
+    } else {
       logger.severe('atKeysMap is null');
     }
   }
 
   void _persistEncryptionKeys(Map atKeysMap) {
     //generating .atKeys file at path provided in onboardingConfig
-    if(atOnboardingPreference.downloadPath != null) {
+    if (atOnboardingPreference.downloadPath != null) {
       IOSink atKeysFile =
-      File('${atOnboardingPreference.downloadPath}/${_atSign}_key.atKeys')
-          .openWrite();
+          File('${atOnboardingPreference.downloadPath}/${_atSign}_key.atKeys')
+              .openWrite();
       atKeysFile.write(jsonEncode(atKeysMap));
-      logger.finer('.atKeys file saved at ${atOnboardingPreference.downloadPath}');
-    }
-    else {
+      logger.finer(
+          '.atKeys file saved at ${atOnboardingPreference.downloadPath}');
+    } else {
       throw 'download path not provided';
     }
   }
