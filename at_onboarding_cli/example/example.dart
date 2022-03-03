@@ -5,14 +5,12 @@ void main() async {
   //onboarding preference builder can be used to set onboardingService parameters
   AtOnboardingPreference atOnboardingConfig = AtOnboardingPreference()
         //..qrCodePath = <path to qr code containing cram secret>
-        ..rootDomain = 'root.atsign.org'
-        ..rootPort = 64
         ..hiveStoragePath = 'lib/config/storage'
         ..namespace = 'example'
         ..downloadPath = '/home/srie/Desktop/test_cli'
         ..isLocalStoreRequired = true
-        ..commitLogPath = 'lib/config/commitLog';
-        //..cramSecret = <your cram secret>;
+        ..commitLogPath = 'lib/config/commitLog'
+        ..cramSecret = '<your cram secret>';
         //..atKeysFilePath = <path to .atKeysFile>
 
   AtOnboardingService onboardingService =

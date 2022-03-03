@@ -41,7 +41,10 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     //get cram_secret from either from AtOnboardingConfig or decode it from qr code whichever available
     atOnboardingPreference.cramSecret ??=
         _getSecretFromQr(atOnboardingPreference.qrCodePath);
-    if (atOnboardingPreference.cramSecret != null) {
+    if (atOnboardingPreference.cramSecret == null) {
+      throw UnAuthenticatedException(
+          'either of cram secret or qr code containing cram secret not provided');
+    } else {
       _atLookup = AtLookupImpl(_atSign, atOnboardingPreference.rootDomain,
           atOnboardingPreference.rootPort);
       _isAtsignOnboarded = (await _atLookup
@@ -53,8 +56,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       }
       return false;
     }
-    throw UnAuthenticatedException(
-        'either of cram secret or qr code containing cram secret not provided');
   }
 
   ///method to generate/write/update encryption key-pairs
@@ -62,7 +63,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     RSAKeypair _pkamRsaKeypair;
     RSAKeypair _encryptionKeyPair;
     String _selfEncryptionKey;
-    Map _atKeysMap;
+    Map atKeysMap;
     //generating pkamKeyPair
     logger.finer('generating pkam keypair');
     _pkamRsaKeypair = generateRsaKeypair();
@@ -73,10 +74,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     String? pkamUpdateResult =
         await _atLookup?.executeCommand(updateCommand, auth: false);
     logger.finer('pkam update result: $pkamUpdateResult');
-    //updating values to local secondary
-    // _persistKeysLocalSecondary(AT_PKAM_PUBLIC_KEY, _pkamRsaKeypair.publicKey.toString());
-    // _persistKeysLocalSecondary(AT_PKAM_PRIVATE_KEY, _pkamRsaKeypair.publicKey.toString());
-    atOnboardingPreference.privateKey = _pkamRsaKeypair.privateKey.toString();
     //authenticate using pkam to verify insertion of pkamPublicKey
     _isPkamAuthenticated = await authenticate();
     if (_isPkamAuthenticated) {
@@ -84,8 +81,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       //generate selfEncryptionKey
       _selfEncryptionKey = generateAESKey();
       logger.finer('generating encryption keypair');
-      //update self encryption key to local secondary
-      // _persistKeysLocalSecondary(AT_ENCRYPTION_SELF_KEY, _selfEncryptionKey);
       //generate user encryption keypair
       _encryptionKeyPair = generateRsaKeypair();
       //update user encryption public key
@@ -98,16 +93,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
           await _atLookup?.executeVerb(updateBuilder);
       logger
           .finer('encryption public key update result $encryptKeyUpdateResult');
-      //update user encryption keys to local secondary
-      // _persistKeysLocalSecondary(AT_ENCRYPTION_PUBLIC_KEY, _encryptionKeyPair.publicKey.toString());
-      // _persistKeysLocalSecondary(AT_ENCRYPTION_PRIVATE_KEY, _encryptionKeyPair.privateKey.toString());
       //deleting cram secret from the keystore as cram auth is complete
       DeleteVerbBuilder deleteBuilder = DeleteVerbBuilder()
         ..atKey = AT_CRAM_SECRET;
       String? deleteResponse = await _atLookup?.executeVerb(deleteBuilder);
       logger.finer('cram secret delete response : $deleteResponse');
       //mapping encryption keys pairs to their names
-      _atKeysMap = {
+      atKeysMap = {
         AuthKeyType.pkamPublicKey: EncryptionUtil.encryptValue(
             _pkamRsaKeypair.publicKey.toString(), _selfEncryptionKey),
         AuthKeyType.pkamPrivateKey: EncryptionUtil.encryptValue(
@@ -119,15 +111,15 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         AuthKeyType.selfEncryptionKey: _selfEncryptionKey,
         _atSign: _selfEncryptionKey,
       };
-      _persistEncryptionKeys(_atKeysMap);
-      _persistKeysLocalSecondary(_atKeysMap, false);
+      _generateAtKeysFile(atKeysMap);
+      await _persistKeysLocalSecondary(atKeysMap, false);
       logger.finer(getServerStatus().toString());
     } else {
       logger.finer('could not complete pkam authentication');
     }
   }
 
-  void _persistKeysLocalSecondary(Map? _atKeysMap, bool isPkam) async {
+  Future<void> _persistKeysLocalSecondary(Map? _atKeysMap, bool isPkam) async {
     if (isPkam) {
       _atKeysMap = (await _decryptAtKeysFile(
           _readAtKeysFile(atOnboardingPreference.atKeysFilePath)));
@@ -160,7 +152,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
   }
 
-  void _persistEncryptionKeys(Map atKeysMap) {
+  void _generateAtKeysFile(Map atKeysMap) {
     //generating .atKeys file at path provided in onboardingConfig
     if (atOnboardingPreference.downloadPath != null) {
       IOSink atKeysFile =
@@ -169,6 +161,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       atKeysFile.write(jsonEncode(atKeysMap));
       logger.finer(
           '.atKeys file saved at ${atOnboardingPreference.downloadPath}');
+      atOnboardingPreference.atKeysFilePath =
+          '${atOnboardingPreference.downloadPath}/${_atSign}_key.atKeys';
     } else {
       throw 'download path not provided';
     }
@@ -179,14 +173,21 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     atOnboardingPreference.privateKey = atOnboardingPreference.privateKey ??
         _getPkamPrivateKey(
             await _readAtKeysFile(atOnboardingPreference.atKeysFilePath));
-    if (atOnboardingPreference.privateKey != null) {
+    if (atOnboardingPreference.privateKey == null) {
+      throw UnAuthenticatedException(
+          'either of private key or .atKeys file not provided');
+    } else {
       _atClient ??= await getAtClient();
       _isPkamAuthenticated =
           (await _atLookup?.authenticate(atOnboardingPreference.privateKey))!;
+      if (!_isAtsignOnboarded) {
+        await _persistKeysLocalSecondary(
+            await _decryptAtKeysFile(
+                await _readAtKeysFile(atOnboardingPreference.atKeysFilePath)),
+            true);
+      }
       return _isPkamAuthenticated;
     }
-    throw UnAuthenticatedException(
-        'either of private key or .atKeys file not provided');
   }
 
   ///method to read and return data from .atKeysFile
@@ -219,7 +220,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     return jsonDecodedData[AuthKeyType.selfEncryptionKey];
   }
 
-  Future<Map?> _decryptAtKeysFile(jsonData, {String? decryptionKey}) async {
+  Future<Map> _decryptAtKeysFile(jsonData, {String? decryptionKey}) async {
     //String jsonDecoded = jsonDecode(jsonData);
     decryptionKey ??= await _readAtKeysFile(_getDecryptionKey(jsonData));
     Map _atKeysMap = {
@@ -228,11 +229,12 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       AuthKeyType.pkamPrivateKey: EncryptionUtil.decryptValue(
           jsonData[AuthKeyType.pkamPrivateKey], decryptionKey),
       AuthKeyType.encryptionPublicKey: EncryptionUtil.decryptValue(
-          AuthKeyType.encryptionPublicKey, decryptionKey),
+          jsonData[AuthKeyType.encryptionPublicKey], decryptionKey),
       AuthKeyType.encryptionPrivateKey: EncryptionUtil.decryptValue(
-          AuthKeyType.encryptionPublicKey, decryptionKey),
+          jsonData[AuthKeyType.encryptionPublicKey], decryptionKey),
       AuthKeyType.selfEncryptionKey: decryptionKey,
     };
+    return _atKeysMap;
   }
 
   ///generates random RSA keypair
