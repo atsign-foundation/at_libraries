@@ -54,11 +54,11 @@ class OutboundMessageListener {
 
   /// Reads the response sent by remote socket from the queue.
   /// If there is no message in queue after [maxWaitMilliSeconds], return null. Defaults to 3 seconds.
-  Future<String> read({int maxWaitMilliSeconds = 3000}) async {
+  Future<String> read({int maxWaitMilliSeconds = 10000}) async {
     return _read(maxWaitMillis: maxWaitMilliSeconds);
   }
 
-  Future<String> _read({int maxWaitMillis = 3000, int retryCount = 1}) async {
+  Future<String> _read({int maxWaitMillis = 10000, int retryCount = 1}) async {
     String result;
     var maxIterations = maxWaitMillis / 10;
     if (retryCount == maxIterations) {

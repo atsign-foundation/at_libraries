@@ -1,5 +1,7 @@
+## 3.0.12
+- Add encryption shared key and public key checksum of sharedWith atsign in metadata
 ## 3.0.11
-- Add shared key to metadata
+- increase outbound connection timeout
 ## 3.0.10
 - outbound listener bug fix
 ## 3.0.9
