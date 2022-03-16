@@ -15,7 +15,7 @@ import 'package:path/path.dart' as path;
 
 ///class containing service that can onboard/activate/authenticate @signs
 class AtOnboardingServiceImpl implements AtOnboardingService {
-  String _atSign;
+  final String _atSign;
   bool _isPkamAuthenticated = false;
   bool _isAtsignOnboarded = false;
   AtLookupImpl? _atLookup;
@@ -81,7 +81,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     //authenticate using pkam to verify insertion of pkamPublicKey
     _isPkamAuthenticated = await authenticate();
     if (_isPkamAuthenticated) {
-      _isPkamAuthenticated = true;
       //generate selfEncryptionKey
       _selfEncryptionKey = generateAESKey();
       logger.finer('generating encryption keypair');
@@ -104,14 +103,12 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       logger.finer('cram secret delete response : $deleteResponse');
       //mapping encryption keys pairs to their names
       atKeysMap = {
-        AuthKeyType.pkamPublicKey: EncryptionUtil.encryptValue(
-            _pkamRsaKeypair.publicKey.toString(), _selfEncryptionKey),
-        AuthKeyType.pkamPrivateKey: EncryptionUtil.encryptValue(
-            _pkamRsaKeypair.privateKey.toString(), _selfEncryptionKey),
-        AuthKeyType.encryptionPublicKey: EncryptionUtil.encryptValue(
-            _encryptionKeyPair.publicKey.toString(), _selfEncryptionKey),
-        AuthKeyType.encryptionPrivateKey: EncryptionUtil.encryptValue(
-            _encryptionKeyPair.privateKey.toString(), _selfEncryptionKey),
+        AuthKeyType.pkamPublicKey: _pkamRsaKeypair.publicKey.toString(),
+        AuthKeyType.pkamPrivateKey: _pkamRsaKeypair.privateKey.toString(),
+        AuthKeyType.encryptionPublicKey:
+            _encryptionKeyPair.publicKey.toString(),
+        AuthKeyType.encryptionPrivateKey:
+            _encryptionKeyPair.privateKey.toString(),
         AuthKeyType.selfEncryptionKey: _selfEncryptionKey,
         _atSign: _selfEncryptionKey,
       };
@@ -123,17 +120,39 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
   }
 
+  ///write newly created encryption keypairs into atKeys file
+  Future<void> _generateAtKeysFile(Map atKeysMap) async {
+    //encrypting all keys with self encryption key
+    atKeysMap[AuthKeyType.pkamPublicKey] = EncryptionUtil.encryptValue(
+        atKeysMap[AuthKeyType.pkamPublicKey],
+        atKeysMap[AuthKeyType.selfEncryptionKey]);
+    atKeysMap[AuthKeyType.pkamPrivateKey] = EncryptionUtil.encryptValue(
+        atKeysMap[AuthKeyType.pkamPrivateKey],
+        atKeysMap[AuthKeyType.selfEncryptionKey]);
+    atKeysMap[AuthKeyType.encryptionPublicKey] = EncryptionUtil.encryptValue(
+        atKeysMap[AuthKeyType.encryptionPublicKey],
+        atKeysMap[AuthKeyType.selfEncryptionKey]);
+    atKeysMap[AuthKeyType.encryptionPrivateKey] = EncryptionUtil.encryptValue(
+        atKeysMap[AuthKeyType.encryptionPrivateKey],
+        atKeysMap[AuthKeyType.selfEncryptionKey]);
+    //generating .atKeys file at path provided in onboardingConfig
+    String filePath = path.join(
+        atOnboardingPreference.downloadPath!, '${_atSign}_key.atKeys');
+    IOSink atKeysFile = File(filePath).openWrite();
+    atKeysFile.write(jsonEncode(atKeysMap));
+    await atKeysFile.flush();
+    await atKeysFile.close();
+    logger
+        .finer('.atKeys file saved at ${atOnboardingPreference.downloadPath}');
+    atOnboardingPreference.atKeysFilePath = filePath;
+  }
+
   ///back-up encryption keys to local secondary
   Future<void> _persistKeysLocalSecondary(Map? _atKeysMap, bool isPkam) async {
     //get decrypt atKeys file data
     if (isPkam) {
       _atKeysMap = await _decryptAtKeysFile(
           await _readAtKeysFile(atOnboardingPreference.atKeysFilePath));
-    }
-    //decrypt atKeysMap
-    if (!isPkam) {
-      _atKeysMap = await _decryptAtKeysFile(_atKeysMap,
-          decryptionKey: _atKeysMap![AuthKeyType.selfEncryptionKey]);
     }
     //backup keys into local secondary
     if (_atKeysMap != null) {
@@ -160,20 +179,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
   }
 
-  ///write newly created encryption keypairs into atKeys file
-  Future<void> _generateAtKeysFile(Map atKeysMap) async {
-    //generating .atKeys file at path provided in onboardingConfig
-    String filePath = path.join(
-        atOnboardingPreference.downloadPath!, '${_atSign}_key.atKeys');
-    IOSink atKeysFile = File(filePath).openWrite();
-    atKeysFile.write(jsonEncode(atKeysMap));
-    await atKeysFile.flush();
-    await atKeysFile.close();
-    logger
-        .finer('.atKeys file saved at ${atOnboardingPreference.downloadPath}');
-    atOnboardingPreference.atKeysFilePath = filePath;
-  }
-
   @override
   Future<bool> authenticate() async {
     atOnboardingPreference.privateKey ??= _getPkamPrivateKey(
@@ -185,7 +190,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       _atClient ??= await getAtClient();
       _isPkamAuthenticated =
           (await _atLookup?.authenticate(atOnboardingPreference.privateKey))!;
-      if (!_isAtsignOnboarded) {
+      if (!_isAtsignOnboarded &&
+          atOnboardingPreference.atKeysFilePath != null) {
         await _persistKeysLocalSecondary(
             await _decryptAtKeysFile(
                 await _readAtKeysFile(atOnboardingPreference.atKeysFilePath)),
@@ -227,8 +233,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   ///decrypt keys using self_encryption_key
   ///returns map containing decrypted atKeys
-  Future<Map> _decryptAtKeysFile(jsonData, {String? decryptionKey}) async {
-    decryptionKey ??= _getDecryptionKey(jsonData);
+  Future<Map> _decryptAtKeysFile(jsonData) async {
+    var decryptionKey = _getDecryptionKey(jsonData);
     Map _atKeysMap = {
       AuthKeyType.pkamPublicKey: EncryptionUtil.decryptValue(
           jsonData[AuthKeyType.pkamPublicKey], decryptionKey),
@@ -250,8 +256,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   ///generate random AES key
   String generateAESKey() {
-    var aesKey = AES(Key.fromSecureRandom(32));
-    return aesKey.key.base64;
+    return AES(Key.fromSecureRandom(32)).key.base64;
   }
 
   ///returns secondary server status
