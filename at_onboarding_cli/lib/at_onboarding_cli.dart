@@ -1,4 +1,4 @@
-library at_cli_onboarding;
+library at_onboarding_cli;
 
 export 'src/at_onboarding_service_impl.dart';
 export 'src/at_onboarding_service.dart';
