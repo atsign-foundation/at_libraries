@@ -1,3 +1,5 @@
+## 3.0.13
+- Upgrade at_commons version for shared key metadata support in notify
 ## 3.0.12
 - Add encryption shared key and public key checksum of sharedWith atsign in metadata
 ## 3.0.11
