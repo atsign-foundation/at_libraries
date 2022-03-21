@@ -166,12 +166,10 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       response = await _atClient?.getLocalSecondary()?.putValue(
           AT_ENCRYPTION_PUBLIC_KEY,
           _atKeysMap[AuthKeyType.encryptionPublicKey]);
-      logger.finer(_atKeysMap[AuthKeyType.encryptionPublicKey]);
       logger.finer('encryptionPublicKey persist status $response');
       response = await _atClient?.getLocalSecondary()?.putValue(
           AT_ENCRYPTION_PRIVATE_KEY,
           _atKeysMap[AuthKeyType.encryptionPrivateKey]);
-      logger.finer(_atKeysMap[AuthKeyType.encryptionPrivateKey]);
       logger.finer('encryptionPrivateKey persist status $response');
       response = await _atClient?.getLocalSecondary()?.putValue(
           AT_ENCRYPTION_SELF_KEY, _atKeysMap[AuthKeyType.selfEncryptionKey]);
