@@ -12,6 +12,7 @@ import 'package:encrypt/encrypt.dart';
 import 'package:zxing2/qrcode.dart';
 import 'package:image/image.dart';
 import 'package:path/path.dart' as path;
+import 'package:at_persistence_secondary_server/at_persistence_secondary_server.dart';
 
 ///class containing service that can onboard/activate/authenticate @signs
 class AtOnboardingServiceImpl implements AtOnboardingService {
@@ -114,7 +115,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       };
       _generateAtKeysFile(atKeysMap);
       await _persistKeysLocalSecondary(atKeysMap, false);
-      logger.finer(getServerStatus().toString());
+      logger.finer(await getServerStatus().toString());
+      logger.finer('----------@sign activated---------');
     } else {
       logger.finer('could not complete pkam authentication');
     }
@@ -142,8 +144,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     atKeysFile.write(jsonEncode(atKeysMap));
     await atKeysFile.flush();
     await atKeysFile.close();
-    logger
-        .finer('.atKeys file saved at ${atOnboardingPreference.downloadPath}');
+    logger.finer('atKeys file saved at ${atOnboardingPreference.downloadPath}');
     atOnboardingPreference.atKeysFilePath = filePath;
   }
 
@@ -166,10 +167,12 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       response = await _atClient?.getLocalSecondary()?.putValue(
           AT_ENCRYPTION_PUBLIC_KEY,
           _atKeysMap[AuthKeyType.encryptionPublicKey]);
+      logger.finer(_atKeysMap[AuthKeyType.encryptionPublicKey]);
       logger.finer('encryptionPublicKey persist status $response');
       response = await _atClient?.getLocalSecondary()?.putValue(
           AT_ENCRYPTION_PRIVATE_KEY,
           _atKeysMap[AuthKeyType.encryptionPrivateKey]);
+      logger.finer(_atKeysMap[AuthKeyType.encryptionPrivateKey]);
       logger.finer('encryptionPrivateKey persist status $response');
       response = await _atClient?.getLocalSecondary()?.putValue(
           AT_ENCRYPTION_SELF_KEY, _atKeysMap[AuthKeyType.selfEncryptionKey]);
@@ -246,6 +249,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
           jsonData[AuthKeyType.encryptionPublicKey], decryptionKey),
       AuthKeyType.selfEncryptionKey: decryptionKey,
     };
+    logger.finer('*******************************************');
+    logger.finer(_atKeysMap[AuthKeyType.encryptionPrivateKey]);
     return _atKeysMap;
   }
 
@@ -285,5 +290,14 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   @override
   AtLookUp getAtLookup() {
     return _atLookup as AtLookUp;
+  }
+
+  @override
+  Future<void> close() async {
+    AtCommitLogManager atCommitLogManager =
+        AtCommitLogManagerImpl.getInstance();
+    AtCommitLog? atCommitLog =
+        await atCommitLogManager.getCommitLog(_atSign) as AtCommitLog;
+    atCommitLog.close();
   }
 }
