@@ -15,7 +15,4 @@ abstract class AtOnboardingService {
 
   ///returns authenticated instance of AtLookup
   AtLookUp? getAtLookup();
-
-  ///safely closes instance of [AtOnboardingService]
-  Future<void> close();
 }

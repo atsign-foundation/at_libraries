@@ -12,7 +12,6 @@ import 'package:encrypt/encrypt.dart';
 import 'package:zxing2/qrcode.dart';
 import 'package:image/image.dart';
 import 'package:path/path.dart' as path;
-import 'package:at_persistence_secondary_server/at_persistence_secondary_server.dart';
 
 ///class containing service that can onboard/activate/authenticate @signs
 class AtOnboardingServiceImpl implements AtOnboardingService {
@@ -290,14 +289,5 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   @override
   AtLookUp getAtLookup() {
     return _atLookup as AtLookUp;
-  }
-
-  @override
-  Future<void> close() async {
-    AtCommitLogManager atCommitLogManager =
-        AtCommitLogManagerImpl.getInstance();
-    AtCommitLog? atCommitLog =
-        await atCommitLogManager.getCommitLog(_atSign) as AtCommitLog;
-    atCommitLog.close();
   }
 }

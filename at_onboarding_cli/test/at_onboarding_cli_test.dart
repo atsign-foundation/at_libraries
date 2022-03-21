@@ -25,7 +25,8 @@ Future<void> main() async {
 
     test('Test using atKeys File', () async {
       var atsign = '@emoji🦄🛠';
-      AtOnboardingPreference atOnboardingPreference = getPreferences(atsign, false);
+      AtOnboardingPreference atOnboardingPreference =
+          getPreferences(atsign, false);
       atOnboardingPreference.atKeysFilePath =
           atOnboardingPreference.downloadPath;
       generateAtKeysFile(atsign, atOnboardingPreference.atKeysFilePath);
@@ -40,7 +41,8 @@ Future<void> main() async {
 
   test('test atLookup auth status', () async {
     var atsign = '@emoji🦄🛠';
-    AtOnboardingPreference atOnboardingPreference = getPreferences(atsign, false);
+    AtOnboardingPreference atOnboardingPreference =
+        getPreferences(atsign, false);
     atOnboardingPreference.atKeysFilePath = atOnboardingPreference.downloadPath;
     //setting private key to null to ensure that private key is acquired from the atKeysFile
     atOnboardingPreference.privateKey = null;
@@ -71,7 +73,8 @@ Future<void> main() async {
 
   group('tests to check encryption keys persist into local secondary', () {
     var atsign = '@eve🛠';
-    AtOnboardingPreference atOnboardingPreference = getPreferences(atsign, false);
+    AtOnboardingPreference atOnboardingPreference =
+        getPreferences(atsign, false);
     atOnboardingPreference.atKeysFilePath = atOnboardingPreference.downloadPath;
     AtOnboardingService atOnboardingService =
         AtOnboardingServiceImpl(atsign, atOnboardingPreference);
@@ -97,16 +100,19 @@ Future<void> main() async {
           await atClient?.getLocalSecondary()?.getEncryptionPrivateKey());
     });
     test('test encryptionPublicKey on local secondary', () async {
-      var result = await atClient?.getLocalSecondary()?.keyStore?.get(AT_ENCRYPTION_PUBLIC_KEY);;
-      expect(at_demos.encryptionPublicKeyMap[atsign],
-          result.data);
-
+      var result = await atClient
+          ?.getLocalSecondary()
+          ?.keyStore
+          ?.get(AT_ENCRYPTION_PUBLIC_KEY);
+      ;
+      expect(at_demos.encryptionPublicKeyMap[atsign], result.data);
     });
   });
 
   group('tests for onboard functionality', () {
     var atsign = '@colin🛠';
-    AtOnboardingPreference atOnboardingPreference = getPreferences(atsign, true);
+    AtOnboardingPreference atOnboardingPreference =
+        getPreferences(atsign, true);
     test('test onboarding functionality', () async {
       AtOnboardingService atOnboardingService =
           AtOnboardingServiceImpl(atsign, atOnboardingPreference);
@@ -114,10 +120,11 @@ Future<void> main() async {
       expect(true, status);
       expect(true, await File(atOnboardingPreference.downloadPath!).exists());
     });
-    test('test to validate generated .atKeys file', () async{
+    test('test to validate generated .atKeys file', () async {
       atOnboardingPreference.atKeysFilePath = path.join(
           atOnboardingPreference.downloadPath!, '${atsign}_key.atKeys');
-      AtOnboardingService atOnboardingService = AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+      AtOnboardingService atOnboardingService =
+          AtOnboardingServiceImpl(atsign, atOnboardingPreference);
       await atOnboardingService.authenticate();
     });
   });
@@ -135,7 +142,7 @@ AtOnboardingPreference getPreferences(String atsign, bool isOnboarding) {
     ..privateKey = at_demos.pkamPrivateKeyMap[atsign]
     ..cramSecret = at_demos.cramKeyMap[atsign]
     ..downloadPath = 'storage/keysFile_${atsign}.atKeys';
-  if(isOnboarding){
+  if (isOnboarding) {
     atOnboardingPreference.downloadPath = 'storage/';
     atOnboardingPreference.privateKey = null;
   }
