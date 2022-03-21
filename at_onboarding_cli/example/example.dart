@@ -3,16 +3,16 @@ import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 
 void main() async {
   //onboarding preference builder can be used to set onboardingService parameters
-  AtOnboardingPreference atOnboardingConfig = AtOnboardingPreference()
-        //..qrCodePath = <path to qr code containing cram secret>
-        ..hiveStoragePath = 'lib/config/storage'
+  AtOnboardingPreference atOnboardingPreference = AtOnboardingPreference()
+        ..qrCodePath = 'storage/qr_code.png'
+        ..hiveStoragePath = 'storage/hive'
         ..namespace = 'example'
-        ..downloadPath = '/home/srie/Desktop/test_cli'
+        ..downloadPath = 'storage/files'
         ..isLocalStoreRequired = true
-        ..commitLogPath = 'lib/config/commitLog'
-        ..cramSecret = '<your cram secret>';
-        //..atKeysFilePath = <path to .atKeysFile>
-
+        ..commitLogPath = 'storage/commitLog'
+        ..cramSecret = '<your cram secret>'
+        ..privateKey = '<your private key here>'
+        ..atKeysFilePath = 'storage/alice_key.atKeys';
   AtOnboardingService onboardingService =
       AtOnboardingServiceImpl('your atsign here', atOnboardingConfig);
   await onboardingService.onboard();
