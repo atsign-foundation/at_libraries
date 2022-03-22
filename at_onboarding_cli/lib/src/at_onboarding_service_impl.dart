@@ -243,9 +243,10 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       AuthKeyType.encryptionPublicKey: EncryptionUtil.decryptValue(
           jsonData[AuthKeyType.encryptionPublicKey], decryptionKey),
       AuthKeyType.encryptionPrivateKey: EncryptionUtil.decryptValue(
-          jsonData[AuthKeyType.encryptionPublicKey], decryptionKey),
+          jsonData[AuthKeyType.encryptionPrivateKey], decryptionKey),
       AuthKeyType.selfEncryptionKey: decryptionKey,
     };
+    logger.severe(_atKeysMap[AuthKeyType.encryptionPrivateKey]);
     return _atKeysMap;
   }
 

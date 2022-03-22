@@ -109,26 +109,6 @@ Future<void> main() async {
     });
   });
 
-  group('tests for onboard functionality', () {
-    var atsign = '@colin🛠';
-    AtOnboardingPreference atOnboardingPreference =
-        getPreferences(atsign, true);
-    test('test onboarding functionality', () async {
-      AtOnboardingService atOnboardingService =
-          AtOnboardingServiceImpl(atsign, atOnboardingPreference);
-      var status = await atOnboardingService.onboard();
-      expect(true, status);
-      expect(true, await File(atOnboardingPreference.downloadPath!).exists());
-    });
-    test('test to validate generated .atKeys file', () async {
-      atOnboardingPreference.atKeysFilePath = path.join(
-          atOnboardingPreference.downloadPath!, '${atsign}_key.atKeys');
-      AtOnboardingService atOnboardingService =
-          AtOnboardingServiceImpl(atsign, atOnboardingPreference);
-      await atOnboardingService.authenticate();
-    });
-  });
-
   await tearDownFunc();
 }
 
@@ -141,7 +121,7 @@ AtOnboardingPreference getPreferences(String atsign, bool isOnboarding) {
     ..rootDomain = 'vip.ve.atsign.zone'
     ..privateKey = at_demos.pkamPrivateKeyMap[atsign]
     ..cramSecret = at_demos.cramKeyMap[atsign]
-    ..downloadPath = 'storage/keysFile_${atsign}.atKeys';
+    ..downloadPath = 'storage/keysFile_$atsign.atKeys';
   if (isOnboarding) {
     atOnboardingPreference.downloadPath = 'storage/';
     atOnboardingPreference.privateKey = null;
@@ -177,7 +157,6 @@ Future<bool> insertSelfEncKey(atClient, atsign) async {
 
 Future<void> tearDownFunc() async {
   var isExists = await Directory('storage/').exists();
-  print('--------------$isExists');
   if (isExists) {
     Directory('storage/').deleteSync(recursive: true);
   }
