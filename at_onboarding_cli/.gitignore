@@ -1,0 +1,14 @@
+# Files and directories created by pub.
+.dart_tool/
+.packages
+
+# Conventional directory for build output.
+build/
+
+#Configuration
+lib/src/config/config_util.dart
+lib/config/@resultingantarmahal7_keys.atKeys
+/.vscode/
+/lib/config/
+/lib/src/config_utils/
+/example/lib/
