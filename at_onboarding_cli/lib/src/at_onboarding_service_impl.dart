@@ -114,7 +114,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       };
       _generateAtKeysFile(atKeysMap);
       await _persistKeysLocalSecondary(atKeysMap, false);
-      logger.finer(await getServerStatus().toString());
+      logger.finer(await getServerStatus());
       logger.finer('----------@sign activated---------');
     } else {
       logger.finer('could not complete pkam authentication');
@@ -137,14 +137,14 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         atKeysMap[AuthKeyType.encryptionPrivateKey],
         atKeysMap[AuthKeyType.selfEncryptionKey]);
     //generating .atKeys file at path provided in onboardingConfig
-    String filePath = path.join(
+    atOnboardingPreference.atKeysFilePath = path.join(
         atOnboardingPreference.downloadPath!, '${_atSign}_key.atKeys');
-    IOSink atKeysFile = File(filePath).openWrite();
+    IOSink atKeysFile = File(atOnboardingPreference.atKeysFilePath!).openWrite();
     atKeysFile.write(jsonEncode(atKeysMap));
     await atKeysFile.flush();
     await atKeysFile.close();
-    logger.finer('atKeys file saved at ${atOnboardingPreference.downloadPath}');
-    atOnboardingPreference.atKeysFilePath = filePath;
+    logger.finer('atKeys file saved at ${atOnboardingPreference.atKeysFilePath}');
+
   }
 
   ///back-up encryption keys to local secondary
