@@ -139,12 +139,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     //generating .atKeys file at path provided in onboardingConfig
     atOnboardingPreference.atKeysFilePath = path.join(
         atOnboardingPreference.downloadPath!, '${_atSign}_key.atKeys');
-    IOSink atKeysFile = File(atOnboardingPreference.atKeysFilePath!).openWrite();
+    IOSink atKeysFile =
+        File(atOnboardingPreference.atKeysFilePath!).openWrite();
     atKeysFile.write(jsonEncode(atKeysMap));
     await atKeysFile.flush();
     await atKeysFile.close();
-    logger.finer('atKeys file saved at ${atOnboardingPreference.atKeysFilePath}');
-
+    logger
+        .finer('atKeys file saved at ${atOnboardingPreference.atKeysFilePath}');
   }
 
   ///back-up encryption keys to local secondary
