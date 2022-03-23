@@ -53,3 +53,22 @@ jobs:
       - name: Analyze project source in at_server_status library
         working-directory: at_server_status
         run: dart analyze
+      
+      #functional tests for at_onbaording_cli
+      - name: Start docker instance
+        working-directory: at_onboardin_cli/functional_tests
+        run: sudo docker-compose up -d
+        
+      - name: run pkamLoad on docker-image
+        working-directory: at_onboarding_cli/functional_tests
+        run: sudo docker exec functional_tests_virtualenv_1 supervisorctl start pkamLoad
+        
+      - name: run tests
+        working-directory: at_onboarding_cli/functional_tests
+        run: dart test
+        
+      - name: kill docker image
+        working-directory: at_onboarding_cli/functional_tests
+        run: sudo docker-compose down
+      
+    
