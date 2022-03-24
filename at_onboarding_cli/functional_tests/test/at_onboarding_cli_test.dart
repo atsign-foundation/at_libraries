@@ -5,18 +5,20 @@ import 'package:at_client/at_client.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
+import 'package:at_server_status/at_server_status.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
+// ignore: import_of_legacy_library_into_null_safe
 import 'at_demo_credentials.dart' as at_demos;
 
 Future<void> main() async {
   AtSignLogger.root_level = 'FINER';
   group('Tests to validate authenticate functionality; ', () {
     test('Test authentication using private key', () async {
-      String atsign = '@bob🛠';
+      String atsign = '@alice🛠';
       AtOnboardingService onboardingService =
-          AtOnboardingServiceImpl(atsign, getPreferences(atsign, false));
+      AtOnboardingServiceImpl(atsign, getPreferences(atsign, false));
       bool authStatus = await onboardingService.authenticate();
       await insertSelfEncKey(await onboardingService.getAtClient(), atsign);
       expect(true, authStatus);
@@ -25,14 +27,14 @@ Future<void> main() async {
     test('Test using atKeys File', () async {
       var atsign = '@emoji🦄🛠';
       AtOnboardingPreference atOnboardingPreference =
-          getPreferences(atsign, false);
+      getPreferences(atsign, false);
       atOnboardingPreference.atKeysFilePath =
           atOnboardingPreference.downloadPath;
       generateAtKeysFile(atsign, atOnboardingPreference.atKeysFilePath);
       //setting private key to null to ensure that private key is acquired from the atKeysFile
       atOnboardingPreference.privateKey = null;
       AtOnboardingService atOnboardingService =
-          AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+      AtOnboardingServiceImpl(atsign, atOnboardingPreference);
       bool status = await atOnboardingService.authenticate();
       expect(true, status);
     });
@@ -41,12 +43,12 @@ Future<void> main() async {
   test('test atLookup auth status', () async {
     var atsign = '@emoji🦄🛠';
     AtOnboardingPreference atOnboardingPreference =
-        getPreferences(atsign, false);
+    getPreferences(atsign, false);
     atOnboardingPreference.atKeysFilePath = atOnboardingPreference.downloadPath;
     //setting private key to null to ensure that private key is acquired from the atKeysFile
     atOnboardingPreference.privateKey = null;
     AtOnboardingService atOnboardingService =
-        AtOnboardingServiceImpl(atsign, getPreferences(atsign, false));
+    AtOnboardingServiceImpl(atsign, getPreferences(atsign, false));
     await atOnboardingService.authenticate();
     await insertSelfEncKey(await atOnboardingService.getAtClient(), atsign);
     AtLookUp? atLookUp = atOnboardingService.getAtLookup();
@@ -60,7 +62,7 @@ Future<void> main() async {
   test('test atClient authentication', () async {
     var atsign = '@eve🛠';
     AtOnboardingService onboardingService =
-        AtOnboardingServiceImpl(atsign, getPreferences(atsign, false));
+    AtOnboardingServiceImpl(atsign, getPreferences(atsign, false));
     AtClient? atClient = await onboardingService.getAtClient();
     await insertSelfEncKey(atClient, atsign);
     AtKey key = AtKey();
@@ -73,10 +75,10 @@ Future<void> main() async {
   group('tests to check encryption keys persist into local secondary', () {
     var atsign = '@eve🛠';
     AtOnboardingPreference atOnboardingPreference =
-        getPreferences(atsign, false);
+    getPreferences(atsign, false);
     atOnboardingPreference.atKeysFilePath = atOnboardingPreference.downloadPath;
     AtOnboardingService atOnboardingService =
-        AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+    AtOnboardingServiceImpl(atsign, atOnboardingPreference);
     AtClient? atClient;
 
     test('test authentication', () async {
@@ -103,7 +105,35 @@ Future<void> main() async {
           ?.getLocalSecondary()
           ?.keyStore
           ?.get(AT_ENCRYPTION_PUBLIC_KEY);
+      ;
       expect(at_demos.encryptionPublicKeyMap[atsign], result.data);
+    });
+  });
+
+  group('tests for onboard functionality', () {
+    var atsign = '@egcovidlab🛠';
+    AtOnboardingPreference atOnboardingPreference =
+    getPreferences(atsign, true);
+    test('test onboarding functionality', () async {
+      AtOnboardingService atOnboardingService =
+      AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+      var status = await atOnboardingService.onboard();
+      expect(true, status);
+      expect(true, await File(atOnboardingPreference.downloadPath!).exists());
+    });
+    test('test to validate generated .atKeys file', () async {
+      atOnboardingPreference.atKeysFilePath = path.join(
+          atOnboardingPreference.downloadPath!, '${atsign}_key.atKeys');
+      AtOnboardingService atOnboardingService =
+      AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+      bool status = await atOnboardingService.authenticate();
+      expect(true, status);
+      expect(true, status);
+      AtServerStatus atServerStatus = AtStatusImpl(
+          rootUrl: atOnboardingPreference.rootDomain,
+          rootPort: atOnboardingPreference.rootPort);
+      AtStatus atStatus = await atServerStatus.get(atsign);
+      expect(atStatus.serverStatus, ServerStatus.activated);
     });
   });
 
@@ -149,7 +179,7 @@ Future<void> generateAtKeysFile(atsign, filePath) async {
 Future<bool> insertSelfEncKey(atClient, atsign) async {
   var response = await atClient
       ?.getLocalSecondary()
-      ?.putValue(AT_ENCRYPTION_SELF_KEY, at_demos.aesKeyMap[atsign]!);
+      ?.putValue(AT_ENCRYPTION_SELF_KEY, at_demos.aesKeyMap![atsign]!);
   return response;
 }
 
