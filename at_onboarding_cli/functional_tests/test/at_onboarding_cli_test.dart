@@ -175,11 +175,11 @@ Future<void> generateAtKeysFile(atsign, filePath) async {
   await atKeysFile.close();
 }
 
-Future<bool> insertSelfEncKey(atClient, atsign) async {
-  var response = await atClient
+Future<void> insertSelfEncKey(atClient, atsign) async {
+  await atClient
       ?.getLocalSecondary()
       ?.putValue(AT_ENCRYPTION_SELF_KEY, at_demos.aesKeyMap[atsign]!);
-  return response;
+  return ;
 }
 
 Future<void> tearDownFunc() async {
