@@ -1,3 +1,5 @@
+## 3.0.14
+- Upgrade at_commons version for bug fix in notify verb syntax
 ## 3.0.13
 - Upgrade at_commons version for shared key metadata support in notify
 ## 3.0.12
