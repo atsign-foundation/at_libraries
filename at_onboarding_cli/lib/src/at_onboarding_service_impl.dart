@@ -54,7 +54,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
           atOnboardingPreference.downloadPath != null) {
         await _activateAtsign();
         logger.finer('cram authentication successful');
-        return true;
+        return _isAtsignOnboarded;
       } else {
         throw 'download path not provided';
       }

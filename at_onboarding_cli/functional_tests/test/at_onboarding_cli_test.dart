@@ -9,7 +9,6 @@ import 'package:at_server_status/at_server_status.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
-// ignore: import_of_legacy_library_into_null_safe
 import 'at_demo_credentials.dart' as at_demos;
 
 Future<void> main() async {
@@ -118,16 +117,14 @@ Future<void> main() async {
       AtOnboardingServiceImpl(atsign, atOnboardingPreference);
       var status = await atOnboardingService.onboard();
       expect(true, status);
-      expect(true, await File(atOnboardingPreference.downloadPath!).exists());
     });
     test('test to validate generated .atKeys file', () async {
       atOnboardingPreference.atKeysFilePath = path.join(
           atOnboardingPreference.downloadPath!, '${atsign}_key.atKeys');
       AtOnboardingService atOnboardingService =
       AtOnboardingServiceImpl(atsign, atOnboardingPreference);
-      bool status = await atOnboardingService.authenticate();
-      expect(true, status);
-      expect(true, status);
+      bool status2 = await atOnboardingService.authenticate();
+      expect(true, status2);
       AtServerStatus atServerStatus = AtStatusImpl(
           rootUrl: atOnboardingPreference.rootDomain,
           rootPort: atOnboardingPreference.rootPort);
@@ -148,7 +145,7 @@ AtOnboardingPreference getPreferences(String atsign, bool isOnboarding) {
     ..rootDomain = 'vip.ve.atsign.zone'
     ..privateKey = at_demos.pkamPrivateKeyMap[atsign]
     ..cramSecret = at_demos.cramKeyMap[atsign]
-    ..downloadPath = 'storage/keysFile_$atsign.atKeys';
+    ..downloadPath = 'storage/keysFile.atKeys';
   if (isOnboarding) {
     atOnboardingPreference.downloadPath = 'storage/';
     atOnboardingPreference.privateKey = null;
