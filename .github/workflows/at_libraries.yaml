@@ -81,7 +81,7 @@ jobs:
 #         run: dart run check_docker_readiness.dart
 
       - name: ping
-        run: ping -c 10 vip.ve.atsign.zone:64
+        run: ping -c 10 vip.ve.atsign.zone -p 64
         
       - name: run pkamLoad on docker-image
         run: sudo docker exec functional_tests_virtualenv_1 supervisorctl start pkamLoad
