@@ -79,6 +79,10 @@ jobs:
       - name: run pkamLoad on docker-image
         working-directory: at_onboarding_cli/functional_tests
         run: sudo docker exec functional_tests_virtualenv_1 supervisorctl start pkamLoad
+      
+      - name: Sleep for 30 seconds
+        run: sleep 60s
+
         
       - name: run tests
         working-directory: at_onboarding_cli/functional_tests
