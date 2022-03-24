@@ -53,10 +53,24 @@ jobs:
       - name: Analyze project source in at_server_status library
         working-directory: at_server_status
         run: dart analyze
+        
+      # Install dependencies in at_onboarding_cli
+      - name: Install dependencies in at_onboarding_cli
+        working-directory: at_onboarding_cli
+        run: dart pub get
+      
+      # Run dart analyzer in at_cli_onboarding
+      - name: Run dart analyzer in at_onboarding_cli
+        working-directory: at_onboarding_cli
+        run: dart analyze
       
       #functional tests for at_onbaording_cli
       - name: add entry to hosts file
         run: echo echo "127.0.0.1    vip.ve.atsign.zone" | sudo tee -a /etc/hosts
+        
+      - name: Get functional test dependencies
+        working-directory: at_onboarding_cli/functional_tests
+        run: dart pub get
         
       - name: Start docker instance
         working-directory: at_onboarding_cli/functional_tests
