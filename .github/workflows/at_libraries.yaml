@@ -76,9 +76,16 @@ jobs:
         working-directory: at_onboarding_cli/functional_tests
         run: sudo docker-compose up -d
         
+      - name: Check for docker container readiness
+        working-directory: at_functional_test
+        run: dart run test/check_docker_readiness.dart
+        
       - name: run pkamLoad on docker-image
-        working-directory: at_onboarding_cli/functional_tests
         run: sudo docker exec functional_tests_virtualenv_1 supervisorctl start pkamLoad
+      
+      - name: Check test environment readiness
+        working-directory: at_functional_test
+        run: dart run test/check_test_env.dart
         
       - name: run tests
         working-directory: at_onboarding_cli/functional_tests
