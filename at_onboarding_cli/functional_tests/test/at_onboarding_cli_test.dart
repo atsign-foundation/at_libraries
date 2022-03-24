@@ -105,7 +105,6 @@ Future<void> main() async {
           ?.getLocalSecondary()
           ?.keyStore
           ?.get(AT_ENCRYPTION_PUBLIC_KEY);
-      ;
       expect(at_demos.encryptionPublicKeyMap[atsign], result.data);
     });
   });
@@ -179,7 +178,7 @@ Future<void> generateAtKeysFile(atsign, filePath) async {
 Future<bool> insertSelfEncKey(atClient, atsign) async {
   var response = await atClient
       ?.getLocalSecondary()
-      ?.putValue(AT_ENCRYPTION_SELF_KEY, at_demos.aesKeyMap![atsign]!);
+      ?.putValue(AT_ENCRYPTION_SELF_KEY, at_demos.aesKeyMap[atsign]!);
   return response;
 }
 
