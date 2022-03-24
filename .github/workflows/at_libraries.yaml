@@ -82,7 +82,7 @@ jobs:
         
       - name: run tests
         working-directory: at_onboarding_cli/functional_tests
-        run: dart test
+        run: dart test --concurrency=1
         
       - name: kill docker image
         working-directory: at_onboarding_cli/functional_tests
