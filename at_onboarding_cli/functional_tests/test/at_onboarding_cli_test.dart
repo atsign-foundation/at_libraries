@@ -12,7 +12,6 @@ import 'package:path/path.dart' as path;
 import 'at_demo_credentials.dart' as at_demos;
 
 Future<void> main() async {
-  AtSignLogger.root_level = 'FINER';
   group('Tests to validate authenticate functionality; ', () {
     test('Test authentication using private key', () async {
       String atsign = '@alice🛠';
