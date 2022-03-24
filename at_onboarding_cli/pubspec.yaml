@@ -14,7 +14,7 @@ dependencies:
    zxing2: ^0.1.0
    image: ^3.1.1
    crypton: ^2.0.3
-   at_commons: ^3.0.5
+   at_commons: ^3.0.8
    encrypt: ^5.0.1
    at_server_status: 1.0.3
    ##at_persistence_secondary_server: ^3.0.19
