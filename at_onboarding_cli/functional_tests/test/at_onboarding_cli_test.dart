@@ -8,8 +8,7 @@ import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
-import 'package:at_onboarding_cli/functional_tests/test/at_demo_credentials.dart'
-    as at_demos;
+import 'at_demo_credentials.dart' as at_demos;
 
 Future<void> main() async {
   AtSignLogger.root_level = 'FINER';
