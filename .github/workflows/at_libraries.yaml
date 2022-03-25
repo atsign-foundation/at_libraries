@@ -68,6 +68,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
       
       #functional tests for at_onbaording_cli
       - name: add entry to hosts file
