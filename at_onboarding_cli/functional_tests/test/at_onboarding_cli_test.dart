@@ -16,7 +16,7 @@ Future<void> main() async {
     test('Test authentication using private key', () async {
       String atsign = '@alice🛠';
       AtOnboardingService onboardingService =
-      AtOnboardingServiceImpl(atsign, getPreferences(atsign, false));
+          AtOnboardingServiceImpl(atsign, getPreferences(atsign, false));
       bool authStatus = await onboardingService.authenticate();
       await insertSelfEncKey(await onboardingService.getAtClient(), atsign);
       expect(true, authStatus);
@@ -25,14 +25,14 @@ Future<void> main() async {
     test('Test using atKeys File', () async {
       var atsign = '@emoji🦄🛠';
       AtOnboardingPreference atOnboardingPreference =
-      getPreferences(atsign, false);
+          getPreferences(atsign, false);
       atOnboardingPreference.atKeysFilePath =
           atOnboardingPreference.downloadPath;
       generateAtKeysFile(atsign, atOnboardingPreference.atKeysFilePath);
       //setting private key to null to ensure that private key is acquired from the atKeysFile
       atOnboardingPreference.privateKey = null;
       AtOnboardingService atOnboardingService =
-      AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+          AtOnboardingServiceImpl(atsign, atOnboardingPreference);
       bool status = await atOnboardingService.authenticate();
       expect(true, status);
     });
@@ -41,12 +41,12 @@ Future<void> main() async {
   test('test atLookup auth status', () async {
     var atsign = '@emoji🦄🛠';
     AtOnboardingPreference atOnboardingPreference =
-    getPreferences(atsign, false);
+        getPreferences(atsign, false);
     atOnboardingPreference.atKeysFilePath = atOnboardingPreference.downloadPath;
     //setting private key to null to ensure that private key is acquired from the atKeysFile
     atOnboardingPreference.privateKey = null;
     AtOnboardingService atOnboardingService =
-    AtOnboardingServiceImpl(atsign, getPreferences(atsign, false));
+        AtOnboardingServiceImpl(atsign, getPreferences(atsign, false));
     await atOnboardingService.authenticate();
     await insertSelfEncKey(await atOnboardingService.getAtClient(), atsign);
     AtLookUp? atLookUp = atOnboardingService.getAtLookup();
@@ -60,7 +60,7 @@ Future<void> main() async {
   test('test atClient authentication', () async {
     var atsign = '@eve🛠';
     AtOnboardingService onboardingService =
-    AtOnboardingServiceImpl(atsign, getPreferences(atsign, false));
+        AtOnboardingServiceImpl(atsign, getPreferences(atsign, false));
     AtClient? atClient = await onboardingService.getAtClient();
     await insertSelfEncKey(atClient, atsign);
     AtKey key = AtKey();
@@ -73,10 +73,10 @@ Future<void> main() async {
   group('tests to check encryption keys persist into local secondary', () {
     var atsign = '@eve🛠';
     AtOnboardingPreference atOnboardingPreference =
-    getPreferences(atsign, false);
+        getPreferences(atsign, false);
     atOnboardingPreference.atKeysFilePath = atOnboardingPreference.downloadPath;
     AtOnboardingService atOnboardingService =
-    AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+        AtOnboardingServiceImpl(atsign, atOnboardingPreference);
     AtClient? atClient;
 
     test('test authentication', () async {
@@ -110,10 +110,10 @@ Future<void> main() async {
   group('tests for onboard functionality', () {
     var atsign = '@egcovidlab🛠';
     AtOnboardingPreference atOnboardingPreference =
-    getPreferences(atsign, true);
+        getPreferences(atsign, true);
     test('test onboarding functionality', () async {
       AtOnboardingService atOnboardingService =
-      AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+          AtOnboardingServiceImpl(atsign, atOnboardingPreference);
       var status = await atOnboardingService.onboard();
       expect(true, status);
     });
@@ -121,7 +121,7 @@ Future<void> main() async {
       atOnboardingPreference.atKeysFilePath = path.join(
           atOnboardingPreference.downloadPath!, '${atsign}_key.atKeys');
       AtOnboardingService atOnboardingService =
-      AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+          AtOnboardingServiceImpl(atsign, atOnboardingPreference);
       bool status2 = await atOnboardingService.authenticate();
       expect(true, status2);
       AtServerStatus atServerStatus = AtStatusImpl(
@@ -175,7 +175,7 @@ Future<void> insertSelfEncKey(atClient, atsign) async {
   await atClient
       ?.getLocalSecondary()
       ?.putValue(AT_ENCRYPTION_SELF_KEY, at_demos.aesKeyMap[atsign]!);
-  return ;
+  return;
 }
 
 Future<void> tearDownFunc() async {
