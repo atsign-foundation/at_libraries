@@ -63,6 +63,11 @@ jobs:
       - name: Run dart analyzer in at_onboarding_cli
         working-directory: at_onboarding_cli
         run: dart analyze
+        
+  functional_tests_at_onbaording_cli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
       
       #functional tests for at_onbaording_cli
       - name: add entry to hosts file
