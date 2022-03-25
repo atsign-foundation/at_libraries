@@ -6,7 +6,6 @@ import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_server_status/at_server_status.dart';
-import 'package:at_utils/at_logger.dart';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
 import 'at_demo_credentials.dart' as at_demos;
