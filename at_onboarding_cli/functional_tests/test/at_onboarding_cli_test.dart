@@ -5,17 +5,16 @@ import 'package:at_client/at_client.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
+import 'package:at_server_status/at_server_status.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
-// ignore: import_of_legacy_library_into_null_safe
-import 'package:at_demo_data/at_demo_data.dart' as at_demos;
+import 'at_demo_credentials.dart' as at_demos;
 
 Future<void> main() async {
-  AtSignLogger.root_level = 'FINER';
   group('Tests to validate authenticate functionality; ', () {
     test('Test authentication using private key', () async {
-      String atsign = '@bob🛠';
+      String atsign = '@alice🛠';
       AtOnboardingService onboardingService =
           AtOnboardingServiceImpl(atsign, getPreferences(atsign, false));
       bool authStatus = await onboardingService.authenticate();
@@ -104,8 +103,32 @@ Future<void> main() async {
           ?.getLocalSecondary()
           ?.keyStore
           ?.get(AT_ENCRYPTION_PUBLIC_KEY);
-      ;
       expect(at_demos.encryptionPublicKeyMap[atsign], result.data);
+    });
+  });
+
+  group('tests for onboard functionality', () {
+    var atsign = '@egcovidlab🛠';
+    AtOnboardingPreference atOnboardingPreference =
+        getPreferences(atsign, true);
+    test('test onboarding functionality', () async {
+      AtOnboardingService atOnboardingService =
+          AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+      var status = await atOnboardingService.onboard();
+      expect(true, status);
+    });
+    test('test to validate generated .atKeys file', () async {
+      atOnboardingPreference.atKeysFilePath = path.join(
+          atOnboardingPreference.downloadPath!, '${atsign}_key.atKeys');
+      AtOnboardingService atOnboardingService =
+          AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+      bool status2 = await atOnboardingService.authenticate();
+      expect(true, status2);
+      AtServerStatus atServerStatus = AtStatusImpl(
+          rootUrl: atOnboardingPreference.rootDomain,
+          rootPort: atOnboardingPreference.rootPort);
+      AtStatus atStatus = await atServerStatus.get(atsign);
+      expect(atStatus.serverStatus, ServerStatus.activated);
     });
   });
 
@@ -121,7 +144,7 @@ AtOnboardingPreference getPreferences(String atsign, bool isOnboarding) {
     ..rootDomain = 'vip.ve.atsign.zone'
     ..privateKey = at_demos.pkamPrivateKeyMap[atsign]
     ..cramSecret = at_demos.cramKeyMap[atsign]
-    ..downloadPath = 'storage/keysFile_$atsign.atKeys';
+    ..downloadPath = 'storage/keysFile.atKeys';
   if (isOnboarding) {
     atOnboardingPreference.downloadPath = 'storage/';
     atOnboardingPreference.privateKey = null;
@@ -148,11 +171,11 @@ Future<void> generateAtKeysFile(atsign, filePath) async {
   await atKeysFile.close();
 }
 
-Future<bool> insertSelfEncKey(atClient, atsign) async {
-  var response = await atClient
+Future<void> insertSelfEncKey(atClient, atsign) async {
+  await atClient
       ?.getLocalSecondary()
-      ?.putValue(AT_ENCRYPTION_SELF_KEY, at_demos.aesKeyMap![atsign]!);
-  return response;
+      ?.putValue(AT_ENCRYPTION_SELF_KEY, at_demos.aesKeyMap[atsign]!);
+  return;
 }
 
 Future<void> tearDownFunc() async {
