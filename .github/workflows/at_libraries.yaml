@@ -76,19 +76,16 @@ jobs:
         working-directory: at_onboarding_cli/functional_tests
         run: sudo docker-compose up -d
         
-#       - name: Check for docker container readiness
-#         working-directory: at_onboarding_cli/functional_tests
-#         run: dart run check_docker_readiness.dart
-
-      - name: ping
-        run: ping -c 10 vip.ve.atsign.zone -p 64
+      - name: Check for docker container readiness
+        working-directory: at_onboarding_cli/functional_tests
+        run: dart run check_docker_readiness.dart
         
       - name: run pkamLoad on docker-image
         run: sudo docker exec functional_tests_virtualenv_1 supervisorctl start pkamLoad
       
-#       - name: Check test environment readiness
-#         working-directory: at_onboarding_cli/functional_tests
-#         run: dart run check_test_env.dart
+      - name: Check test environment readiness
+        working-directory: at_onboarding_cli/functional_tests
+        run: dart run check_test_env.dart
         
       - name: run tests
         working-directory: at_onboarding_cli/functional_tests
