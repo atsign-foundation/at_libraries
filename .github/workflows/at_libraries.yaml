@@ -11,7 +11,7 @@ on:
       - trunk
   pull_request:
     branches:
-      - at_onboarding_cli
+      - trunk
 
 jobs:
   build:
