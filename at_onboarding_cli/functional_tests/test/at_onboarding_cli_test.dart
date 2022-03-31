@@ -3,15 +3,17 @@ import 'dart:io';
 
 import 'package:at_client/at_client.dart';
 import 'package:at_commons/at_commons.dart';
+import 'package:at_persistence_secondary_server/at_persistence_secondary_server.dart';
 import 'package:at_lookup/at_lookup.dart';
+import 'package:at_utils/at_logger.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_server_status/at_server_status.dart';
-import 'package:at_utils/at_logger.dart';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
-import 'at_demo_credentials.dart' as at_demos;
+import 'package:at_demo_data/at_demo_data.dart' as at_demos;
 
 Future<void> main() async {
+  AtSignLogger.root_level = 'finer';
   group('Tests to validate authenticate functionality; ', () {
     test('Test authentication using private key', () async {
       String atsign = '@alice🛠';
@@ -23,12 +25,12 @@ Future<void> main() async {
     });
 
     test('Test using atKeys File', () async {
-      var atsign = '@emoji🦄🛠';
+      String atsign = '@emoji🦄🛠';
       AtOnboardingPreference atOnboardingPreference =
           getPreferences(atsign, false);
       atOnboardingPreference.atKeysFilePath =
           atOnboardingPreference.downloadPath;
-      generateAtKeysFile(atsign, atOnboardingPreference.atKeysFilePath);
+      await generateAtKeysFile(atsign, atOnboardingPreference.atKeysFilePath);
       //setting private key to null to ensure that private key is acquired from the atKeysFile
       atOnboardingPreference.privateKey = null;
       AtOnboardingService atOnboardingService =
@@ -39,7 +41,7 @@ Future<void> main() async {
   });
 
   test('test atLookup auth status', () async {
-    var atsign = '@emoji🦄🛠';
+    String atsign = '@emoji🦄🛠';
     AtOnboardingPreference atOnboardingPreference =
         getPreferences(atsign, false);
     atOnboardingPreference.atKeysFilePath = atOnboardingPreference.downloadPath;
@@ -53,12 +55,12 @@ Future<void> main() async {
     AtKey key = AtKey();
     key.key = 'testKey2';
     await atLookUp?.update(key.key!, 'value2');
-    var response = await atLookUp?.llookup(key.key!);
+    String? response = await atLookUp?.llookup(key.key!);
     expect('data:value2', response);
   });
 
   test('test atClient authentication', () async {
-    var atsign = '@eve🛠';
+    String atsign = '@eve🛠';
     AtOnboardingService onboardingService =
         AtOnboardingServiceImpl(atsign, getPreferences(atsign, false));
     AtClient? atClient = await onboardingService.getAtClient();
@@ -66,12 +68,12 @@ Future<void> main() async {
     AtKey key = AtKey();
     key.key = 'testKey3';
     await atClient?.put(key, 'value3');
-    var response = await atClient?.get(key);
+    AtValue? response = await atClient?.get(key);
     expect('value3', response?.value);
   });
 
   group('tests to check encryption keys persist into local secondary', () {
-    var atsign = '@eve🛠';
+    String atsign = '@eve🛠';
     AtOnboardingPreference atOnboardingPreference =
         getPreferences(atsign, false);
     atOnboardingPreference.atKeysFilePath = atOnboardingPreference.downloadPath;
@@ -82,7 +84,7 @@ Future<void> main() async {
     test('test authentication', () async {
       await generateAtKeysFile(atsign, atOnboardingPreference.atKeysFilePath);
       await insertSelfEncKey(atClient, atsign);
-      var status = await atOnboardingService.authenticate();
+      bool status = await atOnboardingService.authenticate();
       atClient = await atOnboardingService.getAtClient();
       expect(true, status);
     });
@@ -99,7 +101,7 @@ Future<void> main() async {
           await atClient?.getLocalSecondary()?.getEncryptionPrivateKey());
     });
     test('test encryptionPublicKey on local secondary', () async {
-      var result = await atClient
+      AtData result = await atClient
           ?.getLocalSecondary()
           ?.keyStore
           ?.get(AT_ENCRYPTION_PUBLIC_KEY);
@@ -108,13 +110,13 @@ Future<void> main() async {
   });
 
   group('tests for onboard functionality', () {
-    var atsign = '@egcovidlab🛠';
+    String atsign = '@egcovidlab🛠';
     AtOnboardingPreference atOnboardingPreference =
         getPreferences(atsign, true);
     test('test onboarding functionality', () async {
       AtOnboardingService atOnboardingService =
           AtOnboardingServiceImpl(atsign, atOnboardingPreference);
-      var status = await atOnboardingService.onboard();
+      bool status = await atOnboardingService.onboard();
       expect(true, status);
     });
     test('test to validate generated .atKeys file', () async {
@@ -152,8 +154,8 @@ AtOnboardingPreference getPreferences(String atsign, bool isOnboarding) {
   return atOnboardingPreference;
 }
 
-Future<void> generateAtKeysFile(atsign, filePath) async {
-  Map atKeysMap = {
+Future<void> generateAtKeysFile(String atsign, String? filePath) async {
+  Map<String, String?> atKeysMap = <String, String?>{
     AuthKeyType.pkamPublicKey: EncryptionUtil.encryptValue(
         at_demos.pkamPublicKeyMap[atsign]!, at_demos.aesKeyMap[atsign]!),
     AuthKeyType.pkamPrivateKey: EncryptionUtil.encryptValue(
@@ -165,13 +167,13 @@ Future<void> generateAtKeysFile(atsign, filePath) async {
     AuthKeyType.selfEncryptionKey: at_demos.aesKeyMap[atsign],
     atsign: at_demos.aesKeyMap[atsign]
   };
-  IOSink atKeysFile = File(filePath).openWrite();
+  IOSink atKeysFile = File(filePath!).openWrite();
   atKeysFile.write(jsonEncode(atKeysMap));
   await atKeysFile.flush();
   await atKeysFile.close();
 }
 
-Future<void> insertSelfEncKey(atClient, atsign) async {
+Future<void> insertSelfEncKey(AtClient? atClient, String atsign) async {
   await atClient
       ?.getLocalSecondary()
       ?.putValue(AT_ENCRYPTION_SELF_KEY, at_demos.aesKeyMap[atsign]!);
@@ -179,7 +181,7 @@ Future<void> insertSelfEncKey(atClient, atsign) async {
 }
 
 Future<void> tearDownFunc() async {
-  var isExists = await Directory('storage/').exists();
+  bool isExists = await Directory('storage/').exists();
   if (isExists) {
     Directory('storage/').deleteSync(recursive: true);
   }
