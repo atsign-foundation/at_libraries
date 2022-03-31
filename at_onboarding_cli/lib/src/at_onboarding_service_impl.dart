@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'package:at_client/at_client.dart';
@@ -208,7 +209,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   Future<Map<String, String>?> _readAtKeysFile(String? atKeysFilePath) async {
     if (atKeysFilePath != null) {
       String atAuthData = await File(atKeysFilePath).readAsString();
-      return jsonDecode(atAuthData) as Map<String, String>?;
+      Map<String, String> jsonData = <String, String>{};
+      json.decode(atAuthData).forEach((String key, dynamic value) {
+        jsonData[key] = value.toString();
+      });
+      return jsonData;
     } else {
       return null;
     }
