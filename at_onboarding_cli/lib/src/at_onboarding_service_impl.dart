@@ -208,7 +208,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   Future<Map<String, String>?> _readAtKeysFile(String? atKeysFilePath) async {
     if (atKeysFilePath != null) {
       String atAuthData = await File(atKeysFilePath).readAsString();
-      return jsonDecode(atAuthData);
+      return jsonDecode(atAuthData) as Map<String, String>?;
     } else {
       return null;
     }
