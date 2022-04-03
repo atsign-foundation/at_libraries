@@ -41,7 +41,7 @@ class SecondaryAddressCacheImpl implements SecondaryAddressCache {
     }
     try {
       String? secondaryUrl =
-          await AtLookupImpl.findSecondary(atSign, rootDomain, rootPort!);
+          await AtLookupImpl.findSecondary(atSign, rootDomain, rootPort);
       if (secondaryUrl == null ||
           secondaryUrl.isEmpty ||
           secondaryUrl == 'data:null') {
