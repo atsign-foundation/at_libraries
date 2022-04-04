@@ -1,3 +1,6 @@
+## 3.0.15
+- Update at_commons version for Info and NoOp verb
+- Update at_commons version for NotifyDelete verb
 ## 3.0.14
 - Upgrade at_commons version for bug fix in notify verb syntax
 ## 3.0.13
