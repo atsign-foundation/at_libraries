@@ -88,7 +88,6 @@ void main() async {
       await cache.getAddress(atSign);
       final approxExpiry =
           DateTime.now().add(Duration(hours: 1)).millisecondsSinceEpoch;
-      print(cache.getCacheExpiryTime(atSign));
       expect(cache.getCacheExpiryTime(atSign), isNotNull);
       expect((approxExpiry - cache.getCacheExpiryTime(atSign)!) < 100, true);
     });
@@ -99,8 +98,6 @@ void main() async {
       await cache.getAddress(atSign, cacheFor: Duration(seconds: 30));
       final approxExpiry =
           DateTime.now().add(Duration(seconds: 30)).millisecondsSinceEpoch;
-      print(cache.getCacheExpiryTime(atSign));
-      print(approxExpiry);
       expect(cache.getCacheExpiryTime(atSign), isNotNull);
       expect((approxExpiry - cache.getCacheExpiryTime(atSign)!) < 100, true);
     });
