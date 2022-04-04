@@ -314,6 +314,8 @@ class AtLookupImpl implements AtLookUp {
         verbResult = await _notifyAll(builder);
       } else if (builder is SyncVerbBuilder) {
         verbResult = await _sync(builder);
+      } else if (builder is NotifyRemoveVerbBuilder) {
+        verbResult = await _notifyRemove(builder);
       }
     } on Exception catch (e) {
       logger.severe('Error in remote verb execution ${e.toString()}');
@@ -395,6 +397,11 @@ class AtLookupImpl implements AtLookUp {
   Future<String> _notifyAll(NotifyAllVerbBuilder builder) async {
     var command = builder.buildCommand();
     return await _process(command, auth: true);
+  }
+
+  Future<String> _notifyRemove(NotifyRemoveVerbBuilder builder) async {
+    var atCommand = builder.buildCommand();
+    return await _process(atCommand, auth: true);
   }
 
   Future<String> _sync(SyncVerbBuilder builder) async {
