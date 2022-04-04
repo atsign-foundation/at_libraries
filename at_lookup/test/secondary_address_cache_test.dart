@@ -33,14 +33,20 @@ void main() async {
 
     setUp(() {
       reset(mockSecondaryFinder);
-      when(() => mockSecondaryFinder.findSecondary(any(that: startsWith('registered')), rootDomain, rootPort))
-          .thenAnswer((invocation) async => _addressFromAtSign(invocation.positionalArguments.first));
-      when(() => mockSecondaryFinder.findSecondary(any(that: startsWith('notRegistered')), rootDomain, rootPort))
+      when(() => mockSecondaryFinder.findSecondary(
+              any(that: startsWith('registered')), rootDomain, rootPort))
+          .thenAnswer((invocation) async =>
+              _addressFromAtSign(invocation.positionalArguments.first));
+      when(() => mockSecondaryFinder.findSecondary(
+              any(that: startsWith('notRegistered')), rootDomain, rootPort))
           .thenAnswer((invocation) async {
-        throw SecondaryNotFoundException(SecondaryAddressCache.getNotFoundExceptionMessage(invocation.positionalArguments.first));
+        throw SecondaryNotFoundException(
+            SecondaryAddressCache.getNotFoundExceptionMessage(
+                invocation.positionalArguments.first));
       });
 
-      cache = SecondaryAddressCache(rootDomain, rootPort, secondaryFinder: mockSecondaryFinder);
+      cache = SecondaryAddressCache(rootDomain, rootPort,
+          secondaryFinder: mockSecondaryFinder);
     });
 
     test('test simple lookup for @registeredAtSign1', () async {
@@ -61,9 +67,42 @@ void main() async {
       var atSign = 'notRegisteredAtSign1';
       expect(
           () async => await cache.getAddress(atSign),
-          throwsA(
-              predicate((e) => e is SecondaryNotFoundException && e.message == SecondaryAddressCache.getNotFoundExceptionMessage(atSign))));
+          throwsA(predicate((e) =>
+              e is SecondaryNotFoundException &&
+              e.message ==
+                  SecondaryAddressCache.getNotFoundExceptionMessage(atSign))));
     });
-    // TODO add tests for isCached
+    test('test isCached for registeredAtSign1', () async {
+      var atSign = 'registeredAtSign1';
+      await cache.getAddress(atSign);
+      expect(cache.cacheContains(atSign), true);
+    });
+    test('test isCached for notRegisteredAtSign1', () async {
+      var atSign = 'notRegisteredAtSign1';
+      expect(cache.cacheContains(atSign), false);
+    });
+
+    test('test expiry time - default cache expiry for registeredAtSign1',
+        () async {
+      var atSign = 'registeredAtSign1';
+      await cache.getAddress(atSign);
+      final approxExpiry =
+          DateTime.now().add(Duration(hours: 1)).millisecondsSinceEpoch;
+      print(cache.getCacheExpiryTime(atSign));
+      expect(cache.getCacheExpiryTime(atSign), isNotNull);
+      expect((approxExpiry - cache.getCacheExpiryTime(atSign)!) < 100, true);
+    });
+
+    test('test expiry time  - custom cache expiry for registeredAtSign1',
+        () async {
+      var atSign = 'registeredAtSign1';
+      await cache.getAddress(atSign, cacheFor: Duration(seconds: 30));
+      final approxExpiry =
+          DateTime.now().add(Duration(seconds: 30)).millisecondsSinceEpoch;
+      print(cache.getCacheExpiryTime(atSign));
+      print(approxExpiry);
+      expect(cache.getCacheExpiryTime(atSign), isNotNull);
+      expect((approxExpiry - cache.getCacheExpiryTime(atSign)!) < 100, true);
+    });
   });
 }
