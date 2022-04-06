@@ -1,3 +1,5 @@
+## 3.0.17
+- Added cache for secondary url lookup from root server
 ## 3.0.16
 - Rename NotifyDelete to NotifyRemove
 ## 3.0.15
