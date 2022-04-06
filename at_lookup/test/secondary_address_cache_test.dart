@@ -108,6 +108,7 @@ void main() async {
 
     test('test update cache for atsign which is not yet cached', () async {
       var atSign = 'notCachedAtSign1';
+      expect(cache.cacheContains(atSign), false);
       await cache.getAddress(atSign, refreshCacheNow: true);
       expect(cache.cacheContains(atSign), true);
     });
