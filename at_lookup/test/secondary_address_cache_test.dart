@@ -38,6 +38,10 @@ void main() async {
           .thenAnswer((invocation) async =>
               _addressFromAtSign(invocation.positionalArguments.first));
       when(() => mockSecondaryFinder.findSecondary(
+              any(that: startsWith('notCached')), rootDomain, rootPort))
+          .thenAnswer((invocation) async =>
+              _addressFromAtSign(invocation.positionalArguments.first));
+      when(() => mockSecondaryFinder.findSecondary(
               any(that: startsWith('notRegistered')), rootDomain, rootPort))
           .thenAnswer((invocation) async {
         throw SecondaryNotFoundException(
@@ -100,6 +104,12 @@ void main() async {
           DateTime.now().add(Duration(seconds: 30)).millisecondsSinceEpoch;
       expect(cache.getCacheExpiryTime(atSign), isNotNull);
       expect((approxExpiry - cache.getCacheExpiryTime(atSign)!) < 100, true);
+    });
+
+    test('test update cache for atsign which is not yet cached', () async {
+      var atSign = 'notCachedAtSign1';
+      await cache.getAddress(atSign, refreshCacheNow: true);
+      expect(cache.cacheContains(atSign), true);
     });
   });
 }
