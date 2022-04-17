@@ -1,3 +1,6 @@
+## 3.0.19
+- Export secondary address cache from the package
+- Update at_commons and at_utils version
 ## 3.0.18
 - Updated dependencies
 ## 3.0.17
