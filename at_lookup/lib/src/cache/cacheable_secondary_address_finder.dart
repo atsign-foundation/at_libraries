@@ -176,7 +176,7 @@ class SecondaryUrlFinder {
       throw Exception('AtLookup.findSecondary timed out');
     } on Exception catch (exception) {
       AtSignLogger('AtLookup').severe('AtLookup.findSecondary connection to ' +
-          _rootDomain! +
+          _rootDomain +
           ' exception: ' +
           exception.toString());
       if (socket != null) {
