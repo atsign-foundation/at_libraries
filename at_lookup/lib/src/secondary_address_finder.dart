@@ -7,6 +7,7 @@ class SecondaryAddressFinder {
   SecondaryAddressFinder(this.rootDomain, this.rootPort);
   Future<String?> findSecondary(
       String atSign, String rootDomain, int rootPort) async {
+    _secondaryAddressCache ??= SecondaryAddressCache(rootDomain, rootPort);
     return (await _secondaryAddressCache!.getAddress(atSign)).toString();
   }
 }
