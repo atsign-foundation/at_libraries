@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:at_commons/at_commons.dart';
+import 'package:at_lookup/src/cache/secondary_address_finder.dart';
 import 'package:at_lookup/src/util/lookup_util.dart';
 import 'package:at_utils/at_logger.dart';
 
-class SecondaryAddressCache {
+class CacheableSecondaryAddressFinder implements SecondaryAddressFinder {
   static const Duration defaultCacheDuration = Duration(hours: 1);
 
   final Map<String, SecondaryAddressCacheEntry> _map = {};
@@ -14,9 +15,10 @@ class SecondaryAddressCache {
   final int _rootPort;
   late SecondaryUrlFinder _secondaryFinder;
 
-  SecondaryAddressCache(this._rootDomain, this._rootPort,
+  CacheableSecondaryAddressFinder(this._rootDomain, this._rootPort,
       {SecondaryUrlFinder? secondaryFinder}) {
-    _secondaryFinder = secondaryFinder ?? SecondaryUrlFinder();
+    _secondaryFinder =
+        secondaryFinder ?? SecondaryUrlFinder(_rootDomain, _rootPort);
   }
 
   bool cacheContains(String atSign) {
@@ -33,16 +35,14 @@ class SecondaryAddressCache {
     }
   }
 
-  Future<SecondaryAddress> getAddress(String atSign,
-      {bool refreshCacheNow = false,
-      Duration cacheFor = defaultCacheDuration}) async {
+  @override
+  Future<SecondaryAddress> findSecondary(String atSign) async {
     atSign = stripAtSignFromAtSign(atSign);
 
-    if (refreshCacheNow || _cacheIsEmptyOrExpired(atSign)) {
+    if (_cacheIsEmptyOrExpired(atSign)) {
       // _updateCache will either populate the cache, or throw an exception
-      await _updateCache(atSign, cacheFor);
+      await _updateCache(atSign, defaultCacheDuration);
     }
-
     if (_map.containsKey(atSign)) {
       // should always be true, since _updateCache will throw an exception if it fails
       return _map[atSign]!.secondaryAddress;
@@ -82,8 +82,7 @@ class SecondaryAddressCache {
 
   Future<void> _updateCache(String atSign, Duration cacheFor) async {
     try {
-      String? secondaryUrl =
-          await _secondaryFinder.findSecondaryUrl(atSign, _rootDomain, _rootPort);
+      String? secondaryUrl = await _secondaryFinder.findSecondaryUrl(atSign);
       if (secondaryUrl == null ||
           secondaryUrl.isEmpty ||
           secondaryUrl == 'data:null') {
@@ -104,17 +103,6 @@ class SecondaryAddressCache {
   }
 }
 
-class SecondaryAddress {
-  final String host;
-  final int port;
-  SecondaryAddress(this.host, this.port);
-
-  @override
-  String toString() {
-    return '$host:$port';
-  }
-}
-
 class SecondaryAddressCacheEntry {
   final SecondaryAddress secondaryAddress;
 
@@ -124,15 +112,16 @@ class SecondaryAddressCacheEntry {
   SecondaryAddressCacheEntry(this.secondaryAddress, this.expiresAt);
 }
 
-
 class SecondaryUrlFinder {
-  Future<String?> findSecondaryUrl(
-      String atSign, String rootDomain, int rootPort) async {
-    return await _findSecondary(atSign, rootDomain, rootPort);
+  final String _rootDomain;
+  final int _rootPort;
+  SecondaryUrlFinder(this._rootDomain, this._rootPort);
+
+  Future<String?> findSecondaryUrl(String atSign) async {
+    return await _findSecondary(atSign);
   }
 
-  Future<String?> _findSecondary(
-      String atsign, String rootDomain, int rootPort) async {
+  Future<String?> _findSecondary(String atsign) async {
     String? response;
     SecureSocket? socket;
     try {
@@ -145,7 +134,7 @@ class SecondaryUrlFinder {
       var prompt = false;
       var once = true;
       // ignore: omit_local_variable_types
-      socket = await SecureSocket.connect(rootDomain, rootPort);
+      socket = await SecureSocket.connect(_rootDomain, _rootPort);
       // listen to the received data event stream
       socket.listen((List<int> event) async {
         answer = ''; //TODO utf8.decode(event);
@@ -187,7 +176,7 @@ class SecondaryUrlFinder {
       throw Exception('AtLookup.findSecondary timed out');
     } on Exception catch (exception) {
       AtSignLogger('AtLookup').severe('AtLookup.findSecondary connection to ' +
-          rootDomain! +
+          _rootDomain! +
           ' exception: ' +
           exception.toString());
       if (socket != null) {

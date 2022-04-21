@@ -53,12 +53,14 @@ class AtLookupImpl implements AtLookUp {
     this.cramSecret = cramSecret;
   }
 
-  @Deprecated('use SecondaryAddressFinder')
+  @Deprecated('use CacheableSecondaryAddressFinder')
   static Future<String?> findSecondary(
       String atsign, String? rootDomain, int rootPort) async {
     // temporary change to preserve backward compatibility and change the callers later on to use
     // SecondaryAddressFinder.findSecondary
-   return await SecondaryAddressFinder(rootDomain!, rootPort).findSecondary(atsign);
+    return (await CacheableSecondaryAddressFinder(rootDomain!, rootPort)
+            .findSecondary(atsign))
+        .toString();
   }
 
   @override
