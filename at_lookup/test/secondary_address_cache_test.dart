@@ -4,12 +4,12 @@ import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockSecondaryFinder extends Mock implements SecondaryAddressFinder {}
+class MockSecondaryFinder extends Mock implements SecondaryUrlFinder {}
 
 void main() async {
   String rootDomain = 'root.atsign.unit.tests';
   int rootPort = 64;
-  SecondaryAddressFinder mockSecondaryFinder = MockSecondaryFinder();
+  SecondaryUrlFinder mockSecondaryFinder = MockSecondaryFinder();
 
   String _addressFromAtSign(String atSign) {
     if (atSign.startsWith('@')) {
@@ -33,15 +33,15 @@ void main() async {
 
     setUp(() {
       reset(mockSecondaryFinder);
-      when(() => mockSecondaryFinder.findSecondary(
+      when(() => mockSecondaryFinder.findSecondaryUrl(
               any(that: startsWith('registered')), rootDomain, rootPort))
           .thenAnswer((invocation) async =>
               _addressFromAtSign(invocation.positionalArguments.first));
-      when(() => mockSecondaryFinder.findSecondary(
+      when(() => mockSecondaryFinder.findSecondaryUrl(
               any(that: startsWith('notCached')), rootDomain, rootPort))
           .thenAnswer((invocation) async =>
               _addressFromAtSign(invocation.positionalArguments.first));
-      when(() => mockSecondaryFinder.findSecondary(
+      when(() => mockSecondaryFinder.findSecondaryUrl(
               any(that: startsWith('notRegistered')), rootDomain, rootPort))
           .thenAnswer((invocation) async {
         throw SecondaryNotFoundException(

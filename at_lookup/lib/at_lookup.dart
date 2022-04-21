@@ -9,3 +9,4 @@ export 'src/connection/outbound_connection.dart';
 export 'src/connection/outbound_connection_impl.dart';
 export 'src/exception/at_lookup_exception.dart';
 export 'src/monitor_client.dart';
+export 'src/secondary_address_finder.dart';
