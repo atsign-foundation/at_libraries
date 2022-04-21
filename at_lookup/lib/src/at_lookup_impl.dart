@@ -53,76 +53,12 @@ class AtLookupImpl implements AtLookUp {
     this.cramSecret = cramSecret;
   }
 
+  @Deprecated('use SecondaryAddressFinder')
   static Future<String?> findSecondary(
       String atsign, String? rootDomain, int rootPort) async {
-    String? response;
-    SecureSocket? socket;
-    try {
-      AtSignLogger('AtLookup')
-          .finer('AtLookup.findSecondary received atsign: $atsign');
-      if (atsign.startsWith('@')) atsign = atsign.replaceFirst('@', '');
-      var answer = '';
-      String? secondary;
-      var ans = false;
-      var prompt = false;
-      var once = true;
-      // ignore: omit_local_variable_types
-      socket = await SecureSocket.connect(rootDomain, rootPort);
-      // listen to the received data event stream
-      socket.listen((List<int> event) async {
-        answer = utf8.decode(event);
-
-        if (answer.endsWith('@') && prompt == false && once == true) {
-          prompt = true;
-          socket!.write('$atsign\n');
-          await socket.flush();
-          once = false;
-        }
-
-        if (answer.contains(':')) {
-          answer = answer.replaceFirst('\r\n@', '');
-          answer = answer.replaceFirst('@', '');
-          answer = answer.replaceAll('@', '');
-          secondary = answer.trim();
-          ans = true;
-        } else if (answer.startsWith('null')) {
-          secondary = null;
-          ans = true;
-        }
-      });
-      // wait 30 seconds
-      for (var i = 0; i < 6000; i++) {
-        await Future.delayed(Duration(milliseconds: 5));
-        if (ans) {
-          response = secondary;
-          socket.write('@exit\n');
-          await socket.flush();
-          socket.destroy();
-          AtSignLogger('AtLookup').finer(
-              'AtLookup.findSecondary got answer: $secondary and closing connection');
-          return response;
-        }
-      }
-      // .. and close the socket
-      await socket.flush();
-      socket.destroy();
-      throw Exception('AtLookup.findSecondary timed out');
-    } on Exception catch (exception) {
-      AtSignLogger('AtLookup').severe('AtLookup.findSecondary connection to ' +
-          rootDomain! +
-          ' exception: ' +
-          exception.toString());
-      if (socket != null) {
-        socket.destroy();
-      }
-    } catch (error) {
-      AtSignLogger('AtLookup').severe(
-          'AtLookup.findSecondary connection to root server failed with error: $error');
-      if (socket != null) {
-        socket.destroy();
-      }
-    }
-    return response;
+    // temporary change to preserve backward compatibility and change the callers later on to use
+    // SecondaryAddressFinder.findSecondary
+   return await SecondaryAddressFinder(rootDomain!, rootPort).findSecondary(atsign);
   }
 
   @override
