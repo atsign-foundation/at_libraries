@@ -1,3 +1,15 @@
+## 3.0.19
+- Export secondary address cache from the package
+- Update at_commons and at_utils version
+## 3.0.18
+- Updated dependencies
+## 3.0.17
+- Added cache for secondary url lookup from root server
+## 3.0.16
+- Rename NotifyDelete to NotifyRemove
+## 3.0.15
+- Update at_commons version for Info and NoOp verb
+- Update at_commons version for NotifyDelete verb
 ## 3.0.14
 - Upgrade at_commons version for bug fix in notify verb syntax
 ## 3.0.13
