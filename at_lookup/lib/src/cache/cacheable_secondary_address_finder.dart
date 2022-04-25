@@ -173,7 +173,7 @@ class SecondaryUrlFinder {
       // .. and close the socket
       await socket.flush();
       socket.destroy();
-      throw Exception('AtLookup.findSecondary timed out');
+      throw AtTimeoutException('AtLookup.findSecondary timed out');
     } on Exception catch (exception) {
       AtSignLogger('AtLookup').severe('AtLookup.findSecondary connection to ' +
           _rootDomain +
@@ -182,13 +182,18 @@ class SecondaryUrlFinder {
       if (socket != null) {
         socket.destroy();
       }
+      throw AtConnectException('AtLookup.findSecondary connection to ' +
+          _rootDomain +
+          ' exception: ' +
+          exception.toString());
     } catch (error) {
       AtSignLogger('AtLookup').severe(
           'AtLookup.findSecondary connection to root server failed with error: $error');
       if (socket != null) {
         socket.destroy();
       }
+      throw AtConnectException(
+          'AtLookup.findSecondary connection to root server failed with error: $error');
     }
-    return response;
   }
 }
