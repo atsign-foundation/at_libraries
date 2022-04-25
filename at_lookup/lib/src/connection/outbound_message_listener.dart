@@ -96,7 +96,7 @@ class OutboundMessageListener {
 
   /// Closes the [OutboundConnection]
   void _finishedHandler() async {
-    print('outbound finish handler called');
+    logger.finest('outbound finish handler called');
     await _closeConnection();
   }
 
