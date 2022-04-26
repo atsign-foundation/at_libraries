@@ -1,3 +1,5 @@
+## 3.0.22
+- find secondary bug fix
 ## 3.0.21
 - Added CacheableSecondaryAddressFinder
 ## 3.0.20

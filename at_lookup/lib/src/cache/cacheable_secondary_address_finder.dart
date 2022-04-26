@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:convert';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/src/cache/secondary_address_finder.dart';
 import 'package:at_lookup/src/util/lookup_util.dart';
 import 'package:at_utils/at_logger.dart';
+
 
 class CacheableSecondaryAddressFinder implements SecondaryAddressFinder {
   static const Duration defaultCacheDuration = Duration(hours: 1);
@@ -137,7 +139,7 @@ class SecondaryUrlFinder {
       socket = await SecureSocket.connect(_rootDomain, _rootPort);
       // listen to the received data event stream
       socket.listen((List<int> event) async {
-        answer = ''; //TODO utf8.decode(event);
+        answer = utf8.decode(event);
 
         if (answer.endsWith('@') && prompt == false && once == true) {
           prompt = true;
