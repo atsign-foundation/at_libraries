@@ -10,7 +10,7 @@ environment:
 dependencies:
    at_utils: ^3.0.4
    at_client: ^3.0.14
-   at_lookup: ^3.0.7
+   at_lookup: ^3.0.21
    zxing2: ^0.1.0
    image: ^3.1.1
    crypton: ^2.0.3
@@ -19,7 +19,13 @@ dependencies:
    at_server_status: ^1.0.3
    path: ^1.8.1
 
-# dependency_overrides:
+dependency_overrides:
+  at_lookup:
+    git:
+      url: https://github.com/atsign-foundation/at_libraries.git
+      path: at_lookup
+      ref: findsecondary_bug
+
 #   at_client:
 #         git:
 #           url: https://github.com/atsign-foundation/at_client_sdk.git
