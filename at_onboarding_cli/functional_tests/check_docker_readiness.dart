@@ -4,18 +4,18 @@ import 'package:test/test.dart';
 
 import 'check_test_env.dart';
 
-var maxRetryCount = 10;
-var retryCount = 1;
+int maxRetryCount = 10;
+int retryCount = 1;
 
 void main() {
-  var atsign = '@sitaram🛠';
-  var atsignPort = 25017;
-  var rootServer = 'vip.ve.atsign.zone';
+  String atsign = '@sitaram🛠';
+  int atsignPort = 25017;
+  String rootServer = 'vip.ve.atsign.zone';
 
   SecureSocket _secureSocket;
 
   test('checking for test environment readiness', () async {
-    await Future.delayed(Duration(seconds: 10));
+    await Future<void>.delayed(const Duration(seconds: 10));
     _secureSocket = await secureSocketConnection(rootServer, atsignPort);
     print('connection established');
     socketListener(_secureSocket);
@@ -24,8 +24,8 @@ void main() {
       _secureSocket.write('lookup:signing_publickey$atsign\n');
       response = await read();
       print('waiting for signing public key response : $response');
-      await Future.delayed(Duration(seconds: 5));
+      await Future<void>.delayed(const Duration(seconds: 5));
     }
     await _secureSocket.close();
-  }, timeout: Timeout(Duration(minutes: 5)));
+  }, timeout: const Timeout(Duration(minutes: 5)));
 }
