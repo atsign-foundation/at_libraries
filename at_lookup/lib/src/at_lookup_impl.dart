@@ -267,6 +267,19 @@ class AtLookupImpl implements AtLookUp {
     }
     // If response starts with error:, throw AtLookupException.
     if (_isError(verbResult)) {
+      // If server returns the error response in JSON Encoded string, decodes the JSON String
+      // and throws the appropriate AtException basing on the error code.
+      if (verbResult.contains('errorCode')) {
+        var decodedResponse = jsonDecode(verbResult);
+        throw AtExceptionUtils.get(
+            decodedResponse['errorCode'], decodedResponse['errorDescription'])
+          ..stack(Triple(
+              Intent.remoteVerbExecution,
+              ExceptionScenario.remoteVerbExecutionFailed,
+              decodedResponse['errorDescription']));
+      }
+      // If server returns the error response in String.
+      // Preserves the backward compatibility
       verbResult = verbResult.replaceAll('error:', '');
       // Setting the errorCode and errorDescription to default values.
       var errorCode = 'AT0014';
@@ -286,7 +299,7 @@ class AtLookupImpl implements AtLookUp {
   }
 
   bool _isError(String verbResult) {
-    return verbResult.startsWith('error:');
+    return verbResult.startsWith('error:') || verbResult.contains('errorCode');
   }
 
   Future<String> _update(UpdateVerbBuilder builder) async {

@@ -85,6 +85,7 @@ class OutboundMessageListener {
   bool _isValidResponse(String result) {
     return result.startsWith('data:') ||
         result.startsWith('stream:') ||
+        result.contains('errorCode') ||
         result.startsWith('error:') ||
         (result.startsWith('@') && result.endsWith('@'));
   }
