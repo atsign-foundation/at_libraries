@@ -16,12 +16,12 @@ dependencies:
   mutex: ^3.0.0
   mocktail: ^0.3.0
 
-#dependency_overrides:
-#  at_commons:
-#      git:
-#        url: https://github.com/atsign-foundation/at_tools.git
-#        path: at_commons
-#        ref: delete_notification
+dependency_overrides:
+  at_commons:
+      git:
+        url: https://github.com/atsign-foundation/at_tools.git
+        path: at_commons
+        ref: exception_handling_changes
 
 dev_dependencies:
   lints: ^1.0.1
