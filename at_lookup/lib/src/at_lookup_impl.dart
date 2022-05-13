@@ -267,9 +267,8 @@ class AtLookupImpl implements AtLookUp {
     }
     // If response starts with error:, throw AtLookupException.
     if (_isError(verbResult)) {
-      // If server returns the error response in JSON Encoded string, decodes the JSON String
-      // and throws the appropriate AtException basing on the error code.
-      if (verbResult.contains('errorCode')) {
+      verbResult = verbResult.replaceFirst('error:', '');
+      try {
         var decodedResponse = jsonDecode(verbResult);
         throw AtExceptionUtils.get(
             decodedResponse['errorCode'], decodedResponse['errorDescription'])
@@ -277,29 +276,29 @@ class AtLookupImpl implements AtLookUp {
               Intent.remoteVerbExecution,
               ExceptionScenario.remoteVerbExecutionFailed,
               decodedResponse['errorDescription']));
-      }
-      // If server returns the error response in String.
-      // Preserves the backward compatibility
-      verbResult = verbResult.replaceAll('error:', '');
-      // Setting the errorCode and errorDescription to default values.
-      var errorCode = 'AT0014';
-      var errorDescription = 'Unknown server error';
-      if (verbResult.contains('-')) {
-        if (verbResult.split('-')[0].isNotEmpty) {
-          errorCode = verbResult.split('-')[0];
+        // If JSON decoding fails, fall back to older version
+        // Parse the error response in throw AtLookupException.
+      } on FormatException {
+        // Setting the errorCode and errorDescription to default values.
+        var errorCode = 'AT0014';
+        var errorDescription = 'Unknown server error';
+        if (verbResult.contains('-')) {
+          if (verbResult.split('-')[0].isNotEmpty) {
+            errorCode = verbResult.split('-')[0];
+          }
+          if (verbResult.split('-')[1].isNotEmpty) {
+            errorDescription = verbResult.split('-')[1];
+          }
         }
-        if (verbResult.split('-')[1].isNotEmpty) {
-          errorDescription = verbResult.split('-')[1];
-        }
+        throw AtLookUpException(errorCode, errorDescription);
       }
-      throw AtLookUpException(errorCode, errorDescription);
     }
     // Return the verb result.
     return verbResult;
   }
 
   bool _isError(String verbResult) {
-    return verbResult.startsWith('error:') || verbResult.contains('errorCode');
+    return verbResult.startsWith('error:');
   }
 
   Future<String> _update(UpdateVerbBuilder builder) async {
