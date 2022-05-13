@@ -268,30 +268,30 @@ class AtLookupImpl implements AtLookUp {
     // If response starts with error:, throw AtLookupException.
     if (_isError(verbResult)) {
       verbResult = verbResult.replaceFirst('error:', '');
-      try {
-        var decodedResponse = jsonDecode(verbResult);
-        throw AtExceptionUtils.get(
-            decodedResponse['errorCode'], decodedResponse['errorDescription'])
-          ..stack(Triple(
-              Intent.remoteVerbExecution,
-              ExceptionScenario.remoteVerbExecutionFailed,
-              decodedResponse['errorDescription']));
-        // If JSON decoding fails, fall back to older version
-        // Parse the error response in throw AtLookupException.
-      } on FormatException {
-        // Setting the errorCode and errorDescription to default values.
-        var errorCode = 'AT0014';
-        var errorDescription = 'Unknown server error';
-        if (verbResult.contains('-')) {
-          if (verbResult.split('-')[0].isNotEmpty) {
-            errorCode = verbResult.split('-')[0];
-          }
-          if (verbResult.split('-')[1].isNotEmpty) {
-            errorDescription = verbResult.split('-')[1];
-          }
+      // If condition to verify if verbResult is a JSON Encoded String.
+      if (verbResult.startsWith('{') && verbResult.endsWith('}')) {
+        try {
+          var decodedResponse = jsonDecode(verbResult);
+          throw AtExceptionUtils.get(decodedResponse['errorCode'],
+              decodedResponse['errorDescription']);
+        } on FormatException catch (e) {
+          logger.warning(
+              'Failed JSON decoding the error response caused by ${e.toString()}. Falling back to return AtLookupException');
         }
-        throw AtLookUpException(errorCode, errorDescription);
       }
+      // If JSON decoding fails, falling back to older implementation
+      // Setting the errorCode and errorDescription to default values.
+      var errorCode = 'AT0014';
+      var errorDescription = 'Unknown server error';
+      if (verbResult.contains('-')) {
+        if (verbResult.split('-')[0].isNotEmpty) {
+          errorCode = verbResult.split('-')[0];
+        }
+        if (verbResult.split('-')[1].isNotEmpty) {
+          errorDescription = verbResult.split('-')[1];
+        }
+      }
+      throw AtExceptionUtils.get(errorCode, errorDescription);
     }
     // Return the verb result.
     return verbResult;
