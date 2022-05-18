@@ -1,8 +1,6 @@
-<img src="https://atsign.dev/assets/img/@developersmall.png?sanitize=true">
+<img width=250px src="https://atsign.dev/assets/img/@platform_logo_grey.svg?sanitize=true">
 
-### Now for a little internet optimism
-
-# AtServerStatus
+# at_server_status
 The at_server_status library provides an easy means to check on the status
 of the @root server as well as the @server for a particular @sign.
 

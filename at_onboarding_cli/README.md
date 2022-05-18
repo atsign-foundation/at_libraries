@@ -1,7 +1,5 @@
 <img width=250px src="https://atsign.dev/assets/img/@platform_logo_grey.svg?sanitize=true">
 
-## Now for some internet optimism.
-
 # at_onboarding_cli
 
 ## Introduction
