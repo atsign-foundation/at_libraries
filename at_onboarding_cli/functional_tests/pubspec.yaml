@@ -11,14 +11,20 @@ dependencies:
   at_onboarding_cli:
     path: ../
 
-# dependency_overrides:
+dependency_overrides:
+  at_lookup:
+    git:
+      url: https://github.com/atsign-foundation/at_libraries.git
+      path: at_lookup
+      ref: findsecondary_bug
 #   at_client:
 #         git:
 #           url: https://github.com/atsign-foundation/at_client_sdk.git
 #           path: at_client
 #           ref: trunk
 
+
 dev_dependencies:
   lints: ^1.0.0
   test: ^1.17.2
-  at_demo_data: ^0.0.3+1
+  at_demo_data: ^1.0.0

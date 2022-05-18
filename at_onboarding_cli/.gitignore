@@ -11,4 +11,4 @@ lib/config/@resultingantarmahal7_keys.atKeys
 /.vscode/
 /lib/config/
 /lib/src/config_utils/
-/example/lib/
+**/storage/

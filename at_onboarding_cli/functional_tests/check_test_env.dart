@@ -4,19 +4,19 @@ import 'dart:io';
 
 import 'package:test/test.dart';
 
-var _queue = Queue();
-var maxRetryCount = 10;
-var retryCount = 1;
+Queue<String> _queue = Queue<String>();
+int maxRetryCount = 10;
+int retryCount = 1;
 
 void main() {
-  var atsign = '@sitaram🛠';
-  var atsignPort = 25017;
-  var rootServer = 'vip.ve.atsign.zone';
+  String atsign = '@sitaram🛠';
+  int atsignPort = 25017;
+  String rootServer = 'vip.ve.atsign.zone';
 
   SecureSocket _secureSocket;
 
   test('checking for test environment readiness', () async {
-    await Future.delayed(Duration(seconds: 10));
+    await Future<void>.delayed(const Duration(seconds: 10));
     _secureSocket = await secureSocketConnection(rootServer, atsignPort);
     print('connection established');
     socketListener(_secureSocket);
@@ -25,13 +25,13 @@ void main() {
       _secureSocket.write('lookup:publickey$atsign\n');
       response = await read();
       print('waiting for signing public key response : $response');
-      await Future.delayed(Duration(seconds: 5));
+      await Future<void>.delayed(const Duration(seconds: 5));
     }
     await _secureSocket.close();
-  }, timeout: Timeout(Duration(minutes: 5)));
+  }, timeout: const Timeout(Duration(minutes: 5)));
 }
 
-Future<SecureSocket> secureSocketConnection(host, port) async {
+Future<SecureSocket> secureSocketConnection(String host, int port) async {
   dynamic socket;
   while (true) {
     try {
@@ -41,7 +41,7 @@ Future<SecureSocket> secureSocketConnection(host, port) async {
       }
     } on Exception {
       print('retrying for connection.. $retryCount');
-      await Future.delayed(Duration(seconds: 5));
+      await Future<void>.delayed(const Duration(seconds: 5));
       retryCount++;
     }
   }
@@ -53,7 +53,7 @@ void socketListener(SecureSocket secureSocket) {
   secureSocket.listen(_messageHandler);
 }
 
-void _messageHandler(data) {
+void _messageHandler(List<int> data) {
   if (data.length == 1 && data.first == 64) {
     return;
   }
@@ -72,10 +72,10 @@ void _messageHandler(data) {
 Future<String> read({int maxWaitMilliSeconds = 5000}) async {
   String result = '';
   //wait maxWaitMilliSeconds seconds for response from remote socket
-  var loopCount = (maxWaitMilliSeconds / 50).round();
-  for (var i = 0; i < loopCount; i++) {
-    await Future.delayed(Duration(milliseconds: 100));
-    var queueLength = _queue.length;
+  int loopCount = (maxWaitMilliSeconds / 50).round();
+  for (int i = 0; i < loopCount; i++) {
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    int queueLength = _queue.length;
     if (queueLength > 0) {
       result = _queue.removeFirst();
       // result from another secondary is either data or a @<atSign>@ denoting complete

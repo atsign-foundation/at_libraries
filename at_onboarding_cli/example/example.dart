@@ -1,7 +1,7 @@
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 
-void main() async {
+Future<void> main() async {
   //onboarding preference builder can be used to set onboardingService parameters
   AtOnboardingPreference atOnboardingPreference = AtOnboardingPreference()
     ..qrCodePath = 'storage/qr_code.png'
