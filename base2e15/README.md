@@ -1,4 +1,9 @@
-# base2e15
+# at_base2e15
+
+<img width=250px src="https://atsign.dev/assets/img/@platform_logo_grey.svg?sanitize=true">
+
+This is a fork of [base2e15](https://pub.dev/packages/base2e15) that was
+created before the upstream project moved to null safety.
 
 binary-to-text encoding schemes that represent binary data in an unicode string format, each unicode character represent 15 bits of binary data
 

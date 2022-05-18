@@ -1,3 +1,11 @@
+# at_utf7
+
+<img width=250px src="https://atsign.dev/assets/img/@platform_logo_grey.svg?sanitize=true">
+
+This is a fork of [utf7](https://pub.dev/packages/utf7) that was
+created to provide a null safety dependency for downstream @ Platform
+libraries.
+
 Provides methods to encode/decode utf-7 strings or adapt the modified base64 for custom methods.
 
 ## Usage

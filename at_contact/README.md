@@ -1,7 +1,5 @@
 <img width="250" src="https://atsign.dev/assets/img/@platform_logo_grey.svg?sanitize=true"/>
 
-## Now for some internet optimism
-
 [![pub package](https://img.shields.io/pub/v/at_contact)](https://pub.dev/packages/at_contact) [![pub points](https://badges.bar/at_contact/pub%20points)](https://pub.dev/packages/at_contact/score) [![gitHub license](https://img.shields.io/badge/license-BSD3-blue.svg)](./LICENSE)
 
 # at_contact
