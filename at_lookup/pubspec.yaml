@@ -12,7 +12,7 @@ dependencies:
   crypton: ^2.0.1
   crypto: ^3.0.1
   at_utils: ^3.0.9
-  at_commons: ^3.0.14
+  at_commons: ^3.0.15
   mutex: ^3.0.0
   mocktail: ^0.3.0
 
