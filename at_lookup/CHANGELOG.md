@@ -1,3 +1,5 @@
+## 3.0.24
+- Removed invalid line added to base_connection.dart
 ## 3.0.23
 - Update at_commons version 3.0.16 for bypass cache feature
 ## 3.0.22
