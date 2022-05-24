@@ -1,35 +1,54 @@
+## 3.0.5+1
+
+- **Chore**: Updated documentation.
+
 ## 3.0.5
-- at_client version upgrade for automatic sync trigger
+- **Feat**: Upgraded the at_client version to enable automatic sync trigger.
+
 ## 3.0.4
-- at_commons version upgrade for AtTimeoutException 
-- at_client version upgrade for refactor get and put methods.
+- **Chore**: Upgraded the at_commons version for AtTimeoutException.
+- **Chore**: Upgraded the at_client version upgrade for refactored get and put methods.
+
 ## 3.0.3
-- at_client,at_commons,at_utils version upgrade
+- **Chore**: Upgraded the at_client, at_commons, at_utils versions.
+
 ## 3.0.2
-- uptake AtKey validations from at_commons package. 
+- **Chore**: AtKey validations from at_commons package.
+
 ## 3.0.1
-- at_client version upgrade
+- **Chore**: Upgraded the at_client version.
+
 ## 3.0.0
-- RSDK uptake
+- **BREAKING CHANGE**: Uptake of at_client 3.0.0.
+
 ## 2.0.3
-- support namespace migration changes
+- **Feat**: Support namespace migration changes.
+
 ## 2.0.2
-- at_commons version upgrade
+- **Chore**: Upgraded the at_commons version.
+
 ## 2.0.1
-- at_commons version upgrade
+- **Chore**: Upgraded the at_commons version.
+
 ## 2.0.0
-- Null safety changes
+- **BREAKING CHANGE**: Null safety changes
+
 ## 1.0.0+5
-- at_client version upgrade
+- **Chore**: Upgraded the at_client version.
+
 ## 1.0.0+4
-- Third party package dependency upgrade
+- **Chore**: Third party package dependency upgrade.
+
 ## 1.0.0+3
-- Added listGroupIds method
+- **Feat**: Added listGroupIds method.
+
 ## 1.0.0+2
-- Added groupId as unique identifier 
-- Renamed 'name' as 'groupName' 
-- Reverted groupMembersKey to groupMembers
+- **Feat**: Added groupId as unique identifier.
+- **Chore**: Renamed 'name' as 'groupName'.
+- **Chore**: Reverted groupMembersKey to groupMembers.
+
 ## 1.0.0+1
-- at-contact group changes
+- **Fix**: at_contact group changes.
+
 ## 1.0.0
-- Initial version, created by Stagehand
+- Initial version, created by Stagehand.
