@@ -1,6 +1,7 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
+
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/src/cache/secondary_address_finder.dart';
 import 'package:at_lookup/src/util/lookup_util.dart';
@@ -97,10 +98,12 @@ class CacheableSecondaryAddressFinder implements SecondaryAddressFinder {
       SecondaryAddress addr = SecondaryAddress(secondaryHost, secondaryPort);
       _map[atSign] = SecondaryAddressCacheEntry(
           addr, DateTime.now().add(cacheFor).millisecondsSinceEpoch);
+    } on AtException {
+      rethrow;
     } on Exception catch (e) {
       _logger
           .severe('${getNotFoundExceptionMessage(atSign)} - ${e.toString()}');
-      rethrow;
+      throw AtException(e.toString());
     }
   }
 }
@@ -176,6 +179,9 @@ class SecondaryUrlFinder {
       await socket.flush();
       socket.destroy();
       throw AtTimeoutException('AtLookup.findSecondary timed out');
+    } on SocketException {
+      throw RootServerConnectivityException(
+          'Failed connecting to root server url $_rootDomain on port $_rootPort');
     } on Exception catch (exception) {
       AtSignLogger('AtLookup').severe('AtLookup.findSecondary connection to ' +
           _rootDomain +

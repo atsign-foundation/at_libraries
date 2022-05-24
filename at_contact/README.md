@@ -9,6 +9,7 @@ Adding the @‎platform logos gives a nice look for your readme
 Add a badge bar for your package by replacing at_contact below with
 your package name below and at_libraries with the name of the repo
 -->
+
 [![pub package](https://img.shields.io/pub/v/at_contact)](https://pub.dev/packages/at_contact) [![pub points](https://badges.bar/at_contact/pub%20points)](https://pub.dev/packages/at_contact/score) [![gitHub license](https://img.shields.io/badge/license-BSD3-blue.svg)](./LICENSE)
 
 <!--- this is a table version

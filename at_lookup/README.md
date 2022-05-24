@@ -1,7 +1,5 @@
 <img src="https://atsign.dev/assets/img/@platform_logo_grey.svg?sanitize=true">
 
-### Now for a little internet optimism
-
 # at_lookup library
 
 ## Overview:

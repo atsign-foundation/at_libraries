@@ -258,8 +258,7 @@ class AtLookupImpl implements AtLookUp {
     } on Exception catch (e) {
       logger.severe('Error in remote verb execution ${e.toString()}');
       var errorCode = AtLookUpExceptionUtil.getErrorCode(e);
-      throw AtLookUpException(
-          errorCode, AtLookUpExceptionUtil.getErrorDescription(errorCode));
+      throw AtLookUpException(errorCode, e.toString());
     }
     // If connection time-out, do not return empty verbResult;
     // throw AtLookupException.
@@ -376,7 +375,8 @@ class AtLookupImpl implements AtLookUp {
       logger.info('auth success');
       _isPkamAuthenticated = true;
     } else {
-      throw UnAuthenticatedException('Auth failed');
+      throw UnAuthenticatedException(
+          'Failed connecting to $_currentAtSign. $pkamResponse');
     }
     return _isPkamAuthenticated;
   }
@@ -474,7 +474,8 @@ class AtLookupImpl implements AtLookUp {
         _connection!.setIdleTime(outboundConnectionTimeout);
       }
     } on SocketException {
-      throw SecondaryConnectException('unable to connect to secondary');
+      throw SecondaryConnectException(
+          'unable to connect to secondary $toAtSign on $host:$port');
     }
     return true;
   }
