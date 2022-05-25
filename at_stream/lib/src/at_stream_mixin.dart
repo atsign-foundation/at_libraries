@@ -46,13 +46,16 @@ mixin _AtStreamMixin<T> implements Stream<T> {
     }
   }
 
-  void _notificationListener(AtNotification event) async {
+  void _notificationListener(AtNotification event) {
     AtKey key = AtKey.fromString(event.key);
     if (sharedBy != null && sharedBy != event.from) return;
     if (sharedWith != null && sharedWith != event.to) return;
 
-    AtValue value = await AtClientManager.getInstance().atClient.get(key);
-    handleNotification(key, value, event.operation);
+    AtClientManager.getInstance().atClient.get(key).then(
+      (AtValue value) {
+        handleNotification(key, value, event.operation);
+      },
+    );
   }
 
   @protected
@@ -63,7 +66,6 @@ mixin _AtStreamMixin<T> implements Stream<T> {
   void pauseNotifications() => _notificationSubscription.pause();
 
   void resumeNotifications() => _notificationSubscription.resume();
-
 
   Future<void> dispose() async {
     await Future.wait([controller.close(), _notificationSubscription.cancel()]);
