@@ -1,28 +1,32 @@
-part of 'at_stream.dart';
+import 'dart:async';
 
-mixin _AtStreamMixin<T> implements Stream<T> {
+import 'package:at_client/at_client.dart' show AtClient, AtClientManager, AtNotification;
+import 'package:at_commons/at_commons.dart' show AtKey, AtValue;
+import 'package:meta/meta.dart';
+
+abstract class AtStreamMixin<T> implements Stream<T> {
   late StreamSubscription<AtNotification> _notificationSubscription;
 
   @protected
   final StreamController<T> controller = StreamController();
 
-  @protected
-  abstract final String? regex;
+  final Function(AtKey, AtValue) convert;
+  final String? regex;
+  final bool shouldGetKeys;
+  final String? sharedBy;
+  final String? sharedWith;
 
-  @protected
-  abstract final Function(AtKey, AtValue) convert;
+  AtStreamMixin({
+    required this.convert,
+    this.regex,
+    this.sharedBy,
+    this.sharedWith,
+    this.shouldGetKeys = true,
+  }) {
+    _init();
+  }
 
-  @protected
-  abstract final bool shouldGetKeys;
-
-  @protected
-  abstract final String? sharedBy;
-
-  @protected
-  abstract final String? sharedWith;
-
-  @protected
-  Future<void> init() async {
+  Future<void> _init() async {
     if (shouldGetKeys) _getKeys();
 
     _notificationSubscription = AtClientManager.getInstance()
@@ -71,7 +75,8 @@ mixin _AtStreamMixin<T> implements Stream<T> {
     await Future.wait([controller.close(), _notificationSubscription.cancel()]);
   }
 
-  // Stream Interface
+  // Below are overrides for the Stream<T> Interface
+  // All methods pass the call to controller.stream
 
   @override
   Future<bool> any(bool Function(T element) test) {
