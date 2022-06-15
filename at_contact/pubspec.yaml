@@ -10,17 +10,17 @@ environment:
 
 dependencies:
   intl: ^0.17.0
-  at_client: ^3.0.12
-  at_commons: ^3.0.5
+  at_client: ^3.0.25
+  at_commons: ^3.0.17
   at_utils: ^3.0.6
   uuid: ^3.0.4
 
-#dependency_overrides:
-#  at_client:
-#    git:
-#      url: https://github.com/atsign-foundation/at_client_sdk.git
-#      path: at_client
-#      ref: trunk
+dependency_overrides:
+  at_client:
+    git:
+      url: https://github.com/atsign-foundation/at_client_sdk.git
+      path: at_client
+      ref: trunk
 #  at_commons:
 #    git:
 #      url: https://github.com/atsign-foundation/at_tools.git
