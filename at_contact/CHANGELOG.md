@@ -1,3 +1,6 @@
+## 3.0.6
+- Upgrade at_client version to 3.0.26 for AtException chaining
+- Upgrade at_commons version to 3.0.17 for AtException hierarchy
 ## 3.0.5+1
 
 - **Chore**: Updated documentation.

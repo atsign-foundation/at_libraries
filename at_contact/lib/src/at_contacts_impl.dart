@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:at_client/at_client.dart';
-import 'package:at_commons/at_commons.dart';
 import 'package:at_contact/src/config/app_constants.dart';
 import 'package:at_contact/src/model/at_contact.dart';
 import 'package:at_contact/src/model/at_group.dart';
