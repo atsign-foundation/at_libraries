@@ -64,7 +64,7 @@ jobs:
         working-directory: at_onboarding_cli
         run: dart analyze
         
-  functional_tests_at_onbaording_cli:
+  functional_tests_at_onboarding_cli:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

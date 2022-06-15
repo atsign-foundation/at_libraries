@@ -67,6 +67,7 @@ Future<void> main() async {
     await insertSelfEncKey(atClient, atsign);
     AtKey key = AtKey();
     key.key = 'testKey3';
+    key.namespace = 'wavi';
     await atClient?.put(key, 'value3');
     AtValue? response = await atClient?.get(key);
     expect('value3', response?.value);

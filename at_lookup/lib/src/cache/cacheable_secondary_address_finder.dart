@@ -7,7 +7,6 @@ import 'package:at_lookup/src/cache/secondary_address_finder.dart';
 import 'package:at_lookup/src/util/lookup_util.dart';
 import 'package:at_utils/at_logger.dart';
 
-
 class CacheableSecondaryAddressFinder implements SecondaryAddressFinder {
   static const Duration defaultCacheDuration = Duration(hours: 1);
 

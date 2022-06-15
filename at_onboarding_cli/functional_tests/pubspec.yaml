@@ -16,12 +16,12 @@ dependency_overrides:
     git:
       url: https://github.com/atsign-foundation/at_libraries.git
       path: at_lookup
-      ref: findsecondary_bug
-#   at_client:
-#         git:
-#           url: https://github.com/atsign-foundation/at_client_sdk.git
-#           path: at_client
-#           ref: trunk
+      ref: trunk
+  at_client:
+    git:
+      url: https://github.com/atsign-foundation/at_client_sdk.git
+      path: at_client
+      ref: trunk
 
 
 dev_dependencies:

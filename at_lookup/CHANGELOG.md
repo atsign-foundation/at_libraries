@@ -1,3 +1,5 @@
+## 3.0.25
+- Update at_commons version 3.0.17 for AtException hierarchy
 ## 3.0.24
 - Removed invalid line added to base_connection.dart
 ## 3.0.23
