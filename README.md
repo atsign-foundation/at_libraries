@@ -12,7 +12,7 @@ contributions, and we want pull requests to hear about issues.
 ## What is this for?
 
 This repository contains three @ Platform libraries for developers building
-their own @platform applications. (These libraries can also be found on
+their own atPlatformapplications. (These libraries can also be found on
 [pub.dev](https://pub.dev/publishers/atsign.org/packages))
 
 [at_contact](https://pub.dev/packages/at_contact): A contacts library that
@@ -21,11 +21,11 @@ in action by cloning the at_chat_flutter project from the
 [at_widgets repository](https://github.com/atsign-foundation/at_widgets).
 
 [at_lookup](https://pub.dev/packages/at_lookup): A low-level library that
-directly implements the @protocol verbs. You can find this dependency in
+directly implements the atProtocol verbs. You can find this dependency in
 several other packages such as at_client and at_client_mobile.
 
 [at_onboarding_cli](https://pub.dev/packages/at_onboarding_cli): A command
-line library to authenticate and onboard @signs intended for use in
+line library to authenticate and onboard Atsigns intended for use in
 headless applications such as Internet of Things (IoT) devices.
 
 [at_server_status](https://pub.dev/packages/at_server_status): A helpful
