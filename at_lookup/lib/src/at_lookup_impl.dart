@@ -39,18 +39,18 @@ class AtLookupImpl implements AtLookUp {
 
   var outboundConnectionTimeout;
 
+  NetworkUtil networkUtil = NetworkUtil();
+
   AtLookupImpl(
     String atSign,
     String rootDomain,
     int rootPort, {
-    String? privateKey,
-    String? cramSecret,
+    String? this.privateKey,
+    String? this.cramSecret,
   }) {
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
-    this.privateKey = privateKey;
-    this.cramSecret = cramSecret;
   }
 
   @Deprecated('use CacheableSecondaryAddressFinder')
@@ -492,8 +492,12 @@ class AtLookupImpl implements AtLookUp {
     await _connection!.close();
   }
 
+  /// Throws [AtConnectException] if network is not available
   Future<void> _sendCommand(String command) async {
     await createConnection();
-    await _connection!.write(command);
+    // verify if network is available before writing to socket.
+    if (await networkUtil.checkConnectivity()) {
+      await _connection!.write(command);
+    }
   }
 }
