@@ -1,3 +1,5 @@
+## 3.0.26
+- Update at_commons version 3.0.18 to display hidden keys in scan
 ## 3.0.25
 - Update at_commons version 3.0.17 for AtException hierarchy
 ## 3.0.24

@@ -166,11 +166,15 @@ class AtLookupImpl implements AtLookUp {
 
   @override
   Future<List<String>> scan(
-      {String? regex, String? sharedBy, bool auth = true}) async {
+      {String? regex,
+      String? sharedBy,
+      bool auth = true,
+      bool showHiddenKeys = false}) async {
     var builder = ScanVerbBuilder()
       ..sharedBy = sharedBy
       ..regex = regex
-      ..auth = auth;
+      ..auth = auth
+      ..showHiddenKeys = showHiddenKeys;
     var scanResult = await executeVerb(builder);
     if (scanResult.isNotEmpty) {
       scanResult = scanResult.replaceFirst('data:', '');
