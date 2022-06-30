@@ -1,9 +1,9 @@
 # at_contact
 
 <!---
-Adding the @‎platform logos gives a nice look for your readme
+Adding the atPlatform logos gives a nice look for your readme
 -->
-<img width=250px src="https://atsign.dev/assets/img/@platform_logo_grey.svg?sanitize=true">
+<img width=250px src="https://atsign.dev/assets/img/atPlatform_logo_gray.svg?sanitize=true">
 
 <!---
 Add a badge bar for your package by replacing at_contact below with
@@ -22,15 +22,15 @@ your package name below and at_libraries with the name of the repo
 The README should be addressed to somebody who's never seen this before.
 But also don't assume that they're a novice.
 -->
-The at_contact package is for Flutter developers who would like to persist contacts in their @platform application. The at_contact library provides features to add, update, and delete contacts on the @platform.
+The at_contact package is for Flutter developers who would like to persist contacts in their atPlatform application. The at_contact library provides features to add, update, and delete contacts on the atPlatform.
 
 <!---
 Give some context and state the intent - we welcome contributions - we want
 pull requests and to hear about issues. Include the boilerplate language
-below to add some context to @‎platform packages 
+below to add some context to atPlatform packages 
 -->
 This open source package is written in Dart, supports Flutter and follows the
-@‎platform's decentralized, edge computing model with the following features: 
+atPlatform's decentralized, edge computing model with the following features: 
 - Cryptographic control of data access through personal data stores
 - No application backend needed
 - End to end encryption where only the data owner has the keys
@@ -220,7 +220,7 @@ Future<void> _listFavoriteContacts() async {
 
 ```dart
 // Pass the user input data to respective fields of AtGroup.
-AtGroup myGroup = AtGroup('The @platform team')
+AtGroup myGroup = AtGroup('The atPlatform team')
     ..createdBy = _myAtSign
     ..createdOn = DateTime.now()
     ..description = 'Team with awesome spirit'
@@ -241,7 +241,7 @@ Future<void> _createGroup(AtGroup group) async {
 
 ```dart
 // Pass the user input data to respective fields of AtGroup.
-AtGroup myGroup = AtGroup('The @platform team')
+AtGroup myGroup = AtGroup('The atPlatform team')
     ..createdBy = _myAtSign
     ..createdOn = DateTime.now()
     ..description = 'Team with awesome spirit'
@@ -379,8 +379,8 @@ Future<void> _deleteMembers(Set<AtContact> contacts, AtGroup group) async {
 AtContact? _userContact = await _atContact.get(atSign);
 bool isAMember = await _atContact.isMember(_userContact, myGroup);
 print(atSign + ' is ${isAMember ? '' : 'not'} a member of ' + myGroup.groupName); 
-// @colin is a member of The @platform team 
-// @somerandomatsign is not a member of The @Platform team
+// @colin is a member of The atPlatform team 
+// @somerandomatsign is not a member of The atPlatform team
 ```
 
 For more information, please see the API documentation listed on pub.dev.

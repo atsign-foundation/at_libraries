@@ -1,9 +1,9 @@
-<img width=250px src="https://atsign.dev/assets/img/@platform_logo_grey.svg?sanitize=true">
+<img width=250px src="https://atsign.dev/assets/img/atPlatform_logo_gray.svg?sanitize=true">
 
 # at_onboarding_cli
 
 ## Introduction
-at_onboarding_cli is a ibrary to authenticate and onboard @signs.
+at_onboarding_cli is a ibrary to authenticate and onboard atSigns.
 
 ## Get Started
 
@@ -54,14 +54,14 @@ Use cases for at_cli_onboarding:\
  ```
 
 ### Authentication:
-Proving that one actually owns the @sign. User needs to authenticate before performing operations on that @sign. Operations include reading, writing, deleting or updating data in the atsign's keystore and sending notifications from that @sign.
+Proving that one actually owns the atSign. User needs to authenticate before performing operations on that atSign. Operations include reading, writing, deleting or updating data in the atsign's keystore and sending notifications from that atSign.
 
 #### Steps to Authenticate
    1) Import at_cli_onboarding.
    2) Set preferences using AtOnboardingPreference. Either of secret key or path to .atKeysFile need to be provided to authenticate.
-   3) Instantiate AtOnboardingServiceImpl using the required @sign and a valid instance of AtOnboardingPreference.
+   3) Instantiate AtOnboardingServiceImpl using the required atSign and a valid instance of AtOnboardingPreference.
    4) Call the authenticate method on AtOnboardingService.
-   5) Use getAtLookup/getAtClient to get authenticated instances of AtLookup and AtClient respectively which can be used to perform more complex operations on the @sign.
+   5) Use getAtLookup/getAtClient to get authenticated instances of AtLookup and AtClient respectively which can be used to perform more complex operations on the atSign.
 ```
 AtOnboardingService atOnboardingService = AtOnboardingServiceImpl('@alice', atOnboardingPreference);
 atOnboardingService.authenticate();
@@ -70,15 +70,15 @@ AtLookup? atLookup = atOnboardingService.getAtLookup();
 ```
 
 ### Onboarding: 
-Performing initial one-time authentication using cram secret encoded in the qr_code. This process activates the @sign making it ready to use.
+Performing initial one-time authentication using cram secret encoded in the qr_code. This process activates the atSign making it ready to use.
 
 #### Steps to onboard:
    1) Import at_cli_onboarding.
-   2) Set preferences using AtOnboardingPreference. Either of cram_secret or path to qr_code containing cram_secret need to be provided in order to activate the @sign.
+   2) Set preferences using AtOnboardingPreference. Either of cram_secret or path to qr_code containing cram_secret need to be provided in order to activate the atSign.
    3) Setting the download path is mandatory in AtOnboardingPreference in order to save the .atKeysFile which contains necessary keys to authenticate.
-   4) Instantiate AtOnboardingServiceImpl using the required @sign and a valid instance of AtOnboardingPreference.
+   4) Instantiate AtOnboardingServiceImpl using the required atSign and a valid instance of AtOnboardingPreference.
    5) Call the onboard on AtOnboardingServiceImpl.
-   6) Use getAtLookup/getAtClient to get authenticated instances of AtLookup and AtClient respectively which can be used to perform more complex operations on the @sign.
+   6) Use getAtLookup/getAtClient to get authenticated instances of AtLookup and AtClient respectively which can be used to perform more complex operations on the atSign.
  ```
 AtOnboardingService atOnboardingService = AtOnboardingServiceImpl('@alice', atOnboardingPreference);
 atOnboardingService.onboard();

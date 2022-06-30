@@ -1,44 +1,44 @@
-<img width=250px src="https://atsign.dev/assets/img/@platform_logo_grey.svg?sanitize=true">
+<img width=250px src="https://atsign.dev/assets/img/atPlatform_logo_gray.svg?sanitize=true">
 
 # at_server_status
 The at_server_status library provides an easy means to check on the status
-of the @root server as well as the @server for a particular @sign.
+of the atRoot server as well as the atServer for a particular atSign.
 
-## The @server configuration lifecycle
-The lifecycle of an @server as it gets created and paired is as follows:
+## The atServer configuration lifecycle
+The lifecycle of an atServer as it gets created and paired is as follows:
 
-1. The first step is to provision an @sign from a registrar site.
-    - The @sign is reserved by the registrar so nobody else can provision it.
-    - @root does not yet have an entry for the @sign, rootStatus returns:
+1. The first step is to provision an atSign from a registrar site.
+    - The atSign is reserved by the registrar so nobody else can provision it.
+    - atRoot does not yet have an entry for the atSign, rootStatus returns:
     - ```AtStatus.rootStatus = RootStatus.notFound```
-    - An @server has not been deployed for the @sign, serverStatus returns:
+    - An atServer has not been deployed for the atSign, serverStatus returns:
     - ```AtStatus.serverStatus = ServerStatus.unavailable```
     - The overall status from the status() method returns:
     - ```AtStatus.status() = AtSignStatus.notFound```
     - Or, if you prefer an HttpStatus code, use the httpStatus() method:
     - ```AtStatus.httpStatus() = 404```
     
-1. The next step in the process is when "Activate" is selected for an @sign 
+1. The next step in the process is when "Activate" is selected for an atSign 
 on the registrar site.
-    - An @server gets deployed for the @sign which returns when it is ready.
+    - An atServer gets deployed for the atSign which returns when it is ready.
     - ```AtStatus.serverStatus = ServerStatus.teapot```
-    - An entry in @root is created with the location of the @server which returns:
+    - An entry in atRoot is created with the location of the atServer which returns:
     - ```AtStatus.rootStatus = RootStatus.found```
-    - A shared secret gets created and stored on the @server.
+    - A shared secret gets created and stored on the atServer.
     - The shared secret QR Code is displayed on the registrar site which is 
-    used to pair the @server with a mobile device when all is ready.
+    used to pair the atServer with a mobile device when all is ready.
 
 1. The next step in the process is when an @compliant application is used to 
- "pair" with the @server for the first time. 
-    - Typically, the application will detect that the @server has not been paired
+ "pair" with the atServer for the first time. 
+    - Typically, the application will detect that the atServer has not been paired
     and will prompt you to scan the QR Code to set this up.
     - The application presents the option to scan the QR Code which will then 
-    be used to pair the device to the @server.
+    be used to pair the device to the atServer.
     - If you are unable to scan the QR Code (for example if you are using only 
     the mobile device), then there is an option to copy the QR Code to the device 
     and then upload it to the application.
     - The application will then create a public/private keypair to pair to the
-    @server which is stored on your device in the secure enclave which provides 
+    atServer which is stored on your device in the secure enclave which provides 
     best in class security for this all important information. You need to guard
     this well as it is the key (pun intended) to protecting your information.
     - At this time, the information stored in the device keychain is only '
@@ -48,18 +48,18 @@ on the registrar site.
 1. The final step in the process is to save a backup of this information.
     - In case you   
 
-## Configuring additional applications to work with your @server
+## Configuring additional applications to work with your atServer
 
 There are three methods that you can use to retrieve status information:
 
-1. Get an AtStatus object for some @sign
+1. Get an AtStatus object for some atSign
     - ```AtStatus atStatus = await atStatusImpl.get(atSign);```
-    - The AtStatus object includes both @root status and the @server status
+    - The AtStatus object includes both atRoot status and the atServer status
 1. The status() method returns an enumerated AtSignStatus value of the overall 
-status of an @sign.
+status of an atSign.
     - ```AtSignStatus atSignStatus = atStatus.status();```
 1. The httpStatus() method returns an integer matching HTTPStatus values 
-representing the overall status of an @sign.
+representing the overall status of an atSign.
     - ```int httpStatus = atStatus.httpStatus();```
 
 ## List of enumerated values
@@ -72,22 +72,22 @@ representing the overall status of an @sign.
 1. Const values from HttpStatus are:
 ```
 static const int notFound = 404
-// Not Found(404) @server has no root location, is not running and is not activated
+// Not Found(404) atServer has no root location, is not running and is not activated
 
 static const int serviceUnavailable = 503
-// Service Unavailable(503) @server has root location, is not running and is not activated
+// Service Unavailable(503) atServer has root location, is not running and is not activated
 
 int 418
-// I'm a teapot(418) @server has root location, is running and but not activated
+// I'm a teapot(418) atServer has root location, is running and but not activated
 
 static const int ok = 200
-// OK (200) @server has root location, is running and is activated
+// OK (200) atServer has root location, is running and is activated
 
 static const int internalServerError = 500
 // Internal Server Error(500) at_find_api internal error
 
 static const int badGateway = 502
-// Bad Gateway(502) @root server is down
+// Bad Gateway(502) atRoot server is down
 
 static const int methodNotAllowed = 405
 // Method Not Allowed(405) only GET and HEAD are allowed

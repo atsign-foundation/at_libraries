@@ -1,10 +1,10 @@
-<img src="https://atsign.dev/assets/img/@platform_logo_grey.svg?sanitize=true">
+<img width=250px src="https://atsign.dev/assets/img/atPlatform_logo_gray.svg?sanitize=true">
 
 # at_lookup library
 
 ## Overview:
 
-The AtLookup Library is the low-level direct implementation of the @protocol verbs. The AtLookup package is an interface
+The AtLookup Library is the low-level direct implementation of the atProtocol verbs. The AtLookup package is an interface
 to interact with the secondary server to execute commands(scan, update, lookup, llookup, plookup, etc).
 
 ## Get started:
