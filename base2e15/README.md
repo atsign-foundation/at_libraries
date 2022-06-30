@@ -1,6 +1,6 @@
 # at_base2e15
 
-<img width=250px src="https://atsign.dev/assets/img/@platform_logo_grey.svg?sanitize=true">
+<img width=250px src="https://atsign.dev/assets/img/atPlatform_logo_gray.svg?sanitize=true">
 
 This is a fork of [base2e15](https://pub.dev/packages/base2e15) that was
 created before the upstream project moved to null safety.
