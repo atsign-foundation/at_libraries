@@ -3,7 +3,7 @@
 # at_onboarding_cli
 
 ## Introduction
-at_onboarding_cli is a ibrary to authenticate and onboard atSigns.
+at_onboarding_cli is a library to authenticate and onboard atSigns.
 
 ## Get Started
 
