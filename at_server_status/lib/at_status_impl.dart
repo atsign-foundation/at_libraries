@@ -51,10 +51,10 @@ class AtStatusImpl implements AtServerStatus {
           atStatus.serverStatus = ServerStatus.unavailable;
         });
       }
-      atStatus.atSignStatus = status.status();
     }).catchError((error) {
       atStatus.rootStatus = RootStatus.unavailable;
     });
+    atStatus.atSignStatus = atStatus.status();
     return atStatus;
   }
 
