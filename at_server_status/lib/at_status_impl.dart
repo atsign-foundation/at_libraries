@@ -51,6 +51,7 @@ class AtStatusImpl implements AtServerStatus {
           atStatus.serverStatus = ServerStatus.unavailable;
         });
       }
+      atStatus.atSignStatus = status.status();
     }).catchError((error) {
       atStatus.rootStatus = RootStatus.unavailable;
     });
@@ -69,10 +70,11 @@ class AtStatusImpl implements AtServerStatus {
     AtStatus atStatus = AtStatus();
     atStatus.atSign = atSign;
     await CacheableSecondaryAddressFinder(rootUrl!, rootPort!)
-            .findSecondary(atSign)
+        .findSecondary(atSign)
         .then((serverLocation) async {
       // enum RootStatus { running, stopped, unavailable, found, notFound }
-      if (serverLocation.host.toString() != 'null' && serverLocation.host.isNotEmpty) {
+      if (serverLocation.host.toString() != 'null' &&
+          serverLocation.host.isNotEmpty) {
         atStatus.rootStatus = RootStatus.found;
         atStatus.serverLocation = serverLocation.toString();
       } else {
@@ -96,8 +98,7 @@ class AtStatusImpl implements AtServerStatus {
       atStatus.rootStatus = RootStatus.notFound;
     } else {
       // ignore: omit_local_variable_types
-      AtLookupImpl atLookupImpl =
-          AtLookupImpl(atSign!, _rootUrl!, _rootPort!);
+      AtLookupImpl atLookupImpl = AtLookupImpl(atSign!, _rootUrl!, _rootPort!);
       await atLookupImpl.scan(auth: false).then((keysList) async {
         if (keysList.isNotEmpty) {
           if (keysList.contains(testKey)) {
