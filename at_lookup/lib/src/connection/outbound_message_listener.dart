@@ -34,7 +34,10 @@ class OutboundMessageListener {
     var offset;
     // check buffer overflow
     _checkBufferOverFlow(data);
-
+    // When a new connection is established server returns `@` prompt.Skip it
+    if (data.length == 1 && data.first == atCharCodeUnit) {
+      return;
+    }
     // If the data contains a new line character, add until the new line char to buffer
     if (data.contains(newLineCodeUnit)) {
       offset = data.lastIndexOf(newLineCodeUnit);
