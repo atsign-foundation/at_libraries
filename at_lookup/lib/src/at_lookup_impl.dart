@@ -470,9 +470,9 @@ class AtLookupImpl implements AtLookUp {
         !(_isPkamAuthenticated || _isCramAuthenticated);
   }
 
-  Future<bool> createOutBoundConnection(host, port, toAtSign) async {
+  Future<bool> createOutBoundConnection(host, port, toAtSign, {decryptPackets = false}) async {
     try {
-      var secureSocket = await SecureSocket.connect(host, int.parse(port));
+      var secureSocket = await SecureSocketUtil.createSecureContext(host, port, decryptPackets: decryptPackets);
       _connection = OutboundConnectionImpl(secureSocket);
       if (outboundConnectionTimeout != null) {
         _connection!.setIdleTime(outboundConnectionTimeout);
