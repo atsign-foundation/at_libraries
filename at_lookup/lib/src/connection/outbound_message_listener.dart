@@ -34,7 +34,6 @@ class OutboundMessageListener {
     var offset;
     // check buffer overflow
     _checkBufferOverFlow(data);
-
     // If the data contains a new line character, add until the new line char to buffer
     if (data.contains(newLineCodeUnit)) {
       offset = data.lastIndexOf(newLineCodeUnit);
@@ -51,7 +50,7 @@ class OutboundMessageListener {
       // If element is @ character and lastCharacter in the buffer is \n,
       // then complete data is received. process it.
       if (data[element] == atCharCodeUnit &&
-          _buffer.getData().last == newLineCodeUnit) {
+          (_buffer.length() > 0 && _buffer.getData().last == newLineCodeUnit)) {
         // remove the terminating character (last \n) from the server response.
         // preserve other new line characters.
         List<int> temp = (_buffer.getData().toList())..removeLast();
