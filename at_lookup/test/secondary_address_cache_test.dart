@@ -99,6 +99,7 @@ void main() async {
       expect((approxExpiry - cache.getCacheExpiryTime(atSign)!) < 100, true);
     });
 
+    // TODO Why are these tests commented out?
 //    test('test expiry time  - custom cache expiry for registeredAtSign1',
 //        () async {
 //      var atSign = 'registeredAtSign1';
