@@ -1,6 +1,7 @@
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_lookup/src/connection/outbound_message_listener.dart';
+import 'package:mutex/mutex.dart';
 import 'package:test/test.dart';
 import 'package:mocktail/mocktail.dart';
 
