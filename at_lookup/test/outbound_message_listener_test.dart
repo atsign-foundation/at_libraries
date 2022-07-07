@@ -1,6 +1,7 @@
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_lookup/src/connection/outbound_message_listener.dart';
+import 'package:mutex/mutex.dart';
 import 'package:test/test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -9,6 +10,43 @@ class MockOutboundConnectionImpl extends Mock
 
 void main() {
   OutboundConnection mockOutBoundConnection = MockOutboundConnectionImpl();
+
+  List<String> criticalSectionEvents = [];
+  Future<void> criticalSection(String eventName, Mutex m, int delayInMillis) async {
+    print ('criticalSection $eventName starting');
+    try {
+      await m.acquire();
+      criticalSectionEvents.add("$eventName acquired mutex");
+
+      print("criticalSection $eventName acquired mutex");
+      await Future.delayed(Duration(milliseconds: 10));
+
+      print("criticalSection $eventName delaying for $delayInMillis milliseconds");
+      await Future.delayed(Duration(milliseconds: delayInMillis));
+
+      criticalSectionEvents.add("$eventName criticalSection completed");
+
+    } finally {
+      print ("criticalSection $eventName released mutex");
+      m.release();
+      criticalSectionEvents.add("$eventName released mutex");
+    }
+  }
+  test('Verify mutex core behaviour', () async {
+    Mutex m = Mutex();
+    criticalSection("One", m, 100); // delay for 100 milliseconds so next 'criticalSection' gets a chance to run
+    criticalSection("Two", m, 10);
+
+    await Future.delayed(Duration(milliseconds: 200));
+
+    expect(criticalSectionEvents.length, 6);
+    expect(criticalSectionEvents[0], "One acquired mutex");
+    expect(criticalSectionEvents[1], "One criticalSection completed");
+    expect(criticalSectionEvents[2], "One released mutex");
+    expect(criticalSectionEvents[3], "Two acquired mutex");
+    expect(criticalSectionEvents[4], "Two criticalSection completed");
+    expect(criticalSectionEvents[5], "Two released mutex");
+  });
 
   group('A group of tests to verify buffer of outbound message listener', () {
     OutboundMessageListener outboundMessageListener =
