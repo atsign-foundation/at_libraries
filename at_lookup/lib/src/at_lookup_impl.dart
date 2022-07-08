@@ -436,11 +436,13 @@ class AtLookupImpl implements AtLookUp {
     );
   }
 
-  Mutex requestResponseMutex = Mutex();
+  /// Making this mutex static (thus global) because we are suspicious of SecureSocket multiplexing
+  /// within Dart.
+  static Mutex globalRequestResponseMutex = Mutex();
 
   Future<String> _process(String command, {bool auth = false}) async {
     try {
-      await requestResponseMutex.acquire();
+      await globalRequestResponseMutex.acquire();
 
       if (auth && _isAuthRequired()) {
         if (privateKey != null) {
@@ -461,7 +463,7 @@ class AtLookupImpl implements AtLookUp {
         rethrow;
       }
     } finally {
-      requestResponseMutex.release();
+      globalRequestResponseMutex.release();
     }
   }
 
