@@ -8,6 +8,7 @@ import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_lookup/src/connection/outbound_message_listener.dart';
 import 'package:at_lookup/src/util/lookup_util.dart';
+import 'package:at_lookup/src/util/secure_socket_util.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:crypto/crypto.dart';
 import 'package:crypton/crypton.dart';
