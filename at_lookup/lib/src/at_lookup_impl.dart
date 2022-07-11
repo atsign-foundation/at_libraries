@@ -39,7 +39,7 @@ class AtLookupImpl implements AtLookUp {
 
   var outboundConnectionTimeout;
 
-  bool? decryptPackets = false;
+  bool? decryptPackets;
 
   String? pathToCerts;
 
@@ -477,7 +477,7 @@ class AtLookupImpl implements AtLookUp {
 
   Future<bool> createOutBoundConnection(host, port, toAtSign) async {
     try {
-      SecureSocket secureSocket = await SecureSocketUtil.createSecureSocket(host, port, decryptPackets!, pathToCerts, tlsKeysSavePath );
+      SecureSocket secureSocket = await SecureSocketUtil.createSecureSocket(host, port, decryptPackets, pathToCerts, tlsKeysSavePath );
       _connection = OutboundConnectionImpl(secureSocket);
       if (outboundConnectionTimeout != null) {
         _connection!.setIdleTime(outboundConnectionTimeout);
