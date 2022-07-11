@@ -39,18 +39,8 @@ class AtLookupImpl implements AtLookUp {
 
   var outboundConnectionTimeout;
 
-  bool? decryptPackets;
-
-  String? pathToCerts;
-
-  String? tlsKeysSavePath;
-
   AtLookupImpl(String atSign, String rootDomain, int rootPort,
-      {String? privateKey,
-      String? cramSecret,
-      this.decryptPackets,
-      this.pathToCerts,
-      this.tlsKeysSavePath}) {
+      {String? privateKey, String? cramSecret}) {
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
@@ -477,8 +467,7 @@ class AtLookupImpl implements AtLookUp {
 
   Future<bool> createOutBoundConnection(host, port, toAtSign) async {
     try {
-      SecureSocket secureSocket =
-          await SecureSocketUtil.createSecureContext(host, port, decryptPackets!, pathToCerts, tlsKeysSavePath);
+      var secureSocket = await SecureSocket.connect(host, int.parse(port));
       _connection = OutboundConnectionImpl(secureSocket);
       if (outboundConnectionTimeout != null) {
         _connection!.setIdleTime(outboundConnectionTimeout);
