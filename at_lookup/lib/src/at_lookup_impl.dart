@@ -477,8 +477,7 @@ class AtLookupImpl implements AtLookUp {
 
   Future<bool> createOutBoundConnection(host, port, toAtSign) async {
     try {
-      SecureSocket secureSocket =
-          await SecureSocketUtil.createSecureContext(host, port, decryptPackets!, pathToCerts, tlsKeysSavePath);
+      var secureSocket = await SecureSocket.connect(host, int.parse(port));
       _connection = OutboundConnectionImpl(secureSocket);
       if (outboundConnectionTimeout != null) {
         _connection!.setIdleTime(outboundConnectionTimeout);
