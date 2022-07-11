@@ -39,13 +39,8 @@ class AtLookupImpl implements AtLookUp {
 
   var outboundConnectionTimeout;
 
-  AtLookupImpl(
-    String atSign,
-    String rootDomain,
-    int rootPort, {
-    String? privateKey,
-    String? cramSecret,
-  }) {
+  AtLookupImpl(String atSign, String rootDomain, int rootPort,
+      {String? privateKey, String? cramSecret}) {
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
