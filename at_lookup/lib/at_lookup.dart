@@ -1,6 +1,6 @@
 /// Support for doing something awesome.
 ///
-/// More dartdocs go here.
+/// More dart docs go here.
 library at_lookup;
 
 export 'src/at_lookup.dart';
