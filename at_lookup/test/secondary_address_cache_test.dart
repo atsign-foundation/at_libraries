@@ -7,17 +7,6 @@ import 'package:mocktail/mocktail.dart';
 class MockSecondaryFinder extends Mock implements SecondaryUrlFinder {}
 
 void main() async {
-  String rootDomain = 'root.atsign.unit.tests';
-  int rootPort = 64;
-  SecondaryUrlFinder mockSecondaryFinder = MockSecondaryFinder();
-
-  String _addressFromAtSign(String atSign) {
-    if (atSign.startsWith('@')) {
-      atSign = atSign.replaceFirst('@', '');
-    }
-    return '$atSign.secondaries.unit.tests:1001';
-  }
-
   group('this should be moved to functional tests', () {
     test('look up @cicd1 from root.atsign.wtf:64', () async {
       var secondaryAddress =
@@ -29,7 +18,19 @@ void main() async {
     });
   });
 
-  group('some cache tests', () {
+  group('some cache tests with a MockSecondaryFinder', () {
+    String rootDomain = 'root.atsign.unit.tests';
+    int rootPort = 64;
+
+    SecondaryUrlFinder mockSecondaryFinder = MockSecondaryFinder();
+
+    String _addressFromAtSign(String atSign) {
+      if (atSign.startsWith('@')) {
+        atSign = atSign.replaceFirst('@', '');
+      }
+      return '$atSign.secondaries.unit.tests:1001';
+    }
+
     late CacheableSecondaryAddressFinder cache;
 
     setUp(() {
@@ -98,6 +99,7 @@ void main() async {
       expect((approxExpiry - cache.getCacheExpiryTime(atSign)!) < 100, true);
     });
 
+    // TODO Why are these tests commented out?
 //    test('test expiry time  - custom cache expiry for registeredAtSign1',
 //        () async {
 //      var atSign = 'registeredAtSign1';
@@ -114,5 +116,51 @@ void main() async {
 //      await cache.findSecondary(atSign, refreshCacheNow: true);
 //      expect(cache.cacheContains(atSign), true);
 //    });
+  });
+
+  group('some cache tests with a real SecondaryUrlFinder but with rootDomain set to proxy:<something>', () {
+    String proxyHost = 'vip.ve.atsign.zone';
+    String rootDomain = 'proxy:$proxyHost';
+    int rootPort = 8443;
+
+    String _addressFromAtSign(String atSign) {
+      return '$proxyHost:$rootPort';
+    }
+
+    late CacheableSecondaryAddressFinder cache;
+
+    setUp(() {
+      cache = CacheableSecondaryAddressFinder(rootDomain, rootPort);
+    });
+
+    test('test simple lookup for @registeredAtSign1', () async {
+      var atSign = '@registeredAtSign1';
+      var secondaryAddress = await cache.findSecondary(atSign);
+      expect(secondaryAddress.port, isNotNull);
+      expect(secondaryAddress.host, isNotNull);
+      expect(secondaryAddress.toString(), _addressFromAtSign(atSign));
+    });
+    test('test simple lookup for registeredAtSign1', () async {
+      var atSign = 'registeredAtSign1';
+      var secondaryAddress = await cache.findSecondary(atSign);
+      expect(secondaryAddress.port, isNotNull);
+      expect(secondaryAddress.host, isNotNull);
+      expect(secondaryAddress.toString(), _addressFromAtSign(atSign));
+    });
+    test('test isCached for registeredAtSign1', () async {
+      var atSign = 'registeredAtSign1';
+      await cache.findSecondary(atSign);
+      expect(cache.cacheContains(atSign), true);
+    });
+
+    test('test expiry time - default cache expiry for registeredAtSign1',
+        () async {
+      var atSign = 'registeredAtSign1';
+      await cache.findSecondary(atSign);
+      final approxExpiry =
+          DateTime.now().add(Duration(hours: 1)).millisecondsSinceEpoch;
+      expect(cache.getCacheExpiryTime(atSign), isNotNull);
+      expect((approxExpiry - cache.getCacheExpiryTime(atSign)!) < 100, true);
+    });
   });
 }

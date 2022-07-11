@@ -122,7 +122,16 @@ class SecondaryUrlFinder {
   SecondaryUrlFinder(this._rootDomain, this._rootPort);
 
   Future<String?> findSecondaryUrl(String atSign) async {
-    return await _findSecondary(atSign);
+    if (_rootDomain.startsWith("proxy:")) {
+      // In order to make it easy for clients to connect to a reverse proxy
+      // instead of doing a root lookup,  we adopt the convention that:
+      // if the rootDomain starts with 'proxy:'
+      // then the secondary domain name will be deemed to be the portion of rootDomain after 'proxy:'
+      // and the secondary port will be deemed to be the rootPort
+      return '${_rootDomain.substring("proxy:".length)}:$_rootPort';
+    } else {
+      return await _findSecondary(atSign);
+    }
   }
 
   Future<String?> _findSecondary(String atsign) async {
