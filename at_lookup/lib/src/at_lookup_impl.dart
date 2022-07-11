@@ -39,18 +39,8 @@ class AtLookupImpl implements AtLookUp {
 
   var outboundConnectionTimeout;
 
-  bool? decryptPackets;
-
-  String? pathToCerts;
-
-  String? tlsKeysSavePath;
-
   AtLookupImpl(String atSign, String rootDomain, int rootPort,
-      {String? privateKey,
-      String? cramSecret,
-      this.decryptPackets,
-      this.pathToCerts,
-      this.tlsKeysSavePath}) {
+      {String? privateKey, String? cramSecret}) {
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
