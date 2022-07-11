@@ -39,7 +39,7 @@ class AtLookupImpl implements AtLookUp {
 
   var outboundConnectionTimeout;
 
-  bool? decryptPackets;
+  bool? decryptPackets = false;
 
   String? pathToCerts;
 
