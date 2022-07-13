@@ -206,7 +206,7 @@ void main() {
       outboundMessageListener.messageHandler('56'.codeUnits);
       outboundMessageListener.messageHandler('78'.codeUnits);
       expect(
-          () async => await outboundMessageListener.read(maxWaitMillis: 2000),
+          () async => await outboundMessageListener.read(maxWaitMilliSeconds: 2000),
           throwsA(predicate((dynamic e) =>
               e is AtTimeoutException &&
               e.message ==

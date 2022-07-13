@@ -96,7 +96,7 @@ class OutboundMessageListener {
   /// Reads the response sent by remote socket from the queue.
   /// If there is no message in queue after [maxWaitMilliSeconds], return null. Defaults to 90 seconds.
   Future<String> read(
-      {int maxWaitMillis = 90000, int transientWaitTimeMillis = 10000}) async {
+      {int maxWaitMilliSeconds = 90000, int transientWaitTimeMillis = 10000}) async {
     String result;
     _lastReceivedTime = DateTime.now();
     var startTime = DateTime.now();
