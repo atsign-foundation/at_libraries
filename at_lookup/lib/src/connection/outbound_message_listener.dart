@@ -115,11 +115,11 @@ class OutboundMessageListener {
       }
 
       // if currentTime - startTime  is greater than maxWaitMillis throw AtTimeoutException
-      if (DateTime.now().difference(startTime).inMilliseconds > maxWaitMillis) {
+      if (DateTime.now().difference(startTime).inMilliseconds > maxWaitMilliSeconds) {
         _buffer.clear();
         _closeConnection();
         throw AtTimeoutException(
-            'Full response not received after $maxWaitMillis millis from remote secondary');
+            'Full response not received after $maxWaitMilliSeconds millis from remote secondary');
       }
       // if no data is received from server and if currentTime - _lastReceivedTime is greater than
       // transientWaitTimeMillis throw AtTimeoutException
