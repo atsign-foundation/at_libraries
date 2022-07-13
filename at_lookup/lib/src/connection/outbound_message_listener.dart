@@ -117,12 +117,14 @@ class OutboundMessageListener {
       throw AtLookUpException('AT0014', 'Unexpected response found');
     }
 
+    // incomplete message. Wait for 500ms and read again.
     if (_buffer.length() > 0 && !_buffer.isEnd()) {
       Future.delayed(Duration(milliseconds: transientWaitTimeMillis));
       totalWaitTime += transientWaitTimeMillis;
       if (totalWaitTime > maxWaitMillis) {
+        // no message in queue even after waiting beyond maxWaitMillis
         _buffer.clear();
-        // #TODO destroy socket
+        _closeConnection();
         throw AtTimeoutException(
             'No response after $maxWaitMillis millis from remote secondary');
       }
