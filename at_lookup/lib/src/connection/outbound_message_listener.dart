@@ -97,15 +97,16 @@ class OutboundMessageListener {
     return _read(maxWaitMillis: maxWaitMilliSeconds);
   }
 
-  Future<String> _read(
-      {int maxWaitMillis = 10000,
-      int retryCount = 1,
-      int transientWaitTimeMillis = 500}) async {
+  Future<String> _read({int maxWaitMillis = 10000, int retryCount = 1}) async {
     String result;
-    int totalWaitTime = 0;
+    var maxIterations = maxWaitMillis / 10;
+    if (retryCount == maxIterations) {
+      _buffer.clear();
+      throw AtTimeoutException(
+          'No response after $maxWaitMillis millis from remote secondary');
+    }
     var queueLength = _queue.length;
     if (queueLength > 0) {
-      totalWaitTime = 0;
       result = _queue.removeFirst();
       // result from another secondary is either data or a @<atSign>@ denoting complete
       // of the handshake
@@ -116,18 +117,8 @@ class OutboundMessageListener {
       _buffer.clear();
       throw AtLookUpException('AT0014', 'Unexpected response found');
     }
-
-    if (_buffer.length() > 0 && !_buffer.isEnd()) {
-      Future.delayed(Duration(milliseconds: transientWaitTimeMillis));
-      totalWaitTime += transientWaitTimeMillis;
-      if (totalWaitTime > maxWaitMillis) {
-        _buffer.clear();
-        // #TODO destroy socket
-        throw AtTimeoutException(
-            'No response after $maxWaitMillis millis from remote secondary');
-      }
-    }
-    return Future.delayed(Duration(milliseconds: 10)).then((value) => _read());
+    return Future.delayed(Duration(milliseconds: 10))
+        .then((value) => _read(retryCount: ++retryCount));
   }
 
   bool _isValidResponse(String result) {
