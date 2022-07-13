@@ -177,4 +177,40 @@ void main() {
       expect(response, 'stream:@bob:phone@alice');
     });
   });
+
+  group('A group of tests to verify AtTimeOutException', () {
+    OutboundMessageListener outboundMessageListener =
+        OutboundMessageListener(mockOutBoundConnection);
+    setUp(() {
+      when(() => mockOutBoundConnection.isInValid()).thenAnswer((_) => false);
+      when(() => mockOutBoundConnection.close())
+          .thenAnswer((Invocation invocation) async {});
+    });
+    test(
+        'A test to verify timeout exception when no data is received from server within transientWaitTimeMillis',
+        () async {
+      expect(
+          () async =>
+              await outboundMessageListener.read(transientWaitTimeMillis: 1000),
+          throwsA(predicate((dynamic e) =>
+              e is AtTimeoutException &&
+              e.message
+                  .startsWith('Waited for 1000 millis. No response after'))));
+    });
+    test(
+        'A test to verify partial response and wait time greater than maxWaitMillis',
+        () async {
+      outboundMessageListener.messageHandler('data:public:phone@'.codeUnits);
+      outboundMessageListener.messageHandler('12'.codeUnits);
+      outboundMessageListener.messageHandler('34'.codeUnits);
+      outboundMessageListener.messageHandler('56'.codeUnits);
+      outboundMessageListener.messageHandler('78'.codeUnits);
+      expect(
+          () async => await outboundMessageListener.read(maxWaitMillis: 2000),
+          throwsA(predicate((dynamic e) =>
+              e is AtTimeoutException &&
+              e.message ==
+                  'Full response not received after 2000 millis from remote secondary')));
+    });
+  });
 }

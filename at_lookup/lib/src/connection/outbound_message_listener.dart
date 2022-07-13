@@ -129,7 +129,7 @@ class OutboundMessageListener {
         _buffer.clear();
         _closeConnection();
         throw AtTimeoutException(
-            'Waited for $transientWaitTimeMillis. No response after $_lastReceivedTime ');
+            'Waited for $transientWaitTimeMillis millis. No response after $_lastReceivedTime ');
       }
       // wait for 10 ms before attempting to read from queue again
       await Future.delayed(Duration(milliseconds: 10));
