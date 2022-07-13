@@ -14,6 +14,7 @@ class OutboundMessageListener {
   Function? syncCallback;
   final int newLineCodeUnit = 10;
   final int atCharCodeUnit = 64;
+  var _lastReceivedTime;
 
   OutboundMessageListener(this._connection, {int bufferCapacity = 10240000}) {
     _buffer = ByteBuffer(capacity: bufferCapacity);
@@ -32,6 +33,7 @@ class OutboundMessageListener {
   Future<void> messageHandler(List data) async {
     String result;
     var offset;
+    _lastReceivedTime = DateTime.now();
     // check buffer overflow
     _checkBufferOverFlow(data);
     // If the data contains a new line character, add until the new line char to buffer
@@ -92,44 +94,46 @@ class OutboundMessageListener {
   }
 
   /// Reads the response sent by remote socket from the queue.
-  /// If there is no message in queue after [maxWaitMilliSeconds], return null. Defaults to 3 seconds.
-  Future<String> read({int maxWaitMilliSeconds = 10000}) async {
-    return _read(maxWaitMillis: maxWaitMilliSeconds);
-  }
-
-  Future<String> _read(
-      {int maxWaitMillis = 10000,
-      int retryCount = 1,
-      int transientWaitTimeMillis = 500}) async {
+  /// If there is no message in queue after [maxWaitMilliSeconds], return null. Defaults to 90 seconds.
+  Future<String> read(
+      {int maxWaitMillis = 90000, int transientWaitTimeMillis = 10000}) async {
     String result;
-    int totalWaitTime = 0;
-    var queueLength = _queue.length;
-    if (queueLength > 0) {
-      totalWaitTime = 0;
-      result = _queue.removeFirst();
-      // result from another secondary is either data or a @<atSign>@ denoting complete
-      // of the handshake
-      if (_isValidResponse(result)) {
-        return result;
+    _lastReceivedTime = DateTime.now();
+    var startTime = DateTime.now();
+    while (true) {
+      var queueLength = _queue.length;
+      if (queueLength > 0) {
+        result = _queue.removeFirst();
+        // result from another secondary is either data or a @<atSign>@ denoting complete
+        // of the handshake
+        if (_isValidResponse(result)) {
+          return result;
+        }
+        //ignore any other response
+        _buffer.clear();
+        throw AtLookUpException('AT0014', 'Unexpected response found');
       }
-      //ignore any other response
-      _buffer.clear();
-      throw AtLookUpException('AT0014', 'Unexpected response found');
-    }
 
-    // incomplete message. Wait for 500ms and read again.
-    if (_buffer.length() > 0 && !_buffer.isEnd()) {
-      Future.delayed(Duration(milliseconds: transientWaitTimeMillis));
-      totalWaitTime += transientWaitTimeMillis;
-      if (totalWaitTime > maxWaitMillis) {
+      // if currentTime - startTime  is greater than maxWaitMillis throw AtTimeoutException
+      if (DateTime.now().difference(startTime).inMilliseconds > maxWaitMillis) {
+        _buffer.clear();
+        _closeConnection();
+        throw AtTimeoutException(
+            'Full response not received after $maxWaitMillis millis from remote secondary');
+      }
+      // if no data is received from server and if currentTime - _lastReceivedTime is greater than
+      // transientWaitTimeMillis throw AtTimeoutException
+      if (DateTime.now().difference(_lastReceivedTime).inMilliseconds >
+          transientWaitTimeMillis) {
         // no message in queue even after waiting beyond maxWaitMillis
         _buffer.clear();
         _closeConnection();
         throw AtTimeoutException(
-            'No response after $maxWaitMillis millis from remote secondary');
+            'Waited for $transientWaitTimeMillis. No response after $_lastReceivedTime ');
       }
+      // wait for 10 ms before attempting to read from queue again
+      await Future.delayed(Duration(milliseconds: 10));
     }
-    return Future.delayed(Duration(milliseconds: 10)).then((value) => _read());
   }
 
   bool _isValidResponse(String result) {
