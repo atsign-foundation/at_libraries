@@ -95,8 +95,11 @@ class OutboundMessageListener {
 
   /// Reads the response sent by remote socket from the queue.
   /// If there is no message in queue after [maxWaitMilliSeconds], return null. Defaults to 90 seconds.
+  /// Whenever data is received on client socket from server, [_lastReceivedTime] will be updated to current time.
+  /// [transientWaitTimeMillis] specifies the max duration to wait between current time and [_lastReceivedTime] before timing out.Defaults to 10 seconds.
   Future<String> read(
-      {int maxWaitMilliSeconds = 90000, int transientWaitTimeMillis = 10000}) async {
+      {int maxWaitMilliSeconds = 90000,
+      int transientWaitTimeMillis = 10000}) async {
     String result;
     _lastReceivedTime = DateTime.now();
     var startTime = DateTime.now();
@@ -115,7 +118,8 @@ class OutboundMessageListener {
       }
 
       // if currentTime - startTime  is greater than maxWaitMillis throw AtTimeoutException
-      if (DateTime.now().difference(startTime).inMilliseconds > maxWaitMilliSeconds) {
+      if (DateTime.now().difference(startTime).inMilliseconds >
+          maxWaitMilliSeconds) {
         _buffer.clear();
         _closeConnection();
         throw AtTimeoutException(
@@ -125,7 +129,6 @@ class OutboundMessageListener {
       // transientWaitTimeMillis throw AtTimeoutException
       if (DateTime.now().difference(_lastReceivedTime).inMilliseconds >
           transientWaitTimeMillis) {
-        // no message in queue even after waiting beyond maxWaitMillis
         _buffer.clear();
         _closeConnection();
         throw AtTimeoutException(
