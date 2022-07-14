@@ -200,6 +200,7 @@ class AtLookupImpl implements AtLookUp {
 
   Future<void> createConnection() async {
     if (!isConnectionAvailable()) {
+      logger.info('Creating new connection');
       //1. find secondary url for atsign from lookup library
       var secondaryUrl =
           await findSecondary(_currentAtSign, _rootDomain, _rootPort);
@@ -493,6 +494,7 @@ class AtLookupImpl implements AtLookUp {
 
   Future<void> _sendCommand(String command) async {
     await createConnection();
+    logger.finer('SENDING: $command');
     await _connection!.write(command);
   }
 }

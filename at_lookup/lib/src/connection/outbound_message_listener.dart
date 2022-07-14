@@ -56,6 +56,7 @@ class OutboundMessageListener {
         List<int> temp = (_buffer.getData().toList())..removeLast();
         result = utf8.decode(temp);
         result = _stripPrompt(result);
+        logger.finer('RECEIVED $result');
         _queue.add(result);
         //clear the buffer after adding result to queue
         _buffer.clear();
