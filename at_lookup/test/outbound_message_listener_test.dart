@@ -187,7 +187,7 @@ void main() {
           .thenAnswer((Invocation invocation) async {});
     });
     test(
-        'A test to verify timeout exception when no data is received from server within transientWaitTimeMillis',
+        'A test to verify when no data is received from server within transientWaitTimeMillis',
         () async {
       expect(
           () async =>
@@ -198,7 +198,31 @@ void main() {
                   .startsWith('Waited for 1000 millis. No response after'))));
     });
     test(
-        'A test to verify partial response and wait time greater than maxWaitMillis',
+        'A test to verify no response from server- wait time greater than maxWaitMillis',
+        () async {
+      expect(
+          () async =>
+              await outboundMessageListener.read(maxWaitMilliSeconds: 5000),
+          throwsA(predicate((dynamic e) =>
+              e is AtTimeoutException &&
+              e.message.startsWith(
+                  'Full response not received after 5000 millis from remote secondary'))));
+    });
+    test(
+        'A test to verify partial response - wait time greater than transientWaitTimeMillis',
+        () async {
+      outboundMessageListener.messageHandler('data:public:phone@'.codeUnits);
+      outboundMessageListener.messageHandler('12'.codeUnits);
+      expect(
+          () async =>
+              await outboundMessageListener.read(transientWaitTimeMillis: 5000),
+          throwsA(predicate((dynamic e) =>
+              e is AtTimeoutException &&
+              e.message
+                  .startsWith('Waited for 5000 millis. No response after'))));
+    });
+    test(
+        'A test to verify partial response - wait time greater than maxWaitMillis',
         () async {
       outboundMessageListener.messageHandler('data:public:phone@'.codeUnits);
       outboundMessageListener.messageHandler('12'.codeUnits);
@@ -206,7 +230,8 @@ void main() {
       outboundMessageListener.messageHandler('56'.codeUnits);
       outboundMessageListener.messageHandler('78'.codeUnits);
       expect(
-          () async => await outboundMessageListener.read(maxWaitMilliSeconds: 2000),
+          () async =>
+              await outboundMessageListener.read(maxWaitMilliSeconds: 2000),
           throwsA(predicate((dynamic e) =>
               e is AtTimeoutException &&
               e.message ==
