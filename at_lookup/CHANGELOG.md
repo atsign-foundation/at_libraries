@@ -1,3 +1,6 @@
+## 3.0.27
+- Improved timeout handling logic in outbound message listener
+- Upgraded at_commons version to 3.0.19
 ## 3.0.26
 - Update at_commons version 3.0.18 to display hidden keys in scan
 ## 3.0.25
