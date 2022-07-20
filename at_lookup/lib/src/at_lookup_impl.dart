@@ -27,6 +27,8 @@ class AtLookupImpl implements AtLookUp {
 
   OutboundConnection? get connection => _connection;
 
+  late CacheableSecondaryAddressFinder cacheableSecondaryAddressFinder;
+
   var _currentAtSign;
 
   var _rootDomain;
@@ -40,12 +42,16 @@ class AtLookupImpl implements AtLookUp {
   var outboundConnectionTimeout;
 
   AtLookupImpl(String atSign, String rootDomain, int rootPort,
-      {String? privateKey, String? cramSecret}) {
+      {String? privateKey,
+      String? cramSecret,
+      CacheableSecondaryAddressFinder? cacheableSecondaryAddressFinder}) {
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
     this.privateKey = privateKey;
     this.cramSecret = cramSecret;
+    this.cacheableSecondaryAddressFinder = cacheableSecondaryAddressFinder ??
+        CacheableSecondaryAddressFinder(rootDomain, rootPort);
   }
 
   @Deprecated('use CacheableSecondaryAddressFinder')
@@ -202,16 +208,12 @@ class AtLookupImpl implements AtLookUp {
     if (!isConnectionAvailable()) {
       logger.info('Creating new connection');
       //1. find secondary url for atsign from lookup library
-      var secondaryUrl =
-          await findSecondary(_currentAtSign, _rootDomain, _rootPort);
-      if (secondaryUrl == null) {
-        throw SecondaryNotFoundException('Secondary server not found');
-      }
-      var secondaryInfo = LookUpUtil.getSecondaryInfo(secondaryUrl);
-      var host = secondaryInfo[0];
-      var port = secondaryInfo[1];
+      SecondaryAddress secondaryAddress =
+          await cacheableSecondaryAddressFinder.findSecondary(_currentAtSign);
+      var host = secondaryAddress.host;
+      var port = secondaryAddress.port;
       //2. create a connection to secondary server
-      await createOutBoundConnection(host, port, _currentAtSign);
+      await createOutBoundConnection(host, port.toString(), _currentAtSign);
       //3. listen to server response
       messageListener = OutboundMessageListener(_connection);
       messageListener.listen();
@@ -466,7 +468,8 @@ class AtLookupImpl implements AtLookUp {
         !(_isPkamAuthenticated || _isCramAuthenticated);
   }
 
-  Future<bool> createOutBoundConnection(host, port, toAtSign) async {
+  Future<bool> createOutBoundConnection(
+      String host, String port, String toAtSign) async {
     try {
       var secureSocket = await SecureSocket.connect(host, int.parse(port));
       _connection = OutboundConnectionImpl(secureSocket);
