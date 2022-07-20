@@ -27,7 +27,7 @@ class AtLookupImpl implements AtLookUp {
 
   OutboundConnection? get connection => _connection;
 
-  late CacheableSecondaryAddressFinder cacheableSecondaryAddressFinder;
+  late SecondaryAddressFinder secondaryAddressFinder;
 
   var _currentAtSign;
 
@@ -44,13 +44,13 @@ class AtLookupImpl implements AtLookUp {
   AtLookupImpl(String atSign, String rootDomain, int rootPort,
       {String? privateKey,
       String? cramSecret,
-      CacheableSecondaryAddressFinder? cacheableSecondaryAddressFinder}) {
+      SecondaryAddressFinder? secondaryAddressFinder}) {
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
     this.privateKey = privateKey;
     this.cramSecret = cramSecret;
-    this.cacheableSecondaryAddressFinder = cacheableSecondaryAddressFinder ??
+    this.secondaryAddressFinder = secondaryAddressFinder ??
         CacheableSecondaryAddressFinder(rootDomain, rootPort);
   }
 
@@ -209,7 +209,7 @@ class AtLookupImpl implements AtLookUp {
       logger.info('Creating new connection');
       //1. find secondary url for atsign from lookup library
       SecondaryAddress secondaryAddress =
-          await cacheableSecondaryAddressFinder.findSecondary(_currentAtSign);
+          await secondaryAddressFinder.findSecondary(_currentAtSign);
       var host = secondaryAddress.host;
       var port = secondaryAddress.port;
       //2. create a connection to secondary server
