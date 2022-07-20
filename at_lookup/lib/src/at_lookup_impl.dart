@@ -350,36 +350,47 @@ class AtLookupImpl implements AtLookUp {
     return await _process(atCommand, auth: auth);
   }
 
+  final Mutex _pkamAuthenticationMutex = Mutex();
+
   /// Generates digest using from verb response and [privateKey] and performs a PKAM authentication to
   /// secondary server. This method is executed for all verbs that requires authentication.
   Future<bool> authenticate(String? privateKey) async {
     if (privateKey == null) {
       throw UnAuthenticatedException('Private key not passed');
     }
-    await _sendCommand('from:$_currentAtSign\n');
-    var fromResponse = await (messageListener.read());
-    logger.finer('from result:$fromResponse');
-    if (fromResponse.isEmpty) {
-      return false;
+    try {
+      _pkamAuthenticationMutex.acquire();
+      if (!_isPkamAuthenticated) {
+        await _sendCommand('from:$_currentAtSign\n');
+        var fromResponse = await (messageListener.read());
+        logger.finer('from result:$fromResponse');
+        if (fromResponse.isEmpty) {
+          return false;
+        }
+        fromResponse = fromResponse.trim().replaceAll('data:', '');
+        logger.finer('fromResponse $fromResponse');
+        var key = RSAPrivateKey.fromString(privateKey);
+        var sha256signature =
+            key.createSHA256Signature(utf8.encode(fromResponse) as Uint8List);
+        var signature = base64Encode(sha256signature);
+        logger.finer('Sending command pkam:$signature');
+        await _sendCommand('pkam:$signature\n');
+        var pkamResponse = await messageListener.read();
+        if (pkamResponse == 'data:success') {
+          logger.info('auth success');
+          _isPkamAuthenticated = true;
+        } else {
+          throw UnAuthenticatedException(
+              'Failed connecting to $_currentAtSign. $pkamResponse');
+        }
+      }
+      return _isPkamAuthenticated;
+    } finally {
+      _pkamAuthenticationMutex.release();
     }
-    fromResponse = fromResponse.trim().replaceAll('data:', '');
-    logger.finer('fromResponse $fromResponse');
-    var key = RSAPrivateKey.fromString(privateKey);
-    var sha256signature =
-        key.createSHA256Signature(utf8.encode(fromResponse) as Uint8List);
-    var signature = base64Encode(sha256signature);
-    logger.finer('Sending command pkam:$signature');
-    await _sendCommand('pkam:$signature\n');
-    var pkamResponse = await messageListener.read();
-    if (pkamResponse == 'data:success') {
-      logger.info('auth success');
-      _isPkamAuthenticated = true;
-    } else {
-      throw UnAuthenticatedException(
-          'Failed connecting to $_currentAtSign. $pkamResponse');
-    }
-    return _isPkamAuthenticated;
   }
+
+  final Mutex _cramAuthenticationMutex = Mutex();
 
   /// Generates digest using from verb response and [secret] and performs a CRAM authentication to
   /// secondary server
@@ -388,25 +399,32 @@ class AtLookupImpl implements AtLookUp {
     if (secret == null) {
       throw UnAuthenticatedException('Cram secret not passed');
     }
-    await _sendCommand('from:$_currentAtSign\n');
-    var fromResponse = await messageListener.read();
-    logger.info('from result:$fromResponse');
-    if (fromResponse.isEmpty) {
-      return false;
+    try {
+      _cramAuthenticationMutex.acquire();
+      if (!_isCramAuthenticated) {
+        await _sendCommand('from:$_currentAtSign\n');
+        var fromResponse = await messageListener.read();
+        logger.info('from result:$fromResponse');
+        if (fromResponse.isEmpty) {
+          return false;
+        }
+        fromResponse = fromResponse.trim().replaceAll('data:', '');
+        var digestInput = '$secret$fromResponse';
+        var bytes = utf8.encode(digestInput);
+        var digest = sha512.convert(bytes);
+        await _sendCommand('cram:$digest\n');
+        var cramResponse = await messageListener.read();
+        if (cramResponse == 'data:success') {
+          logger.info('auth success');
+          _isCramAuthenticated = true;
+        } else {
+          throw UnAuthenticatedException('Auth failed');
+        }
+      }
+      return _isCramAuthenticated;
+    } finally {
+      _cramAuthenticationMutex.release();
     }
-    fromResponse = fromResponse.trim().replaceAll('data:', '');
-    var digestInput = '$secret$fromResponse';
-    var bytes = utf8.encode(digestInput);
-    var digest = sha512.convert(bytes);
-    await _sendCommand('cram:$digest\n');
-    var cramResponse = await messageListener.read();
-    if (cramResponse == 'data:success') {
-      logger.info('auth success');
-      _isCramAuthenticated = true;
-    } else {
-      throw UnAuthenticatedException('Auth failed');
-    }
-    return _isCramAuthenticated;
   }
 
   Future<String> _plookup(PLookupVerbBuilder builder) async {
