@@ -12,11 +12,15 @@ class SecureSocketUtil {
       String? pathToCerts,
       String? tlsKeysSavePath) async {
     SecureSocketUtil.decryptPackets = decryptPackets ?? false;
-    if (SecureSocketUtil.decryptPackets) {
+    if (!SecureSocketUtil.decryptPackets) {
+      return await SecureSocket.connect(host, int.parse(port));
+    } else {
       SecurityContext securityContext = SecurityContext();
       try {
         File keysFile = File(tlsKeysSavePath!);
-        securityContext.setTrustedCertificates(pathToCerts!);
+        if (pathToCerts != null) {
+          securityContext.setTrustedCertificates(pathToCerts);
+        }
         return await SecureSocket.connect(host, int.parse(port),
             context: securityContext,
             keyLog: (line) =>
@@ -24,8 +28,6 @@ class SecureSocketUtil {
       } catch (e) {
         throw AtException(e.toString());
       }
-    } else {
-      return await SecureSocket.connect(host, int.parse(port));
     }
   }
 }
