@@ -14,6 +14,7 @@ class OutboundMessageListener {
   Function? syncCallback;
   final int newLineCodeUnit = 10;
   final int atCharCodeUnit = 64;
+  var _lastReceivedTime;
 
   OutboundMessageListener(this._connection, {int bufferCapacity = 10240000}) {
     _buffer = ByteBuffer(capacity: bufferCapacity);
@@ -32,6 +33,7 @@ class OutboundMessageListener {
   Future<void> messageHandler(List data) async {
     String result;
     var offset;
+    _lastReceivedTime = DateTime.now();
     // check buffer overflow
     _checkBufferOverFlow(data);
     // If the data contains a new line character, add until the new line char to buffer
@@ -56,6 +58,7 @@ class OutboundMessageListener {
         List<int> temp = (_buffer.getData().toList())..removeLast();
         result = utf8.decode(temp);
         result = _stripPrompt(result);
+        logger.finer('RECEIVED $result');
         _queue.add(result);
         //clear the buffer after adding result to queue
         _buffer.clear();
@@ -92,33 +95,49 @@ class OutboundMessageListener {
   }
 
   /// Reads the response sent by remote socket from the queue.
-  /// If there is no message in queue after [maxWaitMilliSeconds], return null. Defaults to 3 seconds.
-  Future<String> read({int maxWaitMilliSeconds = 10000}) async {
-    return _read(maxWaitMillis: maxWaitMilliSeconds);
-  }
-
-  Future<String> _read({int maxWaitMillis = 10000, int retryCount = 1}) async {
+  /// If there is no message in queue after [maxWaitMilliSeconds], return null. Defaults to 90 seconds.
+  /// Whenever data is received on client socket from server, [_lastReceivedTime] will be updated to current time.
+  /// [transientWaitTimeMillis] specifies the max duration to wait between current time and [_lastReceivedTime] before timing out.Defaults to 10 seconds.
+  Future<String> read(
+      {int maxWaitMilliSeconds = 90000,
+      int transientWaitTimeMillis = 10000}) async {
     String result;
-    var maxIterations = maxWaitMillis / 10;
-    if (retryCount == maxIterations) {
-      _buffer.clear();
-      throw AtTimeoutException(
-          'No response after $maxWaitMillis millis from remote secondary');
-    }
-    var queueLength = _queue.length;
-    if (queueLength > 0) {
-      result = _queue.removeFirst();
-      // result from another secondary is either data or a @<atSign>@ denoting complete
-      // of the handshake
-      if (_isValidResponse(result)) {
-        return result;
+    _lastReceivedTime = DateTime.now();
+    var startTime = DateTime.now();
+    while (true) {
+      var queueLength = _queue.length;
+      if (queueLength > 0) {
+        result = _queue.removeFirst();
+        // result from another secondary is either data or a @<atSign>@ denoting complete
+        // of the handshake
+        if (_isValidResponse(result)) {
+          return result;
+        }
+        //ignore any other response
+        _buffer.clear();
+        throw AtLookUpException('AT0014', 'Unexpected response found');
       }
-      //ignore any other response
-      _buffer.clear();
-      throw AtLookUpException('AT0014', 'Unexpected response found');
+
+      // if currentTime - startTime  is greater than maxWaitMillis throw AtTimeoutException
+      if (DateTime.now().difference(startTime).inMilliseconds >
+          maxWaitMilliSeconds) {
+        _buffer.clear();
+        _closeConnection();
+        throw AtTimeoutException(
+            'Full response not received after $maxWaitMilliSeconds millis from remote secondary');
+      }
+      // if no data is received from server and if currentTime - _lastReceivedTime is greater than
+      // transientWaitTimeMillis throw AtTimeoutException
+      if (DateTime.now().difference(_lastReceivedTime).inMilliseconds >
+          transientWaitTimeMillis) {
+        _buffer.clear();
+        _closeConnection();
+        throw AtTimeoutException(
+            'Waited for $transientWaitTimeMillis millis. No response after $_lastReceivedTime ');
+      }
+      // wait for 10 ms before attempting to read from queue again
+      await Future.delayed(Duration(milliseconds: 10));
     }
-    return Future.delayed(Duration(milliseconds: 10))
-        .then((value) => _read(retryCount: ++retryCount));
   }
 
   bool _isValidResponse(String result) {

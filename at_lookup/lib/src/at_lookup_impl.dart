@@ -27,6 +27,8 @@ class AtLookupImpl implements AtLookUp {
 
   OutboundConnection? get connection => _connection;
 
+  late SecondaryAddressFinder secondaryAddressFinder;
+
   var _currentAtSign;
 
   var _rootDomain;
@@ -50,12 +52,16 @@ class AtLookupImpl implements AtLookUp {
       String? cramSecret,
       this.decryptPackets,
       this.pathToCerts,
-      this.tlsKeysSavePath}) {
+      this.tlsKeysSavePath,
+      SecondaryAddressFinder? secondaryAddressFinder}) {
+    
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
     this.privateKey = privateKey;
     this.cramSecret = cramSecret;
+    this.secondaryAddressFinder = secondaryAddressFinder ??
+        CacheableSecondaryAddressFinder(rootDomain, rootPort);
   }
 
   @Deprecated('use CacheableSecondaryAddressFinder')
@@ -210,17 +216,14 @@ class AtLookupImpl implements AtLookUp {
 
   Future<void> createConnection() async {
     if (!isConnectionAvailable()) {
+      logger.info('Creating new connection');
       //1. find secondary url for atsign from lookup library
-      var secondaryUrl =
-          await findSecondary(_currentAtSign, _rootDomain, _rootPort);
-      if (secondaryUrl == null) {
-        throw SecondaryNotFoundException('Secondary server not found');
-      }
-      var secondaryInfo = LookUpUtil.getSecondaryInfo(secondaryUrl);
-      var host = secondaryInfo[0];
-      var port = secondaryInfo[1];
+      SecondaryAddress secondaryAddress =
+          await secondaryAddressFinder.findSecondary(_currentAtSign);
+      var host = secondaryAddress.host;
+      var port = secondaryAddress.port;
       //2. create a connection to secondary server
-      await createOutBoundConnection(host, port, _currentAtSign);
+      await createOutBoundConnection(host, port.toString(), _currentAtSign);
       //3. listen to server response
       messageListener = OutboundMessageListener(_connection);
       messageListener.listen();
@@ -359,36 +362,47 @@ class AtLookupImpl implements AtLookUp {
     return await _process(atCommand, auth: auth);
   }
 
+  final Mutex _pkamAuthenticationMutex = Mutex();
+
   /// Generates digest using from verb response and [privateKey] and performs a PKAM authentication to
   /// secondary server. This method is executed for all verbs that requires authentication.
   Future<bool> authenticate(String? privateKey) async {
     if (privateKey == null) {
       throw UnAuthenticatedException('Private key not passed');
     }
-    await _sendCommand('from:$_currentAtSign\n');
-    var fromResponse = await (messageListener.read());
-    logger.finer('from result:$fromResponse');
-    if (fromResponse.isEmpty) {
-      return false;
+    try {
+      _pkamAuthenticationMutex.acquire();
+      if (!_isPkamAuthenticated) {
+        await _sendCommand('from:$_currentAtSign\n');
+        var fromResponse = await (messageListener.read());
+        logger.finer('from result:$fromResponse');
+        if (fromResponse.isEmpty) {
+          return false;
+        }
+        fromResponse = fromResponse.trim().replaceAll('data:', '');
+        logger.finer('fromResponse $fromResponse');
+        var key = RSAPrivateKey.fromString(privateKey);
+        var sha256signature =
+            key.createSHA256Signature(utf8.encode(fromResponse) as Uint8List);
+        var signature = base64Encode(sha256signature);
+        logger.finer('Sending command pkam:$signature');
+        await _sendCommand('pkam:$signature\n');
+        var pkamResponse = await messageListener.read();
+        if (pkamResponse == 'data:success') {
+          logger.info('auth success');
+          _isPkamAuthenticated = true;
+        } else {
+          throw UnAuthenticatedException(
+              'Failed connecting to $_currentAtSign. $pkamResponse');
+        }
+      }
+      return _isPkamAuthenticated;
+    } finally {
+      _pkamAuthenticationMutex.release();
     }
-    fromResponse = fromResponse.trim().replaceAll('data:', '');
-    logger.finer('fromResponse $fromResponse');
-    var key = RSAPrivateKey.fromString(privateKey);
-    var sha256signature =
-        key.createSHA256Signature(utf8.encode(fromResponse) as Uint8List);
-    var signature = base64Encode(sha256signature);
-    logger.finer('Sending command pkam:$signature');
-    await _sendCommand('pkam:$signature\n');
-    var pkamResponse = await messageListener.read();
-    if (pkamResponse == 'data:success') {
-      logger.info('auth success');
-      _isPkamAuthenticated = true;
-    } else {
-      throw UnAuthenticatedException(
-          'Failed connecting to $_currentAtSign. $pkamResponse');
-    }
-    return _isPkamAuthenticated;
   }
+
+  final Mutex _cramAuthenticationMutex = Mutex();
 
   /// Generates digest using from verb response and [secret] and performs a CRAM authentication to
   /// secondary server
@@ -397,25 +411,32 @@ class AtLookupImpl implements AtLookUp {
     if (secret == null) {
       throw UnAuthenticatedException('Cram secret not passed');
     }
-    await _sendCommand('from:$_currentAtSign\n');
-    var fromResponse = await messageListener.read();
-    logger.info('from result:$fromResponse');
-    if (fromResponse.isEmpty) {
-      return false;
+    try {
+      _cramAuthenticationMutex.acquire();
+      if (!_isCramAuthenticated) {
+        await _sendCommand('from:$_currentAtSign\n');
+        var fromResponse = await messageListener.read();
+        logger.info('from result:$fromResponse');
+        if (fromResponse.isEmpty) {
+          return false;
+        }
+        fromResponse = fromResponse.trim().replaceAll('data:', '');
+        var digestInput = '$secret$fromResponse';
+        var bytes = utf8.encode(digestInput);
+        var digest = sha512.convert(bytes);
+        await _sendCommand('cram:$digest\n');
+        var cramResponse = await messageListener.read();
+        if (cramResponse == 'data:success') {
+          logger.info('auth success');
+          _isCramAuthenticated = true;
+        } else {
+          throw UnAuthenticatedException('Auth failed');
+        }
+      }
+      return _isCramAuthenticated;
+    } finally {
+      _cramAuthenticationMutex.release();
     }
-    fromResponse = fromResponse.trim().replaceAll('data:', '');
-    var digestInput = '$secret$fromResponse';
-    var bytes = utf8.encode(digestInput);
-    var digest = sha512.convert(bytes);
-    await _sendCommand('cram:$digest\n');
-    var cramResponse = await messageListener.read();
-    if (cramResponse == 'data:success') {
-      logger.info('auth success');
-      _isCramAuthenticated = true;
-    } else {
-      throw UnAuthenticatedException('Auth failed');
-    }
-    return _isCramAuthenticated;
   }
 
   Future<String> _plookup(PLookupVerbBuilder builder) async {
@@ -475,7 +496,8 @@ class AtLookupImpl implements AtLookUp {
         !(_isPkamAuthenticated || _isCramAuthenticated);
   }
 
-  Future<bool> createOutBoundConnection(host, port, toAtSign) async {
+  Future<bool> createOutBoundConnection(
+      String host, String port, String toAtSign) async {
     try {
       SecureSocket secureSocket = await SecureSocketUtil.createSecureSocket(
           host, port, decryptPackets, pathToCerts, tlsKeysSavePath);
@@ -504,6 +526,7 @@ class AtLookupImpl implements AtLookUp {
 
   Future<void> _sendCommand(String command) async {
     await createConnection();
+    logger.finer('SENDING: $command');
     await _connection!.write(command);
   }
 }

@@ -177,4 +177,147 @@ void main() {
       expect(response, 'stream:@bob:phone@alice');
     });
   });
+
+  group('A group of tests to verify AtTimeOutException', () {
+    OutboundMessageListener outboundMessageListener =
+        OutboundMessageListener(mockOutBoundConnection);
+    setUp(() {
+      when(() => mockOutBoundConnection.isInValid()).thenAnswer((_) => false);
+      when(() => mockOutBoundConnection.close())
+          .thenAnswer((Invocation invocation) async {});
+    });
+    test(
+        'A test to verify when no data is received from server within transientWaitTimeMillis',
+        () async {
+      expect(
+          () async =>
+              await outboundMessageListener.read(transientWaitTimeMillis: 1000),
+          throwsA(predicate((dynamic e) =>
+              e is AtTimeoutException &&
+              e.message
+                  .startsWith('Waited for 1000 millis. No response after'))));
+    });
+    test(
+        'A test to verify no response from server- wait time greater than maxWaitMillis',
+        () async {
+      expect(
+          () async =>
+              await outboundMessageListener.read(maxWaitMilliSeconds: 5000),
+          throwsA(predicate((dynamic e) =>
+              e is AtTimeoutException &&
+              e.message.startsWith(
+                  'Full response not received after 5000 millis from remote secondary'))));
+    });
+    test(
+        'A test to verify partial response - wait time greater than transientWaitTimeMillis',
+        () async {
+      outboundMessageListener.messageHandler('data:public:phone@'.codeUnits);
+      outboundMessageListener.messageHandler('12'.codeUnits);
+      expect(
+          () async =>
+              await outboundMessageListener.read(transientWaitTimeMillis: 5000),
+          throwsA(predicate((dynamic e) =>
+              e is AtTimeoutException &&
+              e.message
+                  .startsWith('Waited for 5000 millis. No response after'))));
+    });
+    test(
+        'A test to verify partial response - wait time greater than maxWaitMillis',
+        () async {
+      outboundMessageListener.messageHandler('data:public:phone@'.codeUnits);
+      outboundMessageListener.messageHandler('12'.codeUnits);
+      outboundMessageListener.messageHandler('34'.codeUnits);
+      outboundMessageListener.messageHandler('56'.codeUnits);
+      outboundMessageListener.messageHandler('78'.codeUnits);
+      expect(
+          () async =>
+              await outboundMessageListener.read(maxWaitMilliSeconds: 2000),
+          throwsA(predicate((dynamic e) =>
+              e is AtTimeoutException &&
+              e.message ==
+                  'Full response not received after 2000 millis from remote secondary')));
+    });
+    test(
+        'A test to verify full response received - delay between messages from server',
+        () async {
+      String? response;
+      outboundMessageListener
+          .read()
+          .whenComplete(() => {})
+          .then((value) => {response = value});
+      outboundMessageListener.messageHandler('data:'.codeUnits);
+      await Future.delayed(Duration(milliseconds: 250));
+      outboundMessageListener.messageHandler('12'.codeUnits);
+      await Future.delayed(Duration(milliseconds: 150));
+      outboundMessageListener.messageHandler('34'.codeUnits);
+      await Future.delayed(Duration(milliseconds: 175));
+      outboundMessageListener.messageHandler('56'.codeUnits);
+      await Future.delayed(Duration(milliseconds: 300));
+      outboundMessageListener.messageHandler('78'.codeUnits);
+      await Future.delayed(Duration(milliseconds: 500));
+      outboundMessageListener.messageHandler('910\n@'.codeUnits);
+      await Future.delayed(Duration(milliseconds: 500));
+      expect(response, isNotEmpty);
+      expect(response, 'data:12345678910');
+    });
+    test(
+        'A test to verify maxwait timeout - delay between messages from server',
+        () async {
+      String? response;
+      outboundMessageListener
+          .read(maxWaitMilliSeconds: 5000)
+          .catchError((e) {
+            return e.toString();
+          })
+          .whenComplete(() => {})
+          .then((value) => {response = value});
+      outboundMessageListener.messageHandler('data:'.codeUnits);
+      await Future.delayed(Duration(milliseconds: 250));
+      outboundMessageListener.messageHandler('12'.codeUnits);
+      await Future.delayed(Duration(milliseconds: 150));
+      outboundMessageListener.messageHandler('34'.codeUnits);
+      await Future.delayed(Duration(milliseconds: 175));
+      outboundMessageListener.messageHandler('56'.codeUnits);
+      await Future.delayed(Duration(milliseconds: 300));
+      outboundMessageListener.messageHandler('78'.codeUnits);
+      await Future.delayed(Duration(milliseconds: 500));
+      outboundMessageListener.messageHandler('910'.codeUnits);
+      await Future.delayed(Duration(milliseconds: 5000));
+      expect(response, isNotEmpty);
+      expect(
+        response!.contains(
+            'Full response not received after 5000 millis from remote secondary'),
+        true,
+      );
+    });
+    test(
+        'A test to verify transient timeout - delay between messages from server',
+        () async {
+      String? response;
+      outboundMessageListener
+          .read(transientWaitTimeMillis: 500)
+          .catchError((e) {
+            return e.toString();
+          })
+          .whenComplete(() => {})
+          .then((value) => {response = value});
+      outboundMessageListener.messageHandler('data:'.codeUnits);
+      await Future.delayed(Duration(milliseconds: 100));
+      outboundMessageListener.messageHandler('12'.codeUnits);
+      await Future.delayed(Duration(milliseconds: 150));
+      outboundMessageListener.messageHandler('34'.codeUnits);
+      await Future.delayed(Duration(milliseconds: 175));
+      outboundMessageListener.messageHandler('56'.codeUnits);
+      await Future.delayed(Duration(milliseconds: 200));
+      outboundMessageListener.messageHandler('78'.codeUnits);
+      await Future.delayed(Duration(milliseconds: 100));
+      outboundMessageListener.messageHandler('910'.codeUnits);
+      await Future.delayed(Duration(milliseconds: 750));
+      expect(response, isNotEmpty);
+      expect(
+        response!.contains('Waited for 500 millis. No response after'),
+        true,
+      );
+    });
+  });
 }
