@@ -20,6 +20,7 @@ abstract class AtConnection {
 }
 
 abstract class AtConnectionMetaData {
+  bool isAuthenticated = false;
   DateTime? lastAccessed;
   DateTime? created;
   bool isClosed = false;
