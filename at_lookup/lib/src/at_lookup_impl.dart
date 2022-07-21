@@ -19,10 +19,6 @@ class AtLookupImpl implements AtLookUp {
   /// Listener for reading verb responses from the remote server
   late OutboundMessageListener messageListener;
 
-  bool _isPkamAuthenticated = false;
-
-  bool _isCramAuthenticated = false;
-
   OutboundConnection? _connection;
 
   OutboundConnection? get connection => _connection;
@@ -360,9 +356,10 @@ class AtLookupImpl implements AtLookUp {
     if (privateKey == null) {
       throw UnAuthenticatedException('Private key not passed');
     }
+    await createConnection();
     try {
       _pkamAuthenticationMutex.acquire();
-      if (!_isPkamAuthenticated) {
+      if (!_connection!.getMetaData()!.isAuthenticated) {
         await _sendCommand('from:$_currentAtSign\n');
         var fromResponse = await (messageListener.read());
         logger.finer('from result:$fromResponse');
@@ -380,13 +377,13 @@ class AtLookupImpl implements AtLookUp {
         var pkamResponse = await messageListener.read();
         if (pkamResponse == 'data:success') {
           logger.info('auth success');
-          _isPkamAuthenticated = true;
+          _connection!.getMetaData()!.isAuthenticated = true;
         } else {
           throw UnAuthenticatedException(
               'Failed connecting to $_currentAtSign. $pkamResponse');
         }
       }
-      return _isPkamAuthenticated;
+      return _connection!.getMetaData()!.isAuthenticated;
     } finally {
       _pkamAuthenticationMutex.release();
     }
@@ -401,9 +398,10 @@ class AtLookupImpl implements AtLookUp {
     if (secret == null) {
       throw UnAuthenticatedException('Cram secret not passed');
     }
+    await createConnection();
     try {
       _cramAuthenticationMutex.acquire();
-      if (!_isCramAuthenticated) {
+      if (!_connection!.getMetaData()!.isAuthenticated) {
         await _sendCommand('from:$_currentAtSign\n');
         var fromResponse = await messageListener.read();
         logger.info('from result:$fromResponse');
@@ -418,12 +416,12 @@ class AtLookupImpl implements AtLookUp {
         var cramResponse = await messageListener.read();
         if (cramResponse == 'data:success') {
           logger.info('auth success');
-          _isCramAuthenticated = true;
+          _connection!.getMetaData()!.isAuthenticated = true;
         } else {
           throw UnAuthenticatedException('Auth failed');
         }
       }
-      return _isCramAuthenticated;
+      return _connection!.getMetaData()!.isAuthenticated;
     } finally {
       _cramAuthenticationMutex.release();
     }
@@ -483,7 +481,7 @@ class AtLookupImpl implements AtLookUp {
 
   bool _isAuthRequired() {
     return !isConnectionAvailable() ||
-        !(_isPkamAuthenticated || _isCramAuthenticated);
+        !(_connection!.getMetaData()!.isAuthenticated);
   }
 
   Future<bool> createOutBoundConnection(
