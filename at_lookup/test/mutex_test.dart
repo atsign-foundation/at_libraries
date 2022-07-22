@@ -3,8 +3,9 @@ import 'package:test/test.dart';
 
 void main() {
   List<String> criticalSectionEvents = [];
-  Future<void> criticalSection(String eventName, Mutex m, int delayInMillis) async {
-    print ('criticalSection $eventName starting');
+  Future<void> criticalSection(
+      String eventName, Mutex m, int delayInMillis) async {
+    print('criticalSection $eventName starting');
     try {
       await m.acquire();
       criticalSectionEvents.add("$eventName acquired mutex");
@@ -12,20 +13,22 @@ void main() {
       print("criticalSection $eventName acquired mutex");
       await Future.delayed(Duration(milliseconds: 10));
 
-      print("criticalSection $eventName delaying for $delayInMillis milliseconds");
+      print(
+          "criticalSection $eventName delaying for $delayInMillis milliseconds");
       await Future.delayed(Duration(milliseconds: delayInMillis));
 
       criticalSectionEvents.add("$eventName criticalSection completed");
-
     } finally {
-      print ("criticalSection $eventName released mutex");
+      print("criticalSection $eventName released mutex");
       m.release();
       criticalSectionEvents.add("$eventName released mutex");
     }
   }
+
   test('Verify mutex core behaviour', () async {
     Mutex m = Mutex();
-    criticalSection("One", m, 100); // delay for 100 milliseconds so next 'criticalSection' gets a chance to run
+    criticalSection("One", m,
+        100); // delay for 100 milliseconds so next 'criticalSection' gets a chance to run
     criticalSection("Two", m, 10);
 
     await Future.delayed(Duration(milliseconds: 200));
@@ -38,5 +41,4 @@ void main() {
     expect(criticalSectionEvents[4], "Two criticalSection completed");
     expect(criticalSectionEvents[5], "Two released mutex");
   });
-
 }
