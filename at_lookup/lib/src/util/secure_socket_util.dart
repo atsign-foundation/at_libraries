@@ -2,24 +2,21 @@ import 'dart:io';
 import 'package:at_commons/at_commons.dart';
 
 class SecureSocketUtil {
-  static late bool decryptPackets;
-
   ///method that creates and returns a [SecureSocket]. If [decryptPackets] is set to true,the TLS keys are logged into a file.
   static Future<SecureSocket> createSecureSocket(
-      String host,
-      String port,
-      bool? decryptPackets,
-      String? pathToCerts,
-      String? tlsKeysSavePath) async {
-    SecureSocketUtil.decryptPackets = decryptPackets ?? false;
-    if (!SecureSocketUtil.decryptPackets) {
+      String host, String port, SecureSocketConfig secureSocketConfig) async {
+    if (!secureSocketConfig.decryptPackets) {
       return await SecureSocket.connect(host, int.parse(port));
     } else {
       SecurityContext securityContext = SecurityContext();
       try {
-        File keysFile = File(tlsKeysSavePath!);
-        if (pathToCerts != null) {
-          securityContext.setTrustedCertificates(pathToCerts);
+        File keysFile = File(secureSocketConfig.tlsKeysSavePath!);
+        if (secureSocketConfig.pathToCerts != null) {
+          securityContext
+              .setTrustedCertificates(secureSocketConfig.pathToCerts!);
+        } else {
+          throw AtException(
+              'decryptPackets set to true but path to trusted certificated not provided');
         }
         return await SecureSocket.connect(host, int.parse(port),
             context: securityContext,

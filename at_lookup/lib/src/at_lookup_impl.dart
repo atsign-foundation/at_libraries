@@ -41,20 +41,13 @@ class AtLookupImpl implements AtLookUp {
 
   var outboundConnectionTimeout;
 
-  bool? decryptPackets;
-
-  String? pathToCerts;
-
-  String? tlsKeysSavePath;
+  late SecureSocketConfig _secureSocketConfig;
 
   AtLookupImpl(String atSign, String rootDomain, int rootPort,
       {String? privateKey,
       String? cramSecret,
-      this.decryptPackets,
-      this.pathToCerts,
-      this.tlsKeysSavePath,
-      SecondaryAddressFinder? secondaryAddressFinder}) {
-    
+      SecondaryAddressFinder? secondaryAddressFinder,
+      SecureSocketConfig? secureSocketConfig}) {
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
@@ -62,6 +55,8 @@ class AtLookupImpl implements AtLookUp {
     this.cramSecret = cramSecret;
     this.secondaryAddressFinder = secondaryAddressFinder ??
         CacheableSecondaryAddressFinder(rootDomain, rootPort);
+    _secureSocketConfig = secureSocketConfig ?? SecureSocketConfig()
+      ..decryptPackets = false;
   }
 
   @Deprecated('use CacheableSecondaryAddressFinder')
@@ -223,7 +218,8 @@ class AtLookupImpl implements AtLookUp {
       var host = secondaryAddress.host;
       var port = secondaryAddress.port;
       //2. create a connection to secondary server
-      await createOutBoundConnection(host, port.toString(), _currentAtSign);
+      await createOutBoundConnection(
+          host, port.toString(), _currentAtSign, _secureSocketConfig);
       //3. listen to server response
       messageListener = OutboundMessageListener(_connection);
       messageListener.listen();
@@ -497,10 +493,10 @@ class AtLookupImpl implements AtLookUp {
   }
 
   Future<bool> createOutBoundConnection(
-      String host, String port, String toAtSign) async {
+      host, port, toAtSign, secureSocketConfig) async {
     try {
       SecureSocket secureSocket = await SecureSocketUtil.createSecureSocket(
-          host, port, decryptPackets, pathToCerts, tlsKeysSavePath);
+          host, port, secureSocketConfig);
       _connection = OutboundConnectionImpl(secureSocket);
       if (outboundConnectionTimeout != null) {
         _connection!.setIdleTime(outboundConnectionTimeout);
