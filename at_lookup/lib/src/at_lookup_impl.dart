@@ -492,8 +492,8 @@ class AtLookupImpl implements AtLookUp {
         !(_isPkamAuthenticated || _isCramAuthenticated);
   }
 
-  Future<bool> createOutBoundConnection(
-      host, port, toAtSign, secureSocketConfig) async {
+  Future<bool> createOutBoundConnection(String host, String port,
+      String toAtSign, SecureSocketConfig secureSocketConfig) async {
     try {
       SecureSocket secureSocket = await SecureSocketUtil.createSecureSocket(
           host, port, secureSocketConfig);
