@@ -118,7 +118,9 @@ void main() async {
 //    });
   });
 
-  group('some cache tests with a real SecondaryUrlFinder but with rootDomain set to proxy:<something>', () {
+  group(
+      'some cache tests with a real SecondaryUrlFinder but with rootDomain set to proxy:<something>',
+      () {
     String proxyHost = 'vip.ve.atsign.zone';
     String rootDomain = 'proxy:$proxyHost';
     int rootPort = 8443;

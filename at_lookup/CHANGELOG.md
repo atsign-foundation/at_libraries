@@ -1,6 +1,7 @@
 ## 3.0.28
 - createConnection() now directly uses CacheableSecondaryAddressFinder which can be passed on as optional param
 - Introducing SecureSocketUtil which [optionally] allows creation of secure sockets with security context
+- Add mutex to PKAM and CRAM authentication
 - AtCommons upgraded to latest version v3.0.20
 ## 3.0.27
 - Improved timeout handling logic in outbound message listener
