@@ -26,7 +26,7 @@ import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 ```
 
 ## Usage
-Use cases for at_cli_onboarding:\
+Use cases for at_onboarding_cli:\
     1) Authentication\
     2) Onboarding
     
@@ -57,7 +57,7 @@ Use cases for at_cli_onboarding:\
 Proving that one actually owns the atSign. User needs to authenticate before performing operations on that atSign. Operations include reading, writing, deleting or updating data in the atsign's keystore and sending notifications from that atSign.
 
 #### Steps to Authenticate
-   1) Import at_cli_onboarding.
+   1) Import at_onboarding_cli.
    2) Set preferences using AtOnboardingPreference. Either of secret key or path to .atKeysFile need to be provided to authenticate.
    3) Instantiate AtOnboardingServiceImpl using the required atSign and a valid instance of AtOnboardingPreference.
    4) Call the authenticate method on AtOnboardingService.
