@@ -19,6 +19,11 @@ dependency_overrides:
       url: https://github.com/atsign-foundation/at_client_sdk.git
       path: at_client
       ref: trunk
+  at_commons:
+    git:
+      url: https://github.com/atsign-foundation/at_tools.git
+      path: at_commons
+      ref: trunk
 
 
 dev_dependencies:
