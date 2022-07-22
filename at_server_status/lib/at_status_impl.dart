@@ -5,8 +5,8 @@ import 'package:at_lookup/at_lookup.dart';
 import 'at_server_status.dart';
 
 class AtStatusImpl implements AtServerStatus {
-  String? _rootUrl;
-  int? _rootPort;
+  static String? _rootUrl;
+  static int? _rootPort;
 
   String? get rootUrl => _rootUrl;
 
@@ -16,6 +16,9 @@ class AtStatusImpl implements AtServerStatus {
   }
 
   int? get rootPort => _rootPort;
+
+  static CacheableSecondaryAddressFinder secondaryAddressFinder =
+      CacheableSecondaryAddressFinder(_rootUrl!, _rootPort!);
 
   set rootPort(int? value) {
     value ??= 64;
@@ -69,7 +72,7 @@ class AtStatusImpl implements AtServerStatus {
     // ignore: omit_local_variable_types
     AtStatus atStatus = AtStatus();
     atStatus.atSign = atSign;
-    await CacheableSecondaryAddressFinder(rootUrl!, rootPort!)
+    await secondaryAddressFinder
         .findSecondary(atSign)
         .then((serverLocation) async {
       // enum RootStatus { running, stopped, unavailable, found, notFound }
