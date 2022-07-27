@@ -104,7 +104,7 @@ Future<void> main() async {
       AtData result = await atClient
           ?.getLocalSecondary()
           ?.keyStore
-          ?.get(AT_ENCRYPTION_PUBLIC_KEY);
+          ?.get('AT_ENCRYPTION_PUBLIC_KEY$atsign');
       expect(at_demos.encryptionPublicKeyMap[atsign], result.data);
     });
   });
