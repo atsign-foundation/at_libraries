@@ -43,11 +43,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         _getSecretFromQr(atOnboardingPreference.qrCodePath);
 
     if (atOnboardingPreference.cramSecret == null) {
-      throw IllegalArgumentException(
-          'Either of cram secret or qr code containing cram secret not provided');
+      throw AtClientException.message(
+          'Either of cram secret or qr code containing cram secret not provided',
+          exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
     if (atOnboardingPreference.downloadPath == null) {
-      throw IllegalArgumentException('Download path not provided');
+      throw AtClientException.message('Download path not provided',
+          exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
     _atLookup = AtLookupImpl(_atSign, atOnboardingPreference.rootDomain,
         atOnboardingPreference.rootPort);
@@ -118,7 +120,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       logger.finer(await getServerStatus());
       logger.info('----------@sign activated---------');
     } else {
-      throw UnAuthenticatedException('Pkam Authentication Failed');
+      throw AtClientException.message('Pkam Authentication Failed');
     }
   }
 
@@ -187,8 +189,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         await _readAtKeysFile(atOnboardingPreference.atKeysFilePath));
 
     if (atOnboardingPreference.privateKey == null) {
-      throw IllegalArgumentException(
-          'Either of private key or .atKeys file not provided');
+      throw AtPrivateKeyNotFoundException(
+          'Either of private key or .atKeys file not provided in preferences',
+          exceptionScenario: ExceptionScenario.invalidValueProvided);
     } else {
       _atClient ??= await getAtClient();
       _isPkamAuthenticated =
