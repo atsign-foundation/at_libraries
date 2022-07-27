@@ -166,7 +166,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
           AT_PKAM_PRIVATE_KEY, _atKeysMap[AuthKeyType.pkamPrivateKey]!);
       logger.finer('PkamPrivateKey persist status $response');
       response = await _atClient?.getLocalSecondary()?.putValue(
-          'AT_ENCRYPTION_PUBLIC_KEY$_atSign',
+          '$AT_ENCRYPTION_PUBLIC_KEY$_atSign',
           _atKeysMap[AuthKeyType.encryptionPublicKey]!);
       logger.finer('EncryptionPublicKey persist status $response');
       response = await _atClient?.getLocalSecondary()?.putValue(

@@ -140,7 +140,6 @@ AtOnboardingPreference getPreferences(String atsign, bool isOnboarding) {
     ..isLocalStoreRequired = true
     ..hiveStoragePath = 'storage/hive/client'
     ..commitLogPath = 'storage/hive/client/commit'
-    ..rootDomain = 'vip.ve.atsign.zone'
     ..privateKey = at_demos.pkamPrivateKeyMap[atsign]
     ..cramSecret = at_demos.cramKeyMap[atsign]
     ..downloadPath = 'storage/keysFile.atKeys';
