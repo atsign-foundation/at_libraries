@@ -1,9 +1,7 @@
-import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'package:at_client/at_client.dart';
 import 'package:at_commons/at_builders.dart';
-import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_server_status/at_server_status.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
@@ -21,7 +19,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   bool _isAtsignOnboarded = false;
   AtLookupImpl? _atLookup;
   AtClient? _atClient;
-  AtSignLogger logger = AtSignLogger('Onboarding Cli');
+  AtSignLogger logger = AtSignLogger('OnboardingCli');
   AtOnboardingPreference atOnboardingPreference;
 
   AtOnboardingServiceImpl(this._atSign, this.atOnboardingPreference);
@@ -43,23 +41,25 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     //get cram_secret from either from AtOnboardingConfig or decode it from qr code whichever available
     atOnboardingPreference.cramSecret ??=
         _getSecretFromQr(atOnboardingPreference.qrCodePath);
+
     if (atOnboardingPreference.cramSecret == null) {
-      throw UnAuthenticatedException(
-          'either of cram secret or qr code containing cram secret not provided');
-    } else {
-      _atLookup = AtLookupImpl(_atSign, atOnboardingPreference.rootDomain,
-          atOnboardingPreference.rootPort);
-      _isAtsignOnboarded = (await _atLookup
-          ?.authenticate_cram(atOnboardingPreference.cramSecret))!;
-      if (_isAtsignOnboarded == true &&
-          atOnboardingPreference.downloadPath != null) {
-        await _activateAtsign();
-        logger.finer('cram authentication successful');
-        return _isAtsignOnboarded;
-      } else {
-        throw 'download path not provided';
-      }
+      throw AtClientException.message(
+          'Either of cram secret or qr code containing cram secret not provided',
+          exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
+    if (atOnboardingPreference.downloadPath == null) {
+      throw AtClientException.message('Download path not provided',
+          exceptionScenario: ExceptionScenario.invalidValueProvided);
+    }
+    _atLookup = AtLookupImpl(_atSign, atOnboardingPreference.rootDomain,
+        atOnboardingPreference.rootPort);
+    _isAtsignOnboarded = (await _atLookup
+        ?.authenticate_cram(atOnboardingPreference.cramSecret))!;
+    if (_isAtsignOnboarded) {
+      await _activateAtsign();
+      logger.info('Cram authentication successful');
+    }
+    return _isAtsignOnboarded;
   }
 
   ///method to generate/update encryption key-pairs to activate an atsign
@@ -69,22 +69,23 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     String _selfEncryptionKey;
     Map<String, String> atKeysMap;
     //generating pkamKeyPair
-    logger.finer('generating pkam keypair');
+    logger.info('Generating pkam keypair');
     _pkamRsaKeypair = generateRsaKeypair();
     //updating pkamPublicKey to remote secondary
-    logger.finer('updating pkam public key to remote secondary');
+    logger.finer('Updating PkamPublicKey to remote secondary');
     String updateCommand =
         'update:$AT_PKAM_PUBLIC_KEY ${_pkamRsaKeypair.publicKey}\n';
     String? pkamUpdateResult =
         await _atLookup?.executeCommand(updateCommand, auth: false);
-    logger.finer('pkam update result: $pkamUpdateResult');
+    logger.finer('PkamPublicKey update result: $pkamUpdateResult');
     atOnboardingPreference.privateKey = _pkamRsaKeypair.privateKey.toString();
     //authenticate using pkam to verify insertion of pkamPublicKey
     _isPkamAuthenticated = await authenticate();
+
     if (_isPkamAuthenticated) {
       //generate selfEncryptionKey
       _selfEncryptionKey = generateAESKey();
-      logger.finer('generating encryption keypair');
+      logger.info('Generating encryption keypair');
       //generate user encryption keypair
       _encryptionKeyPair = generateRsaKeypair();
       //update user encryption public key
@@ -96,12 +97,12 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       String? encryptKeyUpdateResult =
           await _atLookup?.executeVerb(updateBuilder);
       logger
-          .finer('encryption public key update result $encryptKeyUpdateResult');
+          .finer('Encryption public key update result $encryptKeyUpdateResult');
       //deleting cram secret from the keystore as cram auth is complete
       DeleteVerbBuilder deleteBuilder = DeleteVerbBuilder()
         ..atKey = AT_CRAM_SECRET;
       String? deleteResponse = await _atLookup?.executeVerb(deleteBuilder);
-      logger.finer('cram secret delete response : $deleteResponse');
+      logger.finer('Cram secret delete response : $deleteResponse');
       //mapping encryption keys pairs to their names
       atKeysMap = <String, String>{
         AuthKeyType.pkamPublicKey: _pkamRsaKeypair.publicKey.toString(),
@@ -115,10 +116,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       };
       await _generateAtKeysFile(atKeysMap);
       await _persistKeysLocalSecondary(atKeysMap, false);
+      //displays status of the atsign
       logger.finer(await getServerStatus());
-      logger.finer('----------@sign activated---------');
+      logger.info('----------@sign activated---------');
     } else {
-      logger.finer('could not complete pkam authentication');
+      throw AtClientException.message('Pkam Authentication Failed');
     }
   }
 
@@ -146,7 +148,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     await atKeysFile.flush();
     await atKeysFile.close();
     logger
-        .finer('atKeys file saved at ${atOnboardingPreference.atKeysFilePath}');
+        .info('atKeys file saved at ${atOnboardingPreference.atKeysFilePath}');
   }
 
   ///back-up encryption keys to local secondary
@@ -161,21 +163,21 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     if (_atKeysMap != null) {
       bool? response = await _atClient?.getLocalSecondary()?.putValue(
           AT_PKAM_PUBLIC_KEY, _atKeysMap[AuthKeyType.pkamPublicKey]!);
-      logger.finer('pkamPublicKey persist status $response');
+      logger.finer('PkamPublicKey persist status $response');
       response = await _atClient?.getLocalSecondary()?.putValue(
           AT_PKAM_PRIVATE_KEY, _atKeysMap[AuthKeyType.pkamPrivateKey]!);
-      logger.finer('pkamPrivateKey persist status $response');
+      logger.finer('PkamPrivateKey persist status $response');
       response = await _atClient?.getLocalSecondary()?.putValue(
-          AT_ENCRYPTION_PUBLIC_KEY,
+          '$AT_ENCRYPTION_PUBLIC_KEY$_atSign',
           _atKeysMap[AuthKeyType.encryptionPublicKey]!);
-      logger.finer('encryptionPublicKey persist status $response');
+      logger.finer('EncryptionPublicKey persist status $response');
       response = await _atClient?.getLocalSecondary()?.putValue(
           AT_ENCRYPTION_PRIVATE_KEY,
           _atKeysMap[AuthKeyType.encryptionPrivateKey]!);
-      logger.finer('encryptionPrivateKey persist status $response');
+      logger.finer('EncryptionPrivateKey persist status $response');
       response = await _atClient?.getLocalSecondary()?.putValue(
           AT_ENCRYPTION_SELF_KEY, _atKeysMap[AuthKeyType.selfEncryptionKey]!);
-      logger.finer('self encryption key persist status $response');
+      logger.finer('Self encryption key persist status $response');
     } else {
       logger.severe('atKeysMap is null');
     }
@@ -185,9 +187,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   Future<bool> authenticate() async {
     atOnboardingPreference.privateKey ??= _getPkamPrivateKey(
         await _readAtKeysFile(atOnboardingPreference.atKeysFilePath));
+
     if (atOnboardingPreference.privateKey == null) {
-      throw UnAuthenticatedException(
-          'either of private key or .atKeys file not provided');
+      throw AtPrivateKeyNotFoundException(
+          'Either of private key or .atKeys file not provided in preferences',
+          exceptionScenario: ExceptionScenario.invalidValueProvided);
     } else {
       _atClient ??= await getAtClient();
       _isPkamAuthenticated =

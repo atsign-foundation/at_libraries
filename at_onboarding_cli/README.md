@@ -35,7 +35,7 @@ Use cases for at_onboarding_cli:\
    2) As a result of Step 1, one also needs to provide commitLogPath and hiveStoragePath.
    3) One must set the namespace variable to match the name of their app.
    4) atKeysFile path should contain the file name.
-   5) downloadPath should only contain name of the dirctory where the .atKeysFile is expected to be generated.
+   5) downloadPath should only contain name of the directory where the .atKeysFile is expected to be generated.
 
 - Set `AtOnboardingPreference` to your preferred settings. These preferences will be used to configure the `AtOnboardingService`. 
     

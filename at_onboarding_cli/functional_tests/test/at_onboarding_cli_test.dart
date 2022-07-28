@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:at_client/at_client.dart';
-import 'package:at_commons/at_commons.dart';
-import 'package:at_persistence_secondary_server/at_persistence_secondary_server.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
@@ -102,11 +100,9 @@ Future<void> main() async {
           await atClient?.getLocalSecondary()?.getEncryptionPrivateKey());
     });
     test('test encryptionPublicKey on local secondary', () async {
-      AtData result = await atClient
-          ?.getLocalSecondary()
-          ?.keyStore
-          ?.get(AT_ENCRYPTION_PUBLIC_KEY);
-      expect(at_demos.encryptionPublicKeyMap[atsign], result.data);
+      String? result =
+          await atClient?.getLocalSecondary()?.getEncryptionPublicKey(atsign);
+      expect(at_demos.encryptionPublicKeyMap[atsign], result);
     });
   });
 
@@ -144,7 +140,6 @@ AtOnboardingPreference getPreferences(String atsign, bool isOnboarding) {
     ..isLocalStoreRequired = true
     ..hiveStoragePath = 'storage/hive/client'
     ..commitLogPath = 'storage/hive/client/commit'
-    ..rootDomain = 'vip.ve.atsign.zone'
     ..privateKey = at_demos.pkamPrivateKeyMap[atsign]
     ..cramSecret = at_demos.cramKeyMap[atsign]
     ..downloadPath = 'storage/keysFile.atKeys';
