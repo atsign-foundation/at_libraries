@@ -1,3 +1,6 @@
+## 1.1.1
+- Method to check and format atsign.
+- Upgrade dependency at_client to latest version v3.0.32
 ## 1.1.0
 - Fixed encryption public key with malformed syntax being synced to local secondary.
 - [Breaking Change] Migrating AtException to AtClientException.
