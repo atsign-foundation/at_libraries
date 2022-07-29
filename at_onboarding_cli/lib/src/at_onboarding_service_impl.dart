@@ -157,7 +157,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   ///back-up encryption keys to local secondary
   Future<void> _persistKeysLocalSecondary(
       Map<String, String>? _atKeysMap, bool isPkam) async {
-    //get decrypt atKeys file data
+    //when authenticating keys need to be fetched from atKeys file
     if (isPkam) {
       _atKeysMap = await _decryptAtKeysFile(
           (await _readAtKeysFile(atOnboardingPreference.atKeysFilePath))!);
@@ -166,21 +166,25 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     if (_atKeysMap != null) {
       bool? response = await _atClient?.getLocalSecondary()?.putValue(
           AT_PKAM_PUBLIC_KEY, _atKeysMap[AuthKeyType.pkamPublicKey]!);
-      logger.finer('PkamPublicKey persist status $response');
+      logger.finer('PkamPublicKey persist to localSecondary: status $response');
       response = await _atClient?.getLocalSecondary()?.putValue(
           AT_PKAM_PRIVATE_KEY, _atKeysMap[AuthKeyType.pkamPrivateKey]!);
-      logger.finer('PkamPrivateKey persist status $response');
+      logger
+          .finer('PkamPrivateKey persist to localSecondary: status $response');
       response = await _atClient?.getLocalSecondary()?.putValue(
           '$AT_ENCRYPTION_PUBLIC_KEY$_atSign',
           _atKeysMap[AuthKeyType.encryptionPublicKey]!);
-      logger.finer('EncryptionPublicKey persist status $response');
+      logger.finer(
+          'EncryptionPublicKey persist to localSecondary: status $response');
       response = await _atClient?.getLocalSecondary()?.putValue(
           AT_ENCRYPTION_PRIVATE_KEY,
           _atKeysMap[AuthKeyType.encryptionPrivateKey]!);
-      logger.finer('EncryptionPrivateKey persist status $response');
+      logger.finer(
+          'EncryptionPrivateKey persist to localSecondary: status $response');
       response = await _atClient?.getLocalSecondary()?.putValue(
           AT_ENCRYPTION_SELF_KEY, _atKeysMap[AuthKeyType.selfEncryptionKey]!);
-      logger.finer('Self encryption key persist status $response');
+      logger.finer(
+          'Self encryption key persist to localSecondary: status $response');
     } else {
       logger.severe('atKeysMap is null');
     }

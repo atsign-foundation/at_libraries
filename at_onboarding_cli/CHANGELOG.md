@@ -1,7 +1,7 @@
 ## 1.1.1
 - Method to check and format atsign.
 ## 1.1.0
-- Fixed malformed encryption public key syntax being synced to local secondary.
+- Fixed encryption public key with malformed syntax being synced to local secondary.
 - [Breaking Change] Migrating AtException to AtClientException.
 - Code refactoring and adjusting AtLogger log levels to differentiate important logs.
 - Enforcing Strict data typing on method params and return types.
