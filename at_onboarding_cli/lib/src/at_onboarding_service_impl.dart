@@ -24,7 +24,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   AtOnboardingServiceImpl(this._atSign, this.atOnboardingPreference) {
     _formatAtsign();
-    logger.shout(_atSign);
   }
 
   @override
@@ -292,7 +291,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }
 
   void _formatAtsign() {
-    logger.shout(_atSign);
     if (!_atSign.startsWith('@')) {
       _atSign = '@$_atSign';
     }
