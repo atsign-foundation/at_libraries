@@ -14,7 +14,7 @@ import 'package:path/path.dart' as path;
 
 ///class containing service that can onboard/activate/authenticate @signs
 class AtOnboardingServiceImpl implements AtOnboardingService {
-  final String _atSign;
+  String _atSign;
   bool _isPkamAuthenticated = false;
   bool _isAtsignOnboarded = false;
   AtLookupImpl? _atLookup;
@@ -22,7 +22,10 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   AtSignLogger logger = AtSignLogger('OnboardingCli');
   AtOnboardingPreference atOnboardingPreference;
 
-  AtOnboardingServiceImpl(this._atSign, this.atOnboardingPreference);
+  AtOnboardingServiceImpl(this._atSign, this.atOnboardingPreference) {
+    _formatAtsign();
+    logger.shout(_atSign);
+  }
 
   @override
   Future<AtClient?> getAtClient() async {
@@ -285,6 +288,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       return secret;
     } else {
       return null;
+    }
+  }
+
+  void _formatAtsign() {
+    logger.shout(_atSign);
+    if (!_atSign.startsWith('@')) {
+      _atSign = '@$_atSign';
     }
   }
 
