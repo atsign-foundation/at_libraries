@@ -7,7 +7,6 @@ import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_lookup/src/connection/outbound_message_listener.dart';
-import 'package:at_lookup/src/util/lookup_util.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:crypto/crypto.dart';
 import 'package:crypton/crypton.dart';
@@ -275,12 +274,20 @@ class AtLookupImpl implements AtLookUp {
       // Setting the errorCode and errorDescription to default values.
       var errorCode = 'AT0014';
       var errorDescription = 'Unknown server error';
-      if (verbResult.contains('-')) {
-        if (verbResult.split('-')[0].isNotEmpty) {
-          errorCode = verbResult.split('-')[0];
-        }
-        if (verbResult.split('-')[1].isNotEmpty) {
-          errorDescription = verbResult.split('-')[1];
+      try {
+        var errorMap = jsonDecode(verbResult);
+        errorCode = errorMap['errorCode'];
+        errorDescription = errorMap['errorDescription'];
+      } on FormatException {
+        // Catching the FormatException to preserve backward compatibility - responses without jsonEncoding.
+        // TODO: Can we remove the below catch block in next release once all the servers are migrated to new version.
+        if (verbResult.contains('-')) {
+          if (verbResult.split('-')[0].isNotEmpty) {
+            errorCode = verbResult.split('-')[0];
+          }
+          if (verbResult.split('-')[1].isNotEmpty) {
+            errorDescription = verbResult.split('-')[1];
+          }
         }
       }
       throw AtLookUpException(errorCode, errorDescription);
