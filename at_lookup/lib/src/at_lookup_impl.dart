@@ -51,7 +51,6 @@ class AtLookupImpl implements AtLookUp {
     this.cramSecret = cramSecret;
     this.secondaryAddressFinder = secondaryAddressFinder ?? CacheableSecondaryAddressFinder(rootDomain, rootPort);
     _secureSocketConfig = secureSocketConfig ?? SecureSocketConfig();
-    // ..decryptPackets = false;
   }
 
   @Deprecated('use CacheableSecondaryAddressFinder')
