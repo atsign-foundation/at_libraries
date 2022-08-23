@@ -38,11 +38,15 @@ class AtLookupImpl implements AtLookUp {
 
   late SecureSocketConfig _secureSocketConfig;
 
+  /// Represents the client configurations.
+  late Map<String, dynamic> _clientConfig;
+
   AtLookupImpl(String atSign, String rootDomain, int rootPort,
       {String? privateKey,
       String? cramSecret,
       SecondaryAddressFinder? secondaryAddressFinder,
-      SecureSocketConfig? secureSocketConfig}) {
+      SecureSocketConfig? secureSocketConfig,
+      Map<String, dynamic>? clientConfig}) {
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
@@ -52,6 +56,9 @@ class AtLookupImpl implements AtLookUp {
         CacheableSecondaryAddressFinder(rootDomain, rootPort);
     _secureSocketConfig = secureSocketConfig ?? SecureSocketConfig()
       ..decryptPackets = false;
+    // Stores the client configurations.
+    // If client configurations are not available, defaults to empty map
+    _clientConfig = clientConfig ?? {};
   }
 
   @Deprecated('use CacheableSecondaryAddressFinder')
@@ -373,7 +380,10 @@ class AtLookupImpl implements AtLookUp {
     try {
       _pkamAuthenticationMutex.acquire();
       if (!_connection!.getMetaData()!.isAuthenticated) {
-        await _sendCommand('from:$_currentAtSign\n');
+        await _sendCommand((FromVerbBuilder()
+              ..atSign = _currentAtSign
+              ..clientConfig = _clientConfig)
+            .buildCommand());
         var fromResponse = await (messageListener.read());
         logger.finer('from result:$fromResponse');
         if (fromResponse.isEmpty) {
@@ -415,7 +425,10 @@ class AtLookupImpl implements AtLookUp {
     try {
       _cramAuthenticationMutex.acquire();
       if (!_connection!.getMetaData()!.isAuthenticated) {
-        await _sendCommand('from:$_currentAtSign\n');
+        await _sendCommand((FromVerbBuilder()
+              ..atSign = _currentAtSign
+              ..clientConfig = _clientConfig)
+            .buildCommand());
         var fromResponse = await messageListener.read();
         logger.info('from result:$fromResponse');
         if (fromResponse.isEmpty) {
