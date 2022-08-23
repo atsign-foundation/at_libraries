@@ -28,7 +28,7 @@ import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 ## Usage
 Use cases for at_onboarding_cli:\
     1) Authentication\
-    2) Onboarding
+    2) Onboarding (Activation)
     
 ### Setting valid preferences:
    1) isLocalStorageRequired needs to be set to true as AtClient now needs a local secondary in order to work.
