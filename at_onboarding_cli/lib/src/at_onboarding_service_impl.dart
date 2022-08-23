@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:at_client/at_client.dart';
+import 'package:at_utils/at_utils.dart';
 import 'package:at_commons/at_builders.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_server_status/at_server_status.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
-import 'package:at_utils/at_logger.dart';
 import 'package:crypton/crypton.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:zxing2/qrcode.dart';
@@ -23,7 +23,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   AtOnboardingPreference atOnboardingPreference;
 
   AtOnboardingServiceImpl(atsign, this.atOnboardingPreference) {
-    _atSign = _formatAtsign(atsign);
+    _atSign = AtUtils.fixAtSign(atsign);
   }
 
   @override
@@ -292,13 +292,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     } else {
       return null;
     }
-  }
-
-  String _formatAtsign(String atsign) {
-    if (!atsign.startsWith('@')) {
-      return '@$atsign';
-    }
-    return atsign;
   }
 
   @override
