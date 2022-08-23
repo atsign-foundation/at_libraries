@@ -23,7 +23,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   AtOnboardingPreference atOnboardingPreference;
 
   AtOnboardingServiceImpl(atsign, this.atOnboardingPreference) {
-    _atSign = AtUtils.fixAtSign(atsign);
+    _atSign = AtUtils.formatAtSign(atsign)!;
+    //performs atSign format checks on the atSign
+    AtUtils.fixAtSign(_atSign);
   }
 
   @override
