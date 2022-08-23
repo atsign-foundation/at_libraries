@@ -1,3 +1,5 @@
+## 3.0.29
+- Enhance the executeVerb to handle server responses in JSON format
 ## 3.0.28
 - createConnection() now directly uses CacheableSecondaryAddressFinder which can be passed on as optional param
 - Introducing SecureSocketUtil which [optionally] allows creation of secure sockets with security context

@@ -7,7 +7,6 @@ import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_lookup/src/connection/outbound_message_listener.dart';
-import 'package:at_lookup/src/util/lookup_util.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:crypto/crypto.dart';
 import 'package:crypton/crypton.dart';
@@ -39,18 +38,27 @@ class AtLookupImpl implements AtLookUp {
 
   late SecureSocketConfig _secureSocketConfig;
 
+  /// Represents the client configurations.
+  late Map<String, dynamic> _clientConfig;
+
   AtLookupImpl(String atSign, String rootDomain, int rootPort,
       {String? privateKey,
       String? cramSecret,
       SecondaryAddressFinder? secondaryAddressFinder,
-      SecureSocketConfig? secureSocketConfig}) {
+      SecureSocketConfig? secureSocketConfig,
+      Map<String, dynamic>? clientConfig}) {
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
     this.privateKey = privateKey;
     this.cramSecret = cramSecret;
-    this.secondaryAddressFinder = secondaryAddressFinder ?? CacheableSecondaryAddressFinder(rootDomain, rootPort);
-    _secureSocketConfig = secureSocketConfig ?? SecureSocketConfig();
+    this.secondaryAddressFinder = secondaryAddressFinder ??
+        CacheableSecondaryAddressFinder(rootDomain, rootPort);
+    _secureSocketConfig = secureSocketConfig ?? SecureSocketConfig()
+      ..decryptPackets = false;
+    // Stores the client configurations.
+    // If client configurations are not available, defaults to empty map
+    _clientConfig = clientConfig ?? {};
   }
 
   @Deprecated('use CacheableSecondaryAddressFinder')
@@ -257,12 +265,20 @@ class AtLookupImpl implements AtLookUp {
       // Setting the errorCode and errorDescription to default values.
       var errorCode = 'AT0014';
       var errorDescription = 'Unknown server error';
-      if (verbResult.contains('-')) {
-        if (verbResult.split('-')[0].isNotEmpty) {
-          errorCode = verbResult.split('-')[0];
-        }
-        if (verbResult.split('-')[1].isNotEmpty) {
-          errorDescription = verbResult.split('-')[1];
+      try {
+        var errorMap = jsonDecode(verbResult);
+        errorCode = errorMap['errorCode'];
+        errorDescription = errorMap['errorDescription'];
+      } on FormatException {
+        // Catching the FormatException to preserve backward compatibility - responses without jsonEncoding.
+        // TODO: Can we remove the below catch block in next release once all the servers are migrated to new version.
+        if (verbResult.contains('-')) {
+          if (verbResult.split('-')[0].isNotEmpty) {
+            errorCode = verbResult.split('-')[0];
+          }
+          if (verbResult.split('-')[1].isNotEmpty) {
+            errorDescription = verbResult.split('-')[1];
+          }
         }
       }
       throw AtLookUpException(errorCode, errorDescription);
@@ -348,7 +364,10 @@ class AtLookupImpl implements AtLookUp {
     try {
       _pkamAuthenticationMutex.acquire();
       if (!_connection!.getMetaData()!.isAuthenticated) {
-        await _sendCommand('from:$_currentAtSign\n');
+        await _sendCommand((FromVerbBuilder()
+              ..atSign = _currentAtSign
+              ..clientConfig = _clientConfig)
+            .buildCommand());
         var fromResponse = await (messageListener.read());
         logger.finer('from result:$fromResponse');
         if (fromResponse.isEmpty) {
@@ -388,7 +407,10 @@ class AtLookupImpl implements AtLookUp {
     try {
       _cramAuthenticationMutex.acquire();
       if (!_connection!.getMetaData()!.isAuthenticated) {
-        await _sendCommand('from:$_currentAtSign\n');
+        await _sendCommand((FromVerbBuilder()
+              ..atSign = _currentAtSign
+              ..clientConfig = _clientConfig)
+            .buildCommand());
         var fromResponse = await messageListener.read();
         logger.info('from result:$fromResponse');
         if (fromResponse.isEmpty) {
