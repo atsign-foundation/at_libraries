@@ -8,13 +8,13 @@ environment:
 
 
 dependencies:
-   at_utils: ^3.0.4
-   at_client: ^3.0.32
-   at_lookup: ^3.0.28
+   at_utils: ^3.0.10
+   at_client: ^3.0.35
+   at_lookup: ^3.0.29
    zxing2: ^0.1.0
    image: ^3.1.1
    crypton: ^2.0.3
-   at_commons: ^3.0.21
+   at_commons: ^3.0.24
    encrypt: ^5.0.1
    at_server_status: ^1.0.3
    path: ^1.8.1
