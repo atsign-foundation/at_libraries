@@ -85,7 +85,7 @@ atOnboardingService.onboard();
 AtClient? atClient = await atOnboardingService.getAtClient();
 AtLookup? atLookup = atOnboardingService.getAtLookup();
 ```
-Please refer to [example](https://github.com/atsign-foundation/at_libraries/blob/at_onboarding_cli/at_onboarding_cli/example/example.dart) for more details.
+Please refer to [example](https://pub.dev/packages/at_onboarding_cli/example) for more details.
 
 ## Open source usage and contributions
 
