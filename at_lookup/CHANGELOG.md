@@ -1,3 +1,5 @@
+## 3.0.30
+- Introduce clientConfig which can be used to send client configurations to server.
 ## 3.0.29
 - Enhance the executeVerb to handle server responses in JSON format
 ## 3.0.28
