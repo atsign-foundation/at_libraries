@@ -54,8 +54,7 @@ class AtLookupImpl implements AtLookUp {
     this.cramSecret = cramSecret;
     this.secondaryAddressFinder = secondaryAddressFinder ??
         CacheableSecondaryAddressFinder(rootDomain, rootPort);
-    _secureSocketConfig = secureSocketConfig ?? SecureSocketConfig()
-      ..decryptPackets = false;
+    _secureSocketConfig = secureSocketConfig ?? SecureSocketConfig();
     // Stores the client configurations.
     // If client configurations are not available, defaults to empty map
     _clientConfig = clientConfig ?? {};
