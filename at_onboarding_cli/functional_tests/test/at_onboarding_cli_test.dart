@@ -7,7 +7,6 @@ import 'package:at_utils/at_logger.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_server_status/at_server_status.dart';
 import 'package:test/test.dart';
-import 'package:path/path.dart' as path;
 import 'package:at_demo_data/at_demo_data.dart' as at_demos;
 
 Future<void> main() async {
@@ -117,8 +116,6 @@ Future<void> main() async {
       expect(true, status);
     });
     test('test to validate generated .atKeys file', () async {
-      atOnboardingPreference.atKeysFilePath = path.join(
-          atOnboardingPreference.downloadPath!, '${atsign}_key.atKeys');
       AtOnboardingService atOnboardingService =
           AtOnboardingServiceImpl(atsign, atOnboardingPreference);
       bool status2 = await atOnboardingService.authenticate();
