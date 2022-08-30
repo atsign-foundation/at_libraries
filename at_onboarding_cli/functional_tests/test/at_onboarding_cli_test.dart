@@ -134,7 +134,7 @@ Future<void> main() async {
 
   group('test activate_cli', () {
     String atsign = '@bob🛠';
-    String filePath = '${Directory.current}/keys/${atsign}_key.atKeys';
+    String filePath = '${Directory.current.path}/keys/${atsign}_key.atKeys';
 
     test('activate using activate_cli', () async {
       List<String> args = [
@@ -159,6 +159,7 @@ Future<void> main() async {
       expect(await onboardingService.authenticate(), true);
     });
   });
+
   await tearDownFunc();
 }
 
