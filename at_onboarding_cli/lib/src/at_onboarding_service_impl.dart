@@ -51,7 +51,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
           'Either of cram secret or qr code containing cram secret not provided',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
-    if (atOnboardingPreference.downloadPath == null) {
+    if (atOnboardingPreference.downloadPath == null &&
+        atOnboardingPreference.atKeysFilePath == null) {
       throw AtClientException.message('Download path not provided',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
@@ -59,10 +60,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         atOnboardingPreference.rootPort);
     _isAtsignOnboarded = (await _atLookup
         ?.authenticate_cram(atOnboardingPreference.cramSecret))!;
+
+    logger.info('Cram authentication status: $_isAtsignOnboarded');
+
     if (_isAtsignOnboarded) {
       await _activateAtsign();
-      logger.info('Cram authentication successful');
     }
+
     return _isAtsignOnboarded;
   }
 
@@ -72,9 +76,31 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     RSAKeypair _encryptionKeyPair;
     String _selfEncryptionKey;
     Map<String, String> atKeysMap;
+
     //generating pkamKeyPair
     logger.info('Generating pkam keypair');
     _pkamRsaKeypair = generateRsaKeypair();
+
+    //generate user encryption keypair
+    logger.info('Generating encryption keypair');
+    _encryptionKeyPair = generateRsaKeypair();
+
+    //generate selfEncryptionKey
+    _selfEncryptionKey = generateAESKey();
+
+    //mapping encryption keys pairs to their names
+    atKeysMap = <String, String>{
+      AuthKeyType.pkamPublicKey: _pkamRsaKeypair.publicKey.toString(),
+      AuthKeyType.pkamPrivateKey: _pkamRsaKeypair.privateKey.toString(),
+      AuthKeyType.encryptionPublicKey: _encryptionKeyPair.publicKey.toString(),
+      AuthKeyType.encryptionPrivateKey:
+          _encryptionKeyPair.privateKey.toString(),
+      AuthKeyType.selfEncryptionKey: _selfEncryptionKey,
+      _atSign: _selfEncryptionKey,
+    };
+    //generate .atKeys file
+    await _generateAtKeysFile(atKeysMap);
+
     //updating pkamPublicKey to remote secondary
     logger.finer('Updating PkamPublicKey to remote secondary');
     String updateCommand =
@@ -83,16 +109,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         await _atLookup?.executeCommand(updateCommand, auth: false);
     logger.finer('PkamPublicKey update result: $pkamUpdateResult');
     atOnboardingPreference.privateKey = _pkamRsaKeypair.privateKey.toString();
+
     //authenticate using pkam to verify insertion of pkamPublicKey
-    _isPkamAuthenticated = await authenticate();
+    _isPkamAuthenticated =
+        (await _atLookup?.authenticate(atOnboardingPreference.privateKey))!;
 
     if (_isPkamAuthenticated) {
-      //generate selfEncryptionKey
-      _selfEncryptionKey = generateAESKey();
-      logger.info('Generating encryption keypair');
-      //generate user encryption keypair
-      _encryptionKeyPair = generateRsaKeypair();
-      //update user encryption public key
+      //update user encryption public key to remote secondary
       UpdateVerbBuilder updateBuilder = UpdateVerbBuilder()
         ..atKey = 'publickey'
         ..isPublic = true
@@ -107,22 +130,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         ..atKey = AT_CRAM_SECRET;
       String? deleteResponse = await _atLookup?.executeVerb(deleteBuilder);
       logger.finer('Cram secret delete response : $deleteResponse');
-      //mapping encryption keys pairs to their names
-      atKeysMap = <String, String>{
-        AuthKeyType.pkamPublicKey: _pkamRsaKeypair.publicKey.toString(),
-        AuthKeyType.pkamPrivateKey: _pkamRsaKeypair.privateKey.toString(),
-        AuthKeyType.encryptionPublicKey:
-            _encryptionKeyPair.publicKey.toString(),
-        AuthKeyType.encryptionPrivateKey:
-            _encryptionKeyPair.privateKey.toString(),
-        AuthKeyType.selfEncryptionKey: _selfEncryptionKey,
-        _atSign: _selfEncryptionKey,
-      };
-      await _generateAtKeysFile(atKeysMap);
-      await _persistKeysLocalSecondary(atKeysMap, false);
       //displays status of the atsign
       logger.finer(await getServerStatus());
-      logger.info('----------@sign activated---------');
+      logger.info('----------atSign activated---------');
     } else {
       throw AtClientException.message('Pkam Authentication Failed');
     }
@@ -143,52 +153,57 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     atKeysMap[AuthKeyType.encryptionPrivateKey] = EncryptionUtil.encryptValue(
         atKeysMap[AuthKeyType.encryptionPrivateKey]!,
         atKeysMap[AuthKeyType.selfEncryptionKey]!);
-    //generating .atKeys file at path provided in onboardingConfig
-    atOnboardingPreference.atKeysFilePath = path.join(
+
+    //create directory at provided path if one does not exist already
+    if (atOnboardingPreference.downloadPath != null &&
+        !(await Directory(atOnboardingPreference.downloadPath!).exists())) {
+      await Directory(atOnboardingPreference.downloadPath!).create();
+    }
+    //construct download path to match standard atKeys file name convention
+    atOnboardingPreference.downloadPath = path.join(
         atOnboardingPreference.downloadPath!, '${_atSign}_key.atKeys');
-    IOSink atKeysFile =
-        File(atOnboardingPreference.atKeysFilePath!).openWrite();
+
+    //note: in case atKeysFilePath is provided instead of downloadPath;
+    //file is created with whichever name provided as atKeysFilePath(even if filename does not match standary atKeys file name convention)
+    IOSink atKeysFile = File(atOnboardingPreference.downloadPath ??
+            atOnboardingPreference.atKeysFilePath!)
+        .openWrite();
+
+    //generating .atKeys file at path provided in onboardingConfig
     atKeysFile.write(jsonEncode(atKeysMap));
     await atKeysFile.flush();
     await atKeysFile.close();
-    logger
-        .info('atKeys file saved at ${atOnboardingPreference.atKeysFilePath}');
+    logger.info(
+        'atKeys file saved at ${atOnboardingPreference.downloadPath ?? atOnboardingPreference.atKeysFilePath}');
   }
 
   ///back-up encryption keys to local secondary
-  Future<void> _persistKeysLocalSecondary(
-      Map<String, String>? _atKeysMap, bool isPkam) async {
+  Future<void> _persistKeysLocalSecondary() async {
     //when authenticating keys need to be fetched from atKeys file
-    if (isPkam) {
-      _atKeysMap = await _decryptAtKeysFile(
-          (await _readAtKeysFile(atOnboardingPreference.atKeysFilePath))!);
-    }
+    Map<String, String> _atKeysMap = await _decryptAtKeysFile(
+        (await _readAtKeysFile(atOnboardingPreference.atKeysFilePath))!);
     //backup keys into local secondary
-    if (_atKeysMap != null) {
-      bool? response = await _atClient?.getLocalSecondary()?.putValue(
-          AT_PKAM_PUBLIC_KEY, _atKeysMap[AuthKeyType.pkamPublicKey]!);
-      logger.finer('PkamPublicKey persist to localSecondary: status $response');
-      response = await _atClient?.getLocalSecondary()?.putValue(
-          AT_PKAM_PRIVATE_KEY, _atKeysMap[AuthKeyType.pkamPrivateKey]!);
-      logger
-          .finer('PkamPrivateKey persist to localSecondary: status $response');
-      response = await _atClient?.getLocalSecondary()?.putValue(
-          '$AT_ENCRYPTION_PUBLIC_KEY$_atSign',
-          _atKeysMap[AuthKeyType.encryptionPublicKey]!);
-      logger.finer(
-          'EncryptionPublicKey persist to localSecondary: status $response');
-      response = await _atClient?.getLocalSecondary()?.putValue(
-          AT_ENCRYPTION_PRIVATE_KEY,
-          _atKeysMap[AuthKeyType.encryptionPrivateKey]!);
-      logger.finer(
-          'EncryptionPrivateKey persist to localSecondary: status $response');
-      response = await _atClient?.getLocalSecondary()?.putValue(
-          AT_ENCRYPTION_SELF_KEY, _atKeysMap[AuthKeyType.selfEncryptionKey]!);
-      logger.finer(
-          'Self encryption key persist to localSecondary: status $response');
-    } else {
-      logger.severe('atKeysMap is null');
-    }
+    bool? response = await _atClient
+        ?.getLocalSecondary()
+        ?.putValue(AT_PKAM_PUBLIC_KEY, _atKeysMap[AuthKeyType.pkamPublicKey]!);
+    logger.finer('PkamPublicKey persist to localSecondary: status $response');
+    response = await _atClient?.getLocalSecondary()?.putValue(
+        AT_PKAM_PRIVATE_KEY, _atKeysMap[AuthKeyType.pkamPrivateKey]!);
+    logger.finer('PkamPrivateKey persist to localSecondary: status $response');
+    response = await _atClient?.getLocalSecondary()?.putValue(
+        '$AT_ENCRYPTION_PUBLIC_KEY$_atSign',
+        _atKeysMap[AuthKeyType.encryptionPublicKey]!);
+    logger.finer(
+        'EncryptionPublicKey persist to localSecondary: status $response');
+    response = await _atClient?.getLocalSecondary()?.putValue(
+        AT_ENCRYPTION_PRIVATE_KEY,
+        _atKeysMap[AuthKeyType.encryptionPrivateKey]!);
+    logger.finer(
+        'EncryptionPrivateKey persist to localSecondary: status $response');
+    response = await _atClient?.getLocalSecondary()?.putValue(
+        AT_ENCRYPTION_SELF_KEY, _atKeysMap[AuthKeyType.selfEncryptionKey]!);
+    logger.finer(
+        'Self encryption key persist to localSecondary: status $response');
   }
 
   @override
@@ -207,10 +222,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
               false;
       if (!_isAtsignOnboarded &&
           atOnboardingPreference.atKeysFilePath != null) {
-        await _persistKeysLocalSecondary(
-            await _decryptAtKeysFile((await _readAtKeysFile(
-                atOnboardingPreference.atKeysFilePath))!),
-            true);
+        await _persistKeysLocalSecondary();
       }
       return _isPkamAuthenticated;
     }
@@ -294,6 +306,14 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     } else {
       return null;
     }
+  }
+
+  @override
+  Future<void> close() async {
+    await _atLookup?.close();
+    _atClient = null;
+    logger.severe('Killing current instance of at_onboarding_cli');
+    exit(0);
   }
 
   @override

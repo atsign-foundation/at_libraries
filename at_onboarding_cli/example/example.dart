@@ -18,6 +18,7 @@ Future<void> main() async {
   await onboardingService.onboard();
   AtLookUp? atLookup = onboardingService.getAtLookup();
   print(await atLookup?.scan(regex: 'publickey'));
+  await onboardingService.close();
   //free the object after it's used and no longer required
   onboardingService = null;
 }
