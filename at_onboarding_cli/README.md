@@ -91,11 +91,11 @@ A simple tool to onboard(activate) an atSign through command-line arguments
 
 #### Usage:
    1) Clone code from https://github.com/atsign-foundation/at_libraries
-   2) Change directory to at_libraries/at_onboarding_cli in the cloned repository
+   2) Change directory to at_libraries/at_onboarding_cli/lib/src/activate_cli/ in the cloned repository
    3) Run the following command
-   4) You can find your .atKeysFile in directory at_onboarding_cli/keys
+   4) You can find your .atKeysFile in directory at_onboarding_cli/lib/src/activate_cli/keys
 ```
-dart run bin/activate_cli.dart -a your_atsign -c your_cram_secret
+dart run activate_cli.dart -a your_atsign -c your_cram_secret
 ```
 
 Please refer to [example](https://pub.dev/packages/at_onboarding_cli/example) to better understand the usage.
