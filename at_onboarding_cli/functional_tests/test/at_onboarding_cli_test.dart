@@ -8,6 +8,8 @@ import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_server_status/at_server_status.dart';
 import 'package:test/test.dart';
 import 'package:at_demo_data/at_demo_data.dart' as at_demos;
+import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart'
+    as activate_cli;
 
 Future<void> main() async {
   AtSignLogger.root_level = 'finer';
@@ -114,10 +116,8 @@ Future<void> main() async {
           AtOnboardingServiceImpl(atsign, atOnboardingPreference);
       bool status = await atOnboardingService.onboard();
       expect(true, status);
-    });
-    test('test to validate generated .atKeys file', () async {
-      AtOnboardingService atOnboardingService =
-          AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+      atOnboardingPreference.atKeysFilePath =
+          atOnboardingPreference.downloadPath;
       bool status2 = await atOnboardingService.authenticate();
       expect(true, status2);
       AtServerStatus atServerStatus = AtStatusImpl(
@@ -126,8 +126,39 @@ Future<void> main() async {
       AtStatus atStatus = await atServerStatus.get(atsign);
       expect(atStatus.serverStatus, ServerStatus.activated);
     });
+
+    test('test to validate generated .atKeys file', () async {
+      expect(await File(atOnboardingPreference.atKeysFilePath!).exists(), true);
+    });
   });
 
+  group('test activate_cli', () {
+    String atsign = '@bob🛠';
+    String filePath = '${Directory.current}/keys/${atsign}_key.atKeys';
+
+    test('activate using activate_cli', () async {
+      List<String> args = [
+        '-a',
+        atsign,
+        '-c',
+        at_demos.cramKeyMap[atsign]!,
+        '-r',
+        'vip.ve.atsign.zone'
+      ];
+      await activate_cli.main(args);
+      expect(await File(filePath).exists(), true);
+    });
+
+    test('auth using atKeys file generated from activate_cli', () async {
+      AtOnboardingPreference atOnboardingPreference =
+          getPreferences(atsign, true);
+      atOnboardingPreference.atKeysFilePath = filePath;
+
+      AtOnboardingService onboardingService =
+          AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+      expect(await onboardingService.authenticate(), true);
+    });
+  });
   await tearDownFunc();
 }
 

@@ -2,7 +2,7 @@ import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:args/args.dart';
 import 'dart:io';
 
-void main(List<String> arguments) async {
+Future<void> main(List<String> arguments) async {
   //defaults
   String rootServer = 'root.atsign.org';
 
@@ -10,9 +10,9 @@ void main(List<String> arguments) async {
   final parser = ArgParser()
     ..addOption('atsign', abbr: 'a', help: 'atSign to activate')
     ..addOption('cramkey', abbr: 'c', help: 'CRAM key')
-    ..addFlag('help', abbr: 'h', help: 'Usage instructions', negatable: false)
-    ..addFlag('staging',
-        abbr: 's', help: 'Use staging root server', negatable: false);
+    ..addOption('rootServer',
+        abbr: 'r', help: 'root server', defaultsTo: rootServer)
+    ..addFlag('help', abbr: 'h', help: 'Usage instructions', negatable: false);
 
   ArgResults argResults = parser.parse(arguments);
 
@@ -33,16 +33,11 @@ void main(List<String> arguments) async {
     exit(2);
   }
 
-  if (!argResults.wasParsed('staging')) {
-    stdout.writeln('Root server is default ' + rootServer);
-  } else {
-    rootServer = 'root.atsign.wtf';
-    stdout.writeln('Root server is staging ' + rootServer);
-  }
+  stdout.writeln('Root server is ' + argResults['rootServer']);
 
   //onboarding preference builder can be used to set onboardingService parameters
   AtOnboardingPreference atOnboardingPreference = AtOnboardingPreference()
-    ..rootDomain = rootServer
+    ..rootDomain = argResults['rootServer']
     ..cramSecret = argResults['cramkey']
     ..downloadPath = '${Directory.current.path}/keys';
 
