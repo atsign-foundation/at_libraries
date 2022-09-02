@@ -14,8 +14,7 @@ class SecureSocketUtil {
       SecurityContext securityContext = SecurityContext();
       try {
         File keysFile = File(secureSocketConfig.tlsKeysSavePath!);
-        if (secureSocketConfig.pathToCerts != null &&
-            await File(secureSocketConfig.pathToCerts!).exists()) {
+        if (secureSocketConfig.pathToCerts != null && await File(secureSocketConfig.pathToCerts!).exists()) {
           securityContext
               .setTrustedCertificates(secureSocketConfig.pathToCerts!);
         } else {
