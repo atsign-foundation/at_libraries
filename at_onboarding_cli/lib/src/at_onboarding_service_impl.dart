@@ -154,15 +154,27 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         atKeysMap[AuthKeyType.encryptionPrivateKey]!,
         atKeysMap[AuthKeyType.selfEncryptionKey]!);
 
-    //create directory at provided path if one does not exist already
-    if (atOnboardingPreference.downloadPath != null &&
-        !(await Directory(atOnboardingPreference.downloadPath!).exists())) {
-      await Directory(atOnboardingPreference.downloadPath!).create();
-    }
-    //construct download path to match standard atKeys file name convention
-    atOnboardingPreference.downloadPath = path.join(
-        atOnboardingPreference.downloadPath!, '${_atSign}_key.atKeys');
+    if (atOnboardingPreference.downloadPath != null) {
+      //create directory at provided path if one does not exist already
+      if (!(await Directory(atOnboardingPreference.downloadPath!).exists())) {
+        await Directory(atOnboardingPreference.downloadPath!).create();
+      }
+      //construct download path to match standard atKeys file name convention
+      atOnboardingPreference.downloadPath = path.join(
+          atOnboardingPreference.downloadPath!, '${_atSign}_key.atKeys');
+    } else {
+      //if atKeysFilePath points to a directory and not a file, create a file in the provided directory
+      if (await Directory(atOnboardingPreference.atKeysFilePath!).exists()) {
+        atOnboardingPreference.atKeysFilePath = path.join(
+            atOnboardingPreference.atKeysFilePath!, '${_atSign}_key.atKeys');
+      }
 
+      //if provided file is not of format .atKeys, append .atKeys to filename
+      if (!atOnboardingPreference.atKeysFilePath!.endsWith('.atKeys')) {
+        atOnboardingPreference.atKeysFilePath =
+            atOnboardingPreference.atKeysFilePath! + '.atKeys';
+      }
+    }
     //note: in case atKeysFilePath is provided instead of downloadPath;
     //file is created with whichever name provided as atKeysFilePath(even if filename does not match standary atKeys file name convention)
     IOSink atKeysFile = File(atOnboardingPreference.downloadPath ??
