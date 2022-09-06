@@ -1,12 +1,12 @@
 ## 1.1.2
 - Introducing activate_cli, a simple tool to activate atSigns from command-line
 - Introducing a close() method to safely close the OnboardingService object
-- Allow custom names for .atKeysFile when the file name is passed as atKeysFilePath when onboarding(activating)
+- Allow custom names for .atKeysFile when the file name is passed as atKeysFilePath during onboarding(activating)
 - Removed at_client dependency in onboarding process flow
 - correct example link replace @sign -> atSign
-- Upgrade dependency at_client to latest version v3.0.35
-- Upgrade dependency at_lookup to latest version v3.0.29
-- Upgrade dependency at_utils to latest version v3.0.10
+- Upgrade dependency at_client to latest version v3.0.37
+- Upgrade dependency at_lookup to latest version v3.0.30
+- Upgrade dependency at_utils to latest version v3.0.11
 - Upgrade dependency at_commons to latest version v3.0.24
 ## 1.1.1
 - Method to check and format atsign.

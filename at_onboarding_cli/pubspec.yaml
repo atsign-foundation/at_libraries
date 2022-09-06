@@ -8,9 +8,9 @@ environment:
 
 
 dependencies:
-   at_utils: ^3.0.10
-   at_client: ^3.0.35
-   at_lookup: ^3.0.29
+   at_utils: ^3.0.11
+   at_client: ^3.0.37
+   at_lookup: ^3.0.30
    zxing2: ^0.1.0
    image: ^3.1.1
    crypton: ^2.0.3
