@@ -171,8 +171,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
       //if provided file is not of format .atKeys, append .atKeys to filename
       if (!atOnboardingPreference.atKeysFilePath!.endsWith('.atKeys')) {
-        atOnboardingPreference.atKeysFilePath =
-            atOnboardingPreference.atKeysFilePath! + '.atKeys';
+        throw AtClientException.message('atKeysFilePath provided should be of format .atKeys');
       }
     }
     //note: in case atKeysFilePath is provided instead of downloadPath;
