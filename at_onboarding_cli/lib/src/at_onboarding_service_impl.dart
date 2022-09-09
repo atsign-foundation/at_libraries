@@ -107,7 +107,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         'update:$AT_PKAM_PUBLIC_KEY ${_pkamRsaKeypair.publicKey}\n';
     String? pkamUpdateResult =
         await _atLookup?.executeCommand(updateCommand, auth: false);
-    logger.finer('PkamPublicKey update result: $pkamUpdateResult');
+    logger.info('PkamPublicKey update result: $pkamUpdateResult');
     atOnboardingPreference.privateKey = _pkamRsaKeypair.privateKey.toString();
 
     //authenticate using pkam to verify insertion of pkamPublicKey
@@ -124,12 +124,12 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       String? encryptKeyUpdateResult =
           await _atLookup?.executeVerb(updateBuilder);
       logger
-          .finer('Encryption public key update result $encryptKeyUpdateResult');
+          .info('Encryption public key update result $encryptKeyUpdateResult');
       //deleting cram secret from the keystore as cram auth is complete
       DeleteVerbBuilder deleteBuilder = DeleteVerbBuilder()
         ..atKey = AT_CRAM_SECRET;
       String? deleteResponse = await _atLookup?.executeVerb(deleteBuilder);
-      logger.finer('Cram secret delete response : $deleteResponse');
+      logger.info('Cram secret delete response : $deleteResponse');
       //displays status of the atsign
       logger.finer(await getServerStatus());
       logger.info('----------atSign activated---------');
@@ -154,15 +154,26 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         atKeysMap[AuthKeyType.encryptionPrivateKey]!,
         atKeysMap[AuthKeyType.selfEncryptionKey]!);
 
-    //create directory at provided path if one does not exist already
-    if (atOnboardingPreference.downloadPath != null &&
-        !(await Directory(atOnboardingPreference.downloadPath!).exists())) {
-      await Directory(atOnboardingPreference.downloadPath!).create();
-    }
-    //construct download path to match standard atKeys file name convention
-    atOnboardingPreference.downloadPath = path.join(
-        atOnboardingPreference.downloadPath!, '${_atSign}_key.atKeys');
+    if (atOnboardingPreference.downloadPath != null) {
+      //create directory at provided path if one does not exist already
+      if (!(await Directory(atOnboardingPreference.downloadPath!).exists())) {
+        await Directory(atOnboardingPreference.downloadPath!).create();
+      }
+      //construct download path to match standard atKeys file name convention
+      atOnboardingPreference.downloadPath = path.join(
+          atOnboardingPreference.downloadPath!, '${_atSign}_key.atKeys');
+    } else {
+      //if atKeysFilePath points to a directory and not a file, create a file in the provided directory
+      if (await Directory(atOnboardingPreference.atKeysFilePath!).exists()) {
+        atOnboardingPreference.atKeysFilePath = path.join(
+            atOnboardingPreference.atKeysFilePath!, '${_atSign}_key.atKeys');
+      }
 
+      //if provided file is not of format .atKeys, append .atKeys to filename
+      if (!atOnboardingPreference.atKeysFilePath!.endsWith('.atKeys')) {
+        throw AtClientException.message('atKeysFilePath provided should be of format .atKeys');
+      }
+    }
     //note: in case atKeysFilePath is provided instead of downloadPath;
     //file is created with whichever name provided as atKeysFilePath(even if filename does not match standary atKeys file name convention)
     IOSink atKeysFile = File(atOnboardingPreference.downloadPath ??
