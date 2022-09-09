@@ -107,7 +107,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         'update:$AT_PKAM_PUBLIC_KEY ${_pkamRsaKeypair.publicKey}\n';
     String? pkamUpdateResult =
         await _atLookup?.executeCommand(updateCommand, auth: false);
-    logger.finer('PkamPublicKey update result: $pkamUpdateResult');
+    logger.info('PkamPublicKey update result: $pkamUpdateResult');
     atOnboardingPreference.privateKey = _pkamRsaKeypair.privateKey.toString();
 
     //authenticate using pkam to verify insertion of pkamPublicKey
@@ -124,12 +124,12 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       String? encryptKeyUpdateResult =
           await _atLookup?.executeVerb(updateBuilder);
       logger
-          .finer('Encryption public key update result $encryptKeyUpdateResult');
+          .info('Encryption public key update result $encryptKeyUpdateResult');
       //deleting cram secret from the keystore as cram auth is complete
       DeleteVerbBuilder deleteBuilder = DeleteVerbBuilder()
         ..atKey = AT_CRAM_SECRET;
       String? deleteResponse = await _atLookup?.executeVerb(deleteBuilder);
-      logger.finer('Cram secret delete response : $deleteResponse');
+      logger.info('Cram secret delete response : $deleteResponse');
       //displays status of the atsign
       logger.finer(await getServerStatus());
       logger.info('----------atSign activated---------');
