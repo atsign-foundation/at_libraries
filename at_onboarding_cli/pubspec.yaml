@@ -1,5 +1,5 @@
 name: at_onboarding_cli
-description: Dart tool to authenticate, onboard and perform complex operations on atSign from command-line-interface.
+description: Dart tool to authenticate, onboard and perform complex operations on atSign seccondaries from command-line-interface.
 version: 1.1.2
 repository: https://github.com/atsign-foundation/at_libraries/tree/trunk/at_onboarding_cli
 
@@ -18,6 +18,7 @@ dependencies:
    encrypt: ^5.0.1
    at_server_status: ^1.0.3
    path: ^1.8.1
+   args: ^2.3.1
 
 #dependency_overrides:
 #  at_lookup:
