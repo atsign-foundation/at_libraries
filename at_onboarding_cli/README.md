@@ -94,10 +94,10 @@ A simple tool to onboard(activate) an atSign through command-line arguments
    2) Change directory to at_libraries/at_onboarding_cli in the cloned repository
    3) Run `dart pub get`
    3) Run the following command
-   4) You can find your .atKeysFile in directory at_onboarding_cli/lib/src/activate_cli/keys
 ```
 dart run lib/src/activate_cli/activate_cli.dart -a your_atsign -c your_cram_secret
 ```
+4) You can find your .atKeysFile in directory at_onboarding_cli/lib/src/activate_cli/keys
 
 Please refer to [example](https://pub.dev/packages/at_onboarding_cli/example) to better understand the usage.
 
