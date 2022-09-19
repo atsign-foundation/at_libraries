@@ -5,12 +5,14 @@ import 'package:at_lookup/src/connection/at_connection.dart';
 
 /// Base class for common socket operations
 abstract class BaseConnection extends AtConnection {
-  final Socket _socket;
+  late final Socket _socket;
   StringBuffer? buffer;
   AtConnectionMetaData? metaData;
 
-  BaseConnection(this._socket) {
+  BaseConnection(Socket? socket) {
     buffer = StringBuffer();
+    socket?.setOption(SocketOption.tcpNoDelay, true);
+    _socket = socket!;
   }
 
   @override
