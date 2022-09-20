@@ -1,3 +1,5 @@
+// ignore_for_file: unused_field
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -24,16 +26,17 @@ class AtLookupImpl implements AtLookUp {
 
   late SecondaryAddressFinder secondaryAddressFinder;
 
-  var _currentAtSign;
+  late String _currentAtSign;
 
-  var _rootDomain;
+  late String _rootDomain;
 
-  late var _rootPort;
+  late int _rootPort;
 
-  var privateKey;
+  String? privateKey;
 
-  var cramSecret;
+  String? cramSecret;
 
+  // ignore: prefer_typing_uninitialized_variables
   var outboundConnectionTimeout;
 
   late SecureSocketConfig _secureSocketConfig;
@@ -61,14 +64,18 @@ class AtLookupImpl implements AtLookUp {
   }
 
   @Deprecated('use CacheableSecondaryAddressFinder')
-  static Future<String?> findSecondary(String atsign, String? rootDomain, int rootPort) async {
+  static Future<String?> findSecondary(
+      String atsign, String? rootDomain, int rootPort) async {
     // temporary change to preserve backward compatibility and change the callers later on to use
     // SecondaryAddressFinder.findSecondary
-    return (await CacheableSecondaryAddressFinder(rootDomain!, rootPort).findSecondary(atsign)).toString();
+    return (await CacheableSecondaryAddressFinder(rootDomain!, rootPort)
+            .findSecondary(atsign))
+        .toString();
   }
 
   @override
-  Future<bool> delete(String key, {String? sharedWith, bool isPublic = false}) async {
+  Future<bool> delete(String key,
+      {String? sharedWith, bool isPublic = false}) async {
     var builder = DeleteVerbBuilder()
       ..isPublic = isPublic
       ..sharedWith = sharedWith
@@ -79,7 +86,8 @@ class AtLookupImpl implements AtLookUp {
   }
 
   @override
-  Future<String> llookup(String key, {String? sharedBy, String? sharedWith, bool isPublic = false}) async {
+  Future<String> llookup(String key,
+      {String? sharedBy, String? sharedWith, bool isPublic = false}) async {
     LLookupVerbBuilder builder;
     if (sharedWith != null) {
       builder = LLookupVerbBuilder()
@@ -103,7 +111,9 @@ class AtLookupImpl implements AtLookUp {
 
   @override
   Future<String> lookup(String key, String sharedBy,
-      {bool auth = true, bool verifyData = false, bool metadata = false}) async {
+      {bool auth = true,
+      bool verifyData = false,
+      bool metadata = false}) async {
     var builder = LookupVerbBuilder()
       ..atKey = key
       ..sharedBy = sharedBy
@@ -143,11 +153,13 @@ class AtLookupImpl implements AtLookUp {
       var value = resultJson['data'];
       value = VerbUtil.getFormattedValue(value);
       logger.finer('value: $value dataSignature:$dataSignature');
-      var isDataValid = publicKey.verifySHA256Signature(utf8.encode(value) as Uint8List, base64Decode(dataSignature));
+      var isDataValid = publicKey.verifySHA256Signature(
+          utf8.encode(value) as Uint8List, base64Decode(dataSignature));
       logger.finer('atlookup data verify result: $isDataValid');
       return 'data:$value';
     } on Exception catch (e) {
-      logger.severe('Error while verify public data for key: $key sharedBy: $sharedBy exception:${e.toString()}');
+      logger.severe(
+          'Error while verify public data for key: $key sharedBy: $sharedBy exception:${e.toString()}');
       return 'data:null';
     }
   }
@@ -163,7 +175,11 @@ class AtLookupImpl implements AtLookUp {
   }
 
   @override
-  Future<List<String>> scan({String? regex, String? sharedBy, bool auth = true, bool showHiddenKeys = false}) async {
+  Future<List<String>> scan(
+      {String? regex,
+      String? sharedBy,
+      bool auth = true,
+      bool showHiddenKeys = false}) async {
     var builder = ScanVerbBuilder()
       ..sharedBy = sharedBy
       ..regex = regex
@@ -177,7 +193,8 @@ class AtLookupImpl implements AtLookUp {
   }
 
   @override
-  Future<bool> update(String key, String value, {String? sharedWith, Metadata? metadata}) async {
+  Future<bool> update(String key, String value,
+      {String? sharedWith, Metadata? metadata}) async {
     var builder = UpdateVerbBuilder()
       ..atKey = key
       ..sharedBy = _currentAtSign
@@ -200,13 +217,15 @@ class AtLookupImpl implements AtLookUp {
     if (!isConnectionAvailable()) {
       logger.info('Creating new connection');
       //1. find secondary url for atsign from lookup library
-      SecondaryAddress secondaryAddress = await secondaryAddressFinder.findSecondary(_currentAtSign);
+      SecondaryAddress secondaryAddress =
+          await secondaryAddressFinder.findSecondary(_currentAtSign);
       var host = secondaryAddress.host;
       var port = secondaryAddress.port;
       //2. create a connection to secondary server
-      await createOutBoundConnection(host, port.toString(), _currentAtSign, _secureSocketConfig);
+      await createOutBoundConnection(
+          host, port.toString(), _currentAtSign, _secureSocketConfig);
       //3. listen to server response
-      messageListener = OutboundMessageListener(_connection);
+      messageListener = OutboundMessageListener(_connection!);
       messageListener.listen();
     }
   }
@@ -375,7 +394,8 @@ class AtLookupImpl implements AtLookUp {
         fromResponse = fromResponse.trim().replaceAll('data:', '');
         logger.finer('fromResponse $fromResponse');
         var key = RSAPrivateKey.fromString(privateKey);
-        var sha256signature = key.createSHA256Signature(utf8.encode(fromResponse) as Uint8List);
+        var sha256signature =
+            key.createSHA256Signature(utf8.encode(fromResponse) as Uint8List);
         var signature = base64Encode(sha256signature);
         logger.finer('Sending command pkam:$signature');
         await _sendCommand('pkam:$signature\n');
@@ -384,7 +404,8 @@ class AtLookupImpl implements AtLookUp {
           logger.info('auth success');
           _connection!.getMetaData()!.isAuthenticated = true;
         } else {
-          throw UnAuthenticatedException('Failed connecting to $_currentAtSign. $pkamResponse');
+          throw UnAuthenticatedException(
+              'Failed connecting to $_currentAtSign. $pkamResponse');
         }
       }
       return _connection!.getMetaData()!.isAuthenticated;
@@ -397,6 +418,7 @@ class AtLookupImpl implements AtLookUp {
 
   /// Generates digest using from verb response and [secret] and performs a CRAM authentication to
   /// secondary server
+  // ignore: non_constant_identifier_names
   Future<bool> authenticate_cram(var secret) async {
     secret ??= cramSecret;
     if (secret == null) {
@@ -469,7 +491,8 @@ class AtLookupImpl implements AtLookUp {
         } else if (cramSecret != null) {
           await authenticate_cram(cramSecret);
         } else {
-          throw UnAuthenticatedException('Unable to perform atlookup auth. Private key/cram secret is not set');
+          throw UnAuthenticatedException(
+              'Unable to perform atlookup auth. Private key/cram secret is not set');
         }
       }
       try {
@@ -486,19 +509,22 @@ class AtLookupImpl implements AtLookUp {
   }
 
   bool _isAuthRequired() {
-    return !isConnectionAvailable() || !(_connection!.getMetaData()!.isAuthenticated);
+    return !isConnectionAvailable() ||
+        !(_connection!.getMetaData()!.isAuthenticated);
   }
 
-  Future<bool> createOutBoundConnection(
-      String host, String port, String toAtSign, SecureSocketConfig secureSocketConfig) async {
+  Future<bool> createOutBoundConnection(String host, String port,
+      String toAtSign, SecureSocketConfig secureSocketConfig) async {
     try {
-      SecureSocket secureSocket = await SecureSocketUtil.createSecureSocket(host, port, secureSocketConfig);
+      SecureSocket secureSocket = await SecureSocketUtil.createSecureSocket(
+          host, port, secureSocketConfig);
       _connection = OutboundConnectionImpl(secureSocket);
       if (outboundConnectionTimeout != null) {
         _connection!.setIdleTime(outboundConnectionTimeout);
       }
     } on SocketException {
-      throw SecondaryConnectException('unable to connect to secondary $toAtSign on $host:$port');
+      throw SecondaryConnectException(
+          'unable to connect to secondary $toAtSign on $host:$port');
     }
     return true;
   }

@@ -2,7 +2,7 @@ import 'dart:io';
 import 'outbound_connection.dart';
 
 class OutboundConnectionImpl extends OutboundConnection {
-  int? outbound_idle_time = 600000; //default timeout 10 minutes
+  int? outboundIdleTime = 600000; //default timeout 10 minutes
 
   OutboundConnectionImpl(Socket socket) : super(socket) {
     metaData = OutboundConnectionMetadata()..created = DateTime.now().toUtc();
@@ -16,7 +16,7 @@ class OutboundConnectionImpl extends OutboundConnection {
   }
 
   bool _isIdle() {
-    return _getIdleTimeMillis() > outbound_idle_time!;
+    return _getIdleTimeMillis() > outboundIdleTime!;
   }
 
   @override
@@ -26,6 +26,6 @@ class OutboundConnectionImpl extends OutboundConnection {
 
   @override
   void setIdleTime(int? idleTimeMillis) {
-    outbound_idle_time = idleTimeMillis;
+    outboundIdleTime = idleTimeMillis;
   }
 }

@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
+import 'package:at_lookup/src/connection/at_connection.dart';
 import 'package:at_utils/at_logger.dart';
 
 ///Listener class for messages received by [RemoteSecondary]
@@ -10,11 +11,11 @@ class OutboundMessageListener {
   final logger = AtSignLogger('OutboundMessageListener');
   late ByteBuffer _buffer;
   final Queue _queue = Queue();
-  final _connection;
+  final AtConnection _connection;
   Function? syncCallback;
   final int newLineCodeUnit = 10;
   final int atCharCodeUnit = 64;
-  var _lastReceivedTime;
+  late DateTime _lastReceivedTime;
 
   OutboundMessageListener(this._connection, {int bufferCapacity = 10240000}) {
     _buffer = ByteBuffer(capacity: bufferCapacity);
@@ -32,7 +33,7 @@ class OutboundMessageListener {
   /// Throw a [BufferOverFlowException] if buffer is unable to hold incoming data
   Future<void> messageHandler(List data) async {
     String result;
-    var offset;
+    int offset;
     _lastReceivedTime = DateTime.now();
     // check buffer overflow
     _checkBufferOverFlow(data);
