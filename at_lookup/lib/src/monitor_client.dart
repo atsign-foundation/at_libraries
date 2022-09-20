@@ -12,8 +12,8 @@ import 'package:crypton/crypton.dart';
 /// Utility class to execute monitor verb.
 class MonitorClient {
   final _monitorVerbResponseQueue = Queue();
-  var response;
-  late var _privateKey;
+  late String response;
+  late String _privateKey;
   var logger = AtSignLogger('MonitorVerbManager');
 
   MonitorClient(String privateKey) {
@@ -53,6 +53,7 @@ class MonitorClient {
       String toAtSign, String rootDomain, int rootPort) async {
     //1. find secondary url for atsign from lookup library
     var secondaryUrl =
+        // ignore: deprecated_member_use_from_same_package
         await AtLookupImpl.findSecondary(toAtSign, rootDomain, rootPort);
     var secondaryInfo = _getSecondaryInfo(secondaryUrl);
     var host = secondaryInfo[0];

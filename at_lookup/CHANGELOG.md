@@ -1,5 +1,7 @@
 ## 3.0.31
 - fix: tls keys are being dumped only by some secure socket connections when decryptPackets is set to true
+- feat: tcpNoDelay set to true for all sockets 
+- fix: Dart analyzer issues
 ## 3.0.30
 - Introduce clientConfig which can be used to send client configurations to server.
 ## 3.0.29
