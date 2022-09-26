@@ -1,3 +1,5 @@
+## 3.0.32
+- feat: Upgrade at_commons for notifyFetch verb
 ## 3.0.31
 - fix: tls keys are being dumped only by some secure socket connections when decryptPackets is set to true
 - feat: tcpNoDelay set to true for all sockets 
