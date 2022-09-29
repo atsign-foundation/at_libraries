@@ -8,17 +8,17 @@ import 'package:http/http.dart';
 import 'package:http/io_client.dart';
 
 class RegisterUtil {
-  static IOClient? _ioClient;
+  IOClient? _ioClient;
 
-  static void _createClient() {
+  void _createClient() {
     HttpClient ioc = HttpClient();
     ioc.badCertificateCallback =
         (X509Certificate cert, String host, int port) => true;
     _ioClient = IOClient(ioc);
   }
 
-  /// Returns a Future<List<String>> containing available atSigns.
-  static Future<List<String>> getFreeAtSigns(
+  /// Returns a Future<List<String>> containing free available atSigns of count provided as input.
+  Future<List<String>> getFreeAtSigns(
       {int amount = 1,
       String authority = RegisterApiConstants.apiHostProd}) async {
     List<String> atSigns = <String>[];
@@ -38,10 +38,10 @@ class RegisterUtil {
     return atSigns;
   }
 
+  /// Registers the [atSign] provided in the input to the provided [email]
   /// Returns true if the request to send the OTP was successful.
   /// Sends an OTP to the `email` provided.
-  /// registerAtSignValidate should be called after calling this method.
-  static Future<bool> registerAtSign(String atSign, String email,
+  Future<bool> registerAtSign(String atSign, String email,
       {oldEmail, String authority = RegisterApiConstants.apiHostProd}) async {
     Response response =
         await _postRequest(authority, RegisterApiConstants.pathRegisterAtSign, {
@@ -60,15 +60,11 @@ class RegisterUtil {
     }
   }
 
-  /// Returns the cram key if the OTP was valid. Null if the cram key could not be obtained.
-  /// Validates the OTP sent to the `email` provided.
-  /// registerAtSign should be called before calling this method.
-  /// The `atSign` provided should be an atSign from the list returned by `getFreeAtSigns`.
-  /// oldEmail is to support old atSign accounts I think TODO check
-  /// confirmation is defaulted to false. If set to true, you are requesting for the cram key of the atSign that was previously validated. (AKA you are calling this method for the second time.)
-  static Future<String> validateOtp(String atSign, String email, String otp,
-      {oldEmail,
-      String confirmation = 'true',
+  /// Validates the OTP sent to the `email` provided for the [atSign] provided as input.
+  /// The `atSign` provided should be an unregistered and free atsign
+  /// Returns the cram key if the OTP was valid.
+  Future<String> validateOtp(String atSign, String email, String otp,
+      {String confirmation = 'true',
       String authority = RegisterApiConstants.apiHostProd}) async {
     Response response =
         await _postRequest(authority, RegisterApiConstants.pathValidateOtp, {
@@ -82,7 +78,6 @@ class RegisterUtil {
       if (jsonDecoded.containsKey('data')) {
         jsonDecoded = jsonDecoded['data'];
       }
-      print(jsonDecoded.keys);
       if ((jsonDecoded.containsKey('message') &&
               (jsonDecoded['message'] as String)
                   .toLowerCase()
@@ -110,7 +105,7 @@ class RegisterUtil {
   }
 
   /// generic GET request
-  static Future<Response> _getRequest(String authority, String path) async {
+  Future<Response> _getRequest(String authority, String path) async {
     if (_ioClient == null) {
       _createClient();
     }
@@ -123,7 +118,7 @@ class RegisterUtil {
   }
 
   /// generic POST request
-  static Future<Response> _postRequest(
+  Future<Response> _postRequest(
       String authority, String path, Map<String, String?> data) async {
     Uri uri = Uri.https(authority, path);
 

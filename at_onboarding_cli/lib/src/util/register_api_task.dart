@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_onboarding_cli/src/util/register_api_result.dart';
 
 /// Represents a task in an AtSign registration cycle
@@ -10,14 +11,17 @@ abstract class RegisterApiTask {
 
   late Map<String, String> params;
 
+  late RegisterUtil registerUtil;
+
   RegisterApiResult result = RegisterApiResult();
 
   ///Initializes the Task object with necessary parameters
   ///[params] is a map that contains necessary data to complete atsign
   ///                    registration process
-  void init(Map<String, String> params) {
+  void init(Map<String, String> params, RegisterUtil registerUtil) {
     this.params = params;
     result.data = HashMap<String, String>();
+    this.registerUtil = registerUtil;
   }
 
   ///Implementing classes need to implement required logic in this method to

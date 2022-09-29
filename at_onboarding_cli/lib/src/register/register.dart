@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:at_client/at_client.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
+import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart'
+    as activate_cli;
 import 'package:at_onboarding_cli/src/util/api_call_status.dart';
 import 'package:at_onboarding_cli/src/util/register_api_constants.dart';
 import 'package:at_onboarding_cli/src/util/register_api_result.dart';
@@ -25,7 +27,7 @@ class Register {
     ArgResults argResults = argParser.parse(args);
 
     if (argResults.wasParsed('help')) {
-      print(argParser.usage);
+      stdout.writeln(argParser.usage);
       exit(0);
     }
 
@@ -44,20 +46,23 @@ class Register {
       params['authority'] = RegisterApiConstants.apiHostProd;
     }
 
-    await RegistrationFlow(params)
+    await RegistrationFlow(params, RegisterUtil())
         .add(GetFreeAtsign())
         .add(RegisterAtsign())
         .add(ValidateOtp())
         .start();
+
+    activate_cli.main(['-a', params['atsign']!, '-c', params['cramkey']!]);
   }
 }
 
 class RegistrationFlow {
   List<RegisterApiTask> processFlow = [];
   RegisterApiResult result = RegisterApiResult();
+  late RegisterUtil registerUtil;
   Map<String, String> params;
 
-  RegistrationFlow(this.params);
+  RegistrationFlow(this.params, this.registerUtil);
 
   RegistrationFlow add(RegisterApiTask task) {
     processFlow.add(task);
@@ -66,7 +71,7 @@ class RegistrationFlow {
 
   Future<void> start() async {
     for (RegisterApiTask task in processFlow) {
-      task.init(params);
+      task.init(params, registerUtil);
       result = await task.run();
       if (result.apiCallStatus == ApiCallStatus.retry) {
         while (
@@ -90,7 +95,7 @@ class GetFreeAtsign extends RegisterApiTask {
     stdout.writeln('Gettting free atsign ...');
     try {
       List<String> atsignList =
-          await RegisterUtil.getFreeAtSigns(authority: params['authority']!);
+          await registerUtil.getFreeAtSigns(authority: params['authority']!);
       result.data['atsign'] = atsignList[0];
       stdout.writeln('Got atsign: ${atsignList[0]}');
       result.apiCallStatus = ApiCallStatus.success;
@@ -107,9 +112,10 @@ class GetFreeAtsign extends RegisterApiTask {
 class RegisterAtsign extends RegisterApiTask {
   @override
   Future<RegisterApiResult> run() async {
+    print(params);
     stdout.writeln('Sending otp to: ${params['email']}');
     try {
-      result.data['otpSent'] = (await RegisterUtil.registerAtSign(
+      result.data['otpSent'] = (await registerUtil.registerAtSign(
               params['atsign']!, params['email']!,
               authority: params['authority']!))
           .toString();
@@ -125,16 +131,22 @@ class RegisterAtsign extends RegisterApiTask {
 
 class ValidateOtp extends RegisterApiTask {
   @override
-  Future<RegisterApiResult> run() async {
+  void init(Map<String, String> params, RegisterUtil registerUtil) {
     params['confirmation'] = 'false';
+    this.params = params;
+    this.registerUtil = registerUtil;
+    result.data = HashMap<String, String>();
+  }
+
+  @override
+  Future<RegisterApiResult> run() async {
     if (params['otp'] == null) {
       stdout.writeln('Enter otp received on: ${params['email']}');
       params['otp'] = stdin.readLineSync()!;
     }
     stdout.writeln('Validating otp ...');
     try {
-      print(params);
-      String apiResponse = await RegisterUtil.validateOtp(
+      String apiResponse = await registerUtil.validateOtp(
           params['atsign']!, params['email']!, params['otp']!,
           confirmation: params['confirmation']!,
           authority: params['authority']!);
@@ -146,14 +158,14 @@ class ValidateOtp extends RegisterApiTask {
             'Incorrect otp entered 3 times. Max retries reached.';
       } else if (apiResponse == 'follow-up') {
         params.update('confirmation', (value) => 'true');
+        result.data['otp'] = params['otp'];
         result.apiCallStatus = ApiCallStatus.retry;
       } else if (apiResponse.startsWith("@")) {
-        result.data.put("cram", apiResponse.split(":")[1]);
-        stdout.writeln("your cram secret: " + result.data.get("cram"));
+        result.data['cramkey'] = apiResponse.split(":")[1];
+        stdout.writeln("your cram secret: " + result.data['cramkey']);
         stdout.writeln("Done.");
         result.apiCallStatus = ApiCallStatus.success;
       }
-      result.data['otp'] = params['otp'];
     } on Exception catch (e) {
       result.exceptionMessage = e.toString();
       result.apiCallStatus =
