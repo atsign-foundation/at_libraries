@@ -1,6 +1,7 @@
 ## 3.0.33
 - fix: enforce lowercase on all AtKey parameters
 - fix: set Metadata.isHidden true in PrivateKey class
+- fix: Deprecate AtCompactionConfig class
 ## 3.0.32
 - fix: Enable deletion of a local key
 ## 3.0.31
