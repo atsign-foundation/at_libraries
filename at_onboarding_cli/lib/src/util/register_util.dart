@@ -7,6 +7,7 @@ import 'package:at_onboarding_cli/src/util/register_api_constants.dart';
 import 'package:http/http.dart';
 import 'package:http/io_client.dart';
 
+///class containing utilities to perform registration of a free atsign
 class RegisterUtil {
   IOClient? _ioClient;
 
@@ -39,8 +40,10 @@ class RegisterUtil {
   }
 
   /// Registers the [atSign] provided in the input to the provided [email]
+  /// The `atSign` provided should be an unregistered and free atsign
   /// Returns true if the request to send the OTP was successful.
   /// Sends an OTP to the `email` provided.
+  /// Throws [AtException] if [atSign] is invalid
   Future<bool> registerAtSign(String atSign, String email,
       {oldEmail, String authority = RegisterApiConstants.apiHostProd}) async {
     Response response =
@@ -60,9 +63,22 @@ class RegisterUtil {
     }
   }
 
-  /// Validates the OTP sent to the `email` provided for the [atSign] provided as input.
+  /// Registers the [atSign] provided in the input to the provided [email]
   /// The `atSign` provided should be an unregistered and free atsign
-  /// Returns the cram key if the OTP was valid.
+  /// Validates the OTP against the atsign and registers it to the provided email if OTP is valid.
+  /// Returns the CRAM secret of the atsign which is registered.
+  ///
+  /// [confirmation] - Mandatory parameter for validateOTP API call. First request to be sent with confirmation as false, in this
+  /// case API will return cram key if the user is new otherwise will return list of already existing atsigns.
+  /// If the user already has existing atsigns user will have to select a listed atsign old/new and place a second call
+  /// to the same API endpoint with confirmation set to true with previously received OTP. The second follow-up call
+  /// is automated by this client using new atsign for user simplicity
+  ///
+  ///return value -  Case 1("verified") - the API has registered the atsign to provided email and CRAM key present in HTTP_RESPONSE Body.
+  /// Case 2("follow-up"): User already has existing atsigns and new atsign registered successfully. To receive the CRAM key, follow-up by calling
+  /// the API with one of the existing listed atsigns, with confirmation set to true.
+  /// Case 3("retry"): Incorrect OTP send request again with correct OTP.
+  /// Throws [AtException] if [atSign] or [otp] is invalid
   Future<String> validateOtp(String atSign, String email, String otp,
       {String confirmation = 'true',
       String authority = RegisterApiConstants.apiHostProd}) async {
@@ -106,9 +122,7 @@ class RegisterUtil {
 
   /// generic GET request
   Future<Response> _getRequest(String authority, String path) async {
-    if (_ioClient == null) {
-      _createClient();
-    }
+    if (_ioClient == null) _createClient();
     Uri uri = Uri.https(authority, path);
     Response response = await _ioClient!.get(uri, headers: <String, String>{
       'Authorization': RegisterApiConstants.authorization,
@@ -120,6 +134,8 @@ class RegisterUtil {
   /// generic POST request
   Future<Response> _postRequest(
       String authority, String path, Map<String, String?> data) async {
+    if (_ioClient == null) _createClient();
+
     Uri uri = Uri.https(authority, path);
 
     String body = json.encode(data);
