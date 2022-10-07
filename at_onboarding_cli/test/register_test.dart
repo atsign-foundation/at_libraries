@@ -1,6 +1,6 @@
 import 'dart:collection';
 
-import 'package:at_onboarding_cli/src/register/register.dart';
+import 'package:at_onboarding_cli/src/register_cli/register.dart';
 import 'package:at_onboarding_cli/src/util/api_call_status.dart';
 import 'package:at_onboarding_cli/src/util/register_api_constants.dart';
 import 'package:at_onboarding_cli/src/util/register_api_result.dart';
