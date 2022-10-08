@@ -173,8 +173,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
       //if provided file is not of format .atKeys, append .atKeys to filename
       if (!atOnboardingPreference.atKeysFilePath!.endsWith('.atKeys')) {
-        throw AtClientException.message(
-            'atKeysFilePath provided should be of format .atKeys');
+        throw AtClientException.message('atKeysFilePath provided should be of format .atKeys');
       }
     }
     //note: in case atKeysFilePath is provided instead of downloadPath;
@@ -319,37 +318,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       return secret;
     } else {
       return null;
-    }
-  }
-
-  ///Method to check if secondary belonging to [_atSign] exists
-  ///If not, wait until secondary is created
-  Future<void> _waitUntilSecondaryExists() async {
-    final maxRetries = 50;
-    int _retryCount = 0;
-    SecondaryAddress? _secondaryAddress;
-    SecureSocket? secureSocket;
-
-    while (_retryCount < maxRetries && _secondaryAddress == null) {
-      logger.finer('retrying find secondary.......$_retryCount/$maxRetries');
-      try {
-        _secondaryAddress =
-            await _atLookup?.secondaryAddressFinder.findSecondary(_atSign);
-      } on Exception catch (e) {
-        logger.finer(e);
-      }
-      _retryCount++;
-    }
-    //resetting retry counter to be used for different operation
-    _retryCount = 0;
-    while (secureSocket == null && _retryCount < maxRetries) {
-      logger.finer('retrying connect secondary.......$_retryCount/$maxRetries');
-      try {
-        secureSocket = await SecureSocket.connect(
-            _secondaryAddress!.host, _secondaryAddress.port);
-      } on Exception catch (e) {
-        logger.finer(e);
-      }
     }
   }
 
