@@ -58,8 +58,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
     _atLookup = AtLookupImpl(_atSign, atOnboardingPreference.rootDomain,
         atOnboardingPreference.rootPort);
-    _isAtsignOnboarded = (await _atLookup
-        ?.authenticate_cram(atOnboardingPreference.cramSecret))!;
+    try {
+      _isAtsignOnboarded = (await _atLookup
+          ?.authenticate_cram(atOnboardingPreference.cramSecret))!;
+    } on Exception {
+      _isAtsignOnboarded =
+          _retryFindSecondary(atOnboardingPreference.cramSecret!);
+    }
 
     logger.info('Cram authentication status: $_isAtsignOnboarded');
 
@@ -171,7 +176,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
       //if provided file is not of format .atKeys, append .atKeys to filename
       if (!atOnboardingPreference.atKeysFilePath!.endsWith('.atKeys')) {
-        throw AtClientException.message('atKeysFilePath provided should be of format .atKeys');
+        throw AtClientException.message(
+            'atKeysFilePath provided should be of format .atKeys');
       }
     }
     //note: in case atKeysFilePath is provided instead of downloadPath;
@@ -316,6 +322,29 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       return secret;
     } else {
       return null;
+    }
+  }
+
+  bool _retryFindSecondary(String cramSecret) {
+    final maxRetries = 50;
+    int retryCount = 0;
+    while (retryCount < maxRetries && _isAtsignOnboarded != true) {
+      print('retrying find secondary.......$retryCount/$maxRetries');
+      try {
+        _atLookup?.authenticate_cram(cramSecret);
+      } on Exception catch (e) {
+        print(e);
+      }
+    }
+    if (_isAtsignOnboarded) {
+      return true;
+    } else {
+      print(
+          'your cram secret is: ${atOnboardingPreference.cramSecret} \n'
+              'Note: please store this safely\n'
+          'Use aforementioned cram secret and retry onboarding process.');
+      throw AtClientException.message(
+          'Could not find secondary address for atsign: $_atSign');
     }
   }
 
