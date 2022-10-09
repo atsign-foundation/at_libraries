@@ -91,8 +91,9 @@ class RegisterUtil {
     });
     if (response.statusCode == 200) {
       Map<String, dynamic> jsonDecoded = jsonDecode(response.body);
-      if (jsonDecoded.containsKey('data')) {
-        jsonDecoded = jsonDecoded['data'];
+      Map<String, dynamic> dataFromResponse = {};
+      if(jsonDecoded.containsKey('data')) {
+        dataFromResponse.addAll(jsonDecoded['data']);
       }
       if ((jsonDecoded.containsKey('message') &&
               (jsonDecoded['message'] as String)
@@ -100,10 +101,11 @@ class RegisterUtil {
                   .contains('verified')) &&
           jsonDecoded.containsKey('cramkey')) {
         return jsonDecoded['cramkey'];
-      } else if (jsonDecoded.containsKey('newAtsign')) {
+      } else if (jsonDecoded.containsKey('data') && dataFromResponse.containsKey('newAtsign')) {
         return 'follow-up';
       } else if (jsonDecoded.containsKey('message') &&
-          response.body.contains('Try again')) {
+          jsonDecoded['message'] ==
+              'The code you have entered is invalid or expired. Please try again?') {
         return 'retry';
       } else if (jsonDecoded.containsKey('message') &&
           (jsonDecoded['message'] ==
