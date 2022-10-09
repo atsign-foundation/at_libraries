@@ -62,8 +62,8 @@ class Register {
       params['atsign']!,
       '-c',
       params['cramkey']!,
-      '-n',
-      argResults['environment']
+      '-r',
+      argResults['environment'] == 'staging' ? 'root.atsign.wtf' : 'root.atsign.org'
     ]);
   }
 }
