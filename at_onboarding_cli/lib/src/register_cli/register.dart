@@ -10,11 +10,13 @@ import 'package:at_onboarding_cli/src/util/api_call_status.dart';
 import 'package:at_onboarding_cli/src/util/register_api_constants.dart';
 import 'package:at_onboarding_cli/src/util/register_api_result.dart';
 import 'package:at_onboarding_cli/src/util/register_api_task.dart';
+import 'package:at_utils/at_logger.dart';
 
 ///Class containing logic to register a free atsign to email provided through [args] by utilizing methods defined in [RegisterUtil]
 ///Requires List<String> args containing the following arguments: email
 ///User can optionally choose the staging environment by adding "-n staging" to the args [for testing only]
 class Register {
+  static AtSignLogger logger = AtSignLogger('Register Cli');
   Future<void> main(List<String> args) async {
     Map<String, String> params = HashMap<String, String>();
 
@@ -30,12 +32,12 @@ class Register {
     ArgResults argResults = argParser.parse(args);
 
     if (argResults.wasParsed('help')) {
-      stdout.writeln(argParser.usage);
+      logger.severe(argParser.usage);
       exit(0);
     }
 
     if (!argResults.wasParsed('email')) {
-      stderr.writeln('-e (or) --email is required.');
+      logger.severe('-e (or) --email is required.');
       exit(1);
     } else {
       params['email'] = argResults['email'];
@@ -57,6 +59,7 @@ class Register {
         .start();
 
     //call activate_cli with the cramkey acquired from registration process
+    logger.info('Activating you atsign: ${params['atsign']}');
     activate_cli.main([
       '-a',
       params['atsign']!,
@@ -110,12 +113,12 @@ class RegistrationFlow {
 class GetFreeAtsign extends RegisterApiTask {
   @override
   Future<RegisterApiResult> run() async {
-    stdout.writeln('Gettting free atsign ...');
+    Register.logger.info('Gettting free atsign ...');
     try {
       List<String> atsignList =
           await registerUtil.getFreeAtSigns(authority: params['authority']!);
       result.data['atsign'] = atsignList[0];
-      stdout.writeln('Got atsign: ${atsignList[0]}');
+      Register.logger.info('Got atsign: ${atsignList[0]}');
       result.apiCallStatus = ApiCallStatus.success;
     } on Exception catch (e) {
       result.exceptionMessage = e.toString();
@@ -132,9 +135,8 @@ class GetFreeAtsign extends RegisterApiTask {
 class RegisterAtsign extends RegisterApiTask {
   @override
   Future<RegisterApiResult> run() async {
-    stdout.writeln('Sending otp to: ${params['email']}');
+    Register.logger.info('Sending otp to: ${params['email']}');
     try {
-      print(params);
       result.data['otpSent'] = (await registerUtil.registerAtSign(
               params['atsign']!, params['email']!,
               authority: params['authority']!))
@@ -163,10 +165,10 @@ class ValidateOtp extends RegisterApiTask {
   @override
   Future<RegisterApiResult> run() async {
     if (params['otp'] == null) {
-      stdout.writeln('Enter otp received on: ${params['email']}');
+      Register.logger.shout('Enter otp received on: ${params['email']}');
       params['otp'] = stdin.readLineSync()!;
     }
-    stdout.writeln('Validating otp ...');
+    Register.logger.info('Validating otp ...');
     try {
       String apiResponse = await registerUtil.validateOtp(
           params['atsign']!, params['email']!, params['otp']!,
@@ -184,8 +186,8 @@ class ValidateOtp extends RegisterApiTask {
         result.apiCallStatus = ApiCallStatus.retry;
       } else if (apiResponse.startsWith("@")) {
         result.data['cramkey'] = apiResponse.split(":")[1];
-        stdout.writeln("your cram secret: " + result.data['cramkey']);
-        stdout.writeln("Done.");
+        Register.logger.shout('Your cram secret: ' + result.data['cramkey']);
+        Register.logger.info("Registration complete.");
         result.apiCallStatus = ApiCallStatus.success;
       }
     } on Exception catch (e) {
