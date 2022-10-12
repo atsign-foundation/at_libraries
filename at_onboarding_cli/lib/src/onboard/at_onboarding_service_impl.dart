@@ -62,8 +62,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     //check and wait till secondary exists
     await _waitUntilSecondaryExists();
     //authenticate into secondary using cram secret
-      _isAtsignOnboarded = (await _atLookup
-          ?.authenticate_cram(atOnboardingPreference.cramSecret))!;
+    _isAtsignOnboarded = (await _atLookup
+        ?.authenticate_cram(atOnboardingPreference.cramSecret))!;
     logger.info('Cram authentication status: $_isAtsignOnboarded');
     if (_isAtsignOnboarded) {
       await _activateAtsign();
@@ -323,7 +323,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   ///Method to check if secondary belonging to [_atSign] exists
   ///If not, wait until secondary is created
-  Future<void> _waitUntilSecondaryExists() async{
+  Future<void> _waitUntilSecondaryExists() async {
     final maxRetries = 50;
     int _retryCount = 0;
     SecondaryAddress? _secondaryAddress;
@@ -332,7 +332,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     while (_retryCount < maxRetries && _secondaryAddress == null) {
       logger.finer('retrying find secondary.......$_retryCount/$maxRetries');
       try {
-        _secondaryAddress = await _atLookup?.secondaryAddressFinder.findSecondary(_atSign);
+        _secondaryAddress =
+            await _atLookup?.secondaryAddressFinder.findSecondary(_atSign);
       } on Exception catch (e) {
         logger.finer(e);
       }
@@ -340,16 +341,16 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
     //resetting retry counter to be used for different operation
     _retryCount = 0;
-    while(secureSocket == null && _retryCount < maxRetries){
+    while (secureSocket == null && _retryCount < maxRetries) {
       logger.finer('retrying connect secondary.......$_retryCount/$maxRetries');
       try {
         secureSocket = await SecureSocket.connect(
             _secondaryAddress!.host, _secondaryAddress.port);
-      } on Exception catch(e) {
+      } on Exception catch (e) {
         logger.finer(e);
       }
-      }
     }
+  }
 
   @override
   Future<void> close() async {
