@@ -56,19 +56,18 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       throw AtClientException.message('Download path not provided',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
+    //create atLookup instance
     _atLookup = AtLookupImpl(_atSign, atOnboardingPreference.rootDomain,
         atOnboardingPreference.rootPort);
     //check and wait till secondary exists
     await _waitUntilSecondaryExists();
     //authenticate into secondary using cram secret
-    _isAtsignOnboarded = (await _atLookup
-        ?.authenticate_cram(atOnboardingPreference.cramSecret))!;
+      _isAtsignOnboarded = (await _atLookup
+          ?.authenticate_cram(atOnboardingPreference.cramSecret))!;
     logger.info('Cram authentication status: $_isAtsignOnboarded');
-
     if (_isAtsignOnboarded) {
       await _activateAtsign();
     }
-
     return _isAtsignOnboarded;
   }
 
@@ -322,26 +321,34 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
   }
 
-  bool _retryFindSecondary(String cramSecret) {
+  ///Method to check if secondary belonging to [_atSign] exists
+  ///If not, wait until secondary is created
+  Future<void> _waitUntilSecondaryExists() async {
     final maxRetries = 50;
-    int retryCount = 0;
-    while (retryCount < maxRetries && _isAtsignOnboarded != true) {
-      print('retrying find secondary.......$retryCount/$maxRetries');
+    int _retryCount = 0;
+    SecondaryAddress? _secondaryAddress;
+    SecureSocket? secureSocket;
+
+    while (_retryCount < maxRetries && _secondaryAddress == null) {
+      logger.finer('retrying find secondary.......$_retryCount/$maxRetries');
       try {
-        _atLookup?.authenticate_cram(cramSecret);
+        _secondaryAddress =
+            await _atLookup?.secondaryAddressFinder.findSecondary(_atSign);
       } on Exception catch (e) {
-        print(e);
+        logger.finer(e);
       }
+      _retryCount++;
     }
-    if (_isAtsignOnboarded) {
-      return true;
-    } else {
-      print(
-          'your cram secret is: ${atOnboardingPreference.cramSecret} \n'
-              'Note: please store this safely\n'
-          'Use aforementioned cram secret and retry onboarding process.');
-      throw AtClientException.message(
-          'Could not find secondary address for atsign: $_atSign');
+    //resetting retry counter to be used for different operation
+    _retryCount = 0;
+    while (secureSocket == null && _retryCount < maxRetries) {
+      logger.finer('retrying connect secondary.......$_retryCount/$maxRetries');
+      try {
+        secureSocket = await SecureSocket.connect(
+            _secondaryAddress!.host, _secondaryAddress.port);
+      } on Exception catch (e) {
+        logger.finer(e);
+      }
     }
   }
 
