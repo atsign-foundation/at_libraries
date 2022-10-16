@@ -56,7 +56,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       throw AtClientException.message('Download path not provided',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
-    //create atLookup instance
     _atLookup = AtLookupImpl(_atSign, atOnboardingPreference.rootDomain,
         atOnboardingPreference.rootPort);
     //check and wait till secondary exists
@@ -65,9 +64,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     _isAtsignOnboarded = (await _atLookup
         ?.authenticate_cram(atOnboardingPreference.cramSecret))!;
     logger.info('Cram authentication status: $_isAtsignOnboarded');
+
     if (_isAtsignOnboarded) {
       await _activateAtsign();
     }
+
     return _isAtsignOnboarded;
   }
 
@@ -172,7 +173,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
       //if provided file is not of format .atKeys, append .atKeys to filename
       if (!atOnboardingPreference.atKeysFilePath!.endsWith('.atKeys')) {
-        throw AtClientException.message('atKeysFilePath provided should be of format .atKeys');
+        throw AtClientException.message(
+            'atKeysFilePath provided should be of format .atKeys');
       }
     }
     //note: in case atKeysFilePath is provided instead of downloadPath;
