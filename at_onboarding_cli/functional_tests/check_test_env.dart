@@ -39,8 +39,9 @@ Future<SecureSocket> secureSocketConnection(String host, int port) async {
       if (socket != null || retryCount > maxRetryCount) {
         break;
       }
-    } on Exception {
+    } on Exception catch (e){
       print('retrying for connection.. $retryCount');
+      print(e);
       await Future<void>.delayed(const Duration(seconds: 5));
       retryCount++;
     }
