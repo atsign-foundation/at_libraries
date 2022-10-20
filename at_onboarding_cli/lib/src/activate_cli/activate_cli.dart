@@ -38,7 +38,8 @@ Future<void> main(List<String> arguments) async {
   //onboarding preference builder can be used to set onboardingService parameters
   AtOnboardingPreference atOnboardingPreference = AtOnboardingPreference()
     ..rootDomain = argResults['rootServer']
-    ..cramSecret = argResults['cramkey'];
+    ..cramSecret = argResults['cramkey']
+    ..downloadPath = '${Directory.current.path}/keys';
 
   //onboard the atSign
   AtOnboardingService? onboardingService =
