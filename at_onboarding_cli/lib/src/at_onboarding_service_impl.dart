@@ -10,6 +10,7 @@ import 'package:crypton/crypton.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:zxing2/qrcode.dart';
 import 'package:image/image.dart';
+import 'package:path/path.dart' as path;
 
 ///class containing service that can onboard/activate/authenticate @signs
 class AtOnboardingServiceImpl implements AtOnboardingService {
@@ -55,18 +56,19 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       throw AtClientException.message('Download path not provided',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
-    //create atLookup instance
     _atLookup = AtLookupImpl(_atSign, atOnboardingPreference.rootDomain,
         atOnboardingPreference.rootPort);
     //check and wait till secondary exists
     await _waitUntilSecondaryExists();
     //authenticate into secondary using cram secret
-      _isAtsignOnboarded = (await _atLookup
-          ?.authenticate_cram(atOnboardingPreference.cramSecret))!;
+    _isAtsignOnboarded = (await _atLookup
+        ?.authenticate_cram(atOnboardingPreference.cramSecret))!;
     logger.info('Cram authentication status: $_isAtsignOnboarded');
+
     if (_isAtsignOnboarded) {
       await _activateAtsign();
     }
+
     return _isAtsignOnboarded;
   }
 
@@ -195,7 +197,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     Map<String, String> _atKeysMap = await _decryptAtKeysFile(
         (await _readAtKeysFile(atOnboardingPreference.atKeysFilePath))!);
     //backup keys into local secondary
-    await _atClient
+    bool? response = await _atClient
         ?.getLocalSecondary()
         ?.putValue(AT_PKAM_PUBLIC_KEY, _atKeysMap[AuthKeyType.pkamPublicKey]!);
     logger.finer('PkamPublicKey persist to localSecondary: status $response');
