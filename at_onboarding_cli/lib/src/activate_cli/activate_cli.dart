@@ -13,6 +13,7 @@ Future<void> main(List<String> arguments) async {
     ..addOption('rootServer',
         abbr: 'r', help: 'root server', defaultsTo: rootServer)
     ..addFlag('help', abbr: 'h', help: 'Usage instructions', negatable: false);
+
   ArgResults argResults = parser.parse(arguments);
 
   if (argResults.wasParsed('help')) {
