@@ -28,9 +28,8 @@ import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 ## Usage
 Use cases for at_onboarding_cli:\
     1) Authentication\
-    2) Onboarding (Activation)\
-    3) activate_cli\
-    4) register_cli
+    2) Onboarding (Activation)
+    3) activate_cli
     
 ### Setting valid preferences:
    1) isLocalStorageRequired needs to be set to true as AtClient now needs a local secondary in order to work(for authentication only).
@@ -98,25 +97,10 @@ A simple tool to onboard(activate) an atSign through command-line arguments
 ```
 dart run lib/src/activate_cli/activate_cli.dart -a your_atsign -c your_cram_secret
 ```
-4) You can find your .atKeysFile in directory at_onboarding_cli/keys
-
-
-### register_cli:
-A command-line tool to get yourself a free atsign. This tool fetches a free atsign and registers it to the email provided as arguments.
-
-#### Usage:
-   1) Clone code from https://github.com/atsign-foundation/at_libraries
-   2) Change directory to at_libraries/at_onboarding_cli in the cloned repository
-   3) Run `dart pub get`
-   3) Run the following command
-```
-dart run lib/src/register_cli/register.dart -e email@email.com -n staging (or) production [-n is optional]
-```
-   4) Enter otp sent to the provided email when prompted
-   5) register_cli fetches the cramkey and the automatically calls activate_cli to activate the fetched atsign
-   6) You can find your .atKeysFile in directory at_onboarding_cli/keys
+4) You can find your .atKeysFile in directory at_onboarding_cli/lib/src/activate_cli/keys
 
 Please refer to [example](https://pub.dev/packages/at_onboarding_cli/example) to better understand the usage.
+
 ## Open source usage and contributions
 
 This is freely licensed open source code, so feel free to use it as is, suggest changes or enhancements or create your

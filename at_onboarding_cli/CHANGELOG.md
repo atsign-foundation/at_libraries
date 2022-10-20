@@ -1,5 +1,3 @@
-## 1.1.3
-- Introducing register_cli that fetches a free atsign and registers it to provided email
 ## 1.1.2
 - Introducing activate_cli, a simple tool to activate atSigns from command-line
 - Introducing a close() method to safely close the OnboardingService object
