@@ -48,6 +48,9 @@ class AtKey {
 
   set sharedWith(String? atSign) {
     assertStartsWithAtIfNotEmpty(atSign);
+    if(isLocal == true || metadata?.isPublic == true){
+      throw InvalidAtKeyException('isLocal or isPublic cannot be true when sharedWith is set');
+    }
     _sharedWith = atSign;
   }
 
@@ -579,7 +582,11 @@ class AtValue {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is AtValue && runtimeType == other.runtimeType && value == other.value && metadata == other.metadata;
+      identical(this, other) ||
+      other is AtValue &&
+          runtimeType == other.runtimeType &&
+          value == other.value &&
+          metadata == other.metadata;
 
   @override
   int get hashCode => value.hashCode ^ metadata.hashCode;

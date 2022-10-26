@@ -1,25 +1,45 @@
 import 'dart:collection';
 import 'dart:convert';
 
+import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
-import 'package:at_commons/src/verb/verb_builder.dart';
+import 'package:at_commons/src/utils/string_utils.dart';
 
 /// Update builder generates a command to update [value] for a key [atKey] in the secondary server of [sharedBy].
 /// Use [getBuilder] method if you want to convert command to a builder.
-/// ```
-///  //setting a public value for the key 'phone'
-///  var updateBuilder = UpdateVerbBuilder()..isPublic=true
+///
+///  * Setting a public value for the key 'phone'
+///
+///  * When isPublic is set to true, throws [InvalidAtKeyException] if isLocal is set to true or sharedWith is populated
+///```dart
+///  var updateBuilder = UpdateVerbBuilder()
+///  ..isPublic=true
 ///  ..key='phone'
 ///  ..sharedBy='bob'
 ///  ..value='+1-1234';
+///```
 ///
-///   //@bob setting a value for the key 'phone' to share with @alice
+///   * @bob setting a value for the key 'phone' to share with @alice
+///
+///   * When sharedWith is populated, throws [InvalidAtKeyException] if isLocal or isPublic is set to true
+///```dart
 ///  var updateBuilder = UpdateVerbBuilder()
 ///  ..sharedWith=’alice’
 ///  ..key='phone'
 ///  ..sharedBy='bob'
 ///  ..value='+1-5678';
-/// ```
+///```
+///
+/// * Creating a local key for storing data that does not sync
+///
+/// * When isLocal is set to true, throws [InvalidAtKeyException] if isPublic is set to true or sharedWith is populated
+///```dart
+///  var updateBuilder = UpdateVerbBuilder()
+///                      ..isLocal = true
+///                      ..key = 'preferences'
+///                      ..sharedBy = '@bob'
+///                      ..value = jsonEncode(myPrefObj)
+///```
 class UpdateVerbBuilder implements VerbBuilder {
   /// Key that represents a user's information. e.g phone, location, email etc.,
   String? atKey;
@@ -115,95 +135,17 @@ class UpdateVerbBuilder implements VerbBuilder {
       var command = 'update:json:${jsonEncode(json)}\n';
       return command;
     }
-    var command = 'update:';
-    if (ttl != null) {
-      command += 'ttl:$ttl:';
-    }
-    if (ttb != null) {
-      command += 'ttb:$ttb:';
-    }
-    if (ttr != null) {
-      command += 'ttr:$ttr:';
-    }
-    if (ccd != null) {
-      command += 'ccd:$ccd:';
-    }
-    if (dataSignature != null) {
-      command += 'dataSignature:$dataSignature:';
-    }
-    if (isBinary != null) {
-      command += 'isBinary:$isBinary:';
-    }
-    if (isEncrypted != null) {
-      command += 'isEncrypted:$isEncrypted:';
-    }
-    if (sharedKeyEncrypted != null) {
-      command += '$SHARED_KEY_ENCRYPTED:$sharedKeyEncrypted:';
-    }
-    if (pubKeyChecksum != null) {
-      command += '$SHARED_WITH_PUBLIC_KEY_CHECK_SUM:$pubKeyChecksum:';
-    }
-    if (encoding != null && encoding!.isNotEmpty) {
-      command += '$ENCODING:$encoding';
-    }
-    // The key can only be
-    // 1. a local key
-    // 2. a public key or
-    // 3. a shared key
-    // The key is mutually exclusive between isLocal, isPublic and sharedWith
-    if (isLocal) {
-      command += 'local:';
-    } else if (isPublic) {
-      command += 'public:';
-    } else if (sharedWith != null) {
-      command += '${VerbUtil.formatAtSign(sharedWith)}:';
-    }
-    command += atKey!;
-    if (sharedBy != null) {
-      command += '${VerbUtil.formatAtSign(sharedBy)}';
-    }
-    if (value is String) {
-      value = VerbUtil.replaceNewline(value);
-    }
+    var command = 'update';
+    command += buildMetadataString();
+    command += ':${buildKey()}';
     command += ' $value\n';
     return command;
   }
 
   String buildCommandForMeta() {
-    var command = 'update:meta:';
-    if (isPublic) {
-      command += 'public:';
-    } else if (sharedWith != null) {
-      command += '${VerbUtil.formatAtSign(sharedWith)}:';
-    }
-    command += atKey!;
-    if (sharedBy != null) {
-      command += '${VerbUtil.formatAtSign(sharedBy)}';
-    }
-    if (ttl != null) {
-      command += ':ttl:$ttl';
-    }
-    if (ttb != null) {
-      command += ':ttb:$ttb';
-    }
-    if (ttr != null) {
-      command += ':ttr:$ttr';
-    }
-    if (ccd != null) {
-      command += ':ccd:$ccd';
-    }
-    if (isBinary != null) {
-      command += ':isBinary:$isBinary';
-    }
-    if (isEncrypted != null) {
-      command += ':isEncrypted:$isEncrypted';
-    }
-    if (sharedKeyEncrypted != null) {
-      command += ':$SHARED_KEY_ENCRYPTED:$sharedKeyEncrypted';
-    }
-    if (pubKeyChecksum != null) {
-      command += ':$SHARED_WITH_PUBLIC_KEY_CHECK_SUM:$pubKeyChecksum';
-    }
+    var command = 'update:meta';
+    command += ':${buildKey()}';
+    command += buildMetadataString();
     command += '\n';
     return command;
   }
@@ -273,5 +215,66 @@ class UpdateVerbBuilder implements VerbBuilder {
       return true;
     }
     return false;
+  }
+
+  void _validateKey() {
+    if (isLocal == true && (isPublic == true || sharedWith.isNotNull)) {
+      throw InvalidAtKeyException(
+          'When isLocal is set to true, cannot set isPublic and sharedWith');
+    }
+    if (isPublic == true && sharedWith.isNotNull) {
+      throw InvalidAtKeyException(
+          'When isPublic is set to true, sharedWith cannot be populated');
+    }
+    if (atKey.isNull) {
+      throw InvalidAtKeyException('Key cannot be null or empty');
+    }
+  }
+
+  String buildKey() {
+    _validateKey();
+    String key = '';
+    if (isLocal == true) {
+      key = 'local:';
+    } else if (isPublic == true) {
+      key = 'public:';
+    } else if (sharedWith.isNotNull) {
+      key = '${VerbUtil.formatAtSign(sharedWith)}:';
+    }
+    key += '${atKey!}${VerbUtil.formatAtSign(sharedBy)}';
+    return key;
+  }
+
+  String buildMetadataString() {
+    String metadataKey = '';
+
+    if (ttl != null) {
+      metadataKey += ':ttl:$ttl';
+    }
+    if (ttb != null) {
+      metadataKey += ':ttb:$ttb';
+    }
+    if (ttr != null) {
+      metadataKey += ':ttr:$ttr';
+    }
+    if (ccd != null) {
+      metadataKey += ':ccd:$ccd';
+    }
+    if (isBinary != null) {
+      metadataKey += ':isBinary:$isBinary';
+    }
+    if (isEncrypted != null) {
+      metadataKey += ':isEncrypted:$isEncrypted';
+    }
+    if (sharedKeyEncrypted.isNotNull) {
+      metadataKey += ':$SHARED_KEY_ENCRYPTED:$sharedKeyEncrypted';
+    }
+    if (pubKeyChecksum.isNotNull) {
+      metadataKey += ':$SHARED_WITH_PUBLIC_KEY_CHECK_SUM:$pubKeyChecksum';
+    }
+    if (encoding.isNotNull) {
+      metadataKey += ':$ENCODING:$encoding';
+    }
+    return metadataKey;
   }
 }

@@ -1,3 +1,5 @@
+## 3.0.30
+* fix: Add key validations to Update and llookup verb builders
 ## 3.0.29
 * fix: AtKey.fromString() sets incorrect value in sharedWith attribute for public keys.
 ## 3.0.28

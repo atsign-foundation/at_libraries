@@ -172,5 +172,73 @@ void main() {
               e is InvalidSyntaxException &&
               e.message == 'command does not match the regex')));
     });
+
+    test(
+        'test to verify local key with isPublic set to true throws invalid atkey exception',
+        () {
+      var updateVerbBuilder = UpdateVerbBuilder()
+        ..isPublic = true
+        ..isLocal = true
+        ..atKey = 'phone'
+        ..sharedBy = '@bob';
+
+      expect(
+          () => updateVerbBuilder.buildCommand(),
+          throwsA(predicate((dynamic e) =>
+              e is InvalidAtKeyException &&
+              e.message ==
+                  'When isLocal is set to true, cannot set isPublic and sharedWith')));
+    });
+
+    test(
+        'test to verify local key with sharedWith populated throws invalid atkey exception',
+        () {
+      var updateVerbBuilder = UpdateVerbBuilder()
+        ..isLocal = true
+        ..sharedWith = '@alice'
+        ..atKey = 'phone'
+        ..sharedBy = '@bob';
+
+      expect(
+          () => updateVerbBuilder.buildCommand(),
+          throwsA(predicate((dynamic e) =>
+              e is InvalidAtKeyException &&
+              e.message ==
+                  'When isLocal is set to true, cannot set isPublic and sharedWith')));
+    });
+
+    test(
+        'test to verify isPublic set to true with sharedWith populated throws invalid atkey exception',
+        () {
+      var updateVerbBuilder = UpdateVerbBuilder()
+        ..isPublic = true
+        ..sharedWith = '@alice'
+        ..atKey = 'phone'
+        ..sharedBy = '@bob';
+
+      expect(
+          () => updateVerbBuilder.buildCommand(),
+          throwsA(predicate((dynamic e) =>
+              e is InvalidAtKeyException &&
+              e.message ==
+                  'When isPublic is set to true, sharedWith cannot be populated')));
+    });
+
+    test(
+        'test to verify Key cannot be null or empty',
+            () {
+          var updateVerbBuilder = UpdateVerbBuilder()
+            ..sharedWith = '@alice'
+            ..atKey = ''
+            ..sharedBy = '@bob';
+
+          expect(
+                  () => updateVerbBuilder.buildCommand(),
+              throwsA(predicate((dynamic e) =>
+              e is InvalidAtKeyException &&
+                  e.message ==
+                      'Key cannot be null or empty')));
+        });
+
   });
 }
