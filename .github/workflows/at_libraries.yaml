@@ -38,45 +38,51 @@ jobs:
       - name: Analyze project source in ${{ matrix.package }}
         working-directory: packages/${{ matrix.package }}
         run: dart analyze
-        
+
   functional_tests_at_onboarding_cli:
     runs-on: ubuntu-latest
+    env:
+      working-directory: tests/at_onboarding_cli_functional_tests
+
     steps:
       - uses: actions/checkout@v2
 
       - uses: dart-lang/setup-dart@v1
         with:
           sdk: stable
-      
+
+      - name: Install melos && melos bootstrap
+        run: |
+          dart pub global activate melos
+          dart pub global run melos bootstrap --scope='at_onboarding_cli*'
+
       #functional tests for at_onbaording_cli
       - name: add entry to hosts file
         run: echo "127.0.0.1    vip.ve.atsign.zone" | sudo tee -a /etc/hosts
-        
+
       - name: Get functional test dependencies
-        working-directory: at_onboarding_cli/functional_tests
+        working-directory: ${{ env.working-directory }}
         run: dart pub get
-        
+
       - name: Start docker instance
-        working-directory: at_onboarding_cli/functional_tests
+        working-directory: ${{ env.working-directory }}
         run: sudo docker-compose up -d
-        
+
       - name: Check for docker container readiness
-        working-directory: at_onboarding_cli/functional_tests
+        working-directory: ${{ env.working-directory }}
         run: dart run check_docker_readiness.dart
-        
+
       - name: run pkamLoad on docker-image
         run: sudo docker exec functional_tests_virtualenv_1 supervisorctl start pkamLoad
-      
+
       - name: Check test environment readiness
-        working-directory: at_onboarding_cli/functional_tests
+        working-directory: ${{ env.working-directory }}
         run: dart run check_test_env.dart
-        
+
       - name: run tests
-        working-directory: at_onboarding_cli/functional_tests
+        working-directory: ${{ env.working-directory }}
         run: dart test --concurrency=1
-        
+
       - name: kill docker image
-        working-directory: at_onboarding_cli/functional_tests
+        working-directory: ${{ env.working-directory }}
         run: sudo docker-compose down
-      
-    
