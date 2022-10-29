@@ -51,11 +51,6 @@ jobs:
         with:
           sdk: stable
 
-      - name: Install melos && melos bootstrap
-        run: |
-          dart pub global activate melos
-          dart pub global run melos bootstrap --scope='at_onboarding_cli*'
-
       #functional tests for at_onbaording_cli
       - name: add entry to hosts file
         run: echo "127.0.0.1    vip.ve.atsign.zone" | sudo tee -a /etc/hosts
