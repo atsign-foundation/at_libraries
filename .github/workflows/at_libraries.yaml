@@ -16,7 +16,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - at_contact
+          - at_lookup
+          - at_server_status
+          - at_onboarding_cli
     steps:
       - uses: actions/checkout@v3
 
@@ -24,44 +31,12 @@ jobs:
         with:
           sdk: stable
 
-      # Install dependencies in at_contacts library
-      - name: Install dependencies in at_contact
-        working-directory: at_contact
+      - name: Install dependencies in ${{ matrix.package }}
+        working-directory: packages/${{ matrix.package }}
         run: dart pub get
 
-      # Run analyzer in at_contacts library
-      - name: Analyze project source in at_contact
-        working-directory: at_contact
-        run: dart analyze
-
-      # Install dependencies in at_lookup library
-      - name: Install dependencies in at_lookup
-        working-directory: at_lookup
-        run: dart pub get
-
-      # Run dart analyzer in at_lookup library
-      - name: Analyze project source in at_lookup
-        working-directory: at_lookup
-        run: dart analyze
-
-      # Install dependencies in at_server_status status
-      - name: Install dependencies in at_server_status library
-        working-directory: at_server_status
-        run: dart pub get
-
-      # Run dart analyzer in at_server_status library
-      - name: Analyze project source in at_server_status library
-        working-directory: at_server_status
-        run: dart analyze
-        
-      # Install dependencies in at_onboarding_cli
-      - name: Install dependencies in at_onboarding_cli
-        working-directory: at_onboarding_cli
-        run: dart pub get
-      
-      # Run dart analyzer in at_cli_onboarding
-      - name: Run dart analyzer in at_onboarding_cli
-        working-directory: at_onboarding_cli
+      - name: Analyze project source in ${{ matrix.package }}
+        working-directory: packages/${{ matrix.package }}
         run: dart analyze
         
   functional_tests_at_onboarding_cli:
