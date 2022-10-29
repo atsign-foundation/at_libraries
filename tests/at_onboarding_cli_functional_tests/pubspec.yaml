@@ -8,26 +8,10 @@ environment:
 
 
 dependencies:
-  at_onboarding_cli:
-    path: ../
+  at_onboarding_cli: ^1.1.2
   at_client: ^3.0.35
   at_lookup: ^3.0.29
   at_commons: ^3.0.24
-
-#dependency_overrides:
-#  at_lookup:
-#    path: ../../at_lookup
-#  at_client:
-#    git:
-#      url: https://github.com/atsign-foundation/at_client_sdk.git
-#      path: at_client
-#      ref: trunk
-#  at_commons:
-#    git:
-#      url: https://github.com/atsign-foundation/at_tools.git
-#      path: at_commons
-#      ref: trunk
-
 
 dev_dependencies:
   lints: ^1.0.0

@@ -2,3 +2,5 @@ name: at_libraries
 
 packages:
   - packages/**
+
+  - tests/**
