@@ -387,7 +387,7 @@ class AtLookupImpl implements AtLookUp {
     }
     await createConnection();
     try {
-      _pkamAuthenticationMutex.acquire();
+      await _pkamAuthenticationMutex.acquire();
       if (!_connection!.getMetaData()!.isAuthenticated) {
         await _sendCommand((FromVerbBuilder()
               ..atSign = _currentAtSign
@@ -433,7 +433,7 @@ class AtLookupImpl implements AtLookUp {
     }
     await createConnection();
     try {
-      _cramAuthenticationMutex.acquire();
+      await _cramAuthenticationMutex.acquire();
       if (!_connection!.getMetaData()!.isAuthenticated) {
         await _sendCommand((FromVerbBuilder()
               ..atSign = _currentAtSign
