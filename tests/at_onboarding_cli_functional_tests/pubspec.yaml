@@ -1,0 +1,20 @@
+name: at_onboarding_cli_functional_tests
+description: functional tests for at_onboarding_cli.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: '>=2.14.4 <3.0.0'
+
+
+dependencies:
+  at_onboarding_cli:
+    path: ../../packages/at_onboarding_cli
+  at_client: ^3.0.35
+  at_lookup: ^3.0.29
+  at_commons: ^3.0.24
+
+dev_dependencies:
+  lints: ^1.0.0
+  test: ^1.17.2
+  at_demo_data: ^1.0.0
