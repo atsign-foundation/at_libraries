@@ -242,9 +242,9 @@ void main() {
         ..atKey = 'alice:phone'
         ..sharedBy = '@bob';
       expect(
-              () => updateVerbBuilder.buildCommand(),
+          () => updateVerbBuilder.buildCommand(),
           throwsA(predicate((dynamic e) =>
-          e is InvalidAtKeyException &&
+              e is InvalidAtKeyException &&
               e.message ==
                   'Key cannot cannot contains following characters - @, :')));
     });
@@ -254,9 +254,9 @@ void main() {
         ..atKey = ':phone@'
         ..sharedBy = '@bob';
       expect(
-              () => updateVerbBuilder.buildCommand(),
+          () => updateVerbBuilder.buildCommand(),
           throwsA(predicate((dynamic e) =>
-          e is InvalidAtKeyException &&
+              e is InvalidAtKeyException &&
               e.message ==
                   'Key cannot cannot contains following characters - @, :')));
     });
@@ -264,11 +264,27 @@ void main() {
     test('A key cannot contain @ and :', () {
       var updateVerbBuilder = UpdateVerbBuilder()..atKey = '@alice:phone@bob';
       expect(
-              () => updateVerbBuilder.buildCommand(),
+          () => updateVerbBuilder.buildCommand(),
           throwsA(predicate((dynamic e) =>
-          e is InvalidAtKeyException &&
+              e is InvalidAtKeyException &&
               e.message ==
                   'Key cannot cannot contains following characters - @, :')));
+    });
+
+    test(
+        'A key with local is set and then sharedWith is set which throws exception',
+        () {
+      var updateVerbBuilder = UpdateVerbBuilder()
+        ..atKey = 'phone'
+        ..isLocal = true
+        ..sharedBy = '@bob'
+        ..value = '+445 334 3423';
+      var command = updateVerbBuilder.buildCommand();
+      expect(command, 'update:local:phone@bob +445 334 3423\n');
+
+      updateVerbBuilder.sharedWith = '@alice';
+      expect(() => updateVerbBuilder.buildCommand(),
+          throwsA(predicate((dynamic e) => e is InvalidAtKeyException)));
     });
   });
 }
