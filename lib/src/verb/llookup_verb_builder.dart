@@ -1,7 +1,5 @@
-import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
-import 'package:at_commons/src/utils/string_utils.dart';
-import 'package:at_commons/src/verb/verb_builder.dart';
+import 'package:at_commons/src/verb/abstract_verb_builder.dart';
 
 /// Local lookup verb builder generates a command to lookup value of [atKey] stored in the secondary server.
 ///
@@ -59,7 +57,7 @@ import 'package:at_commons/src/verb/verb_builder.dart';
 ///               ..key = 'aboutMe'
 ///               ..sharedBy = '@alice'
 ///```
-class LLookupVerbBuilder implements VerbBuilder {
+class LLookupVerbBuilder extends AbstractVerbBuilder {
   /// the key of [atKey] to llookup. [atKey] can have either public, private or shared access.
   String? atKey;
 
@@ -88,49 +86,25 @@ class LLookupVerbBuilder implements VerbBuilder {
     return command += '${buildKey()}\n';
   }
 
-  /// Validates the verb builder data and returns the string representation of [AtKey]
-  /// Throws [InvalidAtKeyException] if the validation fails
-  String buildKey() {
-    // validates the key. Throw InvalidAtKeyException if validation fails
-    _validateKey();
-    // Builds key if validation is successful.
-    String key = '';
-    if (isCached == true) {
-      key = 'cached:';
-    }
-    if (isLocal == true) {
-      key = 'local:';
-    } else if (isPublic == true) {
-      key += 'public:';
-    } else if (sharedWith.isNotNull) {
-      key += '${VerbUtil.formatAtSign(sharedWith)}:';
-    }
-    key += '${atKey!}${VerbUtil.formatAtSign(sharedBy)}';
-
-    return key;
-  }
-
-  /// Validates the [AtKey]
-  /// Throws [InvalidAtKeyException] if the validation fails
-  void _validateKey() {
-    if (isCached == true && isLocal == true) {
-      throw InvalidAtKeyException('Cached key cannot be a local key');
-    }
-    if (isLocal == true && (isPublic == true || sharedWith.isNotNull)) {
-      throw InvalidAtKeyException(
-          'When isLocal is set to true, cannot set isPublic and sharedWith');
-    }
-    if (isPublic == true && sharedWith.isNotNull) {
-      throw InvalidAtKeyException(
-          'When isPublic is set to true, sharedWith cannot be populated');
-    }
-    if (atKey.isNull) {
-      throw InvalidAtKeyException('Key cannot be null or empty');
-    }
-  }
-
   @override
   bool checkParams() {
     return atKey != null && sharedBy != null;
+  }
+
+  @override
+  String buildKey() {
+    super.atKeyObj
+      ..key = atKey
+      ..sharedBy = sharedBy
+      ..sharedWith = sharedWith
+      ..isLocal = isLocal
+      ..metadata = (Metadata()
+        ..isPublic = isPublic
+        ..isCached = isCached);
+    // validates the data in the verb builder.
+    // If validation is successful, build and return the key;
+    // else throws exception.
+    validateKey();
+    return super.buildKey();
   }
 }

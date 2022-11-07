@@ -204,7 +204,7 @@ void main() {
           throwsA(predicate((dynamic e) =>
               e is InvalidAtKeyException &&
               e.message ==
-                  'When isLocal is set to true, cannot set isPublic and sharedWith')));
+                  'sharedWith should be empty when isLocal is set to true')));
     });
 
     test(
@@ -224,21 +224,51 @@ void main() {
                   'When isPublic is set to true, sharedWith cannot be populated')));
     });
 
-    test(
-        'test to verify Key cannot be null or empty',
-            () {
-          var updateVerbBuilder = UpdateVerbBuilder()
-            ..sharedWith = '@alice'
-            ..atKey = ''
-            ..sharedBy = '@bob';
+    test('test to verify Key cannot be null or empty', () {
+      var updateVerbBuilder = UpdateVerbBuilder()
+        ..sharedWith = '@alice'
+        ..atKey = ''
+        ..sharedBy = '@bob';
 
-          expect(
-                  () => updateVerbBuilder.buildCommand(),
-              throwsA(predicate((dynamic e) =>
+      expect(
+          () => updateVerbBuilder.buildCommand(),
+          throwsA(predicate((dynamic e) =>
               e is InvalidAtKeyException &&
-                  e.message ==
-                      'Key cannot be null or empty')));
-        });
+              e.message == 'Key cannot be null or empty')));
+    });
 
+    test('A key cannot contain :', () {
+      var updateVerbBuilder = UpdateVerbBuilder()
+        ..atKey = 'alice:phone'
+        ..sharedBy = '@bob';
+      expect(
+              () => updateVerbBuilder.buildCommand(),
+          throwsA(predicate((dynamic e) =>
+          e is InvalidAtKeyException &&
+              e.message ==
+                  'Key cannot cannot contains following characters - @, :')));
+    });
+
+    test('A key cannot contain : and @', () {
+      var updateVerbBuilder = UpdateVerbBuilder()
+        ..atKey = ':phone@'
+        ..sharedBy = '@bob';
+      expect(
+              () => updateVerbBuilder.buildCommand(),
+          throwsA(predicate((dynamic e) =>
+          e is InvalidAtKeyException &&
+              e.message ==
+                  'Key cannot cannot contains following characters - @, :')));
+    });
+
+    test('A key cannot contain @ and :', () {
+      var updateVerbBuilder = UpdateVerbBuilder()..atKey = '@alice:phone@bob';
+      expect(
+              () => updateVerbBuilder.buildCommand(),
+          throwsA(predicate((dynamic e) =>
+          e is InvalidAtKeyException &&
+              e.message ==
+                  'Key cannot cannot contains following characters - @, :')));
+    });
   });
 }

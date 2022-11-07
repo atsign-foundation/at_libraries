@@ -62,62 +62,63 @@ void main() {
         ..sharedBy = '@bob';
 
       expect(
-              () => llookupVerbBuilder.buildCommand(),
+          () => llookupVerbBuilder.buildCommand(),
           throwsA(predicate((dynamic e) =>
-          e is InvalidAtKeyException &&
-              e.message == 'Cached key cannot be a local key')));
+              e is InvalidAtKeyException &&
+              e.message ==
+                  'sharedWith should be empty when isLocal is set to true')));
     });
 
     test(
         'test to verify local key with isPublic set to true throws invalid atkey exception',
-            () {
-          var llookupVerbBuilder = LLookupVerbBuilder()
-            ..isPublic = true
-            ..isLocal = true
-            ..atKey = 'phone'
-            ..sharedBy = '@bob';
+        () {
+      var llookupVerbBuilder = LLookupVerbBuilder()
+        ..isPublic = true
+        ..isLocal = true
+        ..atKey = 'phone'
+        ..sharedBy = '@bob';
 
-          expect(
-                  () => llookupVerbBuilder.buildCommand(),
-              throwsA(predicate((dynamic e) =>
+      expect(
+          () => llookupVerbBuilder.buildCommand(),
+          throwsA(predicate((dynamic e) =>
               e is InvalidAtKeyException &&
-                  e.message ==
-                      'When isLocal is set to true, cannot set isPublic and sharedWith')));
-        });
+              e.message ==
+                  'When isLocal is set to true, cannot set isPublic and sharedWith')));
+    });
 
     test(
         'test to verify local key with sharedWith populated throws invalid atkey exception',
-            () {
-          var llookupVerbBuilder = LLookupVerbBuilder()
-            ..isLocal = true
-            ..sharedWith = '@alice'
-            ..atKey = 'phone'
-            ..sharedBy = '@bob';
+        () {
+      var llookupVerbBuilder = LLookupVerbBuilder()
+        ..isLocal = true
+        ..sharedWith = '@alice'
+        ..atKey = 'phone'
+        ..sharedBy = '@bob';
 
-          expect(
-                  () => llookupVerbBuilder.buildCommand(),
-              throwsA(predicate((dynamic e) =>
+      expect(
+          () => llookupVerbBuilder.buildCommand(),
+          throwsA(predicate((dynamic e) =>
               e is InvalidAtKeyException &&
-                  e.message ==
-                      'When isLocal is set to true, cannot set isPublic and sharedWith')));
-        });
+              e.message ==
+                  'sharedWith should be empty when isLocal is set to true')));
+    });
 
     test(
         'test to verify isPublic set to true with sharedWith populated throws invalid atkey exception',
-            () {
-          var llookupVerbBuilder = LLookupVerbBuilder()
-            ..isPublic = true
-            ..sharedWith = '@alice'
-            ..atKey = 'phone'
-            ..sharedBy = '@bob';
+        () {
+      var llookupVerbBuilder = LLookupVerbBuilder()
+        ..isPublic = true
+        ..sharedWith = '@alice'
+        ..atKey = 'phone'
+        ..sharedBy = '@bob';
 
-          expect(
-                  () => llookupVerbBuilder.buildCommand(),
-              throwsA(predicate((dynamic e) =>
+      expect(
+          () => llookupVerbBuilder.buildCommand(),
+          throwsA(predicate((dynamic e) =>
               e is InvalidAtKeyException &&
-                  e.message ==
-                      'When isPublic is set to true, sharedWith cannot be populated')));
-        });
+              e.message ==
+                  'When isPublic is set to true, sharedWith cannot be populated')));
+    });
 
     test('test to verify Key cannot be null or empty', () {
       var llookupVerbBuilder = LLookupVerbBuilder()
@@ -126,10 +127,56 @@ void main() {
         ..sharedBy = '@bob';
 
       expect(
-              () => llookupVerbBuilder.buildCommand(),
+          () => llookupVerbBuilder.buildCommand(),
           throwsA(predicate((dynamic e) =>
-          e is InvalidAtKeyException &&
+              e is InvalidAtKeyException &&
               e.message == 'Key cannot be null or empty')));
+    });
+
+    test('A key cannot contain @', () {
+      var llookupVerbBuilder = LLookupVerbBuilder()
+        ..atKey = '@phone'
+        ..sharedBy = '@bob';
+      expect(
+          () => llookupVerbBuilder.buildCommand(),
+          throwsA(predicate((dynamic e) =>
+              e is InvalidAtKeyException &&
+              e.message ==
+                  'Key cannot cannot contains following characters - @, :')));
+    });
+
+    test('A key cannot contain :', () {
+      var llookupVerbBuilder = LLookupVerbBuilder()
+        ..atKey = 'alice:phone'
+        ..sharedBy = '@bob';
+      expect(
+          () => llookupVerbBuilder.buildCommand(),
+          throwsA(predicate((dynamic e) =>
+              e is InvalidAtKeyException &&
+              e.message ==
+                  'Key cannot cannot contains following characters - @, :')));
+    });
+
+    test('A key cannot contain : and @', () {
+      var llookupVerbBuilder = LLookupVerbBuilder()
+        ..atKey = ':phone@'
+        ..sharedBy = '@bob';
+      expect(
+          () => llookupVerbBuilder.buildCommand(),
+          throwsA(predicate((dynamic e) =>
+              e is InvalidAtKeyException &&
+              e.message ==
+                  'Key cannot cannot contains following characters - @, :')));
+    });
+
+    test('A key cannot contain @ and :', () {
+      var llookupVerbBuilder = LLookupVerbBuilder()..atKey = '@alice:phone@bob';
+      expect(
+          () => llookupVerbBuilder.buildCommand(),
+          throwsA(predicate((dynamic e) =>
+              e is InvalidAtKeyException &&
+              e.message ==
+                  'Key cannot cannot contains following characters - @, :')));
     });
   });
 }

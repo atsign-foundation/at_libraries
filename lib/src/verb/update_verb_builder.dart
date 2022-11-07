@@ -1,9 +1,9 @@
 import 'dart:collection';
 import 'dart:convert';
 
-import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_commons/src/utils/string_utils.dart';
+import 'package:at_commons/src/verb/abstract_verb_builder.dart';
 
 /// Update builder generates a command to update [value] for a key [atKey] in the secondary server of [sharedBy].
 /// Use [getBuilder] method if you want to convert command to a builder.
@@ -40,7 +40,7 @@ import 'package:at_commons/src/utils/string_utils.dart';
 ///                      ..sharedBy = '@bob'
 ///                      ..value = jsonEncode(myPrefObj)
 ///```
-class UpdateVerbBuilder implements VerbBuilder {
+class UpdateVerbBuilder extends AbstractVerbBuilder {
   /// Key that represents a user's information. e.g phone, location, email etc.,
   String? atKey;
 
@@ -142,6 +142,30 @@ class UpdateVerbBuilder implements VerbBuilder {
     return command;
   }
 
+  @override
+  buildKey() {
+    super.atKeyObj
+      ..key = atKey
+      ..sharedWith = VerbUtil.formatAtSign(sharedWith)
+      ..sharedBy = VerbUtil.formatAtSign(sharedBy)
+      ..metadata = (Metadata()
+        ..ttl = ttl
+        ..ttb = ttb
+        ..ttr = ttr
+        ..ccd = ccd
+        ..isBinary = isBinary
+        ..isPublic = isPublic
+        ..isEncrypted = isEncrypted
+        ..sharedKeyEnc = sharedKeyEncrypted
+        ..pubKeyCS = pubKeyChecksum
+        ..sharedKeyStatus = sharedKeyStatus)
+      ..isLocal = isLocal;
+    // If validation is successful, build the command and returns;
+    // else throws exception.
+    validateKey();
+    return super.buildKey();
+  }
+
   String buildCommandForMeta() {
     var command = 'update:meta';
     command += ':${buildKey()}';
@@ -215,34 +239,6 @@ class UpdateVerbBuilder implements VerbBuilder {
       return true;
     }
     return false;
-  }
-
-  void _validateKey() {
-    if (isLocal == true && (isPublic == true || sharedWith.isNotNull)) {
-      throw InvalidAtKeyException(
-          'When isLocal is set to true, cannot set isPublic and sharedWith');
-    }
-    if (isPublic == true && sharedWith.isNotNull) {
-      throw InvalidAtKeyException(
-          'When isPublic is set to true, sharedWith cannot be populated');
-    }
-    if (atKey.isNull) {
-      throw InvalidAtKeyException('Key cannot be null or empty');
-    }
-  }
-
-  String buildKey() {
-    _validateKey();
-    String key = '';
-    if (isLocal == true) {
-      key = 'local:';
-    } else if (isPublic == true) {
-      key = 'public:';
-    } else if (sharedWith.isNotNull) {
-      key = '${VerbUtil.formatAtSign(sharedWith)}:';
-    }
-    key += '${atKey!}${VerbUtil.formatAtSign(sharedBy)}';
-    return key;
   }
 
   String buildMetadataString() {
