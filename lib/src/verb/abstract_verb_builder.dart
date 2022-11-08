@@ -24,7 +24,10 @@ abstract class AbstractVerbBuilder implements VerbBuilder {
     } else if (atKeyObj.sharedWith.isNotNull) {
       key += '${VerbUtil.formatAtSign(atKeyObj.sharedWith)}:';
     }
-    key += '${atKeyObj.key!}${VerbUtil.formatAtSign(atKeyObj.sharedBy)}';
+    key += atKeyObj.key!;
+    if (atKeyObj.sharedBy.isNotNull) {
+      key += VerbUtil.formatAtSign(atKeyObj.sharedBy)!;
+    }
     return key;
   }
 
