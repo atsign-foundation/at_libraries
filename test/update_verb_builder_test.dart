@@ -237,40 +237,6 @@ void main() {
               e.message == 'Key cannot be null or empty')));
     });
 
-    test('A key cannot contain :', () {
-      var updateVerbBuilder = UpdateVerbBuilder()
-        ..atKey = 'alice:phone'
-        ..sharedBy = '@bob';
-      expect(
-          () => updateVerbBuilder.buildCommand(),
-          throwsA(predicate((dynamic e) =>
-              e is InvalidAtKeyException &&
-              e.message ==
-                  'Key cannot cannot contains following characters - @, :')));
-    });
-
-    test('A key cannot contain : and @', () {
-      var updateVerbBuilder = UpdateVerbBuilder()
-        ..atKey = ':phone@'
-        ..sharedBy = '@bob';
-      expect(
-          () => updateVerbBuilder.buildCommand(),
-          throwsA(predicate((dynamic e) =>
-              e is InvalidAtKeyException &&
-              e.message ==
-                  'Key cannot cannot contains following characters - @, :')));
-    });
-
-    test('A key cannot contain @ and :', () {
-      var updateVerbBuilder = UpdateVerbBuilder()..atKey = '@alice:phone@bob';
-      expect(
-          () => updateVerbBuilder.buildCommand(),
-          throwsA(predicate((dynamic e) =>
-              e is InvalidAtKeyException &&
-              e.message ==
-                  'Key cannot cannot contains following characters - @, :')));
-    });
-
     test(
         'A key with local is set and then sharedWith is set which throws exception',
         () {

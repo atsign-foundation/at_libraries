@@ -132,51 +132,5 @@ void main() {
               e is InvalidAtKeyException &&
               e.message == 'Key cannot be null or empty')));
     });
-
-    test('A key cannot contain @', () {
-      var llookupVerbBuilder = LLookupVerbBuilder()
-        ..atKey = '@phone'
-        ..sharedBy = '@bob';
-      expect(
-          () => llookupVerbBuilder.buildCommand(),
-          throwsA(predicate((dynamic e) =>
-              e is InvalidAtKeyException &&
-              e.message ==
-                  'Key cannot cannot contains following characters - @, :')));
-    });
-
-    test('A key cannot contain :', () {
-      var llookupVerbBuilder = LLookupVerbBuilder()
-        ..atKey = 'alice:phone'
-        ..sharedBy = '@bob';
-      expect(
-          () => llookupVerbBuilder.buildCommand(),
-          throwsA(predicate((dynamic e) =>
-              e is InvalidAtKeyException &&
-              e.message ==
-                  'Key cannot cannot contains following characters - @, :')));
-    });
-
-    test('A key cannot contain : and @', () {
-      var llookupVerbBuilder = LLookupVerbBuilder()
-        ..atKey = ':phone@'
-        ..sharedBy = '@bob';
-      expect(
-          () => llookupVerbBuilder.buildCommand(),
-          throwsA(predicate((dynamic e) =>
-              e is InvalidAtKeyException &&
-              e.message ==
-                  'Key cannot cannot contains following characters - @, :')));
-    });
-
-    test('A key cannot contain @ and :', () {
-      var llookupVerbBuilder = LLookupVerbBuilder()..atKey = '@alice:phone@bob';
-      expect(
-          () => llookupVerbBuilder.buildCommand(),
-          throwsA(predicate((dynamic e) =>
-              e is InvalidAtKeyException &&
-              e.message ==
-                  'Key cannot cannot contains following characters - @, :')));
-    });
   });
 }

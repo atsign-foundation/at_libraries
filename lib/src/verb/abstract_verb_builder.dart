@@ -60,9 +60,5 @@ abstract class AbstractVerbBuilder implements VerbBuilder {
     if (atKeyObj.key.isNull) {
       throw InvalidAtKeyException('Key cannot be null or empty');
     }
-    if (atKeyObj.key!.contains(RegExp('[@:]'))) {
-      throw InvalidAtKeyException(
-          'Key cannot cannot contains following characters - @, :');
-    }
   }
 }
