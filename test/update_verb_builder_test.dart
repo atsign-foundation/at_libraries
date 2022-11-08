@@ -253,4 +253,19 @@ void main() {
           throwsA(predicate((dynamic e) => e is InvalidAtKeyException)));
     });
   });
+
+  group('A group of tests to validate the buildKey', () {
+    // The privatekey:<key> is used to insert the pkam keys
+    test('privatekey assigned to atKey.key', () {
+      var updateVerbBuilder = UpdateVerbBuilder()
+        ..atKey = 'privatekey:at_private_key';
+      expect(updateVerbBuilder.buildKey(), 'privatekey:at_private_key');
+    });
+
+    // The key in sync response will have fullformed key as a key
+    test('string representation of atkey is passed to buildKey', () {
+      var updateVerbBuilder = UpdateVerbBuilder()..atKey = '@alice:phone@bob';
+      expect(updateVerbBuilder.buildKey(), '@alice:phone@bob');
+    });
+  });
 }
