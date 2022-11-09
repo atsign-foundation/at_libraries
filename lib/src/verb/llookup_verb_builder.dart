@@ -91,8 +91,10 @@ class LLookupVerbBuilder extends AbstractVerbBuilder {
     return atKey != null && sharedBy != null;
   }
 
-  @override
   String buildKey() {
+    if(atKeyObj.key != null){
+      return atKeyObj.toString();
+    }
     super.atKeyObj
       ..key = atKey
       ..sharedBy = sharedBy
@@ -105,6 +107,6 @@ class LLookupVerbBuilder extends AbstractVerbBuilder {
     // If validation is successful, build and return the key;
     // else throws exception.
     validateKey();
-    return super.buildKey();
+    return super.atKeyObj.toString();
   }
 }

@@ -26,7 +26,8 @@ void main() {
       var llookupVerbBuilder = LLookupVerbBuilder()
         ..isPublic = true
         ..atKey = 'phone'
-        ..sharedBy = '@bob';
+        ..sharedBy = '@bob'
+        ..sharedWith = null;
 
       expect(llookupVerbBuilder.buildCommand(), 'llookup:public:phone@bob\n');
     });

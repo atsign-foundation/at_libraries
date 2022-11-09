@@ -9,28 +9,6 @@ abstract class AbstractVerbBuilder implements VerbBuilder {
   /// Represents the AtKey instance to populate the verb builder data
   AtKey atKeyObj = AtKey();
 
-  /// From the [VerbBuilder] instances construct a string representation of an [AtKey]
-  ///
-  /// Returns a string representation of [AtKey]
-  String buildKey() {
-    String key = '';
-    if (atKeyObj.metadata?.isCached == true) {
-      key = 'cached:';
-    }
-    if (atKeyObj.isLocal == true) {
-      key = 'local:';
-    } else if (atKeyObj.metadata?.isPublic == true) {
-      key += 'public:';
-    } else if (atKeyObj.sharedWith.isNotNull) {
-      key += '${VerbUtil.formatAtSign(atKeyObj.sharedWith)}:';
-    }
-    key += atKeyObj.key!;
-    if (atKeyObj.sharedBy.isNotNull) {
-      key += VerbUtil.formatAtSign(atKeyObj.sharedBy)!;
-    }
-    return key;
-  }
-
   /// Validates the [AtKey]
   ///
   ///

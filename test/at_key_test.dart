@@ -189,6 +189,31 @@ void main() {
     });
   });
 
+  group('A group of negative test on toString method', () {
+    test('test to verify key is null', () {
+      var atKey = AtKey()
+        ..sharedWith = '@alice'
+        ..sharedBy = '@bob';
+      expect(
+          () => atKey.toString(),
+          throwsA(predicate((dynamic e) =>
+              e is InvalidAtKeyException &&
+              e.message == 'Key cannot be null or empty')));
+    });
+
+    test('test to verify key is empty', () {
+      var atKey = AtKey()
+        ..key = ''
+        ..sharedWith = '@alice'
+        ..sharedBy = '@bob';
+      expect(
+          () => atKey.toString(),
+          throwsA(predicate((dynamic e) =>
+              e is InvalidAtKeyException &&
+              e.message == 'Key cannot be null or empty')));
+    });
+  });
+
   group('A group of negative tests to validate AtKey', () {
     test('Test to verify AtException is thrown when key is empty', () {
       expect(

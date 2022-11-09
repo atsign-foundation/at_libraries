@@ -1,6 +1,7 @@
 import 'package:at_commons/at_commons.dart';
 import 'package:at_commons/src/keystore/at_key_builder_impl.dart';
 import 'package:at_commons/src/utils/at_key_regex_utils.dart';
+import 'package:at_commons/src/utils/string_utils.dart';
 
 class AtKey {
   String? key;
@@ -48,8 +49,9 @@ class AtKey {
 
   set sharedWith(String? atSign) {
     assertStartsWithAtIfNotEmpty(atSign);
-    if(isLocal == true || metadata?.isPublic == true){
-      throw InvalidAtKeyException('isLocal or isPublic cannot be true when sharedWith is set');
+    if (atSign.isNotNull && (isLocal == true || metadata?.isPublic == true)) {
+      throw InvalidAtKeyException(
+          'isLocal or isPublic cannot be true when sharedWith is set');
     }
     _sharedWith = atSign;
   }
@@ -74,6 +76,9 @@ class AtKey {
 
   @override
   String toString() {
+    if (key.isNull) {
+      throw InvalidAtKeyException('Key cannot be null or empty');
+    }
     // If metadata.isPublic is true and metadata.isCached is true,
     // return cached public key
     if (key!.startsWith('cached:public:') ||
@@ -244,8 +249,7 @@ class AtKey {
       // Example key: public:phone@bob
       if (keyParts[0] == 'public') {
         metaData.isPublic = true;
-      }
-      else if (keyParts[0] == 'local') {
+      } else if (keyParts[0] == 'local') {
         atKey.isLocal = true;
       }
       // Example key: cached:@alice:phone@bob

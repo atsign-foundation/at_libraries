@@ -262,10 +262,24 @@ void main() {
       expect(updateVerbBuilder.buildKey(), 'privatekey:at_private_key');
     });
 
-    // The key in sync response will have fullformed key as a key
-    test('string representation of atkey is passed to buildKey', () {
-      var updateVerbBuilder = UpdateVerbBuilder()..atKey = '@alice:phone@bob';
-      expect(updateVerbBuilder.buildKey(), '@alice:phone@bob');
+    test('test to verify sharedWith is set to null on a local key', () {
+      var updateVerbBuilder = UpdateVerbBuilder()
+        ..atKey = 'phone'
+        ..sharedBy = '@alice'
+        ..isLocal = true;
+      expect(updateVerbBuilder.buildKey(), 'local:phone@alice');
+      updateVerbBuilder.sharedWith = null;
+      expect(updateVerbBuilder.buildKey(), 'local:phone@alice');
+    });
+
+    test('test to verify sharedWith is set to null on a public key', () {
+      var updateVerbBuilder = UpdateVerbBuilder()
+        ..atKey = 'phone'
+        ..sharedBy = '@alice'
+        ..isPublic = true;
+      expect(updateVerbBuilder.buildKey(), 'public:phone@alice');
+      updateVerbBuilder.sharedWith = null;
+      expect(updateVerbBuilder.buildKey(), 'public:phone@alice');
     });
   });
 }

@@ -142,8 +142,10 @@ class UpdateVerbBuilder extends AbstractVerbBuilder {
     return command;
   }
 
-  @override
-  buildKey() {
+  String buildKey() {
+    if(atKeyObj.key != null){
+      return atKeyObj.toString();
+    }
     super.atKeyObj
       ..key = atKey
       ..sharedWith = VerbUtil.formatAtSign(sharedWith)
@@ -163,7 +165,7 @@ class UpdateVerbBuilder extends AbstractVerbBuilder {
     // If validation is successful, build the command and returns;
     // else throws exception.
     validateKey();
-    return super.buildKey();
+    return super.atKeyObj.toString();
   }
 
   String buildCommandForMeta() {
