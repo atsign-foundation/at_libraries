@@ -2,21 +2,25 @@ import 'package:at_chops/src/key/at_key_pair.dart';
 import 'package:at_chops/src/key/at_private_key.dart';
 import 'package:at_chops/src/key/at_public_key.dart';
 
-class SigningPrivateKey implements AtPrivateKey {
+class AtSigningPrivateKey implements AtPrivateKey {
   late String _signingPrivateKey;
-  SigningPrivateKey.fromString(String privateKey) {
+  AtSigningPrivateKey.fromString(String privateKey) {
     _signingPrivateKey = privateKey;
   }
+  String get privateKey => _signingPrivateKey;
 }
 
-class SigningPublicKey implements AtPublicKey {
+class AtSigningPublicKey implements AtPublicKey {
   late String _signingPublicKey;
-  SigningPublicKey.fromString(String publicKey) {
+  AtSigningPublicKey.fromString(String publicKey) {
     _signingPublicKey = publicKey;
   }
+  String get publicKey => _signingPublicKey;
 }
 
-class SigningKeyPair implements AtKeyPair {
-  SigningKeyPair(
-      SigningPublicKey signingPublicKey, SigningPrivateKey signingPrivateKey);
+class AtSigningKeyPair implements AtKeyPair {
+  late AtSigningPublicKey signingPublicKey;
+  late AtSigningPrivateKey signingPrivateKey;
+  AtSigningKeyPair(AtSigningPublicKey signingPublicKey,
+      AtSigningPrivateKey signingPrivateKey);
 }

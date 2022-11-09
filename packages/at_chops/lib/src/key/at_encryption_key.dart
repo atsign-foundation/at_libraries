@@ -7,6 +7,7 @@ class AtEncryptionPrivateKey implements AtPrivateKey {
   AtEncryptionPrivateKey.fromString(String privateKey) {
     _atEncryptionPrivateKey = privateKey;
   }
+  String get privateKey => _atEncryptionPrivateKey;
 }
 
 class AtEncryptionPublicKey implements AtPublicKey {
@@ -14,9 +15,12 @@ class AtEncryptionPublicKey implements AtPublicKey {
   AtEncryptionPublicKey.fromString(String publicKey) {
     _atEncryptionPublicKey = publicKey;
   }
+  String get publicKey => _atEncryptionPublicKey;
 }
 
 class AtEncryptionKeyPair implements AtKeyPair {
+  late AtEncryptionPublicKey atEncryptionPublicKey;
+  late AtEncryptionPrivateKey atEncryptionPrivateKey;
   AtEncryptionKeyPair(AtEncryptionPublicKey atEncryptionPublicKey,
       AtEncryptionPrivateKey atEncryptionPrivateKey);
 }
