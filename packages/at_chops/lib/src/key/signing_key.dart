@@ -3,18 +3,14 @@ import 'package:at_chops/src/key/at_private_key.dart';
 import 'package:at_chops/src/key/at_public_key.dart';
 
 class AtSigningPrivateKey implements AtPrivateKey {
-  late String _signingPrivateKey;
-  AtSigningPrivateKey.fromString(String privateKey) {
-    _signingPrivateKey = privateKey;
-  }
+  final String _signingPrivateKey;
+  AtSigningPrivateKey(this._signingPrivateKey);
   String get privateKey => _signingPrivateKey;
 }
 
 class AtSigningPublicKey implements AtPublicKey {
   late String _signingPublicKey;
-  AtSigningPublicKey.fromString(String publicKey) {
-    _signingPublicKey = publicKey;
-  }
+  AtSigningPublicKey(this._signingPublicKey);
   String get publicKey => _signingPublicKey;
 }
 

@@ -1,6 +1,25 @@
+import 'package:at_chops/src/key/at_encryption_key.dart';
 import 'package:at_chops/src/key/at_private_key.dart';
 import 'package:at_chops/src/key/at_public_key.dart';
 
-abstract class AtKeyPair {
+abstract class AtKeyPair extends AtEncryptionKey {
   AtKeyPair(AtPrivateKey atPrivateKey, AtPublicKey atPublicKey);
+}
+
+class AtEncryptionPrivateKey implements AtPrivateKey {
+  final String _atEncryptionPrivateKey;
+  AtEncryptionPrivateKey(this._atEncryptionPrivateKey);
+  String get privateKey => _atEncryptionPrivateKey;
+}
+
+class AtEncryptionPublicKey implements AtPublicKey {
+  final String _atEncryptionPublicKey;
+  AtEncryptionPublicKey(this._atEncryptionPublicKey);
+  String get publicKey => _atEncryptionPublicKey;
+}
+
+class AtEncryptionKeyPair implements AtKeyPair {
+  final AtEncryptionPublicKey _atEncryptionPublicKey;
+  final AtEncryptionPrivateKey _atEncryptionPrivateKey;
+  AtEncryptionKeyPair(this._atEncryptionPublicKey, this._atEncryptionPrivateKey);
 }

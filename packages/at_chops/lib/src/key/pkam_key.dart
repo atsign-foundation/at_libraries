@@ -3,17 +3,15 @@ import 'package:at_chops/src/key/at_private_key.dart';
 import 'package:at_chops/src/key/at_public_key.dart';
 
 class PkamPrivateKey implements AtPrivateKey {
-  late String _pkamPrivateKey;
-  PkamPrivateKey.fromString(String privateKey) {
-    _pkamPrivateKey = privateKey;
-  }
+  final String _pkamPrivateKey;
+  PkamPrivateKey(this._pkamPrivateKey);
+  String get privateKey => _pkamPrivateKey;
 }
 
 class PkamPublicKey implements AtPublicKey {
-  late String _pkamPublicKey;
-  PkamPublicKey.fromString(String publicKey) {
-    _pkamPublicKey = publicKey;
-  }
+  final String _pkamPublicKey;
+  PkamPublicKey(this._pkamPublicKey);
+  String get publicKey => _pkamPublicKey;
 }
 
 class PkamKeyPair implements AtKeyPair {

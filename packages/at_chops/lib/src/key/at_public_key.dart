@@ -1,3 +1,3 @@
 abstract class AtPublicKey {
-  AtPublicKey.fromString(String atPublicKey);
+  AtPublicKey(String atPublicKey);
 }

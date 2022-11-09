@@ -1,3 +1,3 @@
 abstract class AtPrivateKey {
-  AtPrivateKey.fromString(String atPrivateKey);
+  AtPrivateKey(String atPrivateKey);
 }
