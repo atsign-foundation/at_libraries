@@ -247,9 +247,7 @@ void main() {
         ..value = '+445 334 3423';
       var command = updateVerbBuilder.buildCommand();
       expect(command, 'update:local:phone@bob +445 334 3423\n');
-
-      updateVerbBuilder.sharedWith = '@alice';
-      expect(() => updateVerbBuilder.buildCommand(),
+      expect(() => updateVerbBuilder.atKeyObj.sharedWith = '@alice',
           throwsA(predicate((dynamic e) => e is InvalidAtKeyException)));
     });
   });
