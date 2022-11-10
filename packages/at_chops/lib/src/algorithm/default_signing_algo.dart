@@ -17,7 +17,7 @@ class DefaultSigningAlgo implements AtSigningAlgorithm {
   }
 
   @override
-  bool verify(Uint8List signedData, Uint8List signature) {
+  bool verify(Uint8List signedData,Uint8List signature) {
     var publicKey =
         RSAPublicKey.fromString(_atSigningKeyPair.signingPublicKey.publicKey);
     return publicKey.verifySHA256Signature(signedData, signature);

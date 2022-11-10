@@ -1,16 +1,38 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:at_chops/at_chops.dart';
+import 'package:at_chops/src/algorithm/default_encryption_algo.dart';
+import 'package:at_chops/src/at_chops_impl.dart';
+import 'package:at_chops/src/key/aes_key.dart';
+import 'package:at_chops/src/util/at_chops_util.dart';
+import 'package:encrypt/encrypt.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('A group of tests', () {
-    final awesome = Awesome();
-
-    setUp(() {
-      // Additional setup goes here.
+  group('A group of tests for encryption and decryption', () {
+    test('Test symmetric encrypt/decrypt bytes with initialisation vector', () {
+      String data = 'Hello World';
+      final atChops = AtChopsImpl();
+      AESKey aesKey = AESKey(AtChopsUtil.generateAESKey(32));
+      final iv = AtChopsUtil.generateIV(16);
+      final algo = DefaultEncryptionAlgo(aesKey);
+      final encryptedBytes =
+          atChops.encryptBytes(utf8.encode(data) as Uint8List, algo, iv: iv);
+      final decryptedBytes = atChops.decryptBytes(encryptedBytes, algo, iv: iv);
+      expect(utf8.decode(decryptedBytes), data);
     });
-
-    test('First Test', () {
-      expect(awesome.isAwesome, isTrue);
+    test('Test symmetric encrypt/decrypt string with initialisation vector',
+        () {
+      String data = 'Hello World';
+      final atChops = AtChopsImpl();
+      AESKey aesKey = AESKey(AtChopsUtil.generateAESKey(32));
+      final iv = AtChopsUtil.generateIV(16);
+      final algo = DefaultEncryptionAlgo(aesKey);
+      final encryptedString = atChops.encryptString(data, algo, iv: iv);
+      final decryptedString =
+          atChops.decryptString(encryptedString, algo, iv: iv);
+      expect(decryptedString, data);
     });
   });
 }

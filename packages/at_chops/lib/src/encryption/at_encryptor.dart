@@ -6,7 +6,7 @@ class AtEncryptor {
   final AtEncryptionAlgorithm _atAlgorithm;
   AtEncryptor(this._atAlgorithm);
 
-  List<int> encrypt(Uint8List data) {
+  Uint8List encrypt(Uint8List data) {
     return _atAlgorithm.encrypt(data);
   }
 

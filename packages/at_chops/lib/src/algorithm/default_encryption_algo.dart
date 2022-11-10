@@ -11,18 +11,18 @@ class DefaultEncryptionAlgo implements AtEncryptionAlgorithm {
 
   @override
   Uint8List encrypt(Uint8List plainData, {InitialisationVector? iv}) {
-    var aesEncrypter = Encrypter(AES(Key.fromBase64(_aesKey.toString())));
-    return aesEncrypter
-        .encryptBytes(plainData, iv: _getIVFromBytes(iv?.ivBytes))
-        .bytes;
+    var aesEncrypter = Encrypter(AES(Key.fromBase64(_aesKey.key)));
+    final encrypted =
+        aesEncrypter.encryptBytes(plainData, iv: _getIVFromBytes(iv?.ivBytes));
+    return encrypted.bytes;
   }
 
   @override
   Uint8List decrypt(Uint8List encryptedData, {InitialisationVector? iv}) {
     var aesKey = AES(Key.fromBase64(_aesKey.toString()));
     var decrypter = Encrypter(aesKey);
-    return decrypter.decryptBytes(Encrypted(encryptedData),
-        iv: _getIVFromBytes(iv?.ivBytes)) as Uint8List;
+    return Uint8List.fromList(decrypter.decryptBytes(Encrypted(encryptedData),
+        iv: _getIVFromBytes(iv?.ivBytes)));
   }
 
   IV? _getIVFromBytes(Uint8List? ivBytes) {

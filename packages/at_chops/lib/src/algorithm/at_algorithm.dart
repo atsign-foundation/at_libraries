@@ -17,5 +17,5 @@ abstract class AtSigningAlgorithm {
 }
 
 abstract class AtHashingAlgorithm {
-  String checkSum(Uint8List data);
+  String hash(Uint8List data);
 }

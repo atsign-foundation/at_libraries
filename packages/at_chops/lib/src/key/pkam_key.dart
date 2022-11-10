@@ -2,7 +2,6 @@ import 'package:at_chops/src/key/at_key_pair.dart';
 import 'package:at_chops/src/key/at_private_key.dart';
 import 'package:at_chops/src/key/at_public_key.dart';
 
-
 class PkamPrivateKey implements AtPrivateKey {
   final String _pkamPrivateKey;
   PkamPrivateKey(this._pkamPrivateKey);
