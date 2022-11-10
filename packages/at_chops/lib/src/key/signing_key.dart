@@ -15,8 +15,9 @@ class AtSigningPublicKey implements AtPublicKey {
 }
 
 class AtSigningKeyPair implements AtKeyPair {
-  late AtSigningPublicKey signingPublicKey;
-  late AtSigningPrivateKey signingPrivateKey;
-  AtSigningKeyPair(AtSigningPublicKey signingPublicKey,
-      AtSigningPrivateKey signingPrivateKey);
+  late AtSigningPublicKey _signingPublicKey;
+  late AtSigningPrivateKey _signingPrivateKey;
+  AtSigningKeyPair(this._signingPublicKey, this._signingPrivateKey);
+  AtSigningPublicKey get publicKey => _signingPublicKey;
+  AtSigningPrivateKey get privateKey => _signingPrivateKey;
 }

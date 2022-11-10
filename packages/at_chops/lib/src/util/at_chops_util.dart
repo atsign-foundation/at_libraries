@@ -1,4 +1,7 @@
 import 'package:at_chops/src/algorithm/at_iv.dart';
+import 'package:at_chops/src/key/at_key_pair.dart';
+import 'package:at_chops/src/key/signing_key.dart';
+import 'package:crypton/crypton.dart';
 import 'package:encrypt/encrypt.dart';
 
 class AtChopsUtil {
@@ -17,5 +20,19 @@ class AtChopsUtil {
   static InitialisationVector generateIV(int length) {
     final iv = IV.fromSecureRandom(length);
     return InitialisationVector(iv.bytes);
+  }
+
+  static AtSigningKeyPair generateSigningKeyPair() {
+    var rsaKeypair = RSAKeypair.fromRandom();
+    final publicKey = AtSigningPublicKey(rsaKeypair.publicKey.toString());
+    final privateKey = AtSigningPrivateKey(rsaKeypair.privateKey.toString());
+    return AtSigningKeyPair(publicKey, privateKey);
+  }
+
+  static AtEncryptionKeyPair generateEncryptionKeyPair() {
+    var rsaKeypair = RSAKeypair.fromRandom();
+    final publicKey = AtEncryptionPublicKey(rsaKeypair.publicKey.toString());
+    final privateKey = AtEncryptionPrivateKey(rsaKeypair.privateKey.toString());
+    return AtEncryptionKeyPair(publicKey, privateKey);
   }
 }

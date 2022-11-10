@@ -10,16 +10,16 @@ class DefaultSigningAlgo implements AtSigningAlgorithm {
   DefaultSigningAlgo(this._atSigningKeyPair);
   @override
   Uint8List sign(Uint8List data) {
-    var privateKey = RSAPrivateKey.fromString(
-        _atSigningKeyPair.signingPrivateKey.privateKey);
+    var privateKey =
+        RSAPrivateKey.fromString(_atSigningKeyPair.privateKey.privateKey);
     var dataSignature = privateKey.createSHA256Signature(data);
     return dataSignature;
   }
 
   @override
-  bool verify(Uint8List signedData,Uint8List signature) {
+  bool verify(Uint8List signedData, Uint8List signature) {
     var publicKey =
-        RSAPublicKey.fromString(_atSigningKeyPair.signingPublicKey.publicKey);
+        RSAPublicKey.fromString(_atSigningKeyPair.publicKey.publicKey);
     return publicKey.verifySHA256Signature(signedData, signature);
   }
 }

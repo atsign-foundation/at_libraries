@@ -1,12 +1,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:at_chops/at_chops.dart';
 import 'package:at_chops/src/algorithm/default_encryption_algo.dart';
+import 'package:at_chops/src/algorithm/default_signing_algo.dart';
 import 'package:at_chops/src/at_chops_impl.dart';
 import 'package:at_chops/src/key/aes_key.dart';
 import 'package:at_chops/src/util/at_chops_util.dart';
-import 'package:encrypt/encrypt.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -33,6 +32,18 @@ void main() {
       final decryptedString =
           atChops.decryptString(encryptedString, algo, iv: iv);
       expect(decryptedString, data);
+    });
+  });
+  group('A group of tests for data signing and verification', () {
+    test('Test data signing and verification', () {
+      String data = 'Hello World';
+      final atChops = AtChopsImpl();
+      final atSigningKeyPair = AtChopsUtil.generateSigningKeyPair();
+      final algo = DefaultSigningAlgo(atSigningKeyPair);
+      final signature = atChops.sign(Uint8List.fromList(data.codeUnits), algo);
+      final result =
+          atChops.verify(Uint8List.fromList(data.codeUnits), signature, algo);
+      expect(result, true);
     });
   });
 }
