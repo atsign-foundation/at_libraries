@@ -1,3 +1,1 @@
-abstract class AtEncryptionKey {
-
-}
+abstract class AtEncryptionKey {}

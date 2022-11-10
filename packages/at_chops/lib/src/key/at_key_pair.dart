@@ -21,5 +21,8 @@ class AtEncryptionPublicKey implements AtPublicKey {
 class AtEncryptionKeyPair implements AtKeyPair {
   final AtEncryptionPublicKey _atEncryptionPublicKey;
   final AtEncryptionPrivateKey _atEncryptionPrivateKey;
-  AtEncryptionKeyPair(this._atEncryptionPublicKey, this._atEncryptionPrivateKey);
+  AtEncryptionKeyPair(
+      this._atEncryptionPublicKey, this._atEncryptionPrivateKey);
+  String get publicKeyString => _atEncryptionPublicKey.publicKey;
+  String get privateKeyString => _atEncryptionPrivateKey.privateKey;
 }

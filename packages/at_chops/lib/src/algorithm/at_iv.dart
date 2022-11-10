@@ -1,6 +1,6 @@
-import 'package:encrypt/encrypt.dart';
+import 'dart:typed_data';
 
 class InitialisationVector {
-  late IV iv;
-  InitialisationVector(this.iv);
+  late Uint8List ivBytes;
+  InitialisationVector(this.ivBytes);
 }

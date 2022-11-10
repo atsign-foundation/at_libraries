@@ -1,4 +1,3 @@
-
 import 'package:at_chops/src/key/at_encryption_key.dart';
 
 class AESKey extends AtEncryptionKey {
