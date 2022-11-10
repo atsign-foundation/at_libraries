@@ -15,3 +15,7 @@ abstract class AtSigningAlgorithm {
   Uint8List sign(Uint8List data);
   bool verify(Uint8List signedData, Uint8List signature);
 }
+
+abstract class AtHashingAlgorithm {
+  String checkSum(Uint8List data);
+}
