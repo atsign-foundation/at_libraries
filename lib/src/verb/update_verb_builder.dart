@@ -244,35 +244,35 @@ class UpdateVerbBuilder extends AbstractVerbBuilder {
   }
 
   String buildMetadataString() {
-    String metadataKey = '';
+    String metadataString = '';
 
     if (ttl != null) {
-      metadataKey += ':ttl:$ttl';
+      metadataString += ':ttl:$ttl';
     }
     if (ttb != null) {
-      metadataKey += ':ttb:$ttb';
+      metadataString += ':ttb:$ttb';
     }
     if (ttr != null) {
-      metadataKey += ':ttr:$ttr';
+      metadataString += ':ttr:$ttr';
     }
     if (ccd != null) {
-      metadataKey += ':ccd:$ccd';
+      metadataString += ':ccd:$ccd';
     }
     if (isBinary != null) {
-      metadataKey += ':isBinary:$isBinary';
+      metadataString += ':isBinary:$isBinary';
     }
     if (isEncrypted != null) {
-      metadataKey += ':isEncrypted:$isEncrypted';
+      metadataString += ':isEncrypted:$isEncrypted';
     }
-    if (sharedKeyEncrypted.isNotNull) {
-      metadataKey += ':$SHARED_KEY_ENCRYPTED:$sharedKeyEncrypted';
+    if (sharedKeyEncrypted.isNotNullOrEmpty) {
+      metadataString += ':$SHARED_KEY_ENCRYPTED:$sharedKeyEncrypted';
     }
-    if (pubKeyChecksum.isNotNull) {
-      metadataKey += ':$SHARED_WITH_PUBLIC_KEY_CHECK_SUM:$pubKeyChecksum';
+    if (pubKeyChecksum.isNotNullOrEmpty) {
+      metadataString += ':$SHARED_WITH_PUBLIC_KEY_CHECK_SUM:$pubKeyChecksum';
     }
-    if (encoding.isNotNull) {
-      metadataKey += ':$ENCODING:$encoding';
+    if (encoding.isNotNullOrEmpty) {
+      metadataString += ':$ENCODING:$encoding';
     }
-    return metadataKey;
+    return metadataString;
   }
 }

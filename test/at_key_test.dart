@@ -112,6 +112,42 @@ void main() {
               e is InvalidSyntaxException &&
               e.message == '$key is not well-formed key')));
     });
+
+    test('Test cannot set sharedWith if isPublic is true', () {
+      expect(
+          () => {
+                AtKey()
+                  ..metadata = (Metadata()..isPublic = true)
+                  ..sharedBy = '@bob'
+                  ..sharedWith = '@alice'
+              },
+          throwsA(predicate(
+              (dynamic e) => e is InvalidAtKeyException && e.message == 'isLocal or isPublic cannot be true when sharedWith is set')));
+    });
+
+    test('Test cannot set sharedWith if isLocal is true', () {
+      expect(
+          () => {
+                AtKey()
+                  ..isLocal = true
+                  ..sharedBy = '@bob'
+                  ..sharedWith = '@alice'
+              },
+          throwsA(predicate(
+              (dynamic e) => e is InvalidAtKeyException && e.message == 'isLocal or isPublic cannot be true when sharedWith is set')));
+    });
+
+    test('Test cannot set isLocal to true if sharedWith is non-null', () {
+      expect(
+          () => {
+                AtKey()
+                  ..sharedBy = '@bob'
+                  ..sharedWith = '@alice'
+                  ..isLocal = true
+              },
+          throwsA(predicate(
+              (dynamic e) => e is InvalidAtKeyException && e.message == 'sharedWith must be null when isLocal is set to true')));
+    });
   });
 
   group('A group of tests to validate the AtKey builder instances', () {

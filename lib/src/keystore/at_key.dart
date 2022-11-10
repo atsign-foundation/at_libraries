@@ -40,20 +40,20 @@ class AtKey {
 
   String? get sharedBy => _sharedBy;
 
-  set sharedBy(String? atSign) {
-    assertStartsWithAtIfNotEmpty(atSign);
-    _sharedBy = atSign;
+  set sharedBy(String? sharedByAtSign) {
+    assertStartsWithAtIfNotEmpty(sharedByAtSign);
+    _sharedBy = sharedByAtSign;
   }
 
   String? get sharedWith => _sharedWith;
 
-  set sharedWith(String? atSign) {
-    assertStartsWithAtIfNotEmpty(atSign);
-    if (atSign.isNotNull && (isLocal == true || metadata?.isPublic == true)) {
+  set sharedWith(String? sharedWithAtSign) {
+    assertStartsWithAtIfNotEmpty(sharedWithAtSign);
+    if (sharedWithAtSign.isNotNullOrEmpty && (isLocal == true || metadata?.isPublic == true)) {
       throw InvalidAtKeyException(
           'isLocal or isPublic cannot be true when sharedWith is set');
     }
-    _sharedWith = atSign;
+    _sharedWith = sharedWithAtSign;
   }
 
   bool get isLocal => _isLocal;
@@ -61,7 +61,7 @@ class AtKey {
   set isLocal(bool isLocal) {
     if (isLocal == true && sharedWith != null) {
       throw InvalidAtKeyException(
-          'sharedWith should be empty when isLocal is set to true');
+          'sharedWith must be null when isLocal is set to true');
     }
     _isLocal = isLocal;
   }
@@ -76,7 +76,7 @@ class AtKey {
 
   @override
   String toString() {
-    if (key.isNull) {
+    if (key.isNullOrEmpty) {
       throw InvalidAtKeyException('Key cannot be null or empty');
     }
     // If metadata.isPublic is true and metadata.isCached is true,
