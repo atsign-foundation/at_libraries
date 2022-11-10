@@ -637,7 +637,7 @@ void main() {
           throwsA(predicate((dynamic e) =>
               e is InvalidAtKeyException &&
               e.message ==
-                  'sharedWith should be empty when isLocal is set to true')));
+                  'sharedWith must be null when isLocal is set to true')));
     });
 
     test('A test to verify local key builder', () {

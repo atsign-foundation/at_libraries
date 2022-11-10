@@ -67,7 +67,7 @@ void main() {
           throwsA(predicate((dynamic e) =>
               e is InvalidAtKeyException &&
               e.message ==
-                  'sharedWith should be empty when isLocal is set to true')));
+                  'sharedWith must be null when isLocal is set to true')));
     });
 
     test(
@@ -84,7 +84,7 @@ void main() {
           throwsA(predicate((dynamic e) =>
               e is InvalidAtKeyException &&
               e.message ==
-                  'When isLocal is set to true, cannot set isPublic and sharedWith')));
+                  'When isLocal is set to true, cannot set isPublic to true or set a non-null sharedWith')));
     });
 
     test(
@@ -101,7 +101,7 @@ void main() {
           throwsA(predicate((dynamic e) =>
               e is InvalidAtKeyException &&
               e.message ==
-                  'sharedWith should be empty when isLocal is set to true')));
+                  'sharedWith must be null when isLocal is set to true')));
     });
 
     test(
