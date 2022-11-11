@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:at_chops/src/algorithm/at_algorithm.dart';
 import 'package:at_chops/src/algorithm/at_iv.dart';
-import 'package:at_chops/src/key/at_key_pair.dart';
+import 'package:at_chops/src/key/asymmetric_encryption_key.dart';
 import 'package:crypton/crypton.dart';
 
 class RSAEncryptionAlgo implements AtEncryptionAlgorithm {

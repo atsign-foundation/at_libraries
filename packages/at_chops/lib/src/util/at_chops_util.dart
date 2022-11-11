@@ -1,5 +1,5 @@
 import 'package:at_chops/src/algorithm/at_iv.dart';
-import 'package:at_chops/src/key/at_key_pair.dart';
+import 'package:at_chops/src/key/asymmetric_encryption_key.dart';
 import 'package:at_chops/src/key/signing_key.dart';
 import 'package:crypton/crypton.dart';
 import 'package:encrypt/encrypt.dart';
