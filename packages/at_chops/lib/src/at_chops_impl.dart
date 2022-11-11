@@ -14,12 +14,14 @@ class AtChopsImpl implements AtChops {
     return encryptionAlgorithm.decrypt(data, iv: iv);
   }
 
+  /// Decode the encrypted string to base64.
+  /// Decode the encrypted byte to utf8 to support emoji chars.
   @override
   String decryptString(String data, AtEncryptionAlgorithm encryptionAlgorithm,
       {InitialisationVector? iv}) {
-    return utf8.decode(decryptBytes(
-        utf8.encode(data) as Uint8List, encryptionAlgorithm,
-        iv: iv));
+    final decryptedBytes =
+        decryptBytes(base64Decode(data), encryptionAlgorithm, iv: iv);
+    return utf8.decode(decryptedBytes);
   }
 
   @override
@@ -29,12 +31,16 @@ class AtChopsImpl implements AtChops {
     return encryptionAlgorithm.encrypt(data, iv: iv);
   }
 
+  /// Encode the input string to utf8 to support emoji chars.
+  /// Encode the encrypted bytes to base64.
   @override
   String encryptString(String data, AtEncryptionAlgorithm encryptionAlgorithm,
       {InitialisationVector? iv}) {
-    return utf8.decode(encryptBytes(
-        utf8.encode(data) as Uint8List, encryptionAlgorithm,
-        iv: iv));
+    final utfEncodedData = utf8.encode(data);
+    final encryptedBytes = encryptBytes(
+        Uint8List.fromList(utfEncodedData), encryptionAlgorithm,
+        iv: iv);
+    return base64.encode(encryptedBytes);
   }
 
   @override
