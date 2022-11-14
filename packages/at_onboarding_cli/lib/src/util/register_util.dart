@@ -92,7 +92,7 @@ class RegisterUtil {
     if (response.statusCode == 200) {
       Map<String, dynamic> jsonDecoded = jsonDecode(response.body);
       Map<String, dynamic> dataFromResponse = {};
-      if(jsonDecoded.containsKey('data')) {
+      if (jsonDecoded.containsKey('data')) {
         dataFromResponse.addAll(jsonDecoded['data']);
       }
       if ((jsonDecoded.containsKey('message') &&
@@ -101,7 +101,8 @@ class RegisterUtil {
                   .contains('verified')) &&
           jsonDecoded.containsKey('cramkey')) {
         return jsonDecoded['cramkey'];
-      } else if (jsonDecoded.containsKey('data') && dataFromResponse.containsKey('newAtsign')) {
+      } else if (jsonDecoded.containsKey('data') &&
+          dataFromResponse.containsKey('newAtsign')) {
         return 'follow-up';
       } else if (jsonDecoded.containsKey('message') &&
           jsonDecoded['message'] ==
@@ -152,5 +153,15 @@ class RegisterUtil {
 
     // print('postRequest: ${response.body}');
     return response;
+  }
+
+  bool validateEmail(String email) {
+    return RegExp(
+            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+        .hasMatch(email);
+  }
+
+  bool validateVerificationCode(String otp) {
+    return RegExp(r"^[a-zA-z0-9]{4}").hasMatch(otp);
   }
 }
