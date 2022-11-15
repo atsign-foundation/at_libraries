@@ -60,6 +60,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
     _atLookup = AtLookupImpl(_atsign, _preference.rootDomain,
         _preference.rootPort);
+    //wait until secondary is created
+    await _waitUntilSecondaryCreated();
     _isAtsignOnboarded = (await _atLookup
         ?.authenticate_cram(_preference.cramSecret))!;
     logger.info('Cram authentication status: $_isAtsignOnboarded');
@@ -294,7 +296,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       logger.finer('retrying find secondary.......$_retryCount/$maxRetries');
       try {
         _secondaryAddress =
-            await _atLookup?.secondaryAddressFinder.findSecondary(_atSign);
+            await _atLookup?.secondaryAddressFinder.findSecondary(_atsign);
       } on Exception catch (e) {
         logger.finer(e);
       }
