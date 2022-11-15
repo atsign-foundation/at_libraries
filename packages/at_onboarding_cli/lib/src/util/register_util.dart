@@ -150,8 +150,6 @@ class RegisterUtil {
         'Content-Type': RegisterApiConstants.contentType,
       },
     );
-
-    // print('postRequest: ${response.body}');
     return response;
   }
 

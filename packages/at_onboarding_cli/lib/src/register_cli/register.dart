@@ -65,7 +65,7 @@ class Register {
         .start();
 
     //call activate_cli with the cramkey acquired from registration process
-    stdout.writeln('[Information] Activating you atsign: ${params['atsign']}');
+    stdout.writeln('[Information] Activating you atsign: @${params['atsign']}');
     activate_cli.main([
       '-a',
       params['atsign']!,
@@ -126,7 +126,7 @@ class GetFreeAtsign extends RegisterApiTask {
       List<String> atsignList =
           await registerUtil.getFreeAtSigns(authority: params['authority']!);
       result.data['atsign'] = atsignList[0];
-      stdout.writeln('[Information] Your new atSign is **${atsignList[0]}**');
+      stdout.writeln('[Information] Your new atSign is **@${atsignList[0]}**');
       result.apiCallStatus = ApiCallStatus.success;
     } on Exception catch (e) {
       result.exceptionMessage = e.toString();
@@ -183,7 +183,6 @@ class ValidateOtp extends RegisterApiTask {
           params['atsign']!, params['email']!, params['otp']!,
           confirmation: params['confirmation']!,
           authority: params['authority']!);
-      print(apiResponse);
       if (apiResponse == 'retry') {
         stderr.writeln('[Unable to proceed] The verification code you entered is either invalid or expired.'
             'Check your verification code and try again.'
@@ -199,7 +198,7 @@ class ValidateOtp extends RegisterApiTask {
       } else if (apiResponse.startsWith("@")) {
         result.data['cramkey'] = apiResponse.split(":")[1];
         stdout.writeln('[Information] Your cram secret: ' + result.data['cramkey']);
-        stdout.writeln('[Success] Your atSign ${params['atsign']} has been successfully registered to ${params['email']}.');
+        stdout.writeln('[Success] Your atSign **@${params['atsign']}** has been successfully registered to ${params['email']}');
         result.apiCallStatus = ApiCallStatus.success;
       }
     } on Exception catch (e) {

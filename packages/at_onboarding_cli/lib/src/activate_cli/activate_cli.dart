@@ -32,7 +32,7 @@ Future<void> main(List<String> arguments) async {
     exit(2);
   }
 
-  stdout.writeln('Root server is ' + argResults['rootServer']);
+  stdout.writeln('[Information] Root server is ' + argResults['rootServer']);
 
   //onboarding preference builder can be used to set onboardingService parameters
   AtOnboardingPreference atOnboardingPreference = AtOnboardingPreference()
