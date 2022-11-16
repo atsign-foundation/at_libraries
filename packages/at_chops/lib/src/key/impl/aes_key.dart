@@ -9,7 +9,7 @@ class AESKey extends AtEncryptionKey {
 
   /// Generates an AES key for symmetric encryption with a given length.
   /// Key is created with a list of [length] with non negative values randomly generated from >=0 and < 256 and converted to base64 string
-  AESKey.create(int length) {
+  AESKey.generate(int length) {
     var aesKey = AES(Key.fromSecureRandom(length));
     _aesKey = aesKey.key.base64;
   }

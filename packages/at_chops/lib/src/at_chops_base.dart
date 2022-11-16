@@ -5,7 +5,6 @@ import 'package:at_chops/src/algorithm/at_iv.dart';
 import 'package:at_chops/src/algorithm/default_encryption_algo.dart';
 import 'package:at_chops/src/algorithm/default_signing_algo.dart';
 import 'package:at_chops/src/algorithm/default_hashing_algo.dart';
-import 'package:at_chops/src/key/signing_key.dart';
 
 /// Base class for all Cryptographic and Hashing Operations. Callers have to either implement
 /// specific encryption, signing or hashing algorithms or use the default implementation -

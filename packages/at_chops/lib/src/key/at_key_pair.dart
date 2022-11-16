@@ -1,61 +1,31 @@
+import 'dart:typed_data';
+
 import 'package:at_chops/src/key/at_encryption_key.dart';
 import 'package:at_chops/src/key/at_private_key.dart';
 import 'package:at_chops/src/key/at_public_key.dart';
-import 'package:crypton/crypton.dart';
 
 /// Represents a key pair for asymmetric public-private key encryption
-abstract class AtKeyPair extends AtEncryptionKey {
-  AtKeyPair(AtPrivateKey atPrivateKey, AtPublicKey atPublicKey);
-}
+abstract class AtKeyPair implements AtEncryptionKey {
+  final AtPrivateKey _atPrivateKey;
+  final AtPublicKey _atPublicKey;
+  AtKeyPair(this._atPrivateKey, this._atPublicKey);
+  /// Create SHA256 signature of the message using [AtPrivateKey]
+  Uint8List sign(Uint8List message) {
+    return _atPrivateKey.createSHA256Signature(message);
+  }
 
-class AtEncryptionPrivateKey implements AtPrivateKey {
-  final String _atEncryptionPrivateKey;
-  AtEncryptionPrivateKey(this._atEncryptionPrivateKey);
-  String get privateKey => _atEncryptionPrivateKey;
-}
+  /// Decrypts the passed encrypted bytes using [AtPrivateKey]
+  Uint8List decrypt(Uint8List encryptedData) {
+    return _atPrivateKey.decrypt(encryptedData);
+  }
 
-class AtEncryptionPublicKey implements AtPublicKey {
-  final String _atEncryptionPublicKey;
-  AtEncryptionPublicKey(this._atEncryptionPublicKey);
-  String get publicKey => _atEncryptionPublicKey;
-}
+  /// Verifies SHA256 signature of [message] using [AtPublicKey]
+  bool verify(Uint8List message, Uint8List signature) {
+    return _atPublicKey.verifySHA256Signature(message, signature);
+  }
 
-class AtEncryptionKeyPair implements AtKeyPair {
-  late AtEncryptionPublicKey _atEncryptionPublicKey;
-  late AtEncryptionPrivateKey _atEncryptionPrivateKey;
-  late AsymmetricKey _asymmetricKey;
-
-  AsymmetricKey get asymmetricKey => _asymmetricKey;
-
-  AtEncryptionKeyPair(
-      this._atEncryptionPublicKey, this._atEncryptionPrivateKey);
-  String get publicKeyString => _atEncryptionPublicKey.publicKey;
-  String get privateKeyString => _atEncryptionPrivateKey.privateKey;
-
-  /// Generates a key pair based on [AsymmetricKey] passed.
-  /// Generates [ECKeypair] if [AsymmetricKey.ec] is passed.
-  /// Generates [RSAKeypair] if [AsymmetricKey.rsa] is passed.
-  /// If no [AsymmetricKey] is passed [AsymmetricKey.rsa] key pair is generated
-  AtEncryptionKeyPair.create({AsymmetricKey? asymmetricKey}) {
-    switch (asymmetricKey) {
-      case AsymmetricKey.ec:
-        final ecKeyPair = ECKeypair.fromRandom();
-        _atEncryptionPublicKey =
-            AtEncryptionPublicKey(ecKeyPair.publicKey.toString());
-        _atEncryptionPrivateKey =
-            AtEncryptionPrivateKey(ecKeyPair.privateKey.toString());
-        _asymmetricKey = AsymmetricKey.ec;
-        break;
-      case AsymmetricKey.rsa:
-      default:
-        final rsaKeypair = RSAKeypair.fromRandom();
-        _atEncryptionPublicKey =
-            AtEncryptionPublicKey(rsaKeypair.publicKey.toString());
-        _atEncryptionPrivateKey =
-            AtEncryptionPrivateKey(rsaKeypair.privateKey.toString());
-        _asymmetricKey = AsymmetricKey.rsa;
-    }
+  /// Encrypts the passed bytes using [AtPublicKey]
+  Uint8List encrypt(Uint8List data) {
+    return _atPublicKey.encrypt(data);
   }
 }
-
-enum AsymmetricKey { rsa, ec }

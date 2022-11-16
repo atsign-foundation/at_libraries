@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:at_chops/src/algorithm/at_algorithm.dart';
 import 'package:at_chops/src/algorithm/at_iv.dart';
-import 'package:at_chops/src/key/aes_key.dart';
+import 'package:at_chops/src/key/impl/aes_key.dart';
 import 'package:encrypt/encrypt.dart';
 
 class DefaultEncryptionAlgo implements AtEncryptionAlgorithm {

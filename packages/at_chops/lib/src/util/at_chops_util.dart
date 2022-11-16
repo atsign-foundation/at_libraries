@@ -1,6 +1,4 @@
 import 'package:at_chops/src/algorithm/at_iv.dart';
-import 'package:at_chops/src/key/signing_key.dart';
-import 'package:crypton/crypton.dart';
 import 'package:encrypt/encrypt.dart';
 
 class AtChopsUtil {
@@ -12,10 +10,4 @@ class AtChopsUtil {
     return InitialisationVector(iv.bytes);
   }
 
-  static AtSigningKeyPair generateSigningKeyPair() {
-    var rsaKeypair = RSAKeypair.fromRandom();
-    final publicKey = AtSigningPublicKey(rsaKeypair.publicKey.toString());
-    final privateKey = AtSigningPrivateKey(rsaKeypair.privateKey.toString());
-    return AtSigningKeyPair(publicKey, privateKey);
-  }
 }

@@ -1,25 +1,18 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:at_chops/src/algorithm/at_algorithm.dart';
-import 'package:at_chops/src/key/signing_key.dart';
-import 'package:crypton/crypton.dart';
+import 'package:at_chops/src/key/at_key_pair.dart';
 
 class DefaultSigningAlgo implements AtSigningAlgorithm {
-  late AtSigningKeyPair _atSigningKeyPair;
+  late AtKeyPair _atSigningKeyPair;
   DefaultSigningAlgo(this._atSigningKeyPair);
   @override
   Uint8List sign(Uint8List data) {
-    var privateKey =
-        RSAPrivateKey.fromString(_atSigningKeyPair.privateKey.privateKey);
-    var dataSignature = privateKey.createSHA256Signature(data);
-    return dataSignature;
+    return _atSigningKeyPair.sign(data);
   }
 
   @override
   bool verify(Uint8List signedData, Uint8List signature) {
-    var publicKey =
-        RSAPublicKey.fromString(_atSigningKeyPair.publicKey.publicKey);
-    return publicKey.verifySHA256Signature(signedData, signature);
+    return _atSigningKeyPair.verify(signedData, signature);
   }
 }

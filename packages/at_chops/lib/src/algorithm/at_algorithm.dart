@@ -3,10 +3,9 @@ import 'dart:typed_data';
 
 import 'package:at_chops/src/algorithm/at_iv.dart';
 import 'package:at_chops/src/algorithm/default_encryption_algo.dart';
-import 'package:at_chops/src/key/aes_key.dart';
-import 'package:at_chops/src/key/at_encryption_key.dart';
 import 'package:at_chops/src/key/at_key_pair.dart';
-import 'package:at_chops/src/key/signing_key.dart';
+import 'package:at_chops/src/key/impl/aes_key.dart';
+import 'package:at_chops/src/key/at_encryption_key.dart';
 
 /// Interface for encrypting and decrypting data. Check [DefaultEncryptionAlgo] for sample implementation.
 abstract class AtEncryptionAlgorithm {
@@ -29,7 +28,7 @@ abstract class AtSigningAlgorithm {
   /// Pass a public private key pair. Any dart implementation of cryptographic algorithms can be used for generating key pair.
   /// Convert your key object to string and construct [AtSigningPublicKey] and [AtSigningPrivateKey].
   /// Refer [AtChopsUtil.generateSigningKeyPair()] for sample
-  AtSigningAlgorithm(AtSigningKeyPair keyPair);
+  AtSigningAlgorithm(AtKeyPair keyPair);
 
   /// Signs the data using [AtSigningPrivateKey] of [AtSigningKeyPair]
   Uint8List sign(Uint8List data);
