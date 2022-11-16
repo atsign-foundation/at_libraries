@@ -13,7 +13,7 @@ void main() {
     test('Test symmetric encrypt/decrypt bytes with initialisation vector', () {
       String data = 'Hello World';
       final atChops = AtChopsImpl();
-      AESKey aesKey = AESKey(AtChopsUtil.generateAESKey(32));
+      AESKey aesKey = AESKey.create(32);
       final iv = AtChopsUtil.generateIV(16);
       final algo = DefaultEncryptionAlgo(aesKey);
       final encryptedBytes =
@@ -24,7 +24,7 @@ void main() {
     test('Test symmetric encrypt/decrypt bytes with emoji char', () {
       String data = 'Hello World🛠';
       final atChops = AtChopsImpl();
-      AESKey aesKey = AESKey(AtChopsUtil.generateAESKey(32));
+      AESKey aesKey = AESKey.create(32);
       final iv = AtChopsUtil.generateIV(16);
       final algo = DefaultEncryptionAlgo(aesKey);
       final encryptedBytes =
@@ -36,7 +36,7 @@ void main() {
     test('Test symmetric encrypt/decrypt bytes with special chars', () {
       String data = 'Hello World🛠';
       final atChops = AtChopsImpl();
-      AESKey aesKey = AESKey(AtChopsUtil.generateAESKey(32));
+      AESKey aesKey = AESKey.create(32);
       final iv = AtChopsUtil.generateIV(16);
       final algo = DefaultEncryptionAlgo(aesKey);
       final encryptedBytes =
@@ -48,7 +48,7 @@ void main() {
         () {
       String data = 'Hello World';
       final atChops = AtChopsImpl();
-      AESKey aesKey = AESKey(AtChopsUtil.generateAESKey(32));
+      AESKey aesKey = AESKey.create(32);
       final iv = AtChopsUtil.generateIV(16);
       final algo = DefaultEncryptionAlgo(aesKey);
       final encryptedString = atChops.encryptString(data, algo, iv: iv);
@@ -59,7 +59,7 @@ void main() {
     test('Test symmetric encrypt/decrypt string with special chars', () {
       String data = 'Hello``*+%';
       final atChops = AtChopsImpl();
-      AESKey aesKey = AESKey(AtChopsUtil.generateAESKey(32));
+      AESKey aesKey = AESKey.create(32);
       final iv = AtChopsUtil.generateIV(16);
       final algo = DefaultEncryptionAlgo(aesKey);
       final encryptedString = atChops.encryptString(data, algo, iv: iv);
@@ -70,7 +70,7 @@ void main() {
     test('Test symmetric encrypt/decrypt string with emoji', () {
       String data = 'Hello World🛠';
       final atChops = AtChopsImpl();
-      AESKey aesKey = AESKey(AtChopsUtil.generateAESKey(32));
+      AESKey aesKey = AESKey.create(32);
       final iv = AtChopsUtil.generateIV(16);
       final algo = DefaultEncryptionAlgo(aesKey);
       final encryptedString = atChops.encryptString(data, algo, iv: iv);
