@@ -73,7 +73,10 @@ jobs:
       - name: Check test environment readiness
         working-directory: ${{ env.working-directory }}
         run: dart run check_test_env.dart
-
+        
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v2
+        
       - name: run tests
         working-directory: ${{ env.working-directory }}
         run: dart test --concurrency=1
