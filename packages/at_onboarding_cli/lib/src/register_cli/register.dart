@@ -10,6 +10,7 @@ import 'package:at_onboarding_cli/src/util/api_call_status.dart';
 import 'package:at_onboarding_cli/src/util/register_api_constants.dart';
 import 'package:at_onboarding_cli/src/util/register_api_result.dart';
 import 'package:at_onboarding_cli/src/util/register_api_task.dart';
+import 'package:at_utils/at_logger.dart';
 
 ///Class containing logic to register a free atsign to email provided through [args] by utilizing methods defined in [RegisterUtil]
 ///Requires List<String> args containing the following arguments: email
@@ -46,7 +47,7 @@ class Register {
     if (registerUtil.validateEmail(argResults['email'])){
       params['email'] = argResults['email'];
     } else {
-      stderr.writeln('[Unable to run Register CLI] You have entered an invalid email address. Check your email address and try again.');
+      stderr.writeln('[Unable to run Register CLI] You have entered an invalid email address. Check your email address and try again.\n');
     }
 
     if (argResults.wasParsed('environment')) {
@@ -65,7 +66,7 @@ class Register {
         .start();
 
     //call activate_cli with the cramkey acquired from registration process
-    stdout.writeln('[Information] Activating you atsign: @${params['atsign']}');
+    stdout.writeln('[Information] Activating you atsign: @${params['atsign']}\n');
     activate_cli.main([
       '-a',
       params['atsign']!,
@@ -121,12 +122,12 @@ class RegistrationFlow {
 class GetFreeAtsign extends RegisterApiTask {
   @override
   Future<RegisterApiResult> run() async {
-    stdout.writeln('[Information] Getting your randomly generated free atSign…');
+    stdout.writeln('[Information] Getting your randomly generated free atSign…\n');
     try {
       List<String> atsignList =
           await registerUtil.getFreeAtSigns(authority: params['authority']!);
       result.data['atsign'] = atsignList[0];
-      stdout.writeln('[Information] Your new atSign is **@${atsignList[0]}**');
+      stdout.writeln('[Information] Your new atSign is **@${atsignList[0]}**\n');
       result.apiCallStatus = ApiCallStatus.success;
     } on Exception catch (e) {
       result.exceptionMessage = e.toString();
@@ -143,13 +144,13 @@ class GetFreeAtsign extends RegisterApiTask {
 class RegisterAtsign extends RegisterApiTask {
   @override
   Future<RegisterApiResult> run() async {
-    stdout.writeln('[Information] Sending verification code to: ${params['email']}');
+    stdout.writeln('[Information] Sending verification code to: ${params['email']}\n');
     try {
       result.data['otpSent'] = (await registerUtil.registerAtSign(
               params['atsign']!, params['email']!,
               authority: params['authority']!))
           .toString();
-      stdout.writeln('[Information] Verification code sent to: ${params['email']}');
+      stdout.writeln('[Information] Verification code sent to: ${params['email']}\n');
       result.apiCallStatus = ApiCallStatus.success;
     } on Exception catch (e) {
       result.exceptionMessage = e.toString();
@@ -174,10 +175,9 @@ class ValidateOtp extends RegisterApiTask {
   @override
   Future<RegisterApiResult> run() async {
     if (params['otp'] == null) {
-      stdout.writeln('[Action Required] Enter your verification code:');
-      params['otp'] = stdin.readLineSync()!.toUpperCase();
+      params['otp'] = registerUtil.getVerificationCodeFromUser();
     }
-    stdout.writeln('[Information] Validating your verification code...');
+    stdout.writeln('\n[Information] Validating your verification code...\n');
     try {
       String apiResponse = await registerUtil.validateOtp(
           params['atsign']!, params['email']!, params['otp']!,
@@ -185,9 +185,8 @@ class ValidateOtp extends RegisterApiTask {
           authority: params['authority']!);
       if (apiResponse == 'retry') {
         stderr.writeln('[Unable to proceed] The verification code you entered is either invalid or expired.'
-            'Check your verification code and try again.'
-        '\nEnter you verification code:');
-        params['otp'] = stdin.readLineSync()!.toUpperCase();
+            ' Check your verification code and try again.\n');
+        params['otp'] = registerUtil.getVerificationCodeFromUser();
         result.apiCallStatus = ApiCallStatus.retry;
         result.exceptionMessage =
             'Incorrect otp entered 3 times. Max retries reached.';
@@ -197,8 +196,8 @@ class ValidateOtp extends RegisterApiTask {
         result.apiCallStatus = ApiCallStatus.retry;
       } else if (apiResponse.startsWith("@")) {
         result.data['cramkey'] = apiResponse.split(":")[1];
-        stdout.writeln('[Information] Your cram secret: ' + result.data['cramkey']);
-        stdout.writeln('[Success] Your atSign **@${params['atsign']}** has been successfully registered to ${params['email']}');
+        stdout.writeln('[Information] Your cram secret: ' + result.data['cramkey'] + '\n');
+        stdout.writeln('[Success] Your atSign **@${params['atsign']}** has been successfully registered to ${params['email']}\n');
         result.apiCallStatus = ApiCallStatus.success;
       }
     } on Exception catch (e) {
@@ -212,5 +211,6 @@ class ValidateOtp extends RegisterApiTask {
 
 Future<void> main(List<String> args) async {
   Register register = Register();
+  AtSignLogger.root_level = 'severe';
   await register.main(args);
 }

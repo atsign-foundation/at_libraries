@@ -160,6 +160,26 @@ class RegisterUtil {
   }
 
   bool validateVerificationCode(String otp) {
-    return RegExp(r"^[a-zA-z0-9]{4}").hasMatch(otp);
+    if (otp.length == 4) {
+      return RegExp(r"^[a-zA-z0-9]").hasMatch(otp);
+    }
+    return false;
+  }
+
+  /// Method to get verification code from user input
+  /// validates code locally and retries taking user input if invalid
+  /// Returns only when the user has provided a 4-length String only containing numbers and alphabets
+  String getVerificationCodeFromUser(){
+    String? otp;
+    stdout.writeln('[Action Required] Enter your verification code:');
+    otp = stdin.readLineSync()!.toUpperCase();
+    while(!validateVerificationCode(otp!)){
+      stderr.writeln('\n[Unable to proceed] The verification code you entered is invalid.'
+          '\nPlease check your email for a 4-character verification code.'
+          '\nIf you cannot see the code in your inbox, please check your spam/junk/promotions folders.\n'
+          '\n[Action Required] Enter you verification code:');
+      otp = stdin.readLineSync()!.toUpperCase();
+    }
+    return otp;
   }
 }
