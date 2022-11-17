@@ -1,4 +1,5 @@
 import 'package:at_chops/src/algorithm/at_iv.dart';
+import 'package:crypton/crypton.dart';
 import 'package:encrypt/encrypt.dart';
 
 class AtChopsUtil {
@@ -10,4 +11,13 @@ class AtChopsUtil {
     return InitialisationVector(iv.bytes);
   }
 
+  /// Generates RSA keypair with default size 2048 bits
+  static RSAKeypair generateRSAKeyPair({int keySize = 2048}) {
+    return RSAKeypair.fromRandom(keySize: keySize);
+  }
+
+  /// Generates EC keypair
+  static ECKeypair generateECKeyPair() {
+    return ECKeypair.fromRandom();
+  }
 }

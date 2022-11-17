@@ -80,35 +80,35 @@ void main() {
     });
   });
   group('A group of tests for data signing and verification', () {
-    // test('Test data signing and verification', () {
-    //   String data = 'Hello World';
-    //   final atChops = AtChopsImpl();
-    //   final atSigningKeyPair = AtChopsUtil.generateSigningKeyPair();
-    //   final algo = DefaultSigningAlgo(atSigningKeyPair);
-    //   final signature = atChops.sign(Uint8List.fromList(data.codeUnits), algo);
-    //   final result =
-    //       atChops.verify(Uint8List.fromList(data.codeUnits), signature, algo);
-    //   expect(result, true);
-    // });
-    // test('Test data signing and verification - emoji char', () {
-    //   String data = 'Hello World🛠';
-    //   final atChops = AtChopsImpl();
-    //   final atSigningKeyPair = AtChopsUtil.generateSigningKeyPair();
-    //   final algo = DefaultSigningAlgo(atSigningKeyPair);
-    //   final signature = atChops.sign(Uint8List.fromList(data.codeUnits), algo);
-    //   final result =
-    //       atChops.verify(Uint8List.fromList(data.codeUnits), signature, algo);
-    //   expect(result, true);
-    // });
-    // test('Test data signing and verification - special char', () {
-    //   String data = 'Hello\' World!*``';
-    //   final atChops = AtChopsImpl();
-    //   final atSigningKeyPair = AtChopsUtil.generateSigningKeyPair();
-    //   final algo = DefaultSigningAlgo(atSigningKeyPair);
-    //   final signature = atChops.sign(Uint8List.fromList(data.codeUnits), algo);
-    //   final result =
-    //       atChops.verify(Uint8List.fromList(data.codeUnits), signature, algo);
-    //   expect(result, true);
-    // });
+    test('Test data signing and verification', () {
+      String data = 'Hello World';
+      final atChops = AtChopsImpl();
+      final atSigningKeyPair = AtChopsUtil.generateRSAKeyPair();
+      final algo = DefaultSigningAlgo(atSigningKeyPair);
+      final signature = atChops.sign(Uint8List.fromList(data.codeUnits), algo);
+      final result =
+          atChops.verify(Uint8List.fromList(data.codeUnits), signature, algo);
+      expect(result, true);
+    });
+    test('Test data signing and verification - emoji char', () {
+      String data = 'Hello World🛠';
+      final atChops = AtChopsImpl();
+      final atSigningKeyPair = AtChopsUtil.generateRSAKeyPair();
+      final algo = DefaultSigningAlgo(atSigningKeyPair);
+      final signature = atChops.sign(Uint8List.fromList(data.codeUnits), algo);
+      final result =
+          atChops.verify(Uint8List.fromList(data.codeUnits), signature, algo);
+      expect(result, true);
+    });
+    test('Test data signing and verification - special char', () {
+      String data = 'Hello\' World!*``';
+      final atChops = AtChopsImpl();
+      final atSigningKeyPair = AtChopsUtil.generateRSAKeyPair();
+      final algo = DefaultSigningAlgo(atSigningKeyPair);
+      final signature = atChops.sign(Uint8List.fromList(data.codeUnits), algo);
+      final result =
+          atChops.verify(Uint8List.fromList(data.codeUnits), signature, algo);
+      expect(result, true);
+    });
   });
 }
