@@ -177,7 +177,7 @@ class ValidateOtp extends RegisterApiTask {
     if (params['otp'] == null) {
       params['otp'] = registerUtil.getVerificationCodeFromUser();
     }
-    stdout.writeln('\n[Information] Validating your verification code...\n');
+    stdout.writeln('\n[Information] Validating your verification code...');
     try {
       String apiResponse = await registerUtil.validateOtp(
           params['atsign']!, params['email']!, params['otp']!,
@@ -196,7 +196,7 @@ class ValidateOtp extends RegisterApiTask {
         result.apiCallStatus = ApiCallStatus.retry;
       } else if (apiResponse.startsWith("@")) {
         result.data['cramkey'] = apiResponse.split(":")[1];
-        stdout.writeln('[Information] Your cram secret: ' + result.data['cramkey'] + '\n');
+        stdout.writeln('\n[Information] Your cram secret: ' + result.data['cramkey'] + '\n');
         stdout.writeln('[Success] Your atSign **@${params['atsign']}** has been successfully registered to ${params['email']}\n');
         result.apiCallStatus = ApiCallStatus.success;
       }
