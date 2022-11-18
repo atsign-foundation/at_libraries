@@ -58,4 +58,6 @@ class AtChopsImpl implements AtChops {
       AtSigningAlgorithm signingAlgorithm) {
     return signingAlgorithm.verify(signedData, signature);
   }
+
+
 }

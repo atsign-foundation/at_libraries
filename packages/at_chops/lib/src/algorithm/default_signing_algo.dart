@@ -4,15 +4,15 @@ import 'package:at_chops/src/algorithm/at_algorithm.dart';
 import 'package:crypton/crypton.dart';
 
 class DefaultSigningAlgo implements AtSigningAlgorithm {
-  final RSAKeypair _rsaKeypair;
-  DefaultSigningAlgo(this._rsaKeypair);
   @override
-  Uint8List sign(Uint8List data) {
-    return _rsaKeypair.privateKey.createSHA256Signature(data);
+  Uint8List sign(Uint8List data, String privateKey) {
+    final rsaPrivateKey = RSAPrivateKey.fromString(privateKey);
+    return rsaPrivateKey.createSHA256Signature(data);
   }
 
   @override
-  bool verify(Uint8List signedData, Uint8List signature) {
-    return _rsaKeypair.publicKey.verifySHA256Signature(signedData, signature);
+  bool verify(Uint8List signedData, Uint8List signature, String publicKey) {
+    final rsaPublicKey = RSAPublicKey.fromString(publicKey);
+    return rsaPublicKey.verifySHA256Signature(signedData, signature);
   }
 }

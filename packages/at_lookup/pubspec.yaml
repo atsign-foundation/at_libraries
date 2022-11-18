@@ -16,7 +16,9 @@ dependencies:
   mutex: ^3.0.0
   mocktail: ^0.3.0
 
-#dependency_overrides:
+dependency_overrides:
+  at_chops:
+    path: ../at_chops
 #  at_commons:
 #    git:
 #      url: https://github.com/atsign-foundation/at_tools.git

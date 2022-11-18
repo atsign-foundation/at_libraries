@@ -13,6 +13,7 @@ import 'package:at_utils/at_logger.dart';
 import 'package:crypto/crypto.dart';
 import 'package:crypton/crypton.dart';
 import 'package:mutex/mutex.dart';
+import 'package:at_chops/at_chops.dart';
 
 class AtLookupImpl implements AtLookUp {
   final logger = AtSignLogger('AtLookup');
@@ -43,6 +44,8 @@ class AtLookupImpl implements AtLookUp {
 
   /// Represents the client configurations.
   late Map<String, dynamic> _clientConfig;
+
+  late AtChops _atChops;
 
   AtLookupImpl(String atSign, String rootDomain, int rootPort,
       {String? privateKey,
@@ -148,13 +151,15 @@ class AtLookupImpl implements AtLookUp {
       publicKeyResult = publicKeyResult.replaceFirst('data:', '');
       logger.finer('public key of $sharedBy :$publicKeyResult');
 
-      var publicKey = RSAPublicKey.fromString(publicKeyResult);
       var dataSignature = resultJson['metaData']['dataSignature'];
       var value = resultJson['data'];
       value = VerbUtil.getFormattedValue(value);
       logger.finer('value: $value dataSignature:$dataSignature');
-      var isDataValid = publicKey.verifySHA256Signature(
-          utf8.encode(value) as Uint8List, base64Decode(dataSignature));
+      final signingAlgorithm = DefaultSigningAlgo();
+      //# how to pass private key?
+      bool isDataValid = _atChops.verify(utf8.encode(value) as Uint8List, base64Decode(dataSignature), signingAlgorithm);
+      // var isDataValid = publicKey.verifySHA256Signature(
+      //     utf8.encode(value) as Uint8List, base64Decode(dataSignature));
       logger.finer('atlookup data verify result: $isDataValid');
       return 'data:$value';
     } on Exception catch (e) {

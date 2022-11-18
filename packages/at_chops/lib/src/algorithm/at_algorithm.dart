@@ -31,10 +31,10 @@ abstract class AtSigningAlgorithm {
   AtSigningAlgorithm(AtKeyPair keyPair);
 
   /// Signs the data using [AtSigningPrivateKey] of [AtSigningKeyPair]
-  Uint8List sign(Uint8List data);
+  Uint8List sign(Uint8List data, String privateKey);
 
   /// Verifies the data signature using [AtSigningPublicKey] of [AtSigningKeyPair]
-  bool verify(Uint8List signedData, Uint8List signature);
+  bool verify(Uint8List signedData, Uint8List signature, String publicKey);
 }
 
 /// Interface for hashing data. Refer [DefaultHash] for sample implementation.

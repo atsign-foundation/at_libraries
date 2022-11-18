@@ -4,10 +4,8 @@ import 'package:at_chops/src/algorithm/at_iv.dart';
 import 'package:at_chops/src/key/at_encryption_key.dart';
 import 'package:encrypt/encrypt.dart';
 
-import 'at_symmetric_key.dart';
-
 /// Represents an AES key for symmetric encryption.
-class AESKey extends AtSymmetricKey {
+class AESKey {
   late String _aesKey;
   AESKey(this._aesKey);
   String get key => _aesKey;
@@ -22,17 +20,5 @@ class AESKey extends AtSymmetricKey {
   @override
   String toString() {
     return _aesKey;
-  }
-
-  @override
-  Uint8List decrypt(Uint8List encryptedData, {InitialisationVector? iv}) {
-    // TODO: implement decrypt
-    throw UnimplementedError();
-  }
-
-  @override
-  Uint8List encrypt(Uint8List data, {InitialisationVector? iv}) {
-    // TODO: implement encrypt
-    throw UnimplementedError();
   }
 }
