@@ -449,7 +449,7 @@ class AtLookupImpl implements AtLookUp {
         var bytes = utf8.encode(digestInput);
         var digest = sha512.convert(bytes);
         await _sendCommand('cram:$digest\n');
-        var cramResponse = await messageListener.read();
+        var cramResponse = await messageListener.read(transientWaitTimeMillis: 4000, maxWaitMilliSeconds: 10000);
         if (cramResponse == 'data:success') {
           logger.info('auth success');
           _connection!.getMetaData()!.isAuthenticated = true;
