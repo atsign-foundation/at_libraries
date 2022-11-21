@@ -148,6 +148,7 @@ class AtLookupImpl implements AtLookUp {
       publicKeyResult = publicKeyResult.replaceFirst('data:', '');
       logger.finer('public key of $sharedBy :$publicKeyResult');
 
+      var publicKey = RSAPublicKey.fromString(publicKeyResult);
       var dataSignature = resultJson['metaData']['dataSignature'];
       var value = resultJson['data'];
       value = VerbUtil.getFormattedValue(value);
