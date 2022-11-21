@@ -4,11 +4,10 @@ import 'dart:typed_data';
 import 'package:at_chops/src/algorithm/aes_encryption_algo.dart';
 import 'package:at_chops/src/algorithm/at_algorithm.dart';
 import 'package:at_chops/src/algorithm/rsa_encryption_algo.dart';
+import 'package:at_chops/src/at_chops_base.dart';
 import 'package:at_chops/src/key/impl/aes_key.dart';
 import 'package:at_chops/src/key/impl/at_chops_keys.dart';
 import 'package:at_chops/src/key/key_type.dart';
-
-import '../at_chops.dart';
 
 class AtChopsImpl extends AtChops {
   AtChopsImpl(AtChopsKeys atChopsKeys) : super(atChopsKeys);
@@ -16,11 +15,8 @@ class AtChopsImpl extends AtChops {
   @override
   Uint8List decryptBytes(Uint8List data, EncryptionKeyType encryptionKeyType,
       {AtEncryptionAlgorithm? encryptionAlgorithm}) {
-    AtEncryptionAlgorithm? algo;
-    if (encryptionAlgorithm == null) {
-      algo = _getEncryptionAlgorithm(encryptionKeyType)!;
-    }
-    return algo!.decrypt(data);
+    encryptionAlgorithm ??= _getEncryptionAlgorithm(encryptionKeyType)!;
+    return encryptionAlgorithm.decrypt(data);
   }
 
   /// Decode the encrypted string to base64.
@@ -37,11 +33,8 @@ class AtChopsImpl extends AtChops {
   @override
   Uint8List encryptBytes(Uint8List data, EncryptionKeyType encryptionKeyType,
       {AtEncryptionAlgorithm? encryptionAlgorithm}) {
-    AtEncryptionAlgorithm? algo;
-    if (encryptionAlgorithm == null) {
-      algo = _getEncryptionAlgorithm(encryptionKeyType)!;
-    }
-    return algo!.encrypt(data);
+    encryptionAlgorithm ??= _getEncryptionAlgorithm(encryptionKeyType)!;
+    return encryptionAlgorithm.encrypt(data);
   }
 
   /// Encode the input string to utf8 to support emoji chars.
