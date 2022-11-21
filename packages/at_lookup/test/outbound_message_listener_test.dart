@@ -98,16 +98,16 @@ void main() {
     });
   });
 
-  group('A group of test to verify response from unauth connection', () {
+  group('A group of test to verify response from unauthorized connection', () {
     OutboundMessageListener outboundMessageListener =
         OutboundMessageListener(mockOutBoundConnection);
-    test('A test to validate response from unauth connection', () async {
+    test('A test to validate response from unauthorized connection', () async {
       outboundMessageListener.messageHandler('data:hello\n@'.codeUnits);
       var response = await outboundMessageListener.read();
       expect(response, 'data:hello');
     });
 
-    test('A test to validate multiple response from unauth connection',
+    test('A test to validate multiple response from unauthorized connection',
         () async {
       outboundMessageListener.messageHandler('data:hello\n@'.codeUnits);
       var response = await outboundMessageListener.read();
@@ -118,7 +118,7 @@ void main() {
     });
 
     test(
-        'A test to validate response from unauth connection in multiple packets',
+        'A test to validate response from unauthorized connection in multiple packets',
         () async {
       outboundMessageListener
           .messageHandler('data:public:location@alice,'.codeUnits);
@@ -262,7 +262,7 @@ void main() {
       expect(response, 'data:12345678910');
     });
     test(
-        'A test to verify maxwait timeout - delay between messages from server',
+        'A test to verify max wait timeout - delay between messages from server',
         () async {
       String? response;
       outboundMessageListener
