@@ -44,9 +44,7 @@ jobs:
       fail-fast: false
       matrix:
         package:
-          - at_contact
-          - at_server_status
-          - at_onboarding_cli
+          - at_lookup
     steps:
       - uses: actions/checkout@v3
 
