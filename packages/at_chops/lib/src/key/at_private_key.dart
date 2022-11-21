@@ -1,4 +1,6 @@
 /// Represents a private key from [AtKeyPair]
-abstract class AtPrivateKey {
-  AtPrivateKey.fromString(String atPrivateKey);
+class AtPrivateKey {
+  late String _privateKey;
+  AtPrivateKey.fromString(this._privateKey);
+  String get privateKey => _privateKey;
 }

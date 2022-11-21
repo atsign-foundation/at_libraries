@@ -5,9 +5,9 @@ import 'package:at_chops/src/algorithm/at_iv.dart';
 import 'package:at_chops/src/key/impl/aes_key.dart';
 import 'package:encrypt/encrypt.dart';
 
-class DefaultEncryptionAlgo implements AtEncryptionAlgorithm {
+class AESEncryptionAlgo implements AtEncryptionAlgorithm {
   late AESKey _aesKey;
-  DefaultEncryptionAlgo(this._aesKey);
+  AESEncryptionAlgo(this._aesKey);
 
   @override
   Uint8List encrypt(Uint8List plainData, {InitialisationVector? iv}) {
