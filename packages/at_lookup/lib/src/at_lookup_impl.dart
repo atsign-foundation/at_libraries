@@ -44,6 +44,10 @@ class AtLookupImpl implements AtLookUp {
   /// Represents the client configurations.
   late Map<String, dynamic> _clientConfig;
 
+  /// Ensures that a new request isn't sent until either response has been received from previous
+  /// request, or response wasn't received due to timeout or other exception
+  Mutex requestResponseMutex = Mutex();
+
   AtLookupImpl(String atSign, String rootDomain, int rootPort,
       {String? privateKey,
       String? cramSecret,
@@ -377,17 +381,15 @@ class AtLookupImpl implements AtLookUp {
     return await _process(atCommand, auth: auth);
   }
 
-  final Mutex _pkamAuthenticationMutex = Mutex();
-
   /// Generates digest using from verb response and [privateKey] and performs a PKAM authentication to
   /// secondary server. This method is executed for all verbs that requires authentication.
-  Future<bool> authenticate(String? privateKey) async {
+  Future<bool> authenticatePKAM(String? privateKey) async {
     if (privateKey == null) {
       throw UnAuthenticatedException('Private key not passed');
     }
     await createConnection();
     try {
-      await _pkamAuthenticationMutex.acquire();
+      await requestResponseMutex.acquire();
       if (!_connection!.getMetaData()!.isAuthenticated) {
         await _sendCommand((FromVerbBuilder()
               ..atSign = _currentAtSign
@@ -417,23 +419,21 @@ class AtLookupImpl implements AtLookUp {
       }
       return _connection!.getMetaData()!.isAuthenticated;
     } finally {
-      _pkamAuthenticationMutex.release();
+      requestResponseMutex.release();
     }
   }
-
-  final Mutex _cramAuthenticationMutex = Mutex();
 
   /// Generates digest using from verb response and [secret] and performs a CRAM authentication to
   /// secondary server
   // ignore: non_constant_identifier_names
-  Future<bool> authenticate_cram(var secret) async {
+  Future<bool> authenticateCRAM(var secret) async {
     secret ??= cramSecret;
     if (secret == null) {
       throw UnAuthenticatedException('Cram secret not passed');
     }
     await createConnection();
     try {
-      await _cramAuthenticationMutex.acquire();
+      await requestResponseMutex.acquire();
       if (!_connection!.getMetaData()!.isAuthenticated) {
         await _sendCommand((FromVerbBuilder()
               ..atSign = _currentAtSign
@@ -459,7 +459,7 @@ class AtLookupImpl implements AtLookUp {
       }
       return _connection!.getMetaData()!.isAuthenticated;
     } finally {
-      _cramAuthenticationMutex.release();
+      requestResponseMutex.release();
     }
   }
 
@@ -486,17 +486,15 @@ class AtLookupImpl implements AtLookUp {
     );
   }
 
-  Mutex requestResponseMutex = Mutex();
-
   Future<String> _process(String command, {bool auth = false}) async {
     try {
       await requestResponseMutex.acquire();
 
       if (auth && _isAuthRequired()) {
         if (privateKey != null) {
-          await authenticate(privateKey);
+          await authenticatePKAM(privateKey);
         } else if (cramSecret != null) {
-          await authenticate_cram(cramSecret);
+          await authenticateCRAM(cramSecret);
         } else {
           throw UnAuthenticatedException(
               'Unable to perform atlookup auth. Private key/cram secret is not set');
