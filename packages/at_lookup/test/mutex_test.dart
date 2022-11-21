@@ -5,8 +5,8 @@ void main() {
   List<String> criticalSectionEvents = [];
   Future<void> criticalSection(
       String eventName, Mutex m, int delayInMillis) async {
-    print('criticalSection $eventName starting');
     try {
+      print('criticalSection $eventName trying to acquire mutex');
       await m.acquire();
       criticalSectionEvents.add("$eventName acquired mutex");
 
