@@ -124,7 +124,7 @@ class OutboundMessageListener {
       if (DateTime.now().difference(startTime).inMilliseconds >
           maxWaitMilliSeconds) {
         _buffer.clear();
-        _closeConnection();
+        await _closeConnection();
         throw AtTimeoutException(
             'Full response not received after $maxWaitMilliSeconds millis from remote secondary');
       }
@@ -133,7 +133,7 @@ class OutboundMessageListener {
       if (DateTime.now().difference(_lastReceivedTime).inMilliseconds >
           transientWaitTimeMillis) {
         _buffer.clear();
-        _closeConnection();
+        await _closeConnection();
         throw AtTimeoutException(
             'Waited for $transientWaitTimeMillis millis. No response after $_lastReceivedTime ');
       }
@@ -164,7 +164,6 @@ class OutboundMessageListener {
   Duration? delayBeforeClose;
 
   Future<void> _closeConnection() async {
-    logger.info("_closeConnection() called : isInValid currently ${_connection.isInValid()}");
     if (!_connection.isInValid()) {
       if (delayBeforeClose != null) {
         await Future.delayed(delayBeforeClose!);
