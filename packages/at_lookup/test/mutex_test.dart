@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:mutex/mutex.dart';
 import 'package:test/test.dart';
 
@@ -27,9 +29,9 @@ void main() {
 
   test('Verify mutex core behaviour', () async {
     Mutex m = Mutex();
-    criticalSection("One", m,
-        100); // delay for 100 milliseconds so next 'criticalSection' gets a chance to run
-    criticalSection("Two", m, 10);
+    unawaited(criticalSection("One", m,
+        100)); // delay for 100 milliseconds so next 'criticalSection' gets a chance to run
+    unawaited(criticalSection("Two", m, 10));
 
     await Future.delayed(Duration(milliseconds: 200));
 

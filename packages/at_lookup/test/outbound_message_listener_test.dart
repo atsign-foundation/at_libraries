@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_lookup/src/connection/outbound_message_listener.dart';
@@ -14,7 +16,7 @@ void main() {
     OutboundMessageListener outboundMessageListener =
         OutboundMessageListener(mockOutBoundConnection);
     test('A test to validate complete data comes in single packet', () async {
-      outboundMessageListener
+      await outboundMessageListener
           .messageHandler('data:phone@alice\n@alice@'.codeUnits);
       var response = await outboundMessageListener.read();
       expect(response, 'data:phone@alice');
@@ -23,20 +25,20 @@ void main() {
     test(
         'A test to validate complete data comes in packet and prompt in different packet',
         () async {
-      outboundMessageListener
+      await outboundMessageListener
           .messageHandler('data:@bob:phone@alice\n'.codeUnits);
-      outboundMessageListener.messageHandler('@alice@'.codeUnits);
+      await outboundMessageListener.messageHandler('@alice@'.codeUnits);
       var response = await outboundMessageListener.read();
       expect(response, 'data:@bob:phone@alice');
     });
 
     test('A test to validate data two complete data comes in single packets',
         () async {
-      outboundMessageListener
+      await outboundMessageListener
           .messageHandler('data:@bob:phone@alice\n@alice@'.codeUnits);
       var response = await outboundMessageListener.read();
       expect(response, 'data:@bob:phone@alice');
-      outboundMessageListener
+      await outboundMessageListener
           .messageHandler('data:public:phone@alice\n@alice@'.codeUnits);
       response = await outboundMessageListener.read();
       expect(response, 'data:public:phone@alice');
@@ -44,26 +46,26 @@ void main() {
 
     test('A test to validate data two complete data comes in multiple packets',
         () async {
-      outboundMessageListener
+      await outboundMessageListener
           .messageHandler('data:public:phone@alice\n@ali'.codeUnits);
-      outboundMessageListener.messageHandler('ce@'.codeUnits);
+      await outboundMessageListener.messageHandler('ce@'.codeUnits);
       var response = await outboundMessageListener.read();
       expect(response, 'data:public:phone@alice');
-      outboundMessageListener.messageHandler(
+      await outboundMessageListener.messageHandler(
           'data:@bob:location@alice,@bob:phone@alice\n@alice@'.codeUnits);
       response = await outboundMessageListener.read();
       expect(response, 'data:@bob:location@alice,@bob:phone@alice');
     });
 
     test('A test to validate single data comes two packets', () async {
-      outboundMessageListener.messageHandler('data:public:phone@'.codeUnits);
-      outboundMessageListener.messageHandler('alice\n@alice@'.codeUnits);
+      await outboundMessageListener.messageHandler('data:public:phone@'.codeUnits);
+      await outboundMessageListener.messageHandler('alice\n@alice@'.codeUnits);
       var response = await outboundMessageListener.read();
       expect(response, 'data:public:phone@alice');
     });
 
     test('A test to validate data contains @', () async {
-      outboundMessageListener
+      await outboundMessageListener
           .messageHandler('data:phone@alice_12345675\n@alice@'.codeUnits);
       var response = await outboundMessageListener.read();
       expect(response, 'data:phone@alice_12345675');
@@ -73,25 +75,25 @@ void main() {
         'A test to validate data contains @ and partial prompt of previous data',
         () async {
       // partial response of previous data.
-      outboundMessageListener.messageHandler('data:hello\n@'.codeUnits);
-      outboundMessageListener.messageHandler('alice@'.codeUnits);
+      await outboundMessageListener.messageHandler('data:hello\n@'.codeUnits);
+      await outboundMessageListener.messageHandler('alice@'.codeUnits);
       var response = await outboundMessageListener.read();
       expect(response, 'data:hello');
-      outboundMessageListener
+      await outboundMessageListener
           .messageHandler('data:phone@alice_12345675\n@alice@'.codeUnits);
       response = await outboundMessageListener.read();
       expect(response, 'data:phone@alice_12345675');
     });
 
     test('A test to validate data contains new line character', () async {
-      outboundMessageListener.messageHandler(
+      await outboundMessageListener.messageHandler(
           'data:value_contains_\nin_the_value\n@alice@'.codeUnits);
       var response = await outboundMessageListener.read();
       expect(response, 'data:value_contains_\nin_the_value');
     });
 
     test('A test to validate data contains new line character and @', () async {
-      outboundMessageListener.messageHandler(
+      await outboundMessageListener.messageHandler(
           'data:the_key_is\n@bob:phone@alice\n@alice@'.codeUnits);
       var response = await outboundMessageListener.read();
       expect(response, 'data:the_key_is\n@bob:phone@alice');
@@ -102,17 +104,17 @@ void main() {
     OutboundMessageListener outboundMessageListener =
         OutboundMessageListener(mockOutBoundConnection);
     test('A test to validate response from unauthorized connection', () async {
-      outboundMessageListener.messageHandler('data:hello\n@'.codeUnits);
+      await outboundMessageListener.messageHandler('data:hello\n@'.codeUnits);
       var response = await outboundMessageListener.read();
       expect(response, 'data:hello');
     });
 
     test('A test to validate multiple response from unauthorized connection',
         () async {
-      outboundMessageListener.messageHandler('data:hello\n@'.codeUnits);
+      await outboundMessageListener.messageHandler('data:hello\n@'.codeUnits);
       var response = await outboundMessageListener.read();
       expect(response, 'data:hello');
-      outboundMessageListener.messageHandler('data:hi\n@'.codeUnits);
+      await outboundMessageListener.messageHandler('data:hi\n@'.codeUnits);
       response = await outboundMessageListener.read();
       expect(response, 'data:hi');
     });
@@ -120,12 +122,12 @@ void main() {
     test(
         'A test to validate response from unauthorized connection in multiple packets',
         () async {
-      outboundMessageListener
+      await outboundMessageListener
           .messageHandler('data:public:location@alice,'.codeUnits);
-      outboundMessageListener.messageHandler('public:phone@alice\n@'.codeUnits);
+      await outboundMessageListener.messageHandler('public:phone@alice\n@'.codeUnits);
       var response = await outboundMessageListener.read();
       expect(response, 'data:public:location@alice,public:phone@alice');
-      outboundMessageListener.messageHandler('data:hi\n@'.codeUnits);
+      await outboundMessageListener.messageHandler('data:hi\n@'.codeUnits);
       response = await outboundMessageListener.read();
       expect(response, 'data:hi');
     });
@@ -163,14 +165,14 @@ void main() {
     OutboundMessageListener outboundMessageListener =
         OutboundMessageListener(mockOutBoundConnection);
     test('A test to validate complete error comes in single packet', () async {
-      outboundMessageListener.messageHandler(
+      await outboundMessageListener.messageHandler(
           'error:AT0012: Invalid value found\n@alice@'.codeUnits);
       var response = await outboundMessageListener.read();
       expect(response, 'error:AT0012: Invalid value found');
     });
 
     test('A test to validate complete error comes in single packet', () async {
-      outboundMessageListener
+      await outboundMessageListener
           .messageHandler('stream:@bob:phone@alice\n@alice@'.codeUnits);
       var response = await outboundMessageListener.read();
       expect(response, 'stream:@bob:phone@alice');
@@ -211,8 +213,8 @@ void main() {
     test(
         'A test to verify partial response - wait time greater than transientWaitTimeMillis',
         () async {
-      outboundMessageListener.messageHandler('data:public:phone@'.codeUnits);
-      outboundMessageListener.messageHandler('12'.codeUnits);
+      await outboundMessageListener.messageHandler('data:public:phone@'.codeUnits);
+      await outboundMessageListener.messageHandler('12'.codeUnits);
       expect(
           () async =>
               await outboundMessageListener.read(transientWaitTimeMillis: 50),
@@ -224,11 +226,11 @@ void main() {
     test(
         'A test to verify partial response - wait time greater than maxWaitMillis',
         () async {
-      outboundMessageListener.messageHandler('data:public:phone@'.codeUnits);
-      outboundMessageListener.messageHandler('12'.codeUnits);
-      outboundMessageListener.messageHandler('34'.codeUnits);
-      outboundMessageListener.messageHandler('56'.codeUnits);
-      outboundMessageListener.messageHandler('78'.codeUnits);
+      await outboundMessageListener.messageHandler('data:public:phone@'.codeUnits);
+      await outboundMessageListener.messageHandler('12'.codeUnits);
+      await outboundMessageListener.messageHandler('34'.codeUnits);
+      await outboundMessageListener.messageHandler('56'.codeUnits);
+      await outboundMessageListener.messageHandler('78'.codeUnits);
       expect(
           () async =>
           // we want to trigger the maxWaitMilliSeconds exception, so setting transient to a higher value
@@ -242,21 +244,21 @@ void main() {
         'A test to verify full response received - delay between messages from server',
         () async {
       String? response;
-      outboundMessageListener
+      unawaited(outboundMessageListener
           .read(transientWaitTimeMillis: 50)
           .whenComplete(() => {})
-          .then((value) => {response = value});
-      outboundMessageListener.messageHandler('data:'.codeUnits);
+          .then((value) => {response = value}));
+      await outboundMessageListener.messageHandler('data:'.codeUnits);
       await Future.delayed(Duration(milliseconds: 25));
-      outboundMessageListener.messageHandler('12'.codeUnits);
+      await outboundMessageListener.messageHandler('12'.codeUnits);
       await Future.delayed(Duration(milliseconds: 15));
-      outboundMessageListener.messageHandler('34'.codeUnits);
+      await outboundMessageListener.messageHandler('34'.codeUnits);
       await Future.delayed(Duration(milliseconds: 17));
-      outboundMessageListener.messageHandler('56'.codeUnits);
+      await outboundMessageListener.messageHandler('56'.codeUnits);
       await Future.delayed(Duration(milliseconds: 30));
-      outboundMessageListener.messageHandler('78'.codeUnits);
+      await outboundMessageListener.messageHandler('78'.codeUnits);
       await Future.delayed(Duration(milliseconds: 45));
-      outboundMessageListener.messageHandler('910\n@'.codeUnits);
+      await outboundMessageListener.messageHandler('910\n@'.codeUnits);
       await Future.delayed(Duration(milliseconds: 25));
       expect(response, isNotEmpty);
       expect(response, 'data:12345678910');
@@ -265,24 +267,24 @@ void main() {
         'A test to verify max wait timeout - delay between messages from server',
         () async {
       String? response;
-      outboundMessageListener
+      await outboundMessageListener
           .read(maxWaitMilliSeconds: 100)
           .catchError((e) {
             return e.toString();
           })
           .whenComplete(() => {})
           .then((value) => {response = value});
-      outboundMessageListener.messageHandler('data:'.codeUnits);
+      await outboundMessageListener.messageHandler('data:'.codeUnits);
       await Future.delayed(Duration(milliseconds: 15));
-      outboundMessageListener.messageHandler('12'.codeUnits);
+      await outboundMessageListener.messageHandler('12'.codeUnits);
       await Future.delayed(Duration(milliseconds: 10));
-      outboundMessageListener.messageHandler('34'.codeUnits);
+      await outboundMessageListener.messageHandler('34'.codeUnits);
       await Future.delayed(Duration(milliseconds: 12));
-      outboundMessageListener.messageHandler('56'.codeUnits);
+      await outboundMessageListener.messageHandler('56'.codeUnits);
       await Future.delayed(Duration(milliseconds: 13));
-      outboundMessageListener.messageHandler('78'.codeUnits);
+      await outboundMessageListener.messageHandler('78'.codeUnits);
       await Future.delayed(Duration(milliseconds: 20));
-      outboundMessageListener.messageHandler('910'.codeUnits);
+      await outboundMessageListener.messageHandler('910'.codeUnits);
       await Future.delayed(Duration(milliseconds: 50));
       expect(response, isNotEmpty);
       expect(
@@ -295,24 +297,24 @@ void main() {
         'A test to verify transient timeout - delay between messages from server',
         () async {
       String? response;
-      outboundMessageListener
+      await outboundMessageListener
           .read(transientWaitTimeMillis: 50)
           .catchError((e) {
             return e.toString();
           })
           .whenComplete(() => {})
           .then((value) => {response = value});
-      outboundMessageListener.messageHandler('data:'.codeUnits);
+      await outboundMessageListener.messageHandler('data:'.codeUnits);
       await Future.delayed(Duration(milliseconds: 10));
-      outboundMessageListener.messageHandler('12'.codeUnits);
+      await outboundMessageListener.messageHandler('12'.codeUnits);
       await Future.delayed(Duration(milliseconds: 15));
-      outboundMessageListener.messageHandler('34'.codeUnits);
+      await outboundMessageListener.messageHandler('34'.codeUnits);
       await Future.delayed(Duration(milliseconds: 17));
-      outboundMessageListener.messageHandler('56'.codeUnits);
+      await outboundMessageListener.messageHandler('56'.codeUnits);
       await Future.delayed(Duration(milliseconds: 20));
-      outboundMessageListener.messageHandler('78'.codeUnits);
+      await outboundMessageListener.messageHandler('78'.codeUnits);
       await Future.delayed(Duration(milliseconds: 10));
-      outboundMessageListener.messageHandler('910'.codeUnits);
+      await outboundMessageListener.messageHandler('910'.codeUnits);
       await Future.delayed(Duration(milliseconds: 60));
       expect(response, isNotEmpty);
       expect(
