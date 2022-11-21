@@ -439,7 +439,7 @@ class AtLookupImpl implements AtLookUp {
               ..atSign = _currentAtSign
               ..clientConfig = _clientConfig)
             .buildCommand());
-        var fromResponse = await messageListener.read();
+        var fromResponse = await messageListener.read(transientWaitTimeMillis: 4000, maxWaitMilliSeconds: 10000);
         logger.info('from result:$fromResponse');
         if (fromResponse.isEmpty) {
           return false;
