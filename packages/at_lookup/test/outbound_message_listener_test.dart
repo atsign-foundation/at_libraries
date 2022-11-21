@@ -190,22 +190,23 @@ void main() {
         () async {
       expect(
           () async =>
-              await outboundMessageListener.read(transientWaitTimeMillis: 1000),
+              await outboundMessageListener.read(transientWaitTimeMillis: 50),
           throwsA(predicate((dynamic e) =>
               e is AtTimeoutException &&
               e.message
-                  .startsWith('Waited for 1000 millis. No response after'))));
+                  .startsWith('Waited for 50 millis. No response after'))));
     });
     test(
         'A test to verify no response from server- wait time greater than maxWaitMillis',
         () async {
       expect(
           () async =>
-              await outboundMessageListener.read(maxWaitMilliSeconds: 5000),
+              // we want to trigger the maxWaitMilliSeconds exception, so setting transient to a higher value
+              await outboundMessageListener.read(transientWaitTimeMillis: 100, maxWaitMilliSeconds: 50),
           throwsA(predicate((dynamic e) =>
               e is AtTimeoutException &&
               e.message.startsWith(
-                  'Full response not received after 5000 millis from remote secondary'))));
+                  'Full response not received after 50 millis from remote secondary'))));
     });
     test(
         'A test to verify partial response - wait time greater than transientWaitTimeMillis',
@@ -214,11 +215,11 @@ void main() {
       outboundMessageListener.messageHandler('12'.codeUnits);
       expect(
           () async =>
-              await outboundMessageListener.read(transientWaitTimeMillis: 5000),
+              await outboundMessageListener.read(transientWaitTimeMillis: 50),
           throwsA(predicate((dynamic e) =>
               e is AtTimeoutException &&
               e.message
-                  .startsWith('Waited for 5000 millis. No response after'))));
+                  .startsWith('Waited for 50 millis. No response after'))));
     });
     test(
         'A test to verify partial response - wait time greater than maxWaitMillis',
@@ -230,32 +231,33 @@ void main() {
       outboundMessageListener.messageHandler('78'.codeUnits);
       expect(
           () async =>
-              await outboundMessageListener.read(maxWaitMilliSeconds: 2000),
+          // we want to trigger the maxWaitMilliSeconds exception, so setting transient to a higher value
+              await outboundMessageListener.read(transientWaitTimeMillis: 30, maxWaitMilliSeconds: 20),
           throwsA(predicate((dynamic e) =>
               e is AtTimeoutException &&
               e.message ==
-                  'Full response not received after 2000 millis from remote secondary')));
+                  'Full response not received after 20 millis from remote secondary')));
     });
     test(
         'A test to verify full response received - delay between messages from server',
         () async {
       String? response;
       outboundMessageListener
-          .read()
+          .read(transientWaitTimeMillis: 50)
           .whenComplete(() => {})
           .then((value) => {response = value});
       outboundMessageListener.messageHandler('data:'.codeUnits);
-      await Future.delayed(Duration(milliseconds: 250));
+      await Future.delayed(Duration(milliseconds: 25));
       outboundMessageListener.messageHandler('12'.codeUnits);
-      await Future.delayed(Duration(milliseconds: 150));
+      await Future.delayed(Duration(milliseconds: 15));
       outboundMessageListener.messageHandler('34'.codeUnits);
-      await Future.delayed(Duration(milliseconds: 175));
+      await Future.delayed(Duration(milliseconds: 17));
       outboundMessageListener.messageHandler('56'.codeUnits);
-      await Future.delayed(Duration(milliseconds: 300));
+      await Future.delayed(Duration(milliseconds: 30));
       outboundMessageListener.messageHandler('78'.codeUnits);
-      await Future.delayed(Duration(milliseconds: 500));
+      await Future.delayed(Duration(milliseconds: 45));
       outboundMessageListener.messageHandler('910\n@'.codeUnits);
-      await Future.delayed(Duration(milliseconds: 500));
+      await Future.delayed(Duration(milliseconds: 25));
       expect(response, isNotEmpty);
       expect(response, 'data:12345678910');
     });
@@ -264,28 +266,28 @@ void main() {
         () async {
       String? response;
       outboundMessageListener
-          .read(maxWaitMilliSeconds: 5000)
+          .read(maxWaitMilliSeconds: 100)
           .catchError((e) {
             return e.toString();
           })
           .whenComplete(() => {})
           .then((value) => {response = value});
       outboundMessageListener.messageHandler('data:'.codeUnits);
-      await Future.delayed(Duration(milliseconds: 250));
+      await Future.delayed(Duration(milliseconds: 15));
       outboundMessageListener.messageHandler('12'.codeUnits);
-      await Future.delayed(Duration(milliseconds: 150));
+      await Future.delayed(Duration(milliseconds: 10));
       outboundMessageListener.messageHandler('34'.codeUnits);
-      await Future.delayed(Duration(milliseconds: 175));
+      await Future.delayed(Duration(milliseconds: 12));
       outboundMessageListener.messageHandler('56'.codeUnits);
-      await Future.delayed(Duration(milliseconds: 300));
+      await Future.delayed(Duration(milliseconds: 13));
       outboundMessageListener.messageHandler('78'.codeUnits);
-      await Future.delayed(Duration(milliseconds: 500));
+      await Future.delayed(Duration(milliseconds: 20));
       outboundMessageListener.messageHandler('910'.codeUnits);
-      await Future.delayed(Duration(milliseconds: 5000));
+      await Future.delayed(Duration(milliseconds: 50));
       expect(response, isNotEmpty);
       expect(
         response!.contains(
-            'Full response not received after 5000 millis from remote secondary'),
+            'Full response not received after 100 millis from remote secondary'),
         true,
       );
     });
@@ -294,27 +296,27 @@ void main() {
         () async {
       String? response;
       outboundMessageListener
-          .read(transientWaitTimeMillis: 500)
+          .read(transientWaitTimeMillis: 50)
           .catchError((e) {
             return e.toString();
           })
           .whenComplete(() => {})
           .then((value) => {response = value});
       outboundMessageListener.messageHandler('data:'.codeUnits);
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(Duration(milliseconds: 10));
       outboundMessageListener.messageHandler('12'.codeUnits);
-      await Future.delayed(Duration(milliseconds: 150));
+      await Future.delayed(Duration(milliseconds: 15));
       outboundMessageListener.messageHandler('34'.codeUnits);
-      await Future.delayed(Duration(milliseconds: 175));
+      await Future.delayed(Duration(milliseconds: 17));
       outboundMessageListener.messageHandler('56'.codeUnits);
-      await Future.delayed(Duration(milliseconds: 200));
+      await Future.delayed(Duration(milliseconds: 20));
       outboundMessageListener.messageHandler('78'.codeUnits);
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(Duration(milliseconds: 10));
       outboundMessageListener.messageHandler('910'.codeUnits);
-      await Future.delayed(Duration(milliseconds: 750));
+      await Future.delayed(Duration(milliseconds: 60));
       expect(response, isNotEmpty);
       expect(
-        response!.contains('Waited for 500 millis. No response after'),
+        response!.contains('Waited for 50 millis. No response after'),
         true,
       );
     });
