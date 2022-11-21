@@ -229,6 +229,7 @@ class AtLookupImpl implements AtLookUp {
       //3. listen to server response
       messageListener = OutboundMessageListener(_connection!);
       messageListener.listen();
+      logger.info('New connection created OK');
     }
   }
 
