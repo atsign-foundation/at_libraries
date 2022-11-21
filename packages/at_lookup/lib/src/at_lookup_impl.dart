@@ -49,16 +49,14 @@ class AtLookupImpl implements AtLookUp {
   Mutex requestResponseMutex = Mutex();
 
   AtLookupImpl(String atSign, String rootDomain, int rootPort,
-      {String? privateKey,
-      String? cramSecret,
+      {this.privateKey,
+      this.cramSecret,
       SecondaryAddressFinder? secondaryAddressFinder,
       SecureSocketConfig? secureSocketConfig,
       Map<String, dynamic>? clientConfig}) {
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
-    this.privateKey = privateKey;
-    this.cramSecret = cramSecret;
     this.secondaryAddressFinder = secondaryAddressFinder ??
         CacheableSecondaryAddressFinder(rootDomain, rootPort);
     _secureSocketConfig = secureSocketConfig ?? SecureSocketConfig();
@@ -497,7 +495,7 @@ class AtLookupImpl implements AtLookUp {
           await authenticateCRAM(cramSecret);
         } else {
           throw UnAuthenticatedException(
-              'Unable to perform atlookup auth. Private key/cram secret is not set');
+              'Unable to perform atLookup auth. Private key/cram secret is not set');
         }
       }
       try {
