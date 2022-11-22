@@ -1,11 +1,6 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:at_chops/at_chops.dart';
-import 'package:at_chops/src/at_chops_impl.dart';
-import 'package:at_chops/src/key/impl/aes_key.dart';
-import 'package:at_chops/src/key/impl/at_chops_keys.dart';
-import 'package:at_chops/src/util/at_chops_util.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -90,36 +85,36 @@ void main() {
     //     expect(decryptedString, data);
     //   });
   });
-  // group('A group of tests for data signing and verification', () {
-  //   test('Test data signing and verification', () {
-  //     String data = 'Hello World';
-  //     final atChops = AtChopsImpl();
-  //     final atSigningKeyPair = AtChopsUtil.generateRSAKeyPair();
-  //     final algo = DefaultSigningAlgo(atSigningKeyPair);
-  //     final signature = atChops.sign(Uint8List.fromList(data.codeUnits), algo);
-  //     final result =
-  //         atChops.verify(Uint8List.fromList(data.codeUnits), signature, algo);
-  //     expect(result, true);
-  //   });
-  //   test('Test data signing and verification - emoji char', () {
-  //     String data = 'Hello World🛠';
-  //     final atChops = AtChopsImpl();
-  //     final atSigningKeyPair = AtChopsUtil.generateRSAKeyPair();
-  //     final algo = DefaultSigningAlgo(atSigningKeyPair);
-  //     final signature = atChops.sign(Uint8List.fromList(data.codeUnits), algo);
-  //     final result =
-  //         atChops.verify(Uint8List.fromList(data.codeUnits), signature, algo);
-  //     expect(result, true);
-  //   });
-  //   test('Test data signing and verification - special char', () {
-  //     String data = 'Hello\' World!*``';
-  //     final atChops = AtChopsImpl();
-  //     final atSigningKeyPair = AtChopsUtil.generateRSAKeyPair();
-  //     final algo = DefaultSigningAlgo(atSigningKeyPair);
-  //     final signature = atChops.sign(Uint8List.fromList(data.codeUnits), algo);
-  //     final result =
-  //         atChops.verify(Uint8List.fromList(data.codeUnits), signature, algo);
-  //     expect(result, true);
-  //   });
-  // });
+  group('A group of tests for data signing and verification', () {
+    test('Test pkam signing and verification', () {
+      String data = 'Hello World';
+      final atPkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
+      final atChopsKeys = AtChopsKeys.create(null, atPkamKeyPair);
+      final atChops = AtChopsImpl(atChopsKeys);
+      final signature = atChops.sign(Uint8List.fromList(data.codeUnits), SigningKeyType.pkam_sha_256);
+      final result =
+          atChops.verify(Uint8List.fromList(data.codeUnits), signature, SigningKeyType.pkam_sha_256);
+      expect(result, true);
+    });
+    // test('Test data signing and verification - emoji char', () {
+    //   String data = 'Hello World🛠';
+    //   final atChops = AtChopsImpl();
+    //   final atSigningKeyPair = AtChopsUtil.generateRSAKeyPair();
+    //   final algo = DefaultSigningAlgo(atSigningKeyPair);
+    //   final signature = atChops.sign(Uint8List.fromList(data.codeUnits), algo);
+    //   final result =
+    //       atChops.verify(Uint8List.fromList(data.codeUnits), signature, algo);
+    //   expect(result, true);
+    // });
+    // test('Test data signing and verification - special char', () {
+    //   String data = 'Hello\' World!*``';
+    //   final atChops = AtChopsImpl();
+    //   final atSigningKeyPair = AtChopsUtil.generateRSAKeyPair();
+    //   final algo = DefaultSigningAlgo(atSigningKeyPair);
+    //   final signature = atChops.sign(Uint8List.fromList(data.codeUnits), algo);
+    //   final result =
+    //       atChops.verify(Uint8List.fromList(data.codeUnits), signature, algo);
+    //   expect(result, true);
+    // });
+  });
 }

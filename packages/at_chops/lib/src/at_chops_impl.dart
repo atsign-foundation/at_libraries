@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:at_chops/src/algorithm/aes_encryption_algo.dart';
 import 'package:at_chops/src/algorithm/at_algorithm.dart';
+import 'package:at_chops/src/algorithm/pkam_signing_algo.dart';
 import 'package:at_chops/src/algorithm/rsa_encryption_algo.dart';
 import 'package:at_chops/src/at_chops_base.dart';
 import 'package:at_chops/src/key/impl/aes_key.dart';
@@ -61,17 +62,16 @@ class AtChopsImpl extends AtChops {
   @override
   Uint8List sign(Uint8List data, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm}) {
-    throw UnimplementedError();
-    //return signingAlgorithm.sign(data);
+    signingAlgorithm ??= _getSigningAlgorithm(signingKeyType)!;
+    return signingAlgorithm.sign(data);
   }
 
   @override
   bool verify(
-      Uint8List signedData, Uint8List signature, SigningKeyType signingKeyType,
+      Uint8List data, Uint8List signature, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm}) {
-    throw UnimplementedError();
-
-    // return signingAlgorithm.verify(signedData, signature);
+    signingAlgorithm ??= _getSigningAlgorithm(signingKeyType)!;
+    return signingAlgorithm.verify(data, signature);
   }
 
   AtEncryptionAlgorithm? _getEncryptionAlgorithm(
@@ -94,6 +94,19 @@ class AtChopsImpl extends AtChops {
       default:
         throw Exception(
             'Cannot find encryption algorithm for encryption key type $encryptionKeyType');
+    }
+  }
+
+  AtSigningAlgorithm? _getSigningAlgorithm(SigningKeyType signingKeyType) {
+    switch (signingKeyType) {
+      case SigningKeyType.pkam_sha_256:
+        return PkamSigningAlgo(atChopsKeys.atPkamKeyPair!, signingKeyType);
+      case SigningKeyType.signing_sha_256:
+        // TODO: Handle this case.
+        break;
+      default:
+        throw Exception(
+            'Cannot find signing algorithm for signing key type $signingKeyType');
     }
   }
 }
