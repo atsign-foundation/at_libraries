@@ -13,6 +13,9 @@ on:
     branches:
       - trunk
 
+permissions:  # added using https://github.com/step-security/secure-workflows
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,9 +27,9 @@ jobs:
           - at_server_status
           - at_onboarding_cli
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
 
-      - uses: dart-lang/setup-dart@v1
+      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d # v1.3
         with:
           sdk: stable
 
@@ -46,9 +49,9 @@ jobs:
         package:
           - at_lookup
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
 
-      - uses: dart-lang/setup-dart@v1
+      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d # v1.3
         with:
           sdk: stable
 
@@ -70,9 +73,9 @@ jobs:
       working-directory: tests/at_onboarding_cli_functional_tests
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791 # v2.5.0
 
-      - uses: dart-lang/setup-dart@v1
+      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d # v1.3
         with:
           sdk: stable
 
