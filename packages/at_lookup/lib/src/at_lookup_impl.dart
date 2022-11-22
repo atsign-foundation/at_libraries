@@ -13,6 +13,7 @@ import 'package:at_utils/at_logger.dart';
 import 'package:crypto/crypto.dart';
 import 'package:crypton/crypton.dart';
 import 'package:mutex/mutex.dart';
+import 'package:at_chops/at_chops.dart';
 
 class AtLookupImpl implements AtLookUp {
   final logger = AtSignLogger('AtLookup');
@@ -31,6 +32,8 @@ class AtLookupImpl implements AtLookUp {
   late String _rootDomain;
 
   late int _rootPort;
+
+  late AtChops _atChops;
 
   String? privateKey;
 
@@ -231,8 +234,6 @@ class AtLookupImpl implements AtLookUp {
   }
 
   /// Executes the command returned by [VerbBuilder] build command on a remote secondary server.
-  /// Optionally [privateKey] is passed for verb builders which require authentication.
-  ///
   /// Catches any exception and throws [AtLookUpException]
   @override
   Future<String> executeVerb(VerbBuilder builder, {sync = false}) async {
@@ -381,6 +382,7 @@ class AtLookupImpl implements AtLookUp {
 
   /// Generates digest using from verb response and [privateKey] and performs a PKAM authentication to
   /// secondary server. This method is executed for all verbs that requires authentication.
+  @Deprecated('Use method pkamAuthenticate')
   Future<bool> authenticate(String? privateKey) async {
     if (privateKey == null) {
       throw UnAuthenticatedException('Private key not passed');
@@ -404,6 +406,41 @@ class AtLookupImpl implements AtLookUp {
         var sha256signature =
             key.createSHA256Signature(utf8.encode(fromResponse) as Uint8List);
         var signature = base64Encode(sha256signature);
+        logger.finer('Sending command pkam:$signature');
+        await _sendCommand('pkam:$signature\n');
+        var pkamResponse = await messageListener.read();
+        if (pkamResponse == 'data:success') {
+          logger.info('auth success');
+          _connection!.getMetaData()!.isAuthenticated = true;
+        } else {
+          throw UnAuthenticatedException(
+              'Failed connecting to $_currentAtSign. $pkamResponse');
+        }
+      }
+      return _connection!.getMetaData()!.isAuthenticated;
+    } finally {
+      _pkamAuthenticationMutex.release();
+    }
+  }
+
+  Future<bool> pkamAuthenticate() async {
+    await createConnection();
+    try {
+      await _pkamAuthenticationMutex.acquire();
+      if (!_connection!.getMetaData()!.isAuthenticated) {
+        await _sendCommand((FromVerbBuilder()
+              ..atSign = _currentAtSign
+              ..clientConfig = _clientConfig)
+            .buildCommand());
+        var fromResponse = await (messageListener.read());
+        logger.finer('from result:$fromResponse');
+        if (fromResponse.isEmpty) {
+          return false;
+        }
+        fromResponse = fromResponse.trim().replaceAll('data:', '');
+        logger.finer('fromResponse $fromResponse');
+        var signature =
+            _atChops.signString(fromResponse, SigningKeyType.pkam_sha_256);
         logger.finer('Sending command pkam:$signature');
         await _sendCommand('pkam:$signature\n');
         var pkamResponse = await messageListener.read();
@@ -494,6 +531,7 @@ class AtLookupImpl implements AtLookUp {
 
       if (auth && _isAuthRequired()) {
         if (privateKey != null) {
+          //# TODO replace with [pkamAuthenticate]
           await authenticate(privateKey);
         } else if (cramSecret != null) {
           await authenticate_cram(cramSecret);
@@ -552,5 +590,10 @@ class AtLookupImpl implements AtLookUp {
     await createConnection();
     logger.finer('SENDING: $command');
     await _connection!.write(command);
+  }
+
+  @override
+  void setAtChops(AtChops atChops) {
+    _atChops = atChops;
   }
 }
