@@ -21,7 +21,6 @@ jobs:
       matrix:
         package:
           - at_contact
-          - at_lookup
           - at_server_status
           - at_onboarding_cli
     steps:
@@ -39,6 +38,32 @@ jobs:
         working-directory: packages/${{ matrix.package }}
         run: dart analyze
 
+  at_lookup_build_and_test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - at_lookup
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Install dependencies in ${{ matrix.package }}
+        working-directory: packages/${{ matrix.package }}
+        run: dart pub get
+
+      - name: Analyze project source in ${{ matrix.package }}
+        working-directory: packages/${{ matrix.package }}
+        run: dart analyze
+
+      - name: run tests
+        working-directory: packages/${{ matrix.package }}
+        run: dart test --concurrency=1
+
   functional_tests_at_onboarding_cli:
     runs-on: ubuntu-latest
     env:
@@ -51,7 +76,7 @@ jobs:
         with:
           sdk: stable
 
-      #functional tests for at_onbaording_cli
+      #functional tests for at_onboarding_cli
       - name: add entry to hosts file
         run: echo "127.0.0.1    vip.ve.atsign.zone" | sudo tee -a /etc/hosts
 
