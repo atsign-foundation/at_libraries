@@ -91,9 +91,9 @@ void main() {
       final atPkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
       final atChopsKeys = AtChopsKeys.create(null, atPkamKeyPair);
       final atChops = AtChopsImpl(atChopsKeys);
-      final signature = atChops.sign(Uint8List.fromList(data.codeUnits), SigningKeyType.pkam_sha_256);
+      final signature = atChops.signBytes(Uint8List.fromList(data.codeUnits), SigningKeyType.pkam_sha_256);
       final result =
-          atChops.verify(Uint8List.fromList(data.codeUnits), signature, SigningKeyType.pkam_sha_256);
+          atChops.verifySignatureBytes(Uint8List.fromList(data.codeUnits), signature, SigningKeyType.pkam_sha_256);
       expect(result, true);
     });
     // test('Test data signing and verification - emoji char', () {

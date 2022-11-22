@@ -25,9 +25,8 @@ class AtChopsImpl extends AtChops {
   @override
   String decryptString(String data, EncryptionKeyType encryptionKeyType,
       {AtEncryptionAlgorithm? encryptionAlgorithm}) {
-    AtEncryptionAlgorithm? algo = _getEncryptionAlgorithm(encryptionKeyType);
     final decryptedBytes = decryptBytes(base64Decode(data), encryptionKeyType,
-        encryptionAlgorithm: algo);
+        encryptionAlgorithm: encryptionAlgorithm);
     return utf8.decode(decryptedBytes);
   }
 
@@ -44,13 +43,9 @@ class AtChopsImpl extends AtChops {
   String encryptString(String data, EncryptionKeyType encryptionKeyType,
       {AtEncryptionAlgorithm? encryptionAlgorithm}) {
     final utfEncodedData = utf8.encode(data);
-    AtEncryptionAlgorithm? algo;
-    if (encryptionAlgorithm == null) {
-      algo = _getEncryptionAlgorithm(encryptionKeyType)!;
-    }
     final encryptedBytes = encryptBytes(
         Uint8List.fromList(utfEncodedData), encryptionKeyType,
-        encryptionAlgorithm: algo);
+        encryptionAlgorithm: encryptionAlgorithm);
     return base64.encode(encryptedBytes);
   }
 
@@ -60,14 +55,14 @@ class AtChopsImpl extends AtChops {
   }
 
   @override
-  Uint8List sign(Uint8List data, SigningKeyType signingKeyType,
+  Uint8List signBytes(Uint8List data, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm}) {
     signingAlgorithm ??= _getSigningAlgorithm(signingKeyType)!;
     return signingAlgorithm.sign(data);
   }
 
   @override
-  bool verify(
+  bool verifySignatureBytes(
       Uint8List data, Uint8List signature, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm}) {
     signingAlgorithm ??= _getSigningAlgorithm(signingKeyType)!;
@@ -108,5 +103,23 @@ class AtChopsImpl extends AtChops {
         throw Exception(
             'Cannot find signing algorithm for signing key type $signingKeyType');
     }
+  }
+
+  @override
+  String signString(String data, SigningKeyType signingKeyType,
+      {AtSigningAlgorithm? signingAlgorithm}) {
+    final signedBytes = signBytes(
+        utf8.encode(data) as Uint8List, signingKeyType,
+        signingAlgorithm: signingAlgorithm);
+    return base64Encode(signedBytes);
+  }
+
+  @override
+  bool verifySignatureString(
+      String data, String signature, SigningKeyType signingKeyType,
+      {AtSigningAlgorithm? signingAlgorithm}) {
+    return verifySignatureBytes(
+        utf8.encode(data) as Uint8List, base64Decode(signature), signingKeyType,
+        signingAlgorithm: signingAlgorithm);
   }
 }

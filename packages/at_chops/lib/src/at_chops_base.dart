@@ -37,14 +37,21 @@ abstract class AtChops {
       {AtEncryptionAlgorithm? encryptionAlgorithm});
 
   /// Sign the input [data] using [AtSigningPrivateKey] of [AtSigningKeyPair].
-  /// Refer to [DefaultSigningAlgo.sign] for default implementation of data signing.
-  Uint8List sign(Uint8List data, SigningKeyType signingKeyType,
+  /// Refer to [DefaultSigningAlgo.signBytes] for default implementation of data signing.
+  Uint8List signBytes(Uint8List data, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm});
 
   /// Verify signed data using [AtSigningPublicKey] of [AtSigningKeyPair].
-  /// Refer to [DefaultSigningAlgo.verify] for default implementation of data verification.
-  bool verify(
+  /// Refer to [DefaultSigningAlgo.verifySignatureBytes] for default implementation of data verification.
+  bool verifySignatureBytes(
       Uint8List data, Uint8List signature, SigningKeyType signingKeyType,
+      {AtSigningAlgorithm? signingAlgorithm});
+
+  String signString(String data, SigningKeyType signingKeyType,
+      {AtSigningAlgorithm? signingAlgorithm});
+
+  bool verifySignatureString(
+      String data, String signature, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm});
 
   /// Create a string hash of input [signedData] using a [hashingAlgorithm].

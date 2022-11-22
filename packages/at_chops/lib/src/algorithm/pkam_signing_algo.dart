@@ -5,7 +5,7 @@ import 'package:at_chops/src/key/impl/at_pkam_key_pair.dart';
 import 'package:at_chops/src/key/key_type.dart';
 import 'package:crypton/crypton.dart';
 
-/// Data signing and verification of Public Key Authentication Mechanism [Pkam]
+/// Data signing and verification for Public Key Authentication Mechanism - Pkam
 class PkamSigningAlgo implements AtSigningAlgorithm {
   final AtPkamKeyPair _pkamKeyPair;
   final SigningKeyType _signingKeyType;
