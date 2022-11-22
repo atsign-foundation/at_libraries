@@ -382,7 +382,7 @@ class AtLookupImpl implements AtLookUp {
 
   /// Generates digest using from verb response and [privateKey] and performs a PKAM authentication to
   /// secondary server. This method is executed for all verbs that requires authentication.
-  Future<bool> authenticatePKAM(String? privateKey) async {
+  Future<bool> authenticate(String? privateKey) async {
     if (privateKey == null) {
       throw UnAuthenticatedException('Private key not passed');
     }
@@ -425,7 +425,7 @@ class AtLookupImpl implements AtLookUp {
   /// Generates digest using from verb response and [secret] and performs a CRAM authentication to
   /// secondary server
   // ignore: non_constant_identifier_names
-  Future<bool> authenticateCRAM(var secret) async {
+  Future<bool> authenticate_cram(var secret) async {
     secret ??= cramSecret;
     if (secret == null) {
       throw UnAuthenticatedException('Cram secret not passed');
@@ -491,12 +491,12 @@ class AtLookupImpl implements AtLookUp {
 
       if (auth && _isAuthRequired()) {
         if (privateKey != null) {
-          await authenticatePKAM(privateKey);
+          await authenticate(privateKey);
         } else if (cramSecret != null) {
-          await authenticateCRAM(cramSecret);
+          await authenticate_cram(cramSecret);
         } else {
           throw UnAuthenticatedException(
-              'Unable to perform atLookup auth. Private key/cram secret is not set');
+              'Unable to perform atlookup auth. Private key/cram secret is not set');
         }
       }
       try {
