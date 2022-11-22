@@ -44,10 +44,6 @@ class AtLookupImpl implements AtLookUp {
   /// Represents the client configurations.
   late Map<String, dynamic> _clientConfig;
 
-  /// Ensures that a new request isn't sent until either response has been received from previous
-  /// request, or response wasn't received due to timeout or other exception
-  Mutex requestResponseMutex = Mutex();
-
   AtLookupImpl(String atSign, String rootDomain, int rootPort,
       {this.privateKey,
       this.cramSecret,
@@ -380,6 +376,8 @@ class AtLookupImpl implements AtLookUp {
     return await _process(atCommand, auth: auth);
   }
 
+  final Mutex _pkamAuthenticationMutex = Mutex();
+
   /// Generates digest using from verb response and [privateKey] and performs a PKAM authentication to
   /// secondary server. This method is executed for all verbs that requires authentication.
   Future<bool> authenticate(String? privateKey) async {
@@ -388,7 +386,7 @@ class AtLookupImpl implements AtLookUp {
     }
     await createConnection();
     try {
-      await requestResponseMutex.acquire();
+      await _pkamAuthenticationMutex.acquire();
       if (!_connection!.getMetaData()!.isAuthenticated) {
         await _sendCommand((FromVerbBuilder()
               ..atSign = _currentAtSign
@@ -418,9 +416,11 @@ class AtLookupImpl implements AtLookUp {
       }
       return _connection!.getMetaData()!.isAuthenticated;
     } finally {
-      requestResponseMutex.release();
+      _pkamAuthenticationMutex.release();
     }
   }
+
+  final Mutex _cramAuthenticationMutex = Mutex();
 
   /// Generates digest using from verb response and [secret] and performs a CRAM authentication to
   /// secondary server
@@ -432,7 +432,7 @@ class AtLookupImpl implements AtLookUp {
     }
     await createConnection();
     try {
-      await requestResponseMutex.acquire();
+      await _cramAuthenticationMutex.acquire();
       if (!_connection!.getMetaData()!.isAuthenticated) {
         await _sendCommand((FromVerbBuilder()
               ..atSign = _currentAtSign
@@ -458,7 +458,7 @@ class AtLookupImpl implements AtLookUp {
       }
       return _connection!.getMetaData()!.isAuthenticated;
     } finally {
-      requestResponseMutex.release();
+      _cramAuthenticationMutex.release();
     }
   }
 
@@ -484,6 +484,10 @@ class AtLookupImpl implements AtLookUp {
       auth: true,
     );
   }
+
+  /// Ensures that a new request isn't sent until either response has been received from previous
+  /// request, or response wasn't received due to timeout or other exception
+  Mutex requestResponseMutex = Mutex();
 
   Future<String> _process(String command, {bool auth = false}) async {
     try {
