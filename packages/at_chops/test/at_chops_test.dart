@@ -91,30 +91,52 @@ void main() {
       final atPkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
       final atChopsKeys = AtChopsKeys.create(null, atPkamKeyPair);
       final atChops = AtChopsImpl(atChopsKeys);
-      final signature = atChops.signBytes(Uint8List.fromList(data.codeUnits), SigningKeyType.pkam_sha_256);
-      final result =
-          atChops.verifySignatureBytes(Uint8List.fromList(data.codeUnits), signature, SigningKeyType.pkam_sha_256);
+      final signature = atChops.signBytes(
+          Uint8List.fromList(data.codeUnits), SigningKeyType.pkam_sha_256);
+      final result = atChops.verifySignatureBytes(
+          Uint8List.fromList(data.codeUnits),
+          signature,
+          SigningKeyType.pkam_sha_256);
       expect(result, true);
     });
-    // test('Test data signing and verification - emoji char', () {
-    //   String data = 'Hello World🛠';
-    //   final atChops = AtChopsImpl();
-    //   final atSigningKeyPair = AtChopsUtil.generateRSAKeyPair();
-    //   final algo = DefaultSigningAlgo(atSigningKeyPair);
-    //   final signature = atChops.sign(Uint8List.fromList(data.codeUnits), algo);
-    //   final result =
-    //       atChops.verify(Uint8List.fromList(data.codeUnits), signature, algo);
-    //   expect(result, true);
-    // });
-    // test('Test data signing and verification - special char', () {
-    //   String data = 'Hello\' World!*``';
-    //   final atChops = AtChopsImpl();
-    //   final atSigningKeyPair = AtChopsUtil.generateRSAKeyPair();
-    //   final algo = DefaultSigningAlgo(atSigningKeyPair);
-    //   final signature = atChops.sign(Uint8List.fromList(data.codeUnits), algo);
-    //   final result =
-    //       atChops.verify(Uint8List.fromList(data.codeUnits), signature, algo);
-    //   expect(result, true);
-    // });
+    test('Test data signing and verification - emoji char', () {
+      String data = 'Hello World🛠';
+      final atEncryptionKeyPair = AtChopsUtil.generateAtEncryptionKeyPair();
+      final atChopsKeys = AtChopsKeys.create(atEncryptionKeyPair, null);
+      final atChops = AtChopsImpl(atChopsKeys);
+      final signature = atChops.signBytes(
+          Uint8List.fromList(data.codeUnits), SigningKeyType.signing_sha_256);
+      final result = atChops.verifySignatureBytes(
+          Uint8List.fromList(data.codeUnits),
+          signature,
+          SigningKeyType.signing_sha_256);
+      expect(result, true);
+    });
+
+    test('Test data signing and verification - special char', () {
+      String data = 'Hello\' World!*``';
+      final atEncryptionKeyPair = AtChopsUtil.generateAtEncryptionKeyPair();
+      final atChopsKeys = AtChopsKeys.create(atEncryptionKeyPair, null);
+      final atChops = AtChopsImpl(atChopsKeys);
+      final signature = atChops.signBytes(
+          Uint8List.fromList(data.codeUnits), SigningKeyType.signing_sha_256);
+      final result = atChops.verifySignatureBytes(
+          Uint8List.fromList(data.codeUnits),
+          signature,
+          SigningKeyType.signing_sha_256);
+      expect(result, true);
+    });
+
+    test('Test data signing and verification - string data type', () {
+      String data = 'Hello World🛠';
+      final atEncryptionKeyPair = AtChopsUtil.generateAtEncryptionKeyPair();
+      final atChopsKeys = AtChopsKeys.create(atEncryptionKeyPair, null);
+      final atChops = AtChopsImpl(atChopsKeys);
+      final signature =
+          atChops.signString(data, SigningKeyType.signing_sha_256);
+      final result = atChops.verifySignatureString(
+          data, signature, SigningKeyType.signing_sha_256);
+      expect(result, true);
+    });
   });
 }

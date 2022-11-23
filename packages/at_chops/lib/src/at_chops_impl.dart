@@ -3,8 +3,9 @@ import 'dart:typed_data';
 
 import 'package:at_chops/src/algorithm/aes_encryption_algo.dart';
 import 'package:at_chops/src/algorithm/at_algorithm.dart';
+import 'package:at_chops/src/algorithm/default_signing_algo.dart';
 import 'package:at_chops/src/algorithm/pkam_signing_algo.dart';
-import 'package:at_chops/src/algorithm/rsa_encryption_algo.dart';
+import 'package:at_chops/src/algorithm/default_encryption_algo.dart';
 import 'package:at_chops/src/at_chops_base.dart';
 import 'package:at_chops/src/key/impl/aes_key.dart';
 import 'package:at_chops/src/key/impl/at_chops_keys.dart';
@@ -73,7 +74,7 @@ class AtChopsImpl extends AtChops {
       EncryptionKeyType encryptionKeyType) {
     switch (encryptionKeyType) {
       case EncryptionKeyType.rsa_2048:
-        return RSAEncryptionAlgo(
+        return DefaultEncryptionAlgo(
             atChopsKeys.atEncryptionKeyPair!, encryptionKeyType);
       case EncryptionKeyType.rsa_4096:
         // TODO: Handle this case.
@@ -97,8 +98,8 @@ class AtChopsImpl extends AtChops {
       case SigningKeyType.pkam_sha_256:
         return PkamSigningAlgo(atChopsKeys.atPkamKeyPair!, signingKeyType);
       case SigningKeyType.signing_sha_256:
-        // TODO: Handle this case.
-        break;
+        return DefaultSigningAlgo(
+            atChopsKeys.atEncryptionKeyPair!, signingKeyType);
       default:
         throw Exception(
             'Cannot find signing algorithm for signing key type $signingKeyType');
