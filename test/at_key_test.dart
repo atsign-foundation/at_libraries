@@ -103,6 +103,108 @@ void main() {
     });
   });
 
+  group(
+      'A group of positive test to construct a atKey with uppercase characters',
+      () {
+    test('toString and fromString with namespace', () {
+      var fromAtsign = '@aliCe';
+      var toAtsign = '@boB';
+      var metaData = Metadata()
+        ..isPublic = false
+        ..isEncrypted = true
+        ..namespaceAware = true
+        ..ttr = -1
+        ..ttl = 10000;
+
+      var inKey = AtKey()
+        ..key = 'foo.Bar'
+        ..sharedBy = fromAtsign
+        ..sharedWith = toAtsign
+        ..namespace = 'attAlk'
+        ..metadata = metaData;
+
+      expect(inKey.toString(), "@bob:foo.bar.attalk@alice");
+
+      var outKey = AtKey.fromString(inKey.toString());
+      expect(outKey.toString(), inKey.toString());
+      expect(outKey.key, 'foo.bar');
+      expect(outKey.namespace, 'attalk');
+      expect(outKey.metadata!.isPublic, false);
+      expect(outKey.isLocal, false);
+    });
+
+    test('Test to verify a public key', () {
+      var testKey = 'public:pHone@bOb';
+      var atKey = AtKey.fromString(testKey);
+      expect(atKey.key, 'phone');
+      expect(atKey.sharedBy, '@bob');
+      expect(atKey.sharedWith, null);
+      expect(atKey.isLocal, false);
+      expect(atKey.metadata!.isPublic, true);
+      expect(atKey.metadata!.namespaceAware, false);
+      expect(atKey.toString(), testKey.toLowerCase());
+    });
+
+    test('Test to verify protected key', () {
+      var testKey = '@aliCe:pHone@boB';
+      var atKey = AtKey.fromString(testKey);
+      expect(atKey.key, 'phone');
+      expect(atKey.sharedBy, '@bob');
+      expect(atKey.sharedWith, '@alice');
+      expect(atKey.metadata!.isPublic, false);
+      expect(atKey.isLocal, false);
+      expect(atKey.toString(), testKey.toLowerCase());
+    });
+
+    test('Test to verify private key', () {
+      var testKey = 'phoNe@bOb';
+      var atKey = AtKey.fromString(testKey);
+      expect(atKey.key, 'phone');
+      expect(atKey.sharedBy, '@bob');
+      expect(atKey.sharedWith, null);
+      expect(atKey.metadata!.isPublic, false);
+      expect(atKey.isLocal, false);
+      expect(atKey.toString(), testKey.toLowerCase());
+    });
+
+    test('Test to verify cached key', () {
+      var testKey = 'cached:@aliCe:pHone@Bob';
+      var atKey = AtKey.fromString(testKey);
+      expect(atKey.key, 'phone');
+      expect(atKey.sharedBy, '@bob');
+      expect(atKey.sharedWith, '@alice');
+      expect(atKey.metadata!.isCached, true);
+      expect(atKey.metadata!.namespaceAware, false);
+      expect(atKey.metadata!.isPublic, false);
+      expect(atKey.isLocal, false);
+      expect(atKey.toString(), testKey.toLowerCase());
+    });
+
+    test('Test to verify pkam private key', () {
+      var atKey = AtKey.fromString(AT_PKAM_PRIVATE_KEY);
+      expect(atKey.key, AT_PKAM_PRIVATE_KEY);
+      expect(atKey.toString(), AT_PKAM_PRIVATE_KEY);
+    });
+
+    test('Test to verify pkam private key', () {
+      var atKey = AtKey.fromString(AT_PKAM_PUBLIC_KEY);
+      expect(atKey.key, AT_PKAM_PUBLIC_KEY);
+      expect(atKey.toString(), AT_PKAM_PUBLIC_KEY);
+    });
+
+    test('Test to verify key with namespace', () {
+      var testKey = '@alice:phone.buzz@bob';
+      var atKey = AtKey.fromString(testKey);
+      expect(atKey.key, 'phone');
+      expect(atKey.sharedWith, '@alice');
+      expect(atKey.sharedBy, '@bob');
+      expect(atKey.metadata!.isPublic, false);
+      expect(atKey.isLocal, false);
+      expect(atKey.metadata!.namespaceAware, true);
+      expect(atKey.toString(), testKey);
+    });
+  });
+
   group('A group a negative test cases', () {
     test('Test to verify invalid syntax exception is thrown', () {
       var key = 'phone.buzz';
