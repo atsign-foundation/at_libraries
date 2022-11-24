@@ -92,7 +92,7 @@ class RegisterUtil {
     if (response.statusCode == 200) {
       Map<String, dynamic> jsonDecoded = jsonDecode(response.body);
       Map<String, dynamic> dataFromResponse = {};
-      if(jsonDecoded.containsKey('data')) {
+      if (jsonDecoded.containsKey('data')) {
         dataFromResponse.addAll(jsonDecoded['data']);
       }
       if ((jsonDecoded.containsKey('message') &&
@@ -101,7 +101,8 @@ class RegisterUtil {
                   .contains('verified')) &&
           jsonDecoded.containsKey('cramkey')) {
         return jsonDecoded['cramkey'];
-      } else if (jsonDecoded.containsKey('data') && dataFromResponse.containsKey('newAtsign')) {
+      } else if (jsonDecoded.containsKey('data') &&
+          dataFromResponse.containsKey('newAtsign')) {
         return 'follow-up';
       } else if (jsonDecoded.containsKey('message') &&
           jsonDecoded['message'] ==
@@ -110,6 +111,10 @@ class RegisterUtil {
       } else if (jsonDecoded.containsKey('message') &&
           (jsonDecoded['message'] ==
               'Oops! You already have the maximum number of free atSigns. Please select one of your existing atSigns.')) {
+        stdout.writeln('[Unable to proceed] This email address already has 10 free atSigns associated with it.\n'
+            'To register a new atSign to this email address, please log into the dashboard \'my.atsign.com/login\'\n'
+            ' and remove at least 1 atSign from your account and then try again.\n'
+            'Alternatively, you can retry this process with a different email address.\n');
         throw at_client.AtClientException.message(
             "Maximum free atsign limit reached");
       } else {
@@ -149,8 +154,36 @@ class RegisterUtil {
         'Content-Type': RegisterApiConstants.contentType,
       },
     );
-
-    // print('postRequest: ${response.body}');
     return response;
+  }
+
+  bool validateEmail(String email) {
+    return RegExp(
+            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+        .hasMatch(email);
+  }
+
+  bool validateVerificationCode(String otp) {
+    if (otp.length == 4) {
+      return RegExp(r"^[a-zA-z0-9]").hasMatch(otp);
+    }
+    return false;
+  }
+
+  /// Method to get verification code from user input
+  /// validates code locally and retries taking user input if invalid
+  /// Returns only when the user has provided a 4-length String only containing numbers and alphabets
+  String getVerificationCodeFromUser(){
+    String? otp;
+    stdout.writeln('[Action Required] Enter your verification code:');
+    otp = stdin.readLineSync()!.toUpperCase();
+    while(!validateVerificationCode(otp!)){
+      stderr.writeln('\n[Unable to proceed] The verification code you entered is invalid.'
+          '\nPlease check your email for a 4-character verification code.'
+          '\nIf you cannot see the code in your inbox, please check your spam/junk/promotions folders.\n'
+          '\n[Action Required] Enter you verification code:');
+      otp = stdin.readLineSync()!.toUpperCase();
+    }
+    return otp;
   }
 }
