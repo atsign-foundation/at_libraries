@@ -104,8 +104,30 @@ void main() {
   });
 
   group(
-      'A group of positive test to construct a atKey with uppercase characters',
+      'A group of positive test to construct a atKey with uppercase characters to assert their conversion to lowercase',
       () {
+    test('Assert key conversion to lowercase with AtKey.enforceLowercase()',
+        () {
+      var fromAtsign = '@aliCe';
+      var toAtsign = '@boB';
+      var metaData = Metadata()..dataSignature = 'dfgDSFFkhkjh987686567464hbjh';
+
+      AtKey atKey = AtKey()
+        ..key = 'foo.Bar'
+        ..sharedBy = fromAtsign
+        ..sharedWith = toAtsign
+        ..namespace = 'attAlk'
+        ..metadata = metaData;
+
+      atKey.enforceLowercase();
+      //assert that all compnents of the AtKey are converted to lowercase
+      expect(atKey.key, 'foo.bar');
+      expect(atKey.namespace, 'attalk');
+      expect(atKey.sharedBy, '@alice');
+      expect(atKey.sharedWith, '@bob');
+      //assert that dataSignature is not converted to lowercase
+      expect(atKey.metadata?.dataSignature, metaData.dataSignature);
+    });
     test('toString and fromString with namespace', () {
       var fromAtsign = '@aliCe';
       var toAtsign = '@boB';
@@ -223,8 +245,10 @@ void main() {
                   ..sharedBy = '@bob'
                   ..sharedWith = '@alice'
               },
-          throwsA(predicate(
-              (dynamic e) => e is InvalidAtKeyException && e.message == 'isLocal or isPublic cannot be true when sharedWith is set')));
+          throwsA(predicate((dynamic e) =>
+              e is InvalidAtKeyException &&
+              e.message ==
+                  'isLocal or isPublic cannot be true when sharedWith is set')));
     });
 
     test('Test cannot set sharedWith if isLocal is true', () {
@@ -235,8 +259,10 @@ void main() {
                   ..sharedBy = '@bob'
                   ..sharedWith = '@alice'
               },
-          throwsA(predicate(
-              (dynamic e) => e is InvalidAtKeyException && e.message == 'isLocal or isPublic cannot be true when sharedWith is set')));
+          throwsA(predicate((dynamic e) =>
+              e is InvalidAtKeyException &&
+              e.message ==
+                  'isLocal or isPublic cannot be true when sharedWith is set')));
     });
 
     test('Test cannot set isLocal to true if sharedWith is non-null', () {
@@ -247,8 +273,10 @@ void main() {
                   ..sharedWith = '@alice'
                   ..isLocal = true
               },
-          throwsA(predicate(
-              (dynamic e) => e is InvalidAtKeyException && e.message == 'sharedWith must be null when isLocal is set to true')));
+          throwsA(predicate((dynamic e) =>
+              e is InvalidAtKeyException &&
+              e.message ==
+                  'sharedWith must be null when isLocal is set to true')));
     });
   });
 

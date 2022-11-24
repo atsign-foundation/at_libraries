@@ -80,7 +80,7 @@ class AtKey {
     if (key.isNullOrEmpty) {
       throw InvalidAtKeyException('Key cannot be null or empty');
     }
-    enforceLowecase();
+    enforceLowercase();
     // If metadata.isPublic is true and metadata.isCached is true,
     // return cached public key
     if (key!.startsWith('cached:public:') ||
@@ -230,13 +230,13 @@ class AtKey {
         key.startsWith(AT_PKAM_PUBLIC_KEY)) {
       atKey.key = key;
       atKey.metadata = metaData;
-      atKey.enforceLowecase();
+      atKey.enforceLowercase();
       return atKey;
     } else if (key.startsWith(AT_ENCRYPTION_PRIVATE_KEY)) {
       atKey.key = key.split('@')[0];
       atKey._sharedBy = '@${key.split('@')[1]}';
       atKey.metadata = metaData;
-      atKey.enforceLowecase;
+      atKey.enforceLowercase;
       return atKey;
     }
     //If key does not contain '@'. or key has space, it is not a valid key.
@@ -291,7 +291,7 @@ class AtKey {
       metaData.namespaceAware = false;
     }
     atKey.metadata = metaData;
-    atKey.enforceLowecase();
+    atKey.enforceLowercase();
     return atKey;
   }
 
@@ -302,7 +302,7 @@ class AtKey {
   }
 
   ///converts the AtKey to lowercase
-  void enforceLowecase() {
+  void enforceLowercase() {
     key = key?.toLowerCase();
     _sharedBy = _sharedBy?.toLowerCase();
     _sharedWith = _sharedWith?.toLowerCase();
