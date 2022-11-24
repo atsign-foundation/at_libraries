@@ -48,16 +48,14 @@ class AtLookupImpl implements AtLookUp {
   late Map<String, dynamic> _clientConfig;
 
   AtLookupImpl(String atSign, String rootDomain, int rootPort,
-      {String? privateKey,
-      String? cramSecret,
+      {this.privateKey,
+      this.cramSecret,
       SecondaryAddressFinder? secondaryAddressFinder,
       SecureSocketConfig? secureSocketConfig,
       Map<String, dynamic>? clientConfig}) {
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
-    this.privateKey = privateKey;
-    this.cramSecret = cramSecret;
     this.secondaryAddressFinder = secondaryAddressFinder ??
         CacheableSecondaryAddressFinder(rootDomain, rootPort);
     _secureSocketConfig = secureSocketConfig ?? SecureSocketConfig();
@@ -230,6 +228,7 @@ class AtLookupImpl implements AtLookUp {
       //3. listen to server response
       messageListener = OutboundMessageListener(_connection!);
       messageListener.listen();
+      logger.info('New connection created OK');
     }
   }
 
@@ -476,7 +475,7 @@ class AtLookupImpl implements AtLookUp {
               ..atSign = _currentAtSign
               ..clientConfig = _clientConfig)
             .buildCommand());
-        var fromResponse = await messageListener.read();
+        var fromResponse = await messageListener.read(transientWaitTimeMillis: 4000, maxWaitMilliSeconds: 10000);
         logger.info('from result:$fromResponse');
         if (fromResponse.isEmpty) {
           return false;
@@ -486,7 +485,7 @@ class AtLookupImpl implements AtLookUp {
         var bytes = utf8.encode(digestInput);
         var digest = sha512.convert(bytes);
         await _sendCommand('cram:$digest\n');
-        var cramResponse = await messageListener.read();
+        var cramResponse = await messageListener.read(transientWaitTimeMillis: 4000, maxWaitMilliSeconds: 10000);
         if (cramResponse == 'data:success') {
           logger.info('auth success');
           _connection!.getMetaData()!.isAuthenticated = true;
@@ -523,6 +522,8 @@ class AtLookupImpl implements AtLookUp {
     );
   }
 
+  /// Ensures that a new request isn't sent until either response has been received from previous
+  /// request, or response wasn't received due to timeout or other exception
   Mutex requestResponseMutex = Mutex();
 
   Future<String> _process(String command, {bool auth = false}) async {
