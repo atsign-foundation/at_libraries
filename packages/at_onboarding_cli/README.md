@@ -86,6 +86,7 @@ AtOnboardingService atOnboardingService = AtOnboardingServiceImpl('@alice', atOn
 atOnboardingService.onboard();
 AtLookup? atLookup = atOnboardingService.getAtLookup();
 ```
+Please refer to [example](https://pub.dev/packages/at_onboarding_cli/example) to better understand the usage.
 
 ### activate_cli:
 A simple tool to onboard(activate) an atSign through command-line arguments
@@ -116,7 +117,6 @@ dart run lib/src/register_cli/register.dart -e email@email.com -n staging (or) p
    5) register_cli fetches the cramkey and the automatically calls activate_cli to activate the fetched atsign
    6) You can find your .atKeysFile in directory at_onboarding_cli/keys
 
-Please refer to [example](https://pub.dev/packages/at_onboarding_cli/example) to better understand the usage.
 ## Open source usage and contributions
 
 This is freely licensed open source code, so feel free to use it as is, suggest changes or enhancements or create your
