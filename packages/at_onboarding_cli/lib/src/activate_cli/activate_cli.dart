@@ -2,9 +2,12 @@ import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:args/args.dart';
 import 'dart:io';
 
+import 'package:at_utils/at_logger.dart';
+
 Future<void> main(List<String> arguments) async {
   //defaults
   String rootServer = 'root.atsign.org';
+  AtSignLogger.root_level = 'severe';
 
   //get atSign and CRAM key from args
   final parser = ArgParser()
@@ -34,6 +37,7 @@ Future<void> main(List<String> arguments) async {
   stdout.writeln(
       '[Information] Root server is ' + argResults['rootServer'] + '\n');
 
+
   //onboarding preference builder can be used to set onboardingService parameters
   AtOnboardingPreference atOnboardingPreference = AtOnboardingPreference()
     ..rootDomain = argResults['rootServer']
@@ -52,3 +56,4 @@ Future<void> main(List<String> arguments) async {
 
   stdout.writeln('-------Atsign activation complete-------');
 }
+

@@ -25,6 +25,7 @@ class Register {
           abbr: 'e',
           help: 'The email address you would like to assign your atSign to')..addOption(
           'environment',
+
           abbr: 'n',
           defaultsTo: 'production',
           help: 'use production/staging env')
@@ -73,6 +74,7 @@ class Register {
     //call activate_cli with the cramkey acquired from registration process
     stdout
         .writeln('[Information] Activating you atsign: @${params['atsign']}\n');
+
     activate_cli.main([
       '-a',
       params['atsign']!,
