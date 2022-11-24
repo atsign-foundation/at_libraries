@@ -37,7 +37,6 @@ Future<void> main(List<String> arguments) async {
   stdout.writeln(
       '[Information] Root server is ' + argResults['rootServer'] + '\n');
 
-
   //onboarding preference builder can be used to set onboardingService parameters
   AtOnboardingPreference atOnboardingPreference = AtOnboardingPreference()
     ..rootDomain = argResults['rootServer']
