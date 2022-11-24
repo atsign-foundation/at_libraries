@@ -49,7 +49,8 @@ class AtKey {
 
   set sharedWith(String? sharedWithAtSign) {
     assertStartsWithAtIfNotEmpty(sharedWithAtSign);
-    if (sharedWithAtSign.isNotNullOrEmpty && (isLocal == true || metadata?.isPublic == true)) {
+    if (sharedWithAtSign.isNotNullOrEmpty &&
+        (isLocal == true || metadata?.isPublic == true)) {
       throw InvalidAtKeyException(
           'isLocal or isPublic cannot be true when sharedWith is set');
     }
@@ -294,6 +295,14 @@ class AtKey {
   /// Set enforceNamespace=true for strict namespace validation in the key.
   static KeyType getKeyType(String key, {bool enforceNameSpace = false}) {
     return RegexUtil.keyType(key, enforceNameSpace);
+  }
+
+  ///converts the AtKey to lowercase
+  void lowercase() {
+    key = key?.toLowerCase();
+    _sharedBy = _sharedBy?.toLowerCase();
+    _sharedWith = _sharedWith?.toLowerCase();
+    namespace = namespace?.toLowerCase();
   }
 }
 
