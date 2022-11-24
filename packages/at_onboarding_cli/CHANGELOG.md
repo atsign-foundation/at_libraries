@@ -1,6 +1,7 @@
 ## 1.2.1
 - Introducing register_cli that fetches a free atsign and registers it to provided email
 - fix: check to ensure secondary is created before trying to activate it
+- Introducing binaries from register_cli and activate_cli
 ## 1.1.2
 - Introducing activate_cli, a simple tool to activate atSigns from command-line
 - Introducing a close() method to safely close the OnboardingService object
