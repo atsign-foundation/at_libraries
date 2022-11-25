@@ -10,6 +10,7 @@ import 'package:at_chops/src/at_chops_base.dart';
 import 'package:at_chops/src/key/impl/aes_key.dart';
 import 'package:at_chops/src/key/impl/at_chops_keys.dart';
 import 'package:at_chops/src/key/key_type.dart';
+import 'package:at_commons/at_commons.dart';
 
 class AtChopsImpl extends AtChops {
   AtChopsImpl(AtChopsKeys atChopsKeys) : super(atChopsKeys);
@@ -17,8 +18,16 @@ class AtChopsImpl extends AtChops {
   @override
   Uint8List decryptBytes(Uint8List data, EncryptionKeyType encryptionKeyType,
       {AtEncryptionAlgorithm? encryptionAlgorithm}) {
-    encryptionAlgorithm ??= _getEncryptionAlgorithm(encryptionKeyType)!;
-    return encryptionAlgorithm.decrypt(data);
+    try {
+      encryptionAlgorithm ??= _getEncryptionAlgorithm(encryptionKeyType)!;
+      return encryptionAlgorithm.decrypt(data);
+    } on Exception catch (e) {
+      throw AtException(e.toString())
+        ..stack(AtChainedException(
+            Intent.decryptData,
+            ExceptionScenario.decryptionFailed,
+            'Failed to decrypt ${e.toString()}'));
+    }
   }
 
   /// Decode the encrypted string to base64.
@@ -26,16 +35,28 @@ class AtChopsImpl extends AtChops {
   @override
   String decryptString(String data, EncryptionKeyType encryptionKeyType,
       {AtEncryptionAlgorithm? encryptionAlgorithm}) {
-    final decryptedBytes = decryptBytes(base64Decode(data), encryptionKeyType,
-        encryptionAlgorithm: encryptionAlgorithm);
-    return utf8.decode(decryptedBytes);
+    try {
+      final decryptedBytes = decryptBytes(base64Decode(data), encryptionKeyType,
+          encryptionAlgorithm: encryptionAlgorithm);
+      return utf8.decode(decryptedBytes);
+    } on AtException {
+      rethrow;
+    }
   }
 
   @override
   Uint8List encryptBytes(Uint8List data, EncryptionKeyType encryptionKeyType,
       {AtEncryptionAlgorithm? encryptionAlgorithm}) {
-    encryptionAlgorithm ??= _getEncryptionAlgorithm(encryptionKeyType)!;
-    return encryptionAlgorithm.encrypt(data);
+    try {
+      encryptionAlgorithm ??= _getEncryptionAlgorithm(encryptionKeyType)!;
+      return encryptionAlgorithm.encrypt(data);
+    } on Exception catch (e) {
+      throw AtException(e.toString())
+        ..stack(AtChainedException(
+            Intent.decryptData,
+            ExceptionScenario.decryptionFailed,
+            'Failed to encrypt ${e.toString()}'));
+    }
   }
 
   /// Encode the input string to utf8 to support emoji chars.
@@ -43,11 +64,15 @@ class AtChopsImpl extends AtChops {
   @override
   String encryptString(String data, EncryptionKeyType encryptionKeyType,
       {AtEncryptionAlgorithm? encryptionAlgorithm}) {
-    final utfEncodedData = utf8.encode(data);
-    final encryptedBytes = encryptBytes(
-        Uint8List.fromList(utfEncodedData), encryptionKeyType,
-        encryptionAlgorithm: encryptionAlgorithm);
-    return base64.encode(encryptedBytes);
+    try {
+      final utfEncodedData = utf8.encode(data);
+      final encryptedBytes = encryptBytes(
+          Uint8List.fromList(utfEncodedData), encryptionKeyType,
+          encryptionAlgorithm: encryptionAlgorithm);
+      return base64.encode(encryptedBytes);
+    } on AtException {
+      rethrow;
+    }
   }
 
   @override
