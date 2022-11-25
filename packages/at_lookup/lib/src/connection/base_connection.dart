@@ -24,13 +24,14 @@ abstract class BaseConnection extends AtConnection {
   Future<void> close() async {
     try {
       _socket.destroy();
-      getMetaData()!.isClosed = true;
     } on Exception {
       getMetaData()!.isStale = true;
       // Ignore exception on a connection close
     } on Error {
       getMetaData()!.isStale = true;
       // Ignore error on a connection close
+    } finally {
+      getMetaData()!.isClosed = true;
     }
   }
 

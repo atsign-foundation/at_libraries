@@ -1,3 +1,6 @@
+## 3.0.33
+- fix: Removed race condition (related to management of outbound connection state after timeouts) which
+could in very rare circumstances cause unnecessary long delays
 ## 3.0.32
 - feat: Upgrade at_commons for notifyFetch verb
 ## 3.0.31
