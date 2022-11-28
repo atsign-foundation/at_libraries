@@ -1,6 +1,6 @@
-import 'package:at_chops/at_chops.dart';
 import 'package:at_chops/src/algorithm/at_iv.dart';
 import 'package:at_chops/src/key/impl/at_encryption_key_pair.dart';
+import 'package:at_chops/src/key/impl/at_pkam_key_pair.dart';
 import 'package:crypton/crypton.dart';
 import 'package:encrypt/encrypt.dart';
 

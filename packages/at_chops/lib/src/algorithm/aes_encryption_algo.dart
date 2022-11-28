@@ -6,7 +6,7 @@ import 'package:at_chops/src/key/impl/aes_key.dart';
 import 'package:encrypt/encrypt.dart';
 
 class AESEncryptionAlgo implements AtEncryptionAlgorithm {
-  late AESKey _aesKey;
+  final AESKey _aesKey;
   AESEncryptionAlgo(this._aesKey);
 
   @override

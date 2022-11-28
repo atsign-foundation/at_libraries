@@ -3,7 +3,8 @@ import 'package:encrypt/encrypt.dart';
 
 /// Represents an AES key for symmetric encryption.
 class AESKey extends SymmetricKey {
-  late String _aesKey;
+  final String _aesKey;
+  @override
   String get key => _aesKey;
   AESKey(this._aesKey) : super(_aesKey);
 

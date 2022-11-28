@@ -11,9 +11,9 @@ void main() {
       final atChops = AtChopsImpl(atChopsKeys);
       final data = 'Hello World';
       final encryptedString =
-          atChops.encryptString(data, EncryptionKeyType.rsa_2048);
+          atChops.encryptString(data, EncryptionKeyType.rsa2048);
       final decryptedString =
-          atChops.decryptString(encryptedString, EncryptionKeyType.rsa_2048);
+          atChops.decryptString(encryptedString, EncryptionKeyType.rsa2048);
       expect(decryptedString, data);
     });
     //   test('Test symmetric encrypt/decrypt bytes with initialisation vector', () {
@@ -92,11 +92,11 @@ void main() {
       final atChopsKeys = AtChopsKeys.create(null, atPkamKeyPair);
       final atChops = AtChopsImpl(atChopsKeys);
       final signature = atChops.signBytes(
-          Uint8List.fromList(data.codeUnits), SigningKeyType.pkam_sha_256);
+          Uint8List.fromList(data.codeUnits), SigningKeyType.pkamSha256);
       final result = atChops.verifySignatureBytes(
           Uint8List.fromList(data.codeUnits),
           signature,
-          SigningKeyType.pkam_sha_256);
+          SigningKeyType.pkamSha256);
       expect(result, true);
     });
     test('Test data signing and verification - emoji char', () {
@@ -105,11 +105,11 @@ void main() {
       final atChopsKeys = AtChopsKeys.create(atEncryptionKeyPair, null);
       final atChops = AtChopsImpl(atChopsKeys);
       final signature = atChops.signBytes(
-          Uint8List.fromList(data.codeUnits), SigningKeyType.signing_sha_256);
+          Uint8List.fromList(data.codeUnits), SigningKeyType.signingSha256);
       final result = atChops.verifySignatureBytes(
           Uint8List.fromList(data.codeUnits),
           signature,
-          SigningKeyType.signing_sha_256);
+          SigningKeyType.signingSha256);
       expect(result, true);
     });
 
@@ -119,11 +119,11 @@ void main() {
       final atChopsKeys = AtChopsKeys.create(atEncryptionKeyPair, null);
       final atChops = AtChopsImpl(atChopsKeys);
       final signature = atChops.signBytes(
-          Uint8List.fromList(data.codeUnits), SigningKeyType.signing_sha_256);
+          Uint8List.fromList(data.codeUnits), SigningKeyType.signingSha256);
       final result = atChops.verifySignatureBytes(
           Uint8List.fromList(data.codeUnits),
           signature,
-          SigningKeyType.signing_sha_256);
+          SigningKeyType.signingSha256);
       expect(result, true);
     });
 
@@ -133,9 +133,9 @@ void main() {
       final atChopsKeys = AtChopsKeys.create(atEncryptionKeyPair, null);
       final atChops = AtChopsImpl(atChopsKeys);
       final signature =
-          atChops.signString(data, SigningKeyType.signing_sha_256);
+          atChops.signString(data, SigningKeyType.signingSha256);
       final result = atChops.verifySignatureString(
-          data, signature, SigningKeyType.signing_sha_256);
+          data, signature, SigningKeyType.signingSha256);
       expect(result, true);
     });
   });

@@ -98,19 +98,19 @@ class AtChopsImpl extends AtChops {
   AtEncryptionAlgorithm? _getEncryptionAlgorithm(
       EncryptionKeyType encryptionKeyType) {
     switch (encryptionKeyType) {
-      case EncryptionKeyType.rsa_2048:
+      case EncryptionKeyType.rsa2048:
         return DefaultEncryptionAlgo(
             atChopsKeys.atEncryptionKeyPair!, encryptionKeyType);
-      case EncryptionKeyType.rsa_4096:
+      case EncryptionKeyType.rsa4096:
         // TODO: Handle this case.
         break;
       case EncryptionKeyType.ecc:
         // TODO: Handle this case.
         break;
-      case EncryptionKeyType.aes_128:
+      case EncryptionKeyType.aes128:
         // TODO: Handle this case.
         break;
-      case EncryptionKeyType.aes_256:
+      case EncryptionKeyType.aes256:
         return AESEncryptionAlgo(atChopsKeys.symmetricKey! as AESKey);
       default:
         throw Exception(
@@ -120,9 +120,9 @@ class AtChopsImpl extends AtChops {
 
   AtSigningAlgorithm? _getSigningAlgorithm(SigningKeyType signingKeyType) {
     switch (signingKeyType) {
-      case SigningKeyType.pkam_sha_256:
+      case SigningKeyType.pkamSha256:
         return PkamSigningAlgo(atChopsKeys.atPkamKeyPair!, signingKeyType);
-      case SigningKeyType.signing_sha_256:
+      case SigningKeyType.signingSha256:
         return DefaultSigningAlgo(
             atChopsKeys.atEncryptionKeyPair!, signingKeyType);
       default:
