@@ -9,6 +9,7 @@ import 'package:at_chops/src/algorithm/default_encryption_algo.dart';
 import 'package:at_chops/src/at_chops_base.dart';
 import 'package:at_chops/src/key/impl/aes_key.dart';
 import 'package:at_chops/src/key/impl/at_chops_keys.dart';
+import 'package:at_chops/src/key/impl/at_encryption_key_pair.dart';
 import 'package:at_chops/src/key/key_type.dart';
 import 'package:at_commons/at_commons.dart';
 
@@ -17,9 +18,10 @@ class AtChopsImpl extends AtChops {
 
   @override
   Uint8List decryptBytes(Uint8List data, EncryptionKeyType encryptionKeyType,
-      {AtEncryptionAlgorithm? encryptionAlgorithm}) {
+      {AtEncryptionAlgorithm? encryptionAlgorithm, String? keyName}) {
     try {
-      encryptionAlgorithm ??= _getEncryptionAlgorithm(encryptionKeyType)!;
+      encryptionAlgorithm ??=
+          _getEncryptionAlgorithm(encryptionKeyType, keyName)!;
       return encryptionAlgorithm.decrypt(data);
     } on Exception catch (e) {
       throw AtException(e.toString())
@@ -34,7 +36,7 @@ class AtChopsImpl extends AtChops {
   /// Decode the encrypted byte to utf8 to support emoji chars.
   @override
   String decryptString(String data, EncryptionKeyType encryptionKeyType,
-      {AtEncryptionAlgorithm? encryptionAlgorithm}) {
+      {AtEncryptionAlgorithm? encryptionAlgorithm, String? keyName}) {
     try {
       final decryptedBytes = decryptBytes(base64Decode(data), encryptionKeyType,
           encryptionAlgorithm: encryptionAlgorithm);
@@ -46,9 +48,10 @@ class AtChopsImpl extends AtChops {
 
   @override
   Uint8List encryptBytes(Uint8List data, EncryptionKeyType encryptionKeyType,
-      {AtEncryptionAlgorithm? encryptionAlgorithm}) {
+      {AtEncryptionAlgorithm? encryptionAlgorithm, String? keyName}) {
     try {
-      encryptionAlgorithm ??= _getEncryptionAlgorithm(encryptionKeyType)!;
+      encryptionAlgorithm ??=
+          _getEncryptionAlgorithm(encryptionKeyType, keyName)!;
       return encryptionAlgorithm.encrypt(data);
     } on Exception catch (e) {
       throw AtException(e.toString())
@@ -63,7 +66,7 @@ class AtChopsImpl extends AtChops {
   /// Encode the encrypted bytes to base64.
   @override
   String encryptString(String data, EncryptionKeyType encryptionKeyType,
-      {AtEncryptionAlgorithm? encryptionAlgorithm}) {
+      {AtEncryptionAlgorithm? encryptionAlgorithm, String? keyName}) {
     try {
       final utfEncodedData = utf8.encode(data);
       final encryptedBytes = encryptBytes(
@@ -96,11 +99,11 @@ class AtChopsImpl extends AtChops {
   }
 
   AtEncryptionAlgorithm? _getEncryptionAlgorithm(
-      EncryptionKeyType encryptionKeyType) {
+      EncryptionKeyType encryptionKeyType, String? keyName) {
     switch (encryptionKeyType) {
       case EncryptionKeyType.rsa2048:
         return DefaultEncryptionAlgo(
-            atChopsKeys.atEncryptionKeyPair!, encryptionKeyType);
+            _getEncryptionKeyPair(keyName)!, encryptionKeyType);
       case EncryptionKeyType.rsa4096:
         // TODO: Handle this case.
         break;
@@ -116,6 +119,14 @@ class AtChopsImpl extends AtChops {
         throw Exception(
             'Cannot find encryption algorithm for encryption key type $encryptionKeyType');
     }
+  }
+
+  AtEncryptionKeyPair? _getEncryptionKeyPair(String? keyName) {
+    if (keyName == null) {
+      return atChopsKeys.atEncryptionKeyPair!;
+    }
+    // #TODO plugin implementation for different keyNames
+    return null;
   }
 
   AtSigningAlgorithm? _getSigningAlgorithm(SigningKeyType signingKeyType) {

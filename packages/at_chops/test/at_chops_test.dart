@@ -132,8 +132,7 @@ void main() {
       final atEncryptionKeyPair = AtChopsUtil.generateAtEncryptionKeyPair();
       final atChopsKeys = AtChopsKeys.create(atEncryptionKeyPair, null);
       final atChops = AtChopsImpl(atChopsKeys);
-      final signature =
-          atChops.signString(data, SigningKeyType.signingSha256);
+      final signature = atChops.signString(data, SigningKeyType.signingSha256);
       final result = atChops.verifySignatureString(
           data, signature, SigningKeyType.signingSha256);
       expect(result, true);
