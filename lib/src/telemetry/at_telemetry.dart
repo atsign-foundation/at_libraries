@@ -31,6 +31,7 @@ abstract class AtTelemetryService {
   void addSample(AtTelemetrySample sample);
 }
 
+@experimental
 /// Generic telemetry datum
 abstract class AtTelemetryItem {
   /// The name of this item - for example, 'SyncStarted'
@@ -53,11 +54,13 @@ abstract class AtTelemetryItem {
   }
 }
 
+@experimental
 /// Concrete [AtTelemetryItem] subclass for Events - e.g. SyncStarted, NetworkUnavailable, MonitorUnavailable
 class AtTelemetryEvent extends AtTelemetryItem {
   AtTelemetryEvent(String name, value, {DateTime? time}) : super(name, value, time: time);
 }
 
+@experimental
 /// Concrete [AtTelemetryItem] subclass for Samples - e.g. KeyStoreSize, DataReceived, DataTransmitted
 class AtTelemetrySample extends AtTelemetryItem {
   AtTelemetrySample(String name, value, {DateTime? time}) : super(name, value, time: time);
