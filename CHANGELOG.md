@@ -1,3 +1,5 @@
+## 3.0.32
+- fix: Enable deletion of a local key
 ## 3.0.31
 - feat: Added AtTelemetryService. Marked @experimental while the feature is in early stages.
 ## 3.0.30

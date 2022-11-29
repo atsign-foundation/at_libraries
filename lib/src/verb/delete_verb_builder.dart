@@ -1,5 +1,5 @@
 import 'package:at_commons/at_commons.dart';
-import 'package:at_commons/src/verb/verb_builder.dart';
+import 'package:at_commons/src/verb/abstract_verb_builder.dart';
 
 /// Delete verb builder generates a command to delete a [atKey] from the secondary server.
 /// ```
@@ -8,7 +8,7 @@ import 'package:at_commons/src/verb/verb_builder.dart';
 /// // @bob deleting the key “phone” shared with @alice
 ///    var deleteBuilder = DeleteVerbBuilder()..key = '@alice:phone@bob';
 /// ```
-class DeleteVerbBuilder implements VerbBuilder {
+class DeleteVerbBuilder extends AbstractVerbBuilder {
   /// The key to delete
   String? atKey;
 
@@ -22,27 +22,14 @@ class DeleteVerbBuilder implements VerbBuilder {
 
   bool isCached = false;
 
+  /// Indicates if the key is local
+  /// If the key is local, the key does not sync between cloud and local secondary
+  bool isLocal = false;
+
   @override
   String buildCommand() {
     var command = 'delete:';
-
-    if (isCached) {
-      command += 'cached:';
-    }
-
-    if (isPublic) {
-      command += 'public:';
-    }
-
-    if (sharedWith != null && sharedWith!.isNotEmpty) {
-      command += '${VerbUtil.formatAtSign(sharedWith)}:';
-    }
-    if (sharedBy != null && sharedBy!.isNotEmpty) {
-      command += '$atKey${VerbUtil.formatAtSign(sharedBy)}';
-    } else {
-      command += atKey!;
-    }
-    command += '\n';
+    command += '${buildKey()}\n';
     return command;
   }
 
@@ -57,5 +44,24 @@ class DeleteVerbBuilder implements VerbBuilder {
   @override
   bool checkParams() {
     return atKey != null;
+  }
+
+  String buildKey() {
+    if (atKeyObj.key != null) {
+      return atKeyObj.toString();
+    }
+    super.atKeyObj
+      ..key = atKey
+      ..sharedBy = sharedBy
+      ..sharedWith = sharedWith
+      ..isLocal = isLocal
+      ..metadata = (Metadata()
+        ..isPublic = isPublic
+        ..isCached = isCached);
+    // validates the data in the verb builder.
+    // If validation is successful, build and return the key;
+    // else throws exception.
+    validateKey();
+    return super.atKeyObj.toString();
   }
 }
