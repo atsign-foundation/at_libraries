@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:at_chops/src/algorithm/aes_encryption_algo.dart';
 import 'package:at_chops/src/algorithm/at_algorithm.dart';
+import 'package:at_chops/src/algorithm/at_iv.dart';
 import 'package:at_chops/src/algorithm/default_signing_algo.dart';
 import 'package:at_chops/src/algorithm/pkam_signing_algo.dart';
 import 'package:at_chops/src/algorithm/default_encryption_algo.dart';
@@ -18,10 +19,15 @@ class AtChopsImpl extends AtChops {
 
   @override
   Uint8List decryptBytes(Uint8List data, EncryptionKeyType encryptionKeyType,
-      {AtEncryptionAlgorithm? encryptionAlgorithm, String? keyName}) {
+      {AtEncryptionAlgorithm? encryptionAlgorithm,
+      String? keyName,
+      InitialisationVector? iv}) {
     try {
       encryptionAlgorithm ??=
           _getEncryptionAlgorithm(encryptionKeyType, keyName)!;
+      if (encryptionAlgorithm is SymmetricEncryptionAlgorithm) {
+        return encryptionAlgorithm.decrypt(data, iv: iv!);
+      }
       return encryptionAlgorithm.decrypt(data);
     } on Exception catch (e) {
       throw AtException(e.toString())
@@ -36,10 +42,12 @@ class AtChopsImpl extends AtChops {
   /// Decode the encrypted byte to utf8 to support emoji chars.
   @override
   String decryptString(String data, EncryptionKeyType encryptionKeyType,
-      {AtEncryptionAlgorithm? encryptionAlgorithm, String? keyName}) {
+      {AtEncryptionAlgorithm? encryptionAlgorithm,
+      String? keyName,
+      InitialisationVector? iv}) {
     try {
       final decryptedBytes = decryptBytes(base64Decode(data), encryptionKeyType,
-          encryptionAlgorithm: encryptionAlgorithm);
+          encryptionAlgorithm: encryptionAlgorithm, iv: iv);
       return utf8.decode(decryptedBytes);
     } on AtException {
       rethrow;
@@ -48,10 +56,15 @@ class AtChopsImpl extends AtChops {
 
   @override
   Uint8List encryptBytes(Uint8List data, EncryptionKeyType encryptionKeyType,
-      {AtEncryptionAlgorithm? encryptionAlgorithm, String? keyName}) {
+      {AtEncryptionAlgorithm? encryptionAlgorithm,
+      String? keyName,
+      InitialisationVector? iv}) {
     try {
       encryptionAlgorithm ??=
           _getEncryptionAlgorithm(encryptionKeyType, keyName)!;
+      if (encryptionAlgorithm is SymmetricEncryptionAlgorithm) {
+        return encryptionAlgorithm.encrypt(data, iv: iv!);
+      }
       return encryptionAlgorithm.encrypt(data);
     } on Exception catch (e) {
       throw AtException(e.toString())
@@ -66,12 +79,14 @@ class AtChopsImpl extends AtChops {
   /// Encode the encrypted bytes to base64.
   @override
   String encryptString(String data, EncryptionKeyType encryptionKeyType,
-      {AtEncryptionAlgorithm? encryptionAlgorithm, String? keyName}) {
+      {AtEncryptionAlgorithm? encryptionAlgorithm,
+      String? keyName,
+      InitialisationVector? iv}) {
     try {
       final utfEncodedData = utf8.encode(data);
       final encryptedBytes = encryptBytes(
           Uint8List.fromList(utfEncodedData), encryptionKeyType,
-          encryptionAlgorithm: encryptionAlgorithm);
+          encryptionAlgorithm: encryptionAlgorithm, iv: iv);
       return base64.encode(encryptedBytes);
     } on AtException {
       rethrow;
@@ -111,7 +126,7 @@ class AtChopsImpl extends AtChops {
         // TODO: Handle this case.
         break;
       case EncryptionKeyType.aes128:
-        // TODO: Handle this case.
+        return AESEncryptionAlgo(atChopsKeys.symmetricKey! as AESKey);
         break;
       case EncryptionKeyType.aes256:
         return AESEncryptionAlgo(atChopsKeys.symmetricKey! as AESKey);

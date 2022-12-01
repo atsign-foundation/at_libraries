@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:at_chops/src/algorithm/at_iv.dart';
 import 'package:at_chops/src/key/at_key_pair.dart';
 import 'package:at_chops/src/key/at_private_key.dart';
 import 'package:at_chops/src/key/at_public_key.dart';
@@ -12,6 +13,14 @@ abstract class AtEncryptionAlgorithm {
 
   /// Decrypts the passed encrypted bytes.
   Uint8List decrypt(Uint8List encryptedData);
+}
+
+/// Interface for symmetric encryption algorithms. Check [AESEncryptionAlgo] for sample implementation.
+abstract class SymmetricEncryptionAlgorithm extends AtEncryptionAlgorithm {
+  @override
+  Uint8List encrypt(Uint8List plainData, {InitialisationVector iv});
+  @override
+  Uint8List decrypt(Uint8List encryptedData, {InitialisationVector iv});
 }
 
 /// Interface for data signing. Data is signed using private key from a key pair

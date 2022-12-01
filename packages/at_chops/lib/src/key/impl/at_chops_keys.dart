@@ -4,14 +4,18 @@ import 'package:at_chops/src/key/impl/at_pkam_key_pair.dart';
 import 'package:at_chops/src/key/impl/at_signing_key_pair.dart';
 
 class AtChopsKeys {
-  final AtEncryptionKeyPair? _atEncryptionKeyPair;
+  AtEncryptionKeyPair? _atEncryptionKeyPair;
 
   AtEncryptionKeyPair? get atEncryptionKeyPair => _atEncryptionKeyPair;
-  final AtPkamKeyPair? _atPkamKeyPair;
+  AtPkamKeyPair? _atPkamKeyPair;
   AtSigningKeyPair? atSigningKeyPair;
-  SymmetricKey? symmetricKey;
+  SymmetricKey? _symmetricKey;
 
   AtChopsKeys.create(this._atEncryptionKeyPair, this._atPkamKeyPair);
 
+  AtChopsKeys.createSymmetric(this._symmetricKey);
+
   AtPkamKeyPair? get atPkamKeyPair => _atPkamKeyPair;
+
+  SymmetricKey? get symmetricKey => _symmetricKey;
 }

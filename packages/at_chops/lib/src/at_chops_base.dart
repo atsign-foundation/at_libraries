@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:at_chops/src/algorithm/at_algorithm.dart';
+import 'package:at_chops/src/algorithm/at_iv.dart';
 import 'package:at_chops/src/algorithm/default_encryption_algo.dart';
 import 'package:at_chops/src/algorithm/default_hashing_algo.dart';
 import 'package:at_chops/src/algorithm/default_signing_algo.dart';
@@ -22,28 +23,36 @@ abstract class AtChops {
   /// [keyName] specifies which key pair to use if user has multiple key pairs configured.
   /// If [keyName] is not passed default encryption/decryption keypair from .atKeys file will be used.
   Uint8List encryptBytes(Uint8List data, EncryptionKeyType encryptionKeyType,
-      {AtEncryptionAlgorithm? encryptionAlgorithm, String? keyName});
+      {AtEncryptionAlgorithm? encryptionAlgorithm,
+      String? keyName,
+      InitialisationVector? iv});
 
   /// Encrypts the input string [data] using an [encryptionAlgorithm].
   /// If [encryptionKeyType] is [EncryptionKeyType.rsa2048] then [encryptionAlgorithm] will be set to [DefaultEncryptionAlgo]
   /// [keyName] specifies which key pair to use if user has multiple key pairs configured.
   /// If [keyName] is not passed default encryption/decryption keypair from .atKeys file will be used.
   String encryptString(String data, EncryptionKeyType encryptionKeyType,
-      {AtEncryptionAlgorithm? encryptionAlgorithm, String? keyName});
+      {AtEncryptionAlgorithm? encryptionAlgorithm,
+      String? keyName,
+      InitialisationVector? iv});
 
   /// Decrypts the input bytes [data] using an [encryptionAlgorithm].
   /// If [encryptionKeyType] is [EncryptionKeyType.rsa2048] then [encryptionAlgorithm] will be set to [DefaultEncryptionAlgo]
   /// [keyName] specifies which key pair to use if user has multiple key pairs configured.
   /// If [keyName] is not passed default encryption/decryption keypair from .atKeys file will be used.
   Uint8List decryptBytes(Uint8List data, EncryptionKeyType encryptionKeyType,
-      {AtEncryptionAlgorithm? encryptionAlgorithm, String? keyName});
+      {AtEncryptionAlgorithm? encryptionAlgorithm,
+      String? keyName,
+      InitialisationVector? iv});
 
   /// Decrypts the input string [data] using an [encryptionAlgorithm].
   /// If [encryptionKeyType] is [EncryptionKeyType.rsa2048] then [encryptionAlgorithm] will be set to [DefaultEncryptionAlgo]
   /// [keyName] specifies which key pair to use if user has multiple key pairs configured.
   /// If [keyName] is not passed default encryption/decryption keypair from .atKeys file will be used.
   String decryptString(String data, EncryptionKeyType encryptionKeyType,
-      {AtEncryptionAlgorithm? encryptionAlgorithm, String? keyName});
+      {AtEncryptionAlgorithm? encryptionAlgorithm,
+      String? keyName,
+      InitialisationVector? iv});
 
   /// Sign the input bytes [data] using a [signingAlgorithm].
   /// If [signingKeyType] is [SigningKeyType.pkamSha256] then [signingAlgorithm] will be set to [PkamSigningAlgo]
