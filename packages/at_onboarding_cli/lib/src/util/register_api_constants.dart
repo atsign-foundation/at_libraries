@@ -4,9 +4,9 @@ class RegisterApiConstants {
   static const String apiHostStaging = 'my.atsign.wtf';
 
   /// API Paths
-  static const String pathGetFreeAtSign = '/api/app/v2/get-free-atsign';
-  static const String pathRegisterAtSign = '/api/app/v2/register-person';
-  static const String pathValidateOtp = '/api/app/v2/validate-person';
+  static const String pathGetFreeAtSign = '/api/app/v3/get-free-atsign';
+  static const String pathRegisterAtSign = '/api/app/v3/register-person';
+  static const String pathValidateOtp = '/api/app/v3/validate-person';
 
   /// API headers
   static const String contentType = 'application/json';
