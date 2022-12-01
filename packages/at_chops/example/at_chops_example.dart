@@ -13,11 +13,11 @@ void main() {
   // 1 - Encryption and decryption using asymmetric key pair
   final data = 'Hello World';
   //1.1 encrypt the data using [atEncryptionKeyPair.publicKey]
-  final encryptedString =
+  final encryptionResult =
       atChops.encryptString(data, EncryptionKeyType.rsa2048);
   //1.2 decrypt the data using [atEncryptionKeyPair.privateKey]
   final decryptedString =
-      atChops.decryptString(encryptedString, EncryptionKeyType.rsa2048);
+      atChops.decryptString(encryptionResult.result, EncryptionKeyType.rsa2048);
   assert(data == decryptedString, true);
 
   // 2 - Signing and data verification using asymmetric key pair
