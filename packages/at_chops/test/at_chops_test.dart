@@ -11,11 +11,11 @@ void main() {
       final atChopsKeys = AtChopsKeys.create(atEncryptionKeyPair, null);
       final atChops = AtChopsImpl(atChopsKeys);
       final data = 'Hello World';
-      final encryptedString =
+      final encryptionResult =
           atChops.encryptString(data, EncryptionKeyType.rsa2048);
-      final decryptedString =
-          atChops.decryptString(encryptedString, EncryptionKeyType.rsa2048);
-      expect(decryptedString, data);
+      final decryptionResult = atChops.decryptString(
+          encryptionResult.result, EncryptionKeyType.rsa2048);
+      expect(decryptionResult.result, data);
     });
     test('Test symmetric encrypt/decrypt bytes with initialisation vector', () {
       String data = 'Hello World';
@@ -23,12 +23,13 @@ void main() {
       final atChopsKeys = AtChopsKeys.createSymmetric(aesKey);
       final atChops = AtChopsImpl(atChopsKeys);
       final iv = AtChopsUtil.generateIV(16);
-      final encryptedBytes = atChops.encryptBytes(
+      final encryptionResult = atChops.encryptBytes(
           utf8.encode(data) as Uint8List, EncryptionKeyType.aes256,
           iv: iv);
-      final decryptedBytes = atChops
-          .decryptBytes(encryptedBytes, EncryptionKeyType.aes256, iv: iv);
-      expect(utf8.decode(decryptedBytes), data);
+      final decryptionResult = atChops.decryptBytes(
+          encryptionResult.result, EncryptionKeyType.aes256,
+          iv: iv);
+      expect(utf8.decode(decryptionResult.result), data);
     });
     test('Test symmetric encrypt/decrypt bytes with emoji char', () {
       String data = 'Hello World🛠';
@@ -36,12 +37,13 @@ void main() {
       final atChopsKeys = AtChopsKeys.createSymmetric(aesKey);
       final atChops = AtChopsImpl(atChopsKeys);
       final iv = AtChopsUtil.generateIV(16);
-      final encryptedBytes = atChops.encryptBytes(
+      final encryptionResult = atChops.encryptBytes(
           utf8.encode(data) as Uint8List, EncryptionKeyType.aes256,
           iv: iv);
-      final decryptedBytes = atChops
-          .decryptBytes(encryptedBytes, EncryptionKeyType.aes256, iv: iv);
-      expect(utf8.decode(decryptedBytes), data);
+      final decryptionResult = atChops.decryptBytes(
+          encryptionResult.result, EncryptionKeyType.aes256,
+          iv: iv);
+      expect(utf8.decode(decryptionResult.result), data);
     });
 
     test('Test symmetric encrypt/decrypt bytes with special chars', () {
@@ -50,12 +52,13 @@ void main() {
       final atChopsKeys = AtChopsKeys.createSymmetric(aesKey);
       final atChops = AtChopsImpl(atChopsKeys);
       final iv = AtChopsUtil.generateIV(16);
-      final encryptedBytes = atChops.encryptBytes(
+      final encryptionResult = atChops.encryptBytes(
           utf8.encode(data) as Uint8List, EncryptionKeyType.aes256,
           iv: iv);
-      final decryptedBytes = atChops
-          .decryptBytes(encryptedBytes, EncryptionKeyType.aes256, iv: iv);
-      expect(utf8.decode(decryptedBytes), data);
+      final decryptionResult = atChops.decryptBytes(
+          encryptionResult.result, EncryptionKeyType.aes256,
+          iv: iv);
+      expect(utf8.decode(decryptionResult.result), data);
     });
     test('Test symmetric encrypt/decrypt string with initialisation vector',
         () {
@@ -64,11 +67,12 @@ void main() {
       final atChopsKeys = AtChopsKeys.createSymmetric(aesKey);
       final atChops = AtChopsImpl(atChopsKeys);
       final iv = AtChopsUtil.generateIV(16);
-      final encryptedString =
+      final encryptionResult =
           atChops.encryptString(data, EncryptionKeyType.aes256, iv: iv);
-      final decryptedString = atChops
-          .decryptString(encryptedString, EncryptionKeyType.aes256, iv: iv);
-      expect(decryptedString, data);
+      final decryptionResult = atChops.decryptString(
+          encryptionResult.result, EncryptionKeyType.aes256,
+          iv: iv);
+      expect(decryptionResult.result, data);
     });
     test('Test symmetric encrypt/decrypt string with special chars', () {
       String data = 'Hello``*+%';
@@ -76,11 +80,12 @@ void main() {
       final atChopsKeys = AtChopsKeys.createSymmetric(aesKey);
       final atChops = AtChopsImpl(atChopsKeys);
       final iv = AtChopsUtil.generateIV(16);
-      final encryptedString =
+      final encryptionResult =
           atChops.encryptString(data, EncryptionKeyType.aes256, iv: iv);
-      final decryptedString = atChops
-          .decryptString(encryptedString, EncryptionKeyType.aes256, iv: iv);
-      expect(decryptedString, data);
+      final decryptionResult = atChops.decryptString(
+          encryptionResult.result, EncryptionKeyType.aes256,
+          iv: iv);
+      expect(decryptionResult.result, data);
     });
     test('Test symmetric encrypt/decrypt string with emoji', () {
       String data = 'Hello World🛠';
@@ -88,11 +93,12 @@ void main() {
       final atChopsKeys = AtChopsKeys.createSymmetric(aesKey);
       final atChops = AtChopsImpl(atChopsKeys);
       final iv = AtChopsUtil.generateIV(16);
-      final encryptedString =
+      final encryptionResult =
           atChops.encryptString(data, EncryptionKeyType.aes256, iv: iv);
-      final decryptedString = atChops
-          .decryptString(encryptedString, EncryptionKeyType.aes256, iv: iv);
-      expect(decryptedString, data);
+      final decryptionResult = atChops.decryptString(
+          encryptionResult.result, EncryptionKeyType.aes256,
+          iv: iv);
+      expect(decryptionResult.result, data);
     });
   });
   group('A group of tests for data signing and verification', () {
