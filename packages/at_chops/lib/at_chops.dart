@@ -7,3 +7,7 @@ export 'src/key/key_type.dart';
 export 'src/key/impl/at_chops_keys.dart';
 export 'src/key/impl/at_encryption_key_pair.dart';
 export 'src/key/impl/at_pkam_key_pair.dart';
+export 'src/metadata/encryption_metadata.dart';
+export 'src/metadata/encryption_result.dart';
+export 'src/metadata/signing_metadata.dart';
+export 'src/metadata/signing_result.dart';

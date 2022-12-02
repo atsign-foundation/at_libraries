@@ -9,6 +9,7 @@ import 'package:at_chops/src/algorithm/pkam_signing_algo.dart';
 import 'package:at_chops/src/key/impl/at_chops_keys.dart';
 import 'package:at_chops/src/key/key_type.dart';
 import 'package:at_chops/src/metadata/encryption_result.dart';
+import 'package:at_chops/src/metadata/signing_result.dart';
 
 /// Base class for all Cryptographic and Hashing Operations. Callers have to either implement
 /// specific encryption, signing or hashing algorithms. Otherwise default implementation of specific algorithms will be used.
@@ -62,26 +63,26 @@ abstract class AtChops {
   /// Sign the input bytes [data] using a [signingAlgorithm].
   /// If [signingKeyType] is [SigningKeyType.pkamSha256] then [signingAlgorithm] will be set to [PkamSigningAlgo]
   /// If [signingKeyType] is [SigningKeyType.signingSha256] then [signingAlgorithm] will be set to [DefaultSigningAlgo]
-  Uint8List signBytes(Uint8List data, SigningKeyType signingKeyType,
+  AtSigningResult signBytes(Uint8List data, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm});
 
   /// Verify the [signature] of bytes [data] using a [signingAlgorithm]
   /// If [signingKeyType] is [SigningKeyType.pkamSha256] then [signingAlgorithm] will be set to [PkamSigningAlgo]
   /// If [signingKeyType] is [SigningKeyType.signingSha256] then [signingAlgorithm] will be set to [DefaultSigningAlgo]
-  bool verifySignatureBytes(
+  AtSigningResult verifySignatureBytes(
       Uint8List data, Uint8List signature, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm});
 
   /// Sign the input string [data] using a [signingAlgorithm].
   /// If [signingKeyType] is [SigningKeyType.pkamSha256] then [signingAlgorithm] will be set to [PkamSigningAlgo]
   /// If [signingKeyType] is [SigningKeyType.signingSha256] then [signingAlgorithm] will be set to [DefaultSigningAlgo]
-  String signString(String data, SigningKeyType signingKeyType,
+  AtSigningResult signString(String data, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm});
 
   /// Verify the [signature] of string [data] using a [signingAlgorithm]
   /// If [signingKeyType] is [SigningKeyType.pkamSha256] then [signingAlgorithm] will be set to [PkamSigningAlgo]
   /// If [signingKeyType] is [SigningKeyType.signingSha256] then [signingAlgorithm] will be set to [DefaultSigningAlgo]
-  bool verifySignatureString(
+  AtSigningResult verifySignatureString(
       String data, String signature, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm});
 

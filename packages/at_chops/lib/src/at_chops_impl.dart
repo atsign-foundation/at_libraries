@@ -14,6 +14,8 @@ import 'package:at_chops/src/key/impl/at_encryption_key_pair.dart';
 import 'package:at_chops/src/key/key_type.dart';
 import 'package:at_chops/src/metadata/encryption_metadata.dart';
 import 'package:at_chops/src/metadata/encryption_result.dart';
+import 'package:at_chops/src/metadata/signing_metadata.dart';
+import 'package:at_chops/src/metadata/signing_result.dart';
 import 'package:at_commons/at_commons.dart';
 
 class AtChopsImpl extends AtChops {
@@ -33,7 +35,7 @@ class AtChopsImpl extends AtChops {
       atEncryptionMetaData.keyName = keyName;
       final atEncryptionResult = AtEncryptionResult()
         ..atEncryptionMetaData = atEncryptionMetaData
-        ..atEncryptionDataType = AtEncryptionDataType.bytes;
+        ..atEncryptionResultType = AtEncryptionResultType.bytes;
       if (encryptionAlgorithm is SymmetricEncryptionAlgorithm) {
         atEncryptionResult.result = encryptionAlgorithm.decrypt(data, iv: iv!);
         atEncryptionMetaData.iv = iv;
@@ -64,7 +66,7 @@ class AtChopsImpl extends AtChops {
           encryptionAlgorithm: encryptionAlgorithm, iv: iv);
       final atEncryptionResult = AtEncryptionResult()
         ..atEncryptionMetaData = decryptionResult.atEncryptionMetaData
-        ..atEncryptionDataType = AtEncryptionDataType.string;
+        ..atEncryptionResultType = AtEncryptionResultType.string;
       atEncryptionResult.result = utf8.decode(decryptionResult.result);
       return atEncryptionResult;
     } on AtException {
@@ -86,9 +88,10 @@ class AtChopsImpl extends AtChops {
       atEncryptionMetaData.keyName = keyName;
       final atEncryptionResult = AtEncryptionResult()
         ..atEncryptionMetaData = atEncryptionMetaData
-        ..atEncryptionDataType = AtEncryptionDataType.bytes;
+        ..atEncryptionResultType = AtEncryptionResultType.bytes;
       if (encryptionAlgorithm is SymmetricEncryptionAlgorithm) {
         atEncryptionResult.result = encryptionAlgorithm.encrypt(data, iv: iv!);
+        atEncryptionMetaData.iv = iv;
       } else {
         atEncryptionResult.result = encryptionAlgorithm.encrypt(data);
       }
@@ -117,7 +120,7 @@ class AtChopsImpl extends AtChops {
           encryptionAlgorithm: encryptionAlgorithm, iv: iv);
       final atEncryptionResult = AtEncryptionResult()
         ..atEncryptionMetaData = encryptionResult.atEncryptionMetaData
-        ..atEncryptionDataType = AtEncryptionDataType.string;
+        ..atEncryptionResultType = AtEncryptionResultType.string;
       atEncryptionResult.result = base64.encode(encryptionResult.result);
       return atEncryptionResult;
     } on AtException {
@@ -131,18 +134,30 @@ class AtChopsImpl extends AtChops {
   }
 
   @override
-  Uint8List signBytes(Uint8List data, SigningKeyType signingKeyType,
+  AtSigningResult signBytes(Uint8List data, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm}) {
     signingAlgorithm ??= _getSigningAlgorithm(signingKeyType)!;
-    return signingAlgorithm.sign(data);
+    final atSigningMetadata = AtSigningMetaData(
+        signingAlgorithm.runtimeType.toString(), signingKeyType);
+    final atSigningResult = AtSigningResult()
+      ..atSigningMetaData = atSigningMetadata
+      ..atSigningResultType = AtSigningResultType.bytes;
+    atSigningResult.result = signingAlgorithm.sign(data);
+    return atSigningResult;
   }
 
   @override
-  bool verifySignatureBytes(
+  AtSigningResult verifySignatureBytes(
       Uint8List data, Uint8List signature, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm}) {
     signingAlgorithm ??= _getSigningAlgorithm(signingKeyType)!;
-    return signingAlgorithm.verify(data, signature);
+    final atSigningMetadata = AtSigningMetaData(
+        signingAlgorithm.runtimeType.toString(), signingKeyType);
+    final atSigningResult = AtSigningResult()
+      ..atSigningMetaData = atSigningMetadata
+      ..atSigningResultType = AtSigningResultType.bool;
+    atSigningResult.result = signingAlgorithm.verify(data, signature);
+    return atSigningResult;
   }
 
   AtEncryptionAlgorithm? _getEncryptionAlgorithm(
@@ -189,20 +204,31 @@ class AtChopsImpl extends AtChops {
   }
 
   @override
-  String signString(String data, SigningKeyType signingKeyType,
+  AtSigningResult signString(String data, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm}) {
-    final signedBytes = signBytes(
+    final signingResult = signBytes(
         utf8.encode(data) as Uint8List, signingKeyType,
         signingAlgorithm: signingAlgorithm);
-    return base64Encode(signedBytes);
+    final atSigningMetadata = signingResult.atSigningMetaData;
+    final atSigningResult = AtSigningResult()
+      ..atSigningMetaData = atSigningMetadata
+      ..atSigningResultType = AtSigningResultType.string;
+    atSigningResult.result = base64Encode(signingResult.result);
+    return atSigningResult;
   }
 
   @override
-  bool verifySignatureString(
+  AtSigningResult verifySignatureString(
       String data, String signature, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm}) {
-    return verifySignatureBytes(
+    final signingResult = verifySignatureBytes(
         utf8.encode(data) as Uint8List, base64Decode(signature), signingKeyType,
         signingAlgorithm: signingAlgorithm);
+    final atSigningMetadata = signingResult.atSigningMetaData;
+    final atSigningResult = AtSigningResult()
+      ..atSigningMetaData = atSigningMetadata
+      ..atSigningResultType = AtSigningResultType.bool;
+    atSigningResult.result = signingResult.result;
+    return atSigningResult;
   }
 }
