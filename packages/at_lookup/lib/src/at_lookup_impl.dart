@@ -439,7 +439,7 @@ class AtLookupImpl implements AtLookUp {
         fromResponse = fromResponse.trim().replaceAll('data:', '');
         logger.finer('fromResponse $fromResponse');
         var signature =
-            atChops.signString(fromResponse, SigningKeyType.pkamSha256);
+            _atChops.signString(fromResponse, SigningKeyType.pkamSha256);
         logger.finer('Sending command pkam:$signature');
         await _sendCommand('pkam:$signature\n');
         var pkamResponse = await messageListener.read();
