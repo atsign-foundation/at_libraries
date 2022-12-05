@@ -33,8 +33,6 @@ class AtLookupImpl implements AtLookUp {
 
   late int _rootPort;
 
-  late AtChops _atChops;
-
   String? privateKey;
 
   String? cramSecret;
@@ -46,6 +44,8 @@ class AtLookupImpl implements AtLookUp {
 
   /// Represents the client configurations.
   late Map<String, dynamic> _clientConfig;
+
+  late AtChops _atChops;
 
   AtLookupImpl(String atSign, String rootDomain, int rootPort,
       {this.privateKey,
@@ -439,7 +439,7 @@ class AtLookupImpl implements AtLookUp {
         fromResponse = fromResponse.trim().replaceAll('data:', '');
         logger.finer('fromResponse $fromResponse');
         var signature =
-            _atChops.signString(fromResponse, SigningKeyType.pkamSha256);
+            atChops.signString(fromResponse, SigningKeyType.pkamSha256);
         logger.finer('Sending command pkam:$signature');
         await _sendCommand('pkam:$signature\n');
         var pkamResponse = await messageListener.read();
@@ -475,7 +475,8 @@ class AtLookupImpl implements AtLookUp {
               ..atSign = _currentAtSign
               ..clientConfig = _clientConfig)
             .buildCommand());
-        var fromResponse = await messageListener.read(transientWaitTimeMillis: 4000, maxWaitMilliSeconds: 10000);
+        var fromResponse = await messageListener.read(
+            transientWaitTimeMillis: 4000, maxWaitMilliSeconds: 10000);
         logger.info('from result:$fromResponse');
         if (fromResponse.isEmpty) {
           return false;
@@ -485,7 +486,8 @@ class AtLookupImpl implements AtLookUp {
         var bytes = utf8.encode(digestInput);
         var digest = sha512.convert(bytes);
         await _sendCommand('cram:$digest\n');
-        var cramResponse = await messageListener.read(transientWaitTimeMillis: 4000, maxWaitMilliSeconds: 10000);
+        var cramResponse = await messageListener.read(
+            transientWaitTimeMillis: 4000, maxWaitMilliSeconds: 10000);
         if (cramResponse == 'data:success') {
           logger.info('auth success');
           _connection!.getMetaData()!.isAuthenticated = true;
@@ -594,7 +596,10 @@ class AtLookupImpl implements AtLookUp {
   }
 
   @override
-  void setAtChops(AtChops atChops) {
+  set atChops(AtChops atChops) {
     _atChops = atChops;
   }
+
+  @override
+  AtChops get atChops => _atChops;
 }

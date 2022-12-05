@@ -3,6 +3,8 @@ import 'package:at_commons/at_commons.dart';
 import 'package:at_chops/at_chops.dart';
 
 abstract class AtLookUp {
+  late AtChops _atChops;
+
   /// update
   Future<bool> update(String key, String value,
       {String? sharedWith, Metadata? metadata});
@@ -25,6 +27,9 @@ abstract class AtLookUp {
 
   Future<String?> executeVerb(VerbBuilder builder, {bool sync = false});
 
-  /// Set an instance of [AtChops] for signing operations during authentication
-  void setAtChops(AtChops atChops);
+  set atChops(AtChops atChops) {
+    _atChops = atChops;
+  }
+
+  AtChops get atChops => _atChops;
 }
