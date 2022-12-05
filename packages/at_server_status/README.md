@@ -1,5 +1,7 @@
 <img width=250px src="https://atsign.dev/assets/img/atPlatform_logo_gray.svg?sanitize=true">
 
+[![pub package](https://img.shields.io/pub/v/at_server_status)](https://pub.dev/packages/at_server_status) [![pub points](https://img.shields.io/pub/points/at_server_status?logo=dart)](https://pub.dev/packages/at_server_status/score) [![gitHub license](https://img.shields.io/badge/license-BSD3-blue.svg)](./LICENSE)
+
 # at_server_status
 The at_server_status library provides an easy means to check on the status
 of the atRoot server as well as the atServer for a particular atSign.

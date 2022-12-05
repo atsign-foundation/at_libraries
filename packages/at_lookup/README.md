@@ -1,5 +1,7 @@
 <img width=250px src="https://atsign.dev/assets/img/atPlatform_logo_gray.svg?sanitize=true">
 
+[![pub package](https://img.shields.io/pub/v/at_lookup)](https://pub.dev/packages/at_lookup) [![pub points](https://img.shields.io/pub/points/at_lookup?logo=dart)](https://pub.dev/packages/at_lookup/score) [![gitHub license](https://img.shields.io/badge/license-BSD3-blue.svg)](./LICENSE)
+
 # at_lookup library
 
 ## Overview:

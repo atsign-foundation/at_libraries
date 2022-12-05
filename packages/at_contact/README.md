@@ -10,7 +10,7 @@ Add a badge bar for your package by replacing at_contact below with
 your package name below and at_libraries with the name of the repo
 -->
 
-[![pub package](https://img.shields.io/pub/v/at_contact)](https://pub.dev/packages/at_contact) [![pub points](https://badges.bar/at_contact/pub%20points)](https://pub.dev/packages/at_contact/score) [![gitHub license](https://img.shields.io/badge/license-BSD3-blue.svg)](./LICENSE)
+[![pub package](https://img.shields.io/pub/v/at_contact)](https://pub.dev/packages/at_contact) [![pub points](https://img.shields.io/pub/points/at_contact?logo=dart)](https://pub.dev/packages/at_contact/score) [![gitHub license](https://img.shields.io/badge/license-BSD3-blue.svg)](./LICENSE)
 
 <!--- this is a table version
 | [![pub package](https://img.shields.io/pub/v/at_contact)](https://pub.dev/packages/at_contact) | [![pub points](https://badges.bar/at_contact/pub%20points)](https://pub.dev/packages/at_contact/score) | [![build status](https://github.com/atsign-foundation/at_libraries/actions/workflows/at_libraries.yaml/badge.svg?branch=trunk)](https://github.com/atsign-foundation/at_libraries/actions/workflows/at_libraries.yaml) | [![gitHub license](https://img.shields.io/badge/license-BSD3-blue.svg)](./LICENSE)
