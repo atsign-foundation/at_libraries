@@ -17,13 +17,13 @@ dependencies:
   mutex: ^3.0.0
   mocktail: ^0.3.0
   meta: ^1.8.0
-
-dependency_overrides:
-  at_chops:
-    git:
-      url: https://github.com/atsign-foundation/at_libraries.git
-      path: packages/at_chops
-      ref: at_chops
+  at_chops: ^1.0.0
+#dependency_overrides:
+#  at_chops:
+#    git:
+#      url: https://github.com/atsign-foundation/at_libraries.git
+#      path: packages/at_chops
+#      ref: at_chops
 #    path: ../at_chops
 
 dev_dependencies:
