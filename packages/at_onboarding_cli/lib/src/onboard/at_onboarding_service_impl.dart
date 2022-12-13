@@ -34,9 +34,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       AtClientManager _atClientManager = AtClientManager.getInstance();
       await _atClientManager.setCurrentAtSign(
           _atSign, atOnboardingPreference.namespace, atOnboardingPreference);
-      _atLookup = _atClientManager.atClient
-          .getRemoteSecondary()
-          ?.atLookUp;
+      _atLookup = _atClientManager.atClient.getRemoteSecondary()?.atLookUp;
       return _atClientManager.atClient;
     }
     return _atClient;
@@ -94,14 +92,14 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     _selfEncryptionKey = generateAESKey();
 
     stdout.writeln(
-        '[Information] Generating you encryption keys and .atKeys file\n');
+        '[Information] Generating your encryption keys and .atKeys file\n');
     //mapping encryption keys pairs to their names
     atKeysMap = <String, String>{
       AuthKeyType.pkamPublicKey: _pkamRsaKeypair.publicKey.toString(),
       AuthKeyType.pkamPrivateKey: _pkamRsaKeypair.privateKey.toString(),
       AuthKeyType.encryptionPublicKey: _encryptionKeyPair.publicKey.toString(),
       AuthKeyType.encryptionPrivateKey:
-      _encryptionKeyPair.privateKey.toString(),
+          _encryptionKeyPair.privateKey.toString(),
       AuthKeyType.selfEncryptionKey: _selfEncryptionKey,
       _atSign: _selfEncryptionKey,
     };
@@ -113,13 +111,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     String updateCommand =
         'update:$AT_PKAM_PUBLIC_KEY ${_pkamRsaKeypair.publicKey}\n';
     String? pkamUpdateResult =
-    await _atLookup?.executeCommand(updateCommand, auth: false);
+        await _atLookup?.executeCommand(updateCommand, auth: false);
     logger.info('PkamPublicKey update result: $pkamUpdateResult');
     atOnboardingPreference.privateKey = _pkamRsaKeypair.privateKey.toString();
 
     //authenticate using pkam to verify insertion of pkamPublicKey
     _isPkamAuthenticated =
-    (await _atLookup?.authenticate(atOnboardingPreference.privateKey))!;
+        (await _atLookup?.authenticate(atOnboardingPreference.privateKey))!;
 
     if (_isPkamAuthenticated) {
       //update user encryption public key to remote secondary
@@ -129,7 +127,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         ..value = _encryptionKeyPair.publicKey.toString()
         ..sharedBy = _atSign;
       String? encryptKeyUpdateResult =
-      await _atLookup?.executeVerb(updateBuilder);
+          await _atLookup?.executeVerb(updateBuilder);
       logger
           .info('Encryption public key update result $encryptKeyUpdateResult');
       //deleting cram secret from the keystore as cram auth is complete
@@ -183,9 +181,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       }
     }
     //note: in case atKeysFilePath is provided instead of downloadPath;
-    //file is created with whichever name provided as atKeysFilePath(even if filename does not match standary atKeys file name convention)
+    //file is created with whichever name provided as atKeysFilePath(even if filename does not match standard atKeys file name convention)
     IOSink atKeysFile = File(atOnboardingPreference.downloadPath ??
-        atOnboardingPreference.atKeysFilePath!)
+            atOnboardingPreference.atKeysFilePath!)
         .openWrite();
 
     //generating .atKeys file at path provided in onboardingConfig
@@ -193,11 +191,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     await atKeysFile.flush();
     await atKeysFile.close();
     logger.info(
-        'atKeys file saved at ${atOnboardingPreference.downloadPath ??
-            atOnboardingPreference.atKeysFilePath}');
+        'atKeys file saved at ${atOnboardingPreference.downloadPath ?? atOnboardingPreference.atKeysFilePath}');
     stdout.writeln(
-        '[Success] Your .atKeys file saved at ${atOnboardingPreference
-            .downloadPath ?? atOnboardingPreference.atKeysFilePath}\n');
+        '[Success] Your .atKeys file saved at ${atOnboardingPreference.downloadPath ?? atOnboardingPreference.atKeysFilePath}\n');
   }
 
   ///back-up encryption keys to local secondary
@@ -268,10 +264,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   ///method to extract and decrypt pkamPrivateKey from atKeysData
   ///returns pkam_private_key
-  String? _getPkamPrivateKey(Map<String, String>? jsonData) =>
-      jsonData == null
-          ? null
-          : EncryptionUtil.decryptValue(
+  String? _getPkamPrivateKey(Map<String, String>? jsonData) => jsonData == null
+      ? null
+      : EncryptionUtil.decryptValue(
           jsonData[AuthKeyType.pkamPrivateKey]!, _getDecryptionKey(jsonData));
 
   ///method to extract decryption key from atKeysData
@@ -322,10 +317,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     if (path != null) {
       Image? image = decodePng(File(path).readAsBytesSync());
       LuminanceSource source = RGBLuminanceSource(image!.width, image.height,
-          image
-              .getBytes(format: Format.abgr)
-              .buffer
-              .asInt32List());
+          image.getBytes(format: Format.abgr).buffer.asInt32List());
       BinaryBitmap bitmap = BinaryBitmap(HybridBinarizer(source));
       Result result = QRCodeReader().decode(bitmap);
       String secret = result.text.split(':')[1];
@@ -339,31 +331,37 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   ///If not, wait until secondary is created
   Future<void> _waitUntilSecondaryCreated() async {
     final maxRetries = 50;
-    int _retryCount = 0;
-    SecondaryAddress? _secondaryAddress;
+    int retryCount = 0;
+    SecondaryAddress? secondaryAddress;
     SecureSocket? secureSocket;
 
-    while (_retryCount < maxRetries && _secondaryAddress == null) {
-      logger.finer('retrying find secondary.......$_retryCount/$maxRetries');
+    while (retryCount < maxRetries && secondaryAddress == null) {
+      logger.finer('retrying find secondary.......$retryCount/$maxRetries');
       try {
-        _secondaryAddress =
-        await _atLookup?.secondaryAddressFinder.findSecondary(_atSign);
+        secondaryAddress =
+            await _atLookup?.secondaryAddressFinder.findSecondary(_atSign);
       } on Exception catch (e) {
         logger.finer(e);
       }
-      _retryCount++;
+      retryCount++;
+    }
+
+    if (secondaryAddress == null){
+      logger.severe('Could not find secondary address for $_atSign');
+      exit(1);
     }
     //resetting retry counter to be used for different operation
-    _retryCount = 0;
-    while (secureSocket == null && _retryCount < maxRetries) {
-      logger.finer('retrying connect secondary.......$_retryCount/$maxRetries');
-      stdout.writeln('Connecting to secondary ...');
+    retryCount = 0;
+    while (secureSocket == null && retryCount < maxRetries) {
+      logger.finer('retrying connect secondary.......$retryCount/$maxRetries');
+      stdout.writeln('Connecting to secondary ...$retryCount/$maxRetries');
       try {
         secureSocket = await SecureSocket.connect(
-            _secondaryAddress!.host, _secondaryAddress.port);
+            secondaryAddress.host, secondaryAddress.port);
       } on Exception catch (e) {
         logger.finer(e);
       }
+      retryCount++;
     }
     stdout.writeln('\n');
   }
@@ -372,7 +370,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   Future<void> close() async {
     await _atLookup?.close();
     _atClient = null;
-    logger.severe('Killing current instance of at_onboarding_cli');
+    logger.info('Closing current instance of at_onboarding_cli');
     exit(0);
   }
 

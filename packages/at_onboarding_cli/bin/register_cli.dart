@@ -1,6 +1,5 @@
-import 'package:at_onboarding_cli/src/register_cli/register.dart';
+import 'package:at_onboarding_cli/src/register_cli/register.dart' as register_cli;
 
 Future<void> main(List<String> args)async {
-  Register register = Register();
-  await register.main(args);
+  await register_cli.main(args);
 }
