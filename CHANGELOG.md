@@ -1,3 +1,6 @@
+## 3.0.31
+* fix: enforce lowercase on all AtKey parameters
+* fix: set Metadata.isHidden true in PrivateKey class
 ## 3.0.30
 * fix: Add key validations to Update and llookup verb builders
 ## 3.0.29
