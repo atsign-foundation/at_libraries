@@ -58,4 +58,5 @@ Future<void> main(List<String> arguments) async {
   onboardingService = null;
 
   stdout.writeln('-------Atsign activation complete-------');
+  exit(0);
 }

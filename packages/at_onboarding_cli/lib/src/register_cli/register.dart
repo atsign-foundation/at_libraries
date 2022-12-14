@@ -66,9 +66,7 @@ class Register {
       '-a',
       params['atsign']!,
       '-c',
-      params['cramkey']!,
-      '-r',
-      params['authority']!
+      params['cramkey']!
     ]);
   }
 }
@@ -117,7 +115,7 @@ class GetFreeAtsign extends RegisterApiTask {
   @override
   Future<RegisterApiResult> run() async {
     stdout.writeln(
-        '[Information] Getting your randomly generated free atSign…\n');
+        '\n[Information] Getting your randomly generated free atSign…\n');
     try {
       List<String> atsignList =
           await registerUtil.getFreeAtSigns(authority: params['authority']!);

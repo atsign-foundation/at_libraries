@@ -113,8 +113,8 @@ class RegisterUtil {
               'Oops! You already have the maximum number of free atSigns. Please select one of your existing atSigns.')) {
         stdout.writeln(
             '\n[Unable to proceed] This email address already has 10 free atSigns associated with it.\n'
-            'To register a new atSign to this email address, please log into the dashboard \'my.atsign.com/login\'\n'
-            ' and remove at least 1 atSign from your account and then try again.\n'
+            'To register a new atSign to this email address, please log into the dashboard \'my.atsign.com/login\'.\n'
+            'Remove at least 1 atSign from your account and then try again.\n'
             'Alternatively, you can retry this process with a different email address.\n');
         exit(1);
       } else {

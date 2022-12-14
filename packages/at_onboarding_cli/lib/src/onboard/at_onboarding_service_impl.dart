@@ -354,7 +354,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     retryCount = 0;
     while (secureSocket == null && retryCount < maxRetries) {
       logger.finer('retrying connect secondary.......$retryCount/$maxRetries');
-      stdout.writeln('Connecting to secondary ...$retryCount/$maxRetries');
+      stdout.writeln('Connecting to secondary ...$retryCount/$maxRetries\n');
       try {
         secureSocket = await SecureSocket.connect(
             secondaryAddress.host, secondaryAddress.port);
@@ -363,7 +363,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       }
       retryCount++;
     }
-    stdout.writeln('\n');
   }
 
   @override
@@ -371,7 +370,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     await _atLookup?.close();
     _atClient = null;
     logger.info('Closing current instance of at_onboarding_cli');
-    exit(0);
   }
 
   @override
