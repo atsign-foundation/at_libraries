@@ -100,6 +100,7 @@ class AtKey {
             (metadata!.isCached))) {
       return 'cached:public:$key${_dotNamespaceIfPresent()}$_sharedBy';
     }
+
     // If metadata.isPublic is true, return public key
     if (key!.startsWith('public:') ||
         (metadata != null &&
@@ -107,19 +108,27 @@ class AtKey {
             metadata!.isPublic!)) {
       return 'public:$key${_dotNamespaceIfPresent()}$_sharedBy';
     }
+
     //If metadata.isCached is true, return shared cached key
     if (key!.startsWith('cached:') ||
         (metadata != null && metadata!.isCached)) {
       return 'cached:$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy';
     }
+
     // If key starts with privatekey:, return private key
-    if (key!.startsWith('privatekey:')) {
-      return '$key';
+    if ((metadata != null && metadata!.isHidden) ||
+        key!.startsWith('privatekey:')) {
+      if (key!.startsWith('privatekey:')) {
+        return '$key'.toLowerCase();
+      }
+      return 'privatekey:$key${_dotNamespaceIfPresent()}'.toLowerCase();
     }
+
     //If _sharedWith is not null, return sharedKey
     if (_sharedWith != null && _sharedWith!.isNotEmpty) {
       return '$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy';
     }
+
     // if key starts with local: or isLocal set to true, return local key
     if (isLocal == true) {
       String localKey = '$key${_dotNamespaceIfPresent()}$sharedBy';
@@ -128,6 +137,7 @@ class AtKey {
       }
       return 'local:$localKey';
     }
+
     // Defaults to return a self key.
     return '$key${_dotNamespaceIfPresent()}$_sharedBy';
   }
@@ -358,7 +368,7 @@ class SharedKey extends AtKey {
 /// Represents a Private key.
 class PrivateKey extends AtKey {
   PrivateKey() {
-    super.metadata = Metadata();
+    super.metadata = Metadata()..isHidden = true;
   }
 
   @override
