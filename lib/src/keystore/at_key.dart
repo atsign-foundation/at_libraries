@@ -41,10 +41,9 @@ class AtKey {
   String? get key => _key;
 
   set key(String? key) {
-    if (key.isNullOrEmpty) {
-      throw InvalidAtKeyException('Key cannot be null or empty');
+    if (key != null) {
+      _key = key.toLowerCase();
     }
-    _key = key?.toLowerCase();
   }
 
   String? get namespace => _namespace;
