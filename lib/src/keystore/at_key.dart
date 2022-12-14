@@ -41,13 +41,18 @@ class AtKey {
   String? get key => _key;
 
   set key(String? key) {
+    if (key.isNullOrEmpty) {
+      throw InvalidAtKeyException('Key cannot be null or empty');
+    }
     _key = key?.toLowerCase();
   }
 
   String? get namespace => _namespace;
 
   set namespace(String? namespace) {
-    _namespace = namespace?.toLowerCase();
+    if (namespace != null && namespace.isNotEmpty) {
+      _namespace = namespace.toLowerCase();
+    }
   }
 
   String? get sharedBy => _sharedBy;
