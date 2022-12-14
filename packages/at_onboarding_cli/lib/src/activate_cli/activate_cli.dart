@@ -11,9 +11,13 @@ Future<void> main(List<String> arguments) async {
 
   //get atSign and CRAM key from args
   final parser = ArgParser()
-    ..addOption('atsign', abbr: 'a', help: 'atSign to activate')..addOption(
-        'cramkey', abbr: 'c', help: 'CRAM key')..addOption('rootServer',
-        abbr: 'r', help: 'root server', defaultsTo: rootServer)
+    ..addOption('atsign', abbr: 'a', help: 'atSign to activate')
+    ..addOption('cramkey', abbr: 'c', help: 'CRAM key')
+    ..addOption('rootServer',
+        abbr: 'r',
+        help: 'root server',
+        defaultsTo: rootServer,
+        mandatory: false)
     ..addFlag('help', abbr: 'h', help: 'Usage instructions', negatable: false);
   ArgResults argResults = parser.parse(arguments);
 
@@ -45,7 +49,7 @@ Future<void> main(List<String> arguments) async {
 
   //onboard the atSign
   AtOnboardingService? onboardingService =
-  AtOnboardingServiceImpl(argResults['atsign'], atOnboardingPreference);
+      AtOnboardingServiceImpl(argResults['atsign'], atOnboardingPreference);
 
   stdout.writeln('[Information] Activating your atSign...\n');
   await onboardingService.onboard();
