@@ -4,10 +4,10 @@ import 'package:at_commons/src/utils/at_key_regex_utils.dart';
 import 'package:at_commons/src/utils/string_utils.dart';
 
 class AtKey {
-  String? key;
+  String? _key;
   String? _sharedWith;
   String? _sharedBy;
-  String? namespace;
+  String? _namespace;
   Metadata? metadata;
   bool isRef = false;
 
@@ -38,11 +38,23 @@ class AtKey {
   /// These keys will never be synced between the client and secondary server.
   bool _isLocal = false;
 
+  String? get key => _key;
+
+  set key(String? key) {
+    _key = key?.toLowerCase();
+  }
+
+  String? get namespace => _namespace;
+
+  set namespace(String? namespace) {
+    _namespace = namespace?.toLowerCase();
+  }
+
   String? get sharedBy => _sharedBy;
 
   set sharedBy(String? sharedByAtSign) {
     assertStartsWithAtIfNotEmpty(sharedByAtSign);
-    _sharedBy = sharedByAtSign;
+    _sharedBy = sharedByAtSign?.toLowerCase();
   }
 
   String? get sharedWith => _sharedWith;
@@ -54,7 +66,7 @@ class AtKey {
       throw InvalidAtKeyException(
           'isLocal or isPublic cannot be true when sharedWith is set');
     }
-    _sharedWith = sharedWithAtSign;
+    _sharedWith = sharedWithAtSign?.toLowerCase();
   }
 
   bool get isLocal => _isLocal;
@@ -86,45 +98,38 @@ class AtKey {
         (metadata != null &&
             (metadata!.isPublic != null && metadata!.isPublic!) &&
             (metadata!.isCached))) {
-      return 'cached:public:$key${_dotNamespaceIfPresent()}$_sharedBy'
-          .toLowerCase();
+      return 'cached:public:$key${_dotNamespaceIfPresent()}$_sharedBy';
     }
     // If metadata.isPublic is true, return public key
     if (key!.startsWith('public:') ||
         (metadata != null &&
             metadata!.isPublic != null &&
             metadata!.isPublic!)) {
-      return 'public:$key${_dotNamespaceIfPresent()}$_sharedBy'.toLowerCase();
+      return 'public:$key${_dotNamespaceIfPresent()}$_sharedBy';
     }
     //If metadata.isCached is true, return shared cached key
     if (key!.startsWith('cached:') ||
         (metadata != null && metadata!.isCached)) {
-      return 'cached:$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy'
-          .toLowerCase();
+      return 'cached:$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy';
     }
     // If key starts with privatekey:, return private key
-    if ((metadata != null && metadata!.isHidden) ||
-        key!.startsWith('privatekey:')) {
-      if (key!.startsWith('privatekey:')) {
-        return '$key'.toLowerCase();
-      }
-      return 'privatekey:$key${_dotNamespaceIfPresent()}'.toLowerCase();
+    if (key!.startsWith('privatekey:')) {
+      return '$key';
     }
     //If _sharedWith is not null, return sharedKey
     if (_sharedWith != null && _sharedWith!.isNotEmpty) {
-      return '$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy'
-          .toLowerCase();
+      return '$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy';
     }
     // if key starts with local: or isLocal set to true, return local key
     if (isLocal == true) {
       String localKey = '$key${_dotNamespaceIfPresent()}$sharedBy';
       if (localKey.startsWith('local:')) {
-        return localKey.toLowerCase();
+        return localKey;
       }
-      return 'local:$localKey'.toLowerCase();
+      return 'local:$localKey';
     }
     // Defaults to return a self key.
-    return '$key${_dotNamespaceIfPresent()}$_sharedBy'.toLowerCase();
+    return '$key${_dotNamespaceIfPresent()}$_sharedBy';
   }
 
   static void assertStartsWithAtIfNotEmpty(String? atSign) {
@@ -312,6 +317,11 @@ class PublicKey extends AtKey {
     super.metadata = Metadata();
     super.metadata!.isPublic = true;
   }
+
+  @override
+  String toString() {
+    return 'public:$key${_dotNamespaceIfPresent()}$_sharedBy';
+  }
 }
 
 ///Represents a Self key.
@@ -320,6 +330,17 @@ class SelfKey extends AtKey {
     super.metadata = Metadata();
     super.metadata?.isPublic = false;
   }
+
+  @override
+  String toString() {
+    // If sharedWith is populated and sharedWith is equal to sharedBy, then
+    // keys is a self key.
+    // @alice:phone@alice or phone@alice
+    if (_sharedWith != null && _sharedWith!.isNotEmpty) {
+      return '$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy';
+    }
+    return '$key${_dotNamespaceIfPresent()}$_sharedBy';
+  }
 }
 
 /// Represents a key shared to another atSign.
@@ -327,13 +348,22 @@ class SharedKey extends AtKey {
   SharedKey() {
     super.metadata = Metadata();
   }
+
+  @override
+  String toString() {
+    return '$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy';
+  }
 }
 
 /// Represents a Private key.
 class PrivateKey extends AtKey {
   PrivateKey() {
-    //ToDo - verify this
-    super.metadata = Metadata()..isHidden = true;
+    super.metadata = Metadata();
+  }
+
+  @override
+  String toString() {
+    return 'privatekey:$key${_dotNamespaceIfPresent()}';
   }
 }
 
@@ -344,6 +374,11 @@ class LocalKey extends AtKey {
   LocalKey() {
     isLocal = true;
     super.metadata = Metadata();
+  }
+
+  @override
+  String toString() {
+    return 'local:$key${_dotNamespaceIfPresent()}$sharedBy';
   }
 }
 
