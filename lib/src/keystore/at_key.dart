@@ -80,45 +80,51 @@ class AtKey {
     if (key.isNullOrEmpty) {
       throw InvalidAtKeyException('Key cannot be null or empty');
     }
-    enforceLowercase();
     // If metadata.isPublic is true and metadata.isCached is true,
     // return cached public key
     if (key!.startsWith('cached:public:') ||
         (metadata != null &&
             (metadata!.isPublic != null && metadata!.isPublic!) &&
             (metadata!.isCached))) {
-      return 'cached:public:$key${_dotNamespaceIfPresent()}$_sharedBy';
+      return 'cached:public:$key${_dotNamespaceIfPresent()}$_sharedBy'
+          .toLowerCase();
     }
     // If metadata.isPublic is true, return public key
     if (key!.startsWith('public:') ||
         (metadata != null &&
             metadata!.isPublic != null &&
             metadata!.isPublic!)) {
-      return 'public:$key${_dotNamespaceIfPresent()}$_sharedBy';
+      return 'public:$key${_dotNamespaceIfPresent()}$_sharedBy'.toLowerCase();
     }
     //If metadata.isCached is true, return shared cached key
     if (key!.startsWith('cached:') ||
         (metadata != null && metadata!.isCached)) {
-      return 'cached:$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy';
+      return 'cached:$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy'
+          .toLowerCase();
     }
     // If key starts with privatekey:, return private key
-    if (key!.startsWith('privatekey:')) {
-      return '$key';
+    if ((metadata != null && metadata!.isHidden) ||
+        key!.startsWith('privatekey:')) {
+      if (key!.startsWith('privatekey:')) {
+        return '$key'.toLowerCase();
+      }
+      return 'privatekey:$key${_dotNamespaceIfPresent()}'.toLowerCase();
     }
     //If _sharedWith is not null, return sharedKey
     if (_sharedWith != null && _sharedWith!.isNotEmpty) {
-      return '$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy';
+      return '$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy'
+          .toLowerCase();
     }
     // if key starts with local: or isLocal set to true, return local key
     if (isLocal == true) {
       String localKey = '$key${_dotNamespaceIfPresent()}$sharedBy';
       if (localKey.startsWith('local:')) {
-        return localKey;
+        return localKey.toLowerCase();
       }
-      return 'local:$localKey';
+      return 'local:$localKey'.toLowerCase();
     }
     // Defaults to return a self key.
-    return '$key${_dotNamespaceIfPresent()}$_sharedBy';
+    return '$key${_dotNamespaceIfPresent()}$_sharedBy'.toLowerCase();
   }
 
   static void assertStartsWithAtIfNotEmpty(String? atSign) {
@@ -226,17 +232,16 @@ class AtKey {
   static AtKey fromString(String key) {
     var atKey = AtKey();
     var metaData = Metadata();
+    key = key.toLowerCase();
     if (key.startsWith(AT_PKAM_PRIVATE_KEY) ||
         key.startsWith(AT_PKAM_PUBLIC_KEY)) {
       atKey.key = key;
       atKey.metadata = metaData;
-      atKey.enforceLowercase();
       return atKey;
     } else if (key.startsWith(AT_ENCRYPTION_PRIVATE_KEY)) {
       atKey.key = key.split('@')[0];
       atKey._sharedBy = '@${key.split('@')[1]}';
       atKey.metadata = metaData;
-      atKey.enforceLowercase;
       return atKey;
     }
     //If key does not contain '@'. or key has space, it is not a valid key.
@@ -291,7 +296,6 @@ class AtKey {
       metaData.namespaceAware = false;
     }
     atKey.metadata = metaData;
-    atKey.enforceLowercase();
     return atKey;
   }
 
@@ -299,14 +303,6 @@ class AtKey {
   /// Set enforceNamespace=true for strict namespace validation in the key.
   static KeyType getKeyType(String key, {bool enforceNameSpace = false}) {
     return RegexUtil.keyType(key, enforceNameSpace);
-  }
-
-  ///converts the AtKey to lowercase
-  void enforceLowercase() {
-    key = key?.toLowerCase();
-    _sharedBy = _sharedBy?.toLowerCase();
-    _sharedWith = _sharedWith?.toLowerCase();
-    namespace = namespace?.toLowerCase();
   }
 }
 
@@ -316,11 +312,6 @@ class PublicKey extends AtKey {
     super.metadata = Metadata();
     super.metadata!.isPublic = true;
   }
-
-  @override
-  String toString() {
-    return 'public:$key${_dotNamespaceIfPresent()}$_sharedBy';
-  }
 }
 
 ///Represents a Self key.
@@ -329,17 +320,6 @@ class SelfKey extends AtKey {
     super.metadata = Metadata();
     super.metadata?.isPublic = false;
   }
-
-  @override
-  String toString() {
-    // If sharedWith is populated and sharedWith is equal to sharedBy, then
-    // keys is a self key.
-    // @alice:phone@alice or phone@alice
-    if (_sharedWith != null && _sharedWith!.isNotEmpty) {
-      return '$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy';
-    }
-    return '$key${_dotNamespaceIfPresent()}$_sharedBy';
-  }
 }
 
 /// Represents a key shared to another atSign.
@@ -347,22 +327,13 @@ class SharedKey extends AtKey {
   SharedKey() {
     super.metadata = Metadata();
   }
-
-  @override
-  String toString() {
-    return '$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy';
-  }
 }
 
 /// Represents a Private key.
 class PrivateKey extends AtKey {
   PrivateKey() {
-    super.metadata = Metadata();
-  }
-
-  @override
-  String toString() {
-    return 'privatekey:$key${_dotNamespaceIfPresent()}';
+    //ToDo - verify this
+    super.metadata = Metadata()..isHidden = true;
   }
 }
 
@@ -373,11 +344,6 @@ class LocalKey extends AtKey {
   LocalKey() {
     isLocal = true;
     super.metadata = Metadata();
-  }
-
-  @override
-  String toString() {
-    return 'local:$key${_dotNamespaceIfPresent()}$sharedBy';
   }
 }
 

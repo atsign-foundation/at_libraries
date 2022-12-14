@@ -106,8 +106,7 @@ void main() {
   group(
       'A group of positive test to construct a atKey with uppercase characters to assert their conversion to lowercase',
       () {
-    test('Assert key conversion to lowercase with AtKey.enforceLowercase()',
-        () {
+    test('Assert key conversion to lowercase', () {
       var fromAtsign = '@aliCe';
       var toAtsign = '@boB';
       var metaData = Metadata()..dataSignature = 'dfgDSFFkhkjh987686567464hbjh';
@@ -119,8 +118,7 @@ void main() {
         ..namespace = 'attAlk'
         ..metadata = metaData;
 
-      atKey.enforceLowercase();
-      //assert that all compnents of the AtKey are converted to lowercase
+      //assert that all components of the AtKey are converted to lowercase
       expect(atKey.key, 'foo.bar');
       expect(atKey.namespace, 'attalk');
       expect(atKey.sharedBy, '@alice');
