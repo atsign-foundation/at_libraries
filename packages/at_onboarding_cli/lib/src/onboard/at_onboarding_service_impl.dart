@@ -31,11 +31,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   @override
   Future<AtClient?> getAtClient() async {
     if (_atClient == null) {
-      AtClientManager _atClientManager = AtClientManager.getInstance();
-      await _atClientManager.setCurrentAtSign(
+      AtClientManager atClientManager = AtClientManager.getInstance();
+      await atClientManager.setCurrentAtSign(
           _atSign, atOnboardingPreference.namespace, atOnboardingPreference);
-      _atLookup = _atClientManager.atClient.getRemoteSecondary()?.atLookUp;
-      return _atClientManager.atClient;
+      _atLookup = atClientManager.atClient.getRemoteSecondary()?.atLookUp;
+      return atClientManager.atClient;
     }
     return _atClient;
   }
@@ -75,33 +75,33 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   ///method to generate/update encryption key-pairs to activate an atsign
   Future<void> _activateAtsign() async {
-    RSAKeypair _pkamRsaKeypair;
-    RSAKeypair _encryptionKeyPair;
-    String _selfEncryptionKey;
+    RSAKeypair pkamRsaKeypair;
+    RSAKeypair encryptionKeyPair;
+    String selfEncryptionKey;
     Map<String, String> atKeysMap;
 
     //generating pkamKeyPair
     logger.info('Generating pkam keypair');
-    _pkamRsaKeypair = generateRsaKeypair();
+    pkamRsaKeypair = generateRsaKeypair();
 
     //generate user encryption keypair
     logger.info('Generating encryption keypair');
-    _encryptionKeyPair = generateRsaKeypair();
+    encryptionKeyPair = generateRsaKeypair();
 
     //generate selfEncryptionKey
-    _selfEncryptionKey = generateAESKey();
+    selfEncryptionKey = generateAESKey();
 
     stdout.writeln(
         '[Information] Generating your encryption keys and .atKeys file\n');
     //mapping encryption keys pairs to their names
     atKeysMap = <String, String>{
-      AuthKeyType.pkamPublicKey: _pkamRsaKeypair.publicKey.toString(),
-      AuthKeyType.pkamPrivateKey: _pkamRsaKeypair.privateKey.toString(),
-      AuthKeyType.encryptionPublicKey: _encryptionKeyPair.publicKey.toString(),
+      AuthKeyType.pkamPublicKey: pkamRsaKeypair.publicKey.toString(),
+      AuthKeyType.pkamPrivateKey: pkamRsaKeypair.privateKey.toString(),
+      AuthKeyType.encryptionPublicKey: encryptionKeyPair.publicKey.toString(),
       AuthKeyType.encryptionPrivateKey:
-          _encryptionKeyPair.privateKey.toString(),
-      AuthKeyType.selfEncryptionKey: _selfEncryptionKey,
-      _atSign: _selfEncryptionKey,
+          encryptionKeyPair.privateKey.toString(),
+      AuthKeyType.selfEncryptionKey: selfEncryptionKey,
+      _atSign: selfEncryptionKey,
     };
     //generate .atKeys file
     await _generateAtKeysFile(atKeysMap);
@@ -109,11 +109,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     //updating pkamPublicKey to remote secondary
     logger.finer('Updating PkamPublicKey to remote secondary');
     String updateCommand =
-        'update:$AT_PKAM_PUBLIC_KEY ${_pkamRsaKeypair.publicKey}\n';
+        'update:$AT_PKAM_PUBLIC_KEY ${pkamRsaKeypair.publicKey}\n';
     String? pkamUpdateResult =
         await _atLookup?.executeCommand(updateCommand, auth: false);
     logger.info('PkamPublicKey update result: $pkamUpdateResult');
-    atOnboardingPreference.privateKey = _pkamRsaKeypair.privateKey.toString();
+    atOnboardingPreference.privateKey = pkamRsaKeypair.privateKey.toString();
 
     //authenticate using pkam to verify insertion of pkamPublicKey
     _isPkamAuthenticated =
@@ -124,7 +124,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       UpdateVerbBuilder updateBuilder = UpdateVerbBuilder()
         ..atKey = 'publickey'
         ..isPublic = true
-        ..value = _encryptionKeyPair.publicKey.toString()
+        ..value = encryptionKeyPair.publicKey.toString()
         ..sharedBy = _atSign;
       String? encryptKeyUpdateResult =
           await _atLookup?.executeVerb(updateBuilder);
@@ -199,28 +199,28 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   ///back-up encryption keys to local secondary
   Future<void> _persistKeysLocalSecondary() async {
     //when authenticating keys need to be fetched from atKeys file
-    Map<String, String> _atKeysMap = await _decryptAtKeysFile(
+    Map<String, String> atKeysMap = await _decryptAtKeysFile(
         (await _readAtKeysFile(atOnboardingPreference.atKeysFilePath))!);
     //backup keys into local secondary
     bool? response = await _atClient
         ?.getLocalSecondary()
-        ?.putValue(AT_PKAM_PUBLIC_KEY, _atKeysMap[AuthKeyType.pkamPublicKey]!);
+        ?.putValue(AT_PKAM_PUBLIC_KEY, atKeysMap[AuthKeyType.pkamPublicKey]!);
     logger.finer('PkamPublicKey persist to localSecondary: status $response');
     response = await _atClient?.getLocalSecondary()?.putValue(
-        AT_PKAM_PRIVATE_KEY, _atKeysMap[AuthKeyType.pkamPrivateKey]!);
+        AT_PKAM_PRIVATE_KEY, atKeysMap[AuthKeyType.pkamPrivateKey]!);
     logger.finer('PkamPrivateKey persist to localSecondary: status $response');
     response = await _atClient?.getLocalSecondary()?.putValue(
         '$AT_ENCRYPTION_PUBLIC_KEY$_atSign',
-        _atKeysMap[AuthKeyType.encryptionPublicKey]!);
+        atKeysMap[AuthKeyType.encryptionPublicKey]!);
     logger.finer(
         'EncryptionPublicKey persist to localSecondary: status $response');
     response = await _atClient?.getLocalSecondary()?.putValue(
         AT_ENCRYPTION_PRIVATE_KEY,
-        _atKeysMap[AuthKeyType.encryptionPrivateKey]!);
+        atKeysMap[AuthKeyType.encryptionPrivateKey]!);
     logger.finer(
         'EncryptionPrivateKey persist to localSecondary: status $response');
     response = await _atClient?.getLocalSecondary()?.putValue(
-        AT_ENCRYPTION_SELF_KEY, _atKeysMap[AuthKeyType.selfEncryptionKey]!);
+        AT_ENCRYPTION_SELF_KEY, atKeysMap[AuthKeyType.selfEncryptionKey]!);
     logger.finer(
         'Self encryption key persist to localSecondary: status $response');
   }
@@ -280,7 +280,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   Future<Map<String, String>> _decryptAtKeysFile(
       Map<String, String> jsonData) async {
     String decryptionKey = _getDecryptionKey(jsonData);
-    Map<String, String> _atKeysMap = <String, String>{
+    Map<String, String> atKeysMap = <String, String>{
       AuthKeyType.pkamPublicKey: EncryptionUtil.decryptValue(
           jsonData[AuthKeyType.pkamPublicKey]!, decryptionKey),
       AuthKeyType.pkamPrivateKey: EncryptionUtil.decryptValue(
@@ -291,7 +291,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
           jsonData[AuthKeyType.encryptionPrivateKey]!, decryptionKey),
       AuthKeyType.selfEncryptionKey: decryptionKey,
     };
-    return _atKeysMap;
+    return atKeysMap;
   }
 
   ///generates random RSA keypair
@@ -331,11 +331,12 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   ///If not, wait until secondary is created
   Future<void> _waitUntilSecondaryCreated() async {
     final maxRetries = 50;
-    int retryCount = 0;
+    int retryCount = 1;
     SecondaryAddress? secondaryAddress;
     SecureSocket? secureSocket;
 
-    while (retryCount < maxRetries && secondaryAddress == null) {
+    while (retryCount <= maxRetries && secondaryAddress == null) {
+      await Future.delayed(Duration(seconds: 3));
       logger.finer('retrying find secondary.......$retryCount/$maxRetries');
       try {
         secondaryAddress =
@@ -351,13 +352,15 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       exit(1);
     }
     //resetting retry counter to be used for different operation
-    retryCount = 0;
-    while (secureSocket == null && retryCount < maxRetries) {
+    retryCount = 1;
+    while (secureSocket == null && retryCount <= maxRetries) {
+      await Future.delayed(Duration(seconds: 3));
       logger.finer('retrying connect secondary.......$retryCount/$maxRetries');
       stdout.writeln('Connecting to secondary ...$retryCount/$maxRetries\n');
       try {
         secureSocket = await SecureSocket.connect(
-            secondaryAddress.host, secondaryAddress.port);
+            secondaryAddress.host, secondaryAddress.port,
+            timeout: Duration(seconds: 30)); // 30-second timeout should be enough even for slow networks
       } on Exception catch (e) {
         logger.finer(e);
       }
