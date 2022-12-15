@@ -39,7 +39,7 @@ Future<void> main(List<String> arguments) async {
   }
 
   stdout.writeln(
-      '${'[Information] Root server is ' + argResults['rootServer']}\n');
+      '[Information] Root server is ${argResults['rootServer']}');
 
   //onboarding preference builder can be used to set onboardingService parameters
   AtOnboardingPreference atOnboardingPreference = AtOnboardingPreference()
@@ -51,7 +51,7 @@ Future<void> main(List<String> arguments) async {
   AtOnboardingService? onboardingService =
       AtOnboardingServiceImpl(argResults['atsign'], atOnboardingPreference);
 
-  stdout.writeln('[Information] Activating your atSign...\n');
+  stdout.writeln('[Information] Activating your atSign. This may take up to 2 minutes.');
   await onboardingService.onboard();
   await onboardingService.close();
   //free the object after it's used and no longer required

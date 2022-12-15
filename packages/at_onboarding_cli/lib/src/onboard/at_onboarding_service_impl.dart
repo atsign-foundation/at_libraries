@@ -92,7 +92,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     selfEncryptionKey = generateAESKey();
 
     stdout.writeln(
-        '[Information] Generating your encryption keys and .atKeys file\n');
+        '[Information] Generating your encryption keys and .atKeys file');
     //mapping encryption keys pairs to their names
     atKeysMap = <String, String>{
       AuthKeyType.pkamPublicKey: pkamRsaKeypair.publicKey.toString(),
@@ -193,7 +193,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     logger.info(
         'atKeys file saved at ${atOnboardingPreference.downloadPath ?? atOnboardingPreference.atKeysFilePath}');
     stdout.writeln(
-        '[Success] Your .atKeys file saved at ${atOnboardingPreference.downloadPath ?? atOnboardingPreference.atKeysFilePath}\n');
+        '[Success] Your .atKeys file saved at ${atOnboardingPreference.downloadPath ?? atOnboardingPreference.atKeysFilePath}');
   }
 
   ///back-up encryption keys to local secondary
@@ -356,7 +356,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     while (secureSocket == null && retryCount <= maxRetries) {
       await Future.delayed(Duration(seconds: 3));
       logger.finer('retrying connect secondary.......$retryCount/$maxRetries');
-      stdout.writeln('Connecting to secondary ...$retryCount/$maxRetries\n');
+      stdout.writeln('Connecting to secondary ...$retryCount/$maxRetries');
       try {
         secureSocket = await SecureSocket.connect(
             secondaryAddress.host, secondaryAddress.port,
