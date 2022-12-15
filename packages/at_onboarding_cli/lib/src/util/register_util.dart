@@ -112,10 +112,10 @@ class RegisterUtil {
           (jsonDecoded['message'] ==
               'Oops! You already have the maximum number of free atSigns. Please select one of your existing atSigns.')) {
         stdout.writeln(
-            '\n[Unable to proceed] This email address already has 10 free atSigns associated with it.\n'
+            '[Unable to proceed] This email address already has 10 free atSigns associated with it.\n'
             'To register a new atSign to this email address, please log into the dashboard \'my.atsign.com/login\'.\n'
             'Remove at least 1 atSign from your account and then try again.\n'
-            'Alternatively, you can retry this process with a different email address.\n');
+            'Alternatively, you can retry this process with a different email address.');
         exit(1);
       } else {
         throw at_client.AtClientException.message(
@@ -179,10 +179,10 @@ class RegisterUtil {
     otp = stdin.readLineSync()!.toUpperCase();
     while (!validateVerificationCode(otp!)) {
       stderr.writeln(
-          '\n[Unable to proceed] The verification code you entered is invalid.'
-          '\nPlease check your email for a 4-character verification code.'
-          '\nIf you cannot see the code in your inbox, please check your spam/junk/promotions folders.\n'
-          '\n[Action Required] Enter your verification code:');
+          '[Unable to proceed] The verification code you entered is invalid.\n'
+          'Please check your email for a 4-character verification code.\n'
+          'If you cannot see the code in your inbox, please check your spam/junk/promotions folders.\n'
+          '[Action Required] Enter your verification code:');
       otp = stdin.readLineSync()!.toUpperCase();
     }
     return otp;

@@ -46,7 +46,7 @@ class Register {
       params['email'] = argResults['email'];
     } else {
       stderr.writeln(
-          '[Unable to run Register CLI] You have entered an invalid email address. Check your email address and try again.\n');
+          '[Unable to run Register CLI] You have entered an invalid email address. Check your email address and try again.');
       exit(1);
     }
 
@@ -114,14 +114,14 @@ class RegistrationFlow {
 class GetFreeAtsign extends RegisterApiTask {
   @override
   Future<RegisterApiResult> run() async {
-    stdout.writeln(
-        '\n[Information] Getting your randomly generated free atSign…\n');
+    stdout
+        .writeln('[Information] Getting your randomly generated free atSign…');
     try {
       List<String> atsignList =
           await registerUtil.getFreeAtSigns(authority: params['authority']!);
       result.data['atsign'] = atsignList[0];
       stdout
-          .writeln('[Information] Your new atSign is **@${atsignList[0]}**\n');
+          .writeln('[Information] Your new atSign is **@${atsignList[0]}**');
       result.apiCallStatus = ApiCallStatus.success;
     } on Exception catch (e) {
       result.exceptionMessage = e.toString();
@@ -141,14 +141,14 @@ class RegisterAtsign extends RegisterApiTask {
   @override
   Future<RegisterApiResult> run() async {
     stdout.writeln(
-        '[Information] Sending verification code to: ${params['email']}\n');
+        '[Information] Sending verification code to: ${params['email']}');
     try {
       result.data['otpSent'] = (await registerUtil.registerAtSign(
               params['atsign']!, params['email']!,
               authority: params['authority']!))
           .toString();
       stdout.writeln(
-          '[Information] Verification code sent to: ${params['email']}\n');
+          '[Information] Verification code sent to: ${params['email']}');
       result.apiCallStatus = ApiCallStatus.success;
     } on Exception catch (e) {
       result.exceptionMessage = e.toString();
@@ -177,7 +177,7 @@ class ValidateOtp extends RegisterApiTask {
     if (params['otp'] == null) {
       params['otp'] = registerUtil.getVerificationCodeFromUser();
     }
-    stdout.writeln('\n[Information] Validating your verification code...');
+    stdout.writeln('[Information] Validating your verification code...');
     try {
       String apiResponse = await registerUtil.validateOtp(
           params['atsign']!, params['email']!, params['otp']!,
@@ -185,8 +185,8 @@ class ValidateOtp extends RegisterApiTask {
           authority: params['authority']!);
       if (apiResponse == 'retry') {
         stderr.writeln(
-            '\n[Unable to proceed] The verification code you entered is either invalid or expired.'
-            ' Check your verification code and try again.\n');
+            '[Unable to proceed] The verification code you entered is either invalid or expired.\n'
+            ' Check your verification code and try again.');
         params['otp'] = registerUtil.getVerificationCodeFromUser();
         result.apiCallStatus = ApiCallStatus.retry;
         result.exceptionMessage =
@@ -198,10 +198,9 @@ class ValidateOtp extends RegisterApiTask {
       } else if (apiResponse.startsWith("@")) {
         result.data['cramkey'] = apiResponse.split(":")[1];
         stdout.writeln(
-            '${'\n[Information] Your cram secret: ' + result.data['cramkey']}\n');
-        stdout.writeln(
-            '[Success] Your atSign **@${params['atsign']}** has been'
-                'successfully registered to ${params['email']}\n');
+            '[Information] Your cram secret: ${result.data['cramkey']}');
+        stdout.writeln('[Success] Your atSign **@${params['atsign']}** has been'
+            'successfully registered to ${params['email']}');
         result.apiCallStatus = ApiCallStatus.success;
       }
     } on Exception catch (e) {
@@ -220,14 +219,17 @@ Future<void> main(List<String> args) async {
     await register.main(args);
   } on FormatException catch (e, _) {
     if (e.toString().contains('Missing argument')) {
-      stderr.writeln('[Unable to run Register CLI] Please re-run with your email address');
-      stderr.writeln('Usage: \'dart run register_cli.dart -e email@email.com\'');
+      stderr.writeln(
+          '[Unable to run Register CLI] Please re-run with your email address');
+      stderr
+          .writeln('Usage: \'dart run register_cli.dart -e email@email.com\'');
       exit(1);
     } else if (e.toString().contains('Could not find an option or flag')) {
-      stderr.writeln(
-          '[Unable to run Register CLI] The option entered is invalid.'
+      stderr
+          .writeln('[Unable to run Register CLI] The option entered is invalid.'
               ' Please use the \'-e\' flag to input your email');
-      stderr.writeln('Usage: \'dart run register_cli.dart -e email@email.com\'');
+      stderr
+          .writeln('Usage: \'dart run register_cli.dart -e email@email.com\'');
       exit(1);
     }
   }

@@ -23,9 +23,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   AtOnboardingPreference atOnboardingPreference;
 
   AtOnboardingServiceImpl(atsign, this.atOnboardingPreference) {
-    _atSign = AtUtils.formatAtSign(atsign)!;
+    atsign = AtUtils.formatAtSign(atsign)!;
     //performs atSign format checks on the atSign
-    AtUtils.fixAtSign(_atSign);
+    _atSign = AtUtils.fixAtSign(atsign);
   }
 
   @override
@@ -44,7 +44,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   Future<bool> onboard() async {
     //get cram_secret from either from AtOnboardingConfig or decode it from qr code whichever available
     atOnboardingPreference.cramSecret ??=
-        _getSecretFromQr(atOnboardingPreference.qrCodePath);
+        getSecretFromQr(atOnboardingPreference.qrCodePath);
 
     if (atOnboardingPreference.cramSecret == null) {
       throw AtClientException.message(
@@ -313,7 +313,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }
 
   ///extracts cram secret from qrCode
-  String? _getSecretFromQr(String? path) {
+  static String? getSecretFromQr(String? path) {
     if (path != null) {
       Image? image = decodePng(File(path).readAsBytesSync());
       LuminanceSource source = RGBLuminanceSource(image!.width, image.height,
