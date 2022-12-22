@@ -120,8 +120,7 @@ class GetFreeAtsign extends RegisterApiTask {
       List<String> atsignList =
           await registerUtil.getFreeAtSigns(authority: params['authority']!);
       result.data['atsign'] = atsignList[0];
-      stdout
-          .writeln('[Information] Your new atSign is **@${atsignList[0]}**');
+      stdout.writeln('[Information] Your new atSign is **@${atsignList[0]}**');
       result.apiCallStatus = ApiCallStatus.success;
     } on Exception catch (e) {
       result.exceptionMessage = e.toString();
@@ -217,7 +216,7 @@ Future<void> main(List<String> args) async {
   AtSignLogger.root_level = 'severe';
   try {
     await register.main(args);
-  } on FormatException catch (e, _) {
+  } on FormatException catch (e) {
     if (e.toString().contains('Missing argument')) {
       stderr.writeln(
           '[Unable to run Register CLI] Please re-run with your email address');
@@ -231,6 +230,24 @@ Future<void> main(List<String> args) async {
       stderr
           .writeln('Usage: \'dart run register_cli.dart -e email@email.com\'');
       exit(1);
+    } else if (e
+        .toString()
+        .contains('Incorrect otp entered 3 times. Max retries reached.')) {
+      stderr.writeln(
+          '[Unable to proceed] Registration has been terminated as you have'
+          ' reached the maximum number of verification attempts.\n'
+          'Please start again or contact support@atsign.com');
+      exit(1);
+    } else {
+      stderr.writeln(
+          '[Error] Failed getting an atsign. It looks like something went wrong on our side.\n'
+          'Please try again or contact support@atsign.com');
+      stderr.writeln('Cause: ${e.toString()}');
     }
+  } on Exception catch (e) {
+    stderr.writeln(
+        '[Error] Failed getting an atsign. It looks like something went wrong on our side.\n'
+        'Please try again or contact support@atsign.com');
+    stderr.writeln('Cause: ${e.toString()}');
   }
 }
