@@ -1,8 +1,9 @@
 ## 1.2.2
 - Minor reformatting of user logs and minor bugfixes
 - Fixed issue with using executables
+- activate_cli can now be used with a qr_code instead of cram secret
 - Removed option to use staging env in register_cli
-- Upgrade dependency at_client to latest version v3.0.48
+- Upgrade dependency at_client to latest version v3.0.49
 - Upgrade dependency at_lookup to latest version v3.0.33
 - Upgrade dependency at_commons to latest version v3.0.32
 ## 1.2.1

@@ -93,7 +93,22 @@ Please refer to [example](https://pub.dev/packages/at_onboarding_cli/example) to
 ### activate_cli:
 A simple tool to onboard(activate) an atSign through command-line arguments
 
-#### Usage:
+#### Usage 1:
+Run the following commands in your command-line tool (Terminal, CMD, PowerShell, etc)
+
+##### To activate using your cram secret
+```
+dart pub global activate at_onboarding_cli
+at_activate -a your_atsign -c your_cram_secret
+```
+
+##### To activate using a qr_code
+```
+dart pub global activate at_onboarding_cli
+at_activate -a your_atsign -q path_to_qrcode_for_this_atsign
+```
+
+#### Usage 2:
    1) Clone code from https://github.com/atsign-foundation/at_libraries
    2) Change directory to at_libraries/at_onboarding_cli in the cloned repository
    3) Run `dart pub get`
@@ -107,7 +122,14 @@ dart run lib/src/activate_cli/activate_cli.dart -a your_atsign -c your_cram_secr
 ### register_cli:
 A command-line tool to get yourself a free atsign. This tool fetches a free atsign and registers it to the email provided as arguments.
 
-#### Usage:
+#### Usage 1:
+Run the following commands in you command-line tool (Terminal, CMD, PowerShell, etc)
+```
+dart pub global activate at_onboarding_cli
+at_register -e your_email
+```
+
+#### Usage 2:
    1) Clone code from https://github.com/atsign-foundation/at_libraries
    2) Change directory to at_libraries/at_onboarding_cli in the cloned repository
    3) Run `dart pub get`
