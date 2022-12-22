@@ -62,12 +62,7 @@ class Register {
         .add(ValidateOtp())
         .start();
 
-    activate_cli.main([
-      '-a',
-      params['atsign']!,
-      '-c',
-      params['cramkey']!
-    ]);
+    activate_cli.main(['-a', params['atsign']!, '-c', params['cramkey']!]);
   }
 }
 
@@ -230,7 +225,15 @@ Future<void> main(List<String> args) async {
       stderr
           .writeln('Usage: \'dart run register_cli.dart -e email@email.com\'');
       exit(1);
-    } else if (e
+    } else {
+      stderr.writeln(
+          '[Error] Failed getting an atsign. It looks like something went wrong on our side.\n'
+          'Please try again or contact support@atsign.com, quoting the text displayed below.');
+      stderr.writeln('Cause: ${e.toString()}');
+      exit(1);
+    }
+  } on Exception catch (e) {
+    if (e
         .toString()
         .contains('Incorrect otp entered 3 times. Max retries reached.')) {
       stderr.writeln(
@@ -241,13 +244,9 @@ Future<void> main(List<String> args) async {
     } else {
       stderr.writeln(
           '[Error] Failed getting an atsign. It looks like something went wrong on our side.\n'
-          'Please try again or contact support@atsign.com');
+          'Please try again or contact support@atsign.com, quoting the text displayed below.');
       stderr.writeln('Cause: ${e.toString()}');
+      exit(1);
     }
-  } on Exception catch (e) {
-    stderr.writeln(
-        '[Error] Failed getting an atsign. It looks like something went wrong on our side.\n'
-        'Please try again or contact support@atsign.com');
-    stderr.writeln('Cause: ${e.toString()}');
   }
 }
