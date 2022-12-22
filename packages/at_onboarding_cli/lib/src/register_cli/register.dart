@@ -199,7 +199,7 @@ class ValidateOtp extends RegisterApiTask {
         stdout.writeln(
             '[Information] Your cram secret: ${result.data['cramkey']}');
         stdout.writeln('[Success] Your atSign **@${params['atsign']}** has been'
-            'successfully registered to ${params['email']}');
+            ' successfully registered to ${params['email']}');
         result.apiCallStatus = ApiCallStatus.success;
       }
     } on Exception catch (e) {
