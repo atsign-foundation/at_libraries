@@ -103,128 +103,6 @@ void main() {
     });
   });
 
-  group(
-      'A group of positive test to construct a atKey with uppercase characters to assert their conversion to lowercase',
-      () {
-    test('Assert key conversion to lowercase', () {
-      var fromAtsign = '@aliCe';
-      var toAtsign = '@boB';
-      var metaData = Metadata()..dataSignature = 'dfgDSFFkhkjh987686567464hbjh';
-
-      AtKey atKey = AtKey()
-        ..key = 'foo.Bar'
-        ..sharedBy = fromAtsign
-        ..sharedWith = toAtsign
-        ..namespace = 'attAlk'
-        ..metadata = metaData;
-
-      //assert that all components of the AtKey are converted to lowercase
-      expect(atKey.key, 'foo.bar');
-      expect(atKey.namespace, 'attalk');
-      expect(atKey.sharedBy, '@alice');
-      expect(atKey.sharedWith, '@bob');
-      //assert that dataSignature is not converted to lowercase
-      expect(atKey.metadata?.dataSignature, metaData.dataSignature);
-    });
-    test('toString and fromString with namespace', () {
-      var fromAtsign = '@aliCe';
-      var toAtsign = '@boB';
-      var metaData = Metadata()
-        ..isPublic = false
-        ..isEncrypted = true
-        ..namespaceAware = true
-        ..ttr = -1
-        ..ttl = 10000;
-
-      var inKey = AtKey()
-        ..key = 'foo.Bar'
-        ..sharedBy = fromAtsign
-        ..sharedWith = toAtsign
-        ..namespace = 'attAlk'
-        ..metadata = metaData;
-
-      expect(inKey.toString(), "@bob:foo.bar.attalk@alice");
-
-      var outKey = AtKey.fromString(inKey.toString());
-      expect(outKey.toString(), inKey.toString());
-      expect(outKey.key, 'foo.bar');
-      expect(outKey.namespace, 'attalk');
-      expect(outKey.metadata!.isPublic, false);
-      expect(outKey.isLocal, false);
-    });
-
-    test('Test to verify a public key', () {
-      var testKey = 'public:pHone@bOb';
-      var atKey = AtKey.fromString(testKey);
-      expect(atKey.key, 'phone');
-      expect(atKey.sharedBy, '@bob');
-      expect(atKey.sharedWith, null);
-      expect(atKey.isLocal, false);
-      expect(atKey.metadata!.isPublic, true);
-      expect(atKey.metadata!.namespaceAware, false);
-      expect(atKey.toString(), testKey.toLowerCase());
-    });
-
-    test('Test to verify protected key', () {
-      var testKey = '@aliCe:pHone@boB';
-      var atKey = AtKey.fromString(testKey);
-      expect(atKey.key, 'phone');
-      expect(atKey.sharedBy, '@bob');
-      expect(atKey.sharedWith, '@alice');
-      expect(atKey.metadata!.isPublic, false);
-      expect(atKey.isLocal, false);
-      expect(atKey.toString(), testKey.toLowerCase());
-    });
-
-    test('Test to verify private key', () {
-      var testKey = 'phoNe@bOb';
-      var atKey = AtKey.fromString(testKey);
-      expect(atKey.key, 'phone');
-      expect(atKey.sharedBy, '@bob');
-      expect(atKey.sharedWith, null);
-      expect(atKey.metadata!.isPublic, false);
-      expect(atKey.isLocal, false);
-      expect(atKey.toString(), testKey.toLowerCase());
-    });
-
-    test('Test to verify cached key', () {
-      var testKey = 'cached:@aliCe:pHone@Bob';
-      var atKey = AtKey.fromString(testKey);
-      expect(atKey.key, 'phone');
-      expect(atKey.sharedBy, '@bob');
-      expect(atKey.sharedWith, '@alice');
-      expect(atKey.metadata!.isCached, true);
-      expect(atKey.metadata!.namespaceAware, false);
-      expect(atKey.metadata!.isPublic, false);
-      expect(atKey.isLocal, false);
-      expect(atKey.toString(), testKey.toLowerCase());
-    });
-
-    test('Test to verify pkam private key', () {
-      var atKey = AtKey.fromString(AT_PKAM_PRIVATE_KEY);
-      expect(atKey.key, AT_PKAM_PRIVATE_KEY);
-      expect(atKey.toString(), AT_PKAM_PRIVATE_KEY);
-    });
-
-    test('Test to verify pkam private key', () {
-      var atKey = AtKey.fromString(AT_PKAM_PUBLIC_KEY);
-      expect(atKey.key, AT_PKAM_PUBLIC_KEY);
-      expect(atKey.toString(), AT_PKAM_PUBLIC_KEY);
-    });
-
-    test('Test to verify key with namespace', () {
-      var testKey = '@alice:phone.buzz@bob';
-      var atKey = AtKey.fromString(testKey);
-      expect(atKey.key, 'phone');
-      expect(atKey.sharedWith, '@alice');
-      expect(atKey.sharedBy, '@bob');
-      expect(atKey.metadata!.isPublic, false);
-      expect(atKey.isLocal, false);
-      expect(atKey.metadata!.namespaceAware, true);
-      expect(atKey.toString(), testKey);
-    });
-  });
-
   group('A group a negative test cases', () {
     test('Test to verify invalid syntax exception is thrown', () {
       var key = 'phone.buzz';
@@ -243,10 +121,8 @@ void main() {
                   ..sharedBy = '@bob'
                   ..sharedWith = '@alice'
               },
-          throwsA(predicate((dynamic e) =>
-              e is InvalidAtKeyException &&
-              e.message ==
-                  'isLocal or isPublic cannot be true when sharedWith is set')));
+          throwsA(predicate(
+              (dynamic e) => e is InvalidAtKeyException && e.message == 'isLocal or isPublic cannot be true when sharedWith is set')));
     });
 
     test('Test cannot set sharedWith if isLocal is true', () {
@@ -257,10 +133,8 @@ void main() {
                   ..sharedBy = '@bob'
                   ..sharedWith = '@alice'
               },
-          throwsA(predicate((dynamic e) =>
-              e is InvalidAtKeyException &&
-              e.message ==
-                  'isLocal or isPublic cannot be true when sharedWith is set')));
+          throwsA(predicate(
+              (dynamic e) => e is InvalidAtKeyException && e.message == 'isLocal or isPublic cannot be true when sharedWith is set')));
     });
 
     test('Test cannot set isLocal to true if sharedWith is non-null', () {
@@ -271,10 +145,8 @@ void main() {
                   ..sharedWith = '@alice'
                   ..isLocal = true
               },
-          throwsA(predicate((dynamic e) =>
-              e is InvalidAtKeyException &&
-              e.message ==
-                  'sharedWith must be null when isLocal is set to true')));
+          throwsA(predicate(
+              (dynamic e) => e is InvalidAtKeyException && e.message == 'sharedWith must be null when isLocal is set to true')));
     });
   });
 
