@@ -251,7 +251,6 @@ class AtKey {
   static AtKey fromString(String key) {
     var atKey = AtKey();
     var metaData = Metadata();
-    key = key.toLowerCase();
     if (key.startsWith(AT_PKAM_PRIVATE_KEY) ||
         key.startsWith(AT_PKAM_PUBLIC_KEY)) {
       atKey.key = key;
