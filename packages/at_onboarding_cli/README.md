@@ -137,7 +137,7 @@ at_register -e your_email
 ```
 dart run lib/src/register_cli/register.dart -e email@email.com -n staging (or) production [-n is optional]
 ```
-   4) Enter otp sent to the provided email when prompted
+   4) Enter verification code sent to the provided email when prompted
    5) register_cli fetches the cramkey and the automatically calls activate_cli to activate the fetched atsign
    6) You can find your .atKeysFile in directory at_onboarding_cli/keys
 

@@ -65,7 +65,7 @@ Future<void> main(List<String> arguments) async {
   await onboardingService.close();
   //free the object after it's used and no longer required
   onboardingService = null;
-  stdout.writeln('[Information] Your .atKeys file has been saved at $downloadPath');
+  stdout.writeln('[Information] Your .atKeys file has been saved to the following location:\n$downloadPath');
   stdout.writeln('-------atSign activation complete-------');
   exit(0);
 }

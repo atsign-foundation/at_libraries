@@ -192,8 +192,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     await atKeysFile.close();
     logger.info(
         'atKeys file saved at ${atOnboardingPreference.downloadPath ?? atOnboardingPreference.atKeysFilePath}');
-    stdout.writeln(
-        '[Success] Your .atKeys file saved at ${atOnboardingPreference.downloadPath ?? atOnboardingPreference.atKeysFilePath}');
   }
 
   ///back-up encryption keys to local secondary
