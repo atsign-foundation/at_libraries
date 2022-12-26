@@ -107,7 +107,7 @@ void main() {
       'A group of positive test to construct a atKey with uppercase characters to assert their conversion to lowercase',
       () {
     test('Assert key conversion to lowercase', () {
-      var fromAtsign = '@aliCe';
+      var fromAtsign = '@aliCe🛠';
       var toAtsign = '@boB';
       var metaData = Metadata()..dataSignature = 'dfgDSFFkhkjh987686567464hbjh';
 
@@ -119,16 +119,17 @@ void main() {
         ..metadata = metaData;
 
       //assert that all components of the AtKey are converted to lowercase
-      expect(atKey.key, 'foo.bar');
+      //key will not be converted to lowercase upon assigning
+      expect(atKey.key, 'foo.Bar');
       expect(atKey.namespace, 'attalk');
-      expect(atKey.sharedBy, '@alice');
+      expect(atKey.sharedBy, '@alice🛠');
       expect(atKey.sharedWith, '@bob');
       //assert that dataSignature is not converted to lowercase
       expect(atKey.metadata?.dataSignature, metaData.dataSignature);
     });
     test('toString and fromString with namespace', () {
       var fromAtsign = '@aliCe';
-      var toAtsign = '@boB';
+      var toAtsign = '@boB🛠';
       var metaData = Metadata()
         ..isPublic = false
         ..isEncrypted = true
@@ -143,7 +144,7 @@ void main() {
         ..namespace = 'attAlk'
         ..metadata = metaData;
 
-      expect(inKey.toString(), "@bob:foo.bar.attalk@alice");
+      expect(inKey.toString(), "@bob🛠:foo.bar.attalk@alice");
 
       var outKey = AtKey.fromString(inKey.toString());
       expect(outKey.toString(), inKey.toString());
@@ -156,30 +157,38 @@ void main() {
     test('Test to verify a public key', () {
       var testKey = 'public:pHone@bOb';
       var atKey = AtKey.fromString(testKey);
-      expect(atKey.key, 'phone');
+      //key will not be converted to lower_case just upon assignment
+      expect(atKey.key, 'pHone');
+      //sharedBy will be converted to lower_case upon assignment
       expect(atKey.sharedBy, '@bob');
+      //sharedWith will be converted to lower_case upon assignment
       expect(atKey.sharedWith, null);
       expect(atKey.isLocal, false);
       expect(atKey.metadata!.isPublic, true);
       expect(atKey.metadata!.namespaceAware, false);
+      //toString method will convert entire key to lower_case
       expect(atKey.toString(), testKey.toLowerCase());
     });
 
     test('Test to verify protected key', () {
       var testKey = '@aliCe:pHone@boB';
       var atKey = AtKey.fromString(testKey);
-      expect(atKey.key, 'phone');
+      //key will not be converted to lower_case just upon assignment
+      expect(atKey.key, 'pHone');
+      //sharedBy will be converted to lower_case upon assignment
       expect(atKey.sharedBy, '@bob');
+      //sharedWith will be converted to lower_case upon assignment
       expect(atKey.sharedWith, '@alice');
       expect(atKey.metadata!.isPublic, false);
       expect(atKey.isLocal, false);
+      //toString method will convert entire key to lower_case
       expect(atKey.toString(), testKey.toLowerCase());
     });
 
     test('Test to verify private key', () {
       var testKey = 'phoNe@bOb';
       var atKey = AtKey.fromString(testKey);
-      expect(atKey.key, 'phone');
+      expect(atKey.key, 'phoNe');
       expect(atKey.sharedBy, '@bob');
       expect(atKey.sharedWith, null);
       expect(atKey.metadata!.isPublic, false);
@@ -190,8 +199,11 @@ void main() {
     test('Test to verify cached key', () {
       var testKey = 'cached:@aliCe:pHone@Bob';
       var atKey = AtKey.fromString(testKey);
-      expect(atKey.key, 'phone');
+      //key will not be converted to lower_case just upon assignment
+      expect(atKey.key, 'pHone');
+      //sharedBy will be converted to lower_case upon assignment
       expect(atKey.sharedBy, '@bob');
+      //sharedWith will be converted to lower_case upon assignment
       expect(atKey.sharedWith, '@alice');
       expect(atKey.metadata!.isCached, true);
       expect(atKey.metadata!.namespaceAware, false);
