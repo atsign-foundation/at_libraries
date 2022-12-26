@@ -6,7 +6,6 @@ export 'package:at_commons/src/at_constants.dart';
 export 'package:at_commons/src/at_message.dart';
 export 'package:at_commons/src/buffer/at_buffer.dart';
 export 'package:at_commons/src/buffer/at_buffer_impl.dart';
-export 'package:at_commons/src/compaction/at_compaction_config.dart';
 export 'package:at_commons/src/exception/at_client_exceptions.dart';
 export 'package:at_commons/src/exception/at_exception_manager.dart';
 export 'package:at_commons/src/exception/at_exception_stack.dart';

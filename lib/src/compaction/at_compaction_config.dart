@@ -1,3 +1,4 @@
+@Deprecated('Moved the class to at_persistence_spec package')
 class AtCompactionConfig {
   // -1 indicates storing for ever
   int sizeInKB = -1;
