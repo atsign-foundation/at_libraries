@@ -4,17 +4,19 @@ import 'package:meta/meta.dart';
 import '../exception/at_exceptions.dart';
 
 @experimental
+
 /// Simple software telemetry service. See https://en.wikipedia.org/wiki/Telemetry#Software
 abstract class AtTelemetryService {
   final StreamController<AtTelemetryEvent> _controller;
   StreamController<AtTelemetryEvent> get controller => _controller;
 
   /// Allow injection of stream controller
-  AtTelemetryService({StreamController<AtTelemetryEvent>? controller}) :
-        _controller = controller ?? StreamController<AtTelemetryEvent>.broadcast()
-  {
-    if (! _controller.stream.isBroadcast) {
-      throw IllegalArgumentException('AtTelemetryService: controller must be a broadcast StreamController');
+  AtTelemetryService({StreamController<AtTelemetryEvent>? controller})
+      : _controller =
+            controller ?? StreamController<AtTelemetryEvent>.broadcast() {
+    if (!_controller.stream.isBroadcast) {
+      throw IllegalArgumentException(
+          'AtTelemetryService: controller must be a broadcast StreamController');
     }
   }
 
@@ -32,6 +34,7 @@ abstract class AtTelemetryService {
 }
 
 @experimental
+
 /// Generic telemetry datum
 abstract class AtTelemetryItem {
   /// The name of this item - for example, 'SyncStarted'
@@ -45,8 +48,8 @@ abstract class AtTelemetryItem {
   final DateTime _time;
   DateTime get time => _time;
 
-  AtTelemetryItem(this.name, this.value, {DateTime? time}) :
-        _time = time ?? DateTime.now().toUtc();
+  AtTelemetryItem(this.name, this.value, {DateTime? time})
+      : _time = time ?? DateTime.now().toUtc();
 
   @override
   String toString() {
@@ -55,14 +58,17 @@ abstract class AtTelemetryItem {
 }
 
 @experimental
+
 /// Concrete [AtTelemetryItem] subclass for Events - e.g. SyncStarted, NetworkUnavailable, MonitorUnavailable
 class AtTelemetryEvent extends AtTelemetryItem {
-  AtTelemetryEvent(String name, value, {DateTime? time}) : super(name, value, time: time);
+  AtTelemetryEvent(String name, value, {DateTime? time})
+      : super(name, value, time: time);
 }
 
 @experimental
+
 /// Concrete [AtTelemetryItem] subclass for Samples - e.g. KeyStoreSize, DataReceived, DataTransmitted
 class AtTelemetrySample extends AtTelemetryItem {
-  AtTelemetrySample(String name, value, {DateTime? time}) : super(name, value, time: time);
+  AtTelemetrySample(String name, value, {DateTime? time})
+      : super(name, value, time: time);
 }
-

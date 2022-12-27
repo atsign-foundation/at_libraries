@@ -34,7 +34,8 @@ abstract class AbstractVerbBuilder implements VerbBuilder {
       throw InvalidAtKeyException(
           'When isLocal is set to true, cannot set isPublic to true or set a non-null sharedWith');
     }
-    if (atKeyObj.metadata?.isPublic == true && atKeyObj.sharedWith.isNotNullOrEmpty) {
+    if (atKeyObj.metadata?.isPublic == true &&
+        atKeyObj.sharedWith.isNotNullOrEmpty) {
       throw InvalidAtKeyException(
           'When isPublic is set to true, sharedWith cannot be populated');
     }

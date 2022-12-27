@@ -32,7 +32,7 @@ void main() {
     });
   });
 
-  group('A group of tests to validate the exceptions',(){
+  group('A group of tests to validate the exceptions', () {
     test('test to verify cached local key throws invalid atkey exception', () {
       var deleteVerbBuilder = DeleteVerbBuilder()
         ..isCached = true
@@ -42,29 +42,29 @@ void main() {
         ..sharedBy = '@bob';
 
       expect(
-              () => deleteVerbBuilder.buildCommand(),
+          () => deleteVerbBuilder.buildCommand(),
           throwsA(predicate((dynamic e) =>
-          e is InvalidAtKeyException &&
+              e is InvalidAtKeyException &&
               e.message ==
                   'sharedWith must be null when isLocal is set to true')));
     });
 
     test(
         'test to verify isPublic set to true with sharedWith populated throws invalid atkey exception',
-            () {
-          var deleteVerbBuilder = DeleteVerbBuilder()
-            ..isPublic = true
-            ..sharedWith = '@alice'
-            ..atKey = 'phone'
-            ..sharedBy = '@bob';
+        () {
+      var deleteVerbBuilder = DeleteVerbBuilder()
+        ..isPublic = true
+        ..sharedWith = '@alice'
+        ..atKey = 'phone'
+        ..sharedBy = '@bob';
 
-          expect(
-                  () => deleteVerbBuilder.buildCommand(),
-              throwsA(predicate((dynamic e) =>
+      expect(
+          () => deleteVerbBuilder.buildCommand(),
+          throwsA(predicate((dynamic e) =>
               e is InvalidAtKeyException &&
-                  e.message ==
-                      'When isPublic is set to true, sharedWith cannot be populated')));
-        });
+              e.message ==
+                  'When isPublic is set to true, sharedWith cannot be populated')));
+    });
 
     test('test to verify Key cannot be null or empty', () {
       var deleteVerbBuilder = DeleteVerbBuilder()
@@ -73,9 +73,9 @@ void main() {
         ..sharedBy = '@bob';
 
       expect(
-              () => deleteVerbBuilder.buildCommand(),
+          () => deleteVerbBuilder.buildCommand(),
           throwsA(predicate((dynamic e) =>
-          e is InvalidAtKeyException &&
+              e is InvalidAtKeyException &&
               e.message == 'Key cannot be null or empty')));
     });
   });

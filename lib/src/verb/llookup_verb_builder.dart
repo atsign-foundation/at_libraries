@@ -92,7 +92,7 @@ class LLookupVerbBuilder extends AbstractVerbBuilder {
   }
 
   String buildKey() {
-    if(atKeyObj.key != null){
+    if (atKeyObj.key != null) {
       return atKeyObj.toString();
     }
     super.atKeyObj

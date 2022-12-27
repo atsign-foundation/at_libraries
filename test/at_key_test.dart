@@ -121,8 +121,10 @@ void main() {
                   ..sharedBy = '@bob'
                   ..sharedWith = '@alice'
               },
-          throwsA(predicate(
-              (dynamic e) => e is InvalidAtKeyException && e.message == 'isLocal or isPublic cannot be true when sharedWith is set')));
+          throwsA(predicate((dynamic e) =>
+              e is InvalidAtKeyException &&
+              e.message ==
+                  'isLocal or isPublic cannot be true when sharedWith is set')));
     });
 
     test('Test cannot set sharedWith if isLocal is true', () {
@@ -133,8 +135,10 @@ void main() {
                   ..sharedBy = '@bob'
                   ..sharedWith = '@alice'
               },
-          throwsA(predicate(
-              (dynamic e) => e is InvalidAtKeyException && e.message == 'isLocal or isPublic cannot be true when sharedWith is set')));
+          throwsA(predicate((dynamic e) =>
+              e is InvalidAtKeyException &&
+              e.message ==
+                  'isLocal or isPublic cannot be true when sharedWith is set')));
     });
 
     test('Test cannot set isLocal to true if sharedWith is non-null', () {
@@ -145,8 +149,10 @@ void main() {
                   ..sharedWith = '@alice'
                   ..isLocal = true
               },
-          throwsA(predicate(
-              (dynamic e) => e is InvalidAtKeyException && e.message == 'sharedWith must be null when isLocal is set to true')));
+          throwsA(predicate((dynamic e) =>
+              e is InvalidAtKeyException &&
+              e.message ==
+                  'sharedWith must be null when isLocal is set to true')));
     });
   });
 

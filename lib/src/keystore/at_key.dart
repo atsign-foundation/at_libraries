@@ -49,7 +49,8 @@ class AtKey {
 
   set sharedWith(String? sharedWithAtSign) {
     assertStartsWithAtIfNotEmpty(sharedWithAtSign);
-    if (sharedWithAtSign.isNotNullOrEmpty && (isLocal == true || metadata?.isPublic == true)) {
+    if (sharedWithAtSign.isNotNullOrEmpty &&
+        (isLocal == true || metadata?.isPublic == true)) {
       throw InvalidAtKeyException(
           'isLocal or isPublic cannot be true when sharedWith is set');
     }
