@@ -41,8 +41,8 @@ class AtKey {
   String? get namespace => _namespace;
 
   set namespace(String? namespace) {
-    if (namespace != null && namespace.isNotEmpty) {
-      _namespace = namespace.toLowerCase();
+    if (namespace.isNotNullOrEmpty) {
+      _namespace = namespace?.toLowerCase();
     }
   }
 

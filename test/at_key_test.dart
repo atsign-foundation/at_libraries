@@ -115,13 +115,13 @@ void main() {
         ..key = 'foo.Bar'
         ..sharedBy = fromAtsign
         ..sharedWith = toAtsign
-        ..namespace = 'attAlk'
+        ..namespace = ''
         ..metadata = metaData;
 
       //assert that all components of the AtKey are converted to lowercase
       //key will not be converted to lowercase upon assigning
       expect(atKey.key, 'foo.Bar');
-      expect(atKey.namespace, 'attalk');
+      expect(atKey.namespace, null);
       expect(atKey.sharedBy, '@alice🛠');
       expect(atKey.sharedWith, '@bob');
       //assert that dataSignature is not converted to lowercase
