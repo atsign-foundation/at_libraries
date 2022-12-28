@@ -644,6 +644,16 @@ void main() {
         ..namespace = 'wavi';
       expect('public:phone.wavi@alice', atKey.toString());
     });
+
+    test('A test to verify a public key creation and conversion to lower_case', () {
+      var atKey = AtKey()
+        ..key = 'CELLphone'
+        ..sharedBy = '@PRESIDENT'
+        ..metadata = (Metadata()..isPublic = true)
+        ..namespace = 'wavi';
+      expect('public:cellphone.wavi@president', atKey.toString());
+    });
+
     test(
         'A test to verify a public-key creation on a public key factory method',
         () {
@@ -651,6 +661,15 @@ void main() {
           AtKey.public('phone', namespace: 'wavi', sharedBy: '@alice').build();
       expect('public:phone.wavi@alice', atKey.toString());
     });
+
+    test(
+        'A test to verify a public-key creation on a public key conversion to lower_case',
+            () {
+          var atKey =
+          AtKey.public('MOBILE', namespace: 'LTE', sharedBy: '@ANOnymous').build();
+          expect('public:mobile.lte@anonymous', atKey.toString());
+        });
+
     // Shared keys
     test('A test to verify a sharedWith key creation', () {
       var atKey = AtKey()
@@ -660,6 +679,16 @@ void main() {
         ..namespace = 'wavi';
       expect('@bob:phone.wavi@alice', atKey.toString());
     });
+
+    test('A test to verify a sharedWith key creation and conversion to lower_case', () {
+      var atKey = AtKey()
+        ..key = 'phoneNEW'
+        ..sharedWith = '@bobBY'
+        ..sharedBy = '@aliceSTer'
+        ..namespace = 'wavi';
+      expect('@bobby:phonenew.wavi@alicester', atKey.toString());
+    });
+
     test(
         'A test to verify a sharedWith key creation with static factory method',
         () {
@@ -668,6 +697,16 @@ void main() {
           .build();
       expect('@bob:phone.wavi@alice', atKey.toString());
     });
+
+    test(
+        'A test to verify a sharedWith key creation and conversion to lower_case',
+            () {
+          var atKey = (AtKey.shared('phONe', namespace: 'wAvi', sharedBy: '@alIce')
+            ..sharedWith('@bob'))
+              .build();
+          expect('@bob:phone.wavi@alice', atKey.toString());
+        });
+
     // Self keys
     test('A test to verify a self key creation', () {
       var atKey = AtKey()
@@ -677,11 +716,28 @@ void main() {
         ..namespace = 'wavi';
       expect('@alice:phone.wavi@alice', atKey.toString());
     });
+
+    test('A test to verify a self key creation and conversion to lower_case', () {
+      var atKey = AtKey()
+        ..key = 'pHonE'
+        ..sharedWith = '@Alice'
+        ..sharedBy = '@aLiCe'
+        ..namespace = 'wavI';
+      expect('@alice:phone.wavi@alice', atKey.toString());
+    });
+
     test('A test to verify a self key creation with static factory method', () {
       var atKey =
           AtKey.self('phone', namespace: 'wavi', sharedBy: '@alice').build();
       expect('phone.wavi@alice', atKey.toString());
     });
+
+    test('A test to verify a self key conversion to lower_case', () {
+      var atKey =
+          AtKey.self('pHone', namespace: 'wAvi', sharedBy: '@aliCe').build();
+      expect('phone.wavi@alice', atKey.toString());
+    });
+
     test('Verify a self key creation without sharedWith using static factory',
         () {
       var atKey = SelfKey()
@@ -690,6 +746,7 @@ void main() {
         ..namespace = 'wavi';
       expect('phone.wavi@alice', atKey.toString());
     });
+
     test('Verify a self key creation without sharedWith', () {
       var atKey = AtKey()
         ..key = 'phone'
@@ -697,6 +754,7 @@ void main() {
         ..namespace = 'wavi';
       expect('phone.wavi@alice', atKey.toString());
     });
+
     // Cached keys
     test('Verify a cached key creation', () {
       var atKey = AtKey()
@@ -707,6 +765,7 @@ void main() {
         ..namespace = 'wavi';
       expect('cached:@bob:phone.wavi@alice', atKey.toString());
     });
+
     test('Verify a public cached key creation', () {
       var atKey = AtKey()
         ..key = 'phone'
@@ -717,11 +776,13 @@ void main() {
         ..namespace = 'wavi';
       expect('cached:public:phone.wavi@alice', atKey.toString());
     });
+
     //Private keys
     test('Verify a privatekey creation using static factory method', () {
       var atKey = PrivateKey()..key = 'at_secret';
       expect('privatekey:at_secret', atKey.toString());
     });
+
     test('Verify a privatekey creation', () {
       var atKey = AtKey()..key = 'privatekey:at_secret';
       expect('privatekey:at_secret', atKey.toString());
@@ -740,7 +801,7 @@ void main() {
 
     test('A test to verify toString on AtKey with local: in atKey', () {
       var atKey = AtKey()
-        ..key = 'local:phone'
+        ..key = 'local:phoNe'
         ..sharedBy = '@alice'
         ..namespace = 'wavi'
         ..isLocal = true;
@@ -748,7 +809,7 @@ void main() {
     });
 
     test('A test to verify fromString on AtKey', () {
-      var atKey = AtKey.fromString('local:phone.wavi@alice');
+      var atKey = AtKey.fromString('local:phone.wavi@aliCe');
       expect(atKey.key, 'phone');
       expect(atKey.namespace, 'wavi');
       expect(atKey.sharedBy, '@alice');
@@ -783,7 +844,7 @@ void main() {
     test('A test to verify local key builder', () {
       var localKey = (LocalKeyBuilder()
             ..key('phone')
-            ..sharedBy('@alice'))
+            ..sharedBy('@aliCe'))
           .build();
       expect(localKey, isA<LocalKey>());
       expect(localKey.isLocal, true);
@@ -824,6 +885,15 @@ void main() {
       expect(validationResult.isValid, false);
       expect(validationResult.failureReason,
           'local:phone@alice is not a valid key');
+    });
+
+    test('Test to verify LocalKey conversion to lower_case', () {
+      var localKey =
+          AtKey.local('tEstKey', '@aLice', namespace: 'tEst').build();
+      expect(localKey.key, 'tEstKey');
+      expect(localKey.sharedBy, '@alice');
+      expect(localKey.namespace, 'test');
+      expect(localKey.toString(), 'local:testkey.test@alice');
     });
   });
 }

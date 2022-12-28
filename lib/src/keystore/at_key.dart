@@ -385,7 +385,7 @@ class LocalKey extends AtKey {
 
   @override
   String toString() {
-    return 'local:$key${_dotNamespaceIfPresent()}$sharedBy';
+    return 'local:$key${_dotNamespaceIfPresent()}$sharedBy'.toLowerCase();
   }
 }
 
