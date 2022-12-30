@@ -13,7 +13,8 @@ dependencies:
   logging: ^1.0.1
   yaml: ^3.1.0
   crypto: ^3.0.1
-  at_commons: ^3.0.25
+  at_commons:
+      path: ../at_commons
   collection: ^1.15.0
 
 dev_dependencies:
