@@ -32,14 +32,14 @@ class Register {
     if (argResults.wasParsed('help')) {
       stderr.writeln(
           '[Usage] dart run register.dart -e email@email.com\n[Options]\n${argParser.usage}');
-      exit(1);
+      exit(0);
     }
 
     if (!argResults.wasParsed('email')) {
       stderr.writeln(
           '[Unable to run Register CLI] Please enter your email address'
           '\n[Usage] dart run register.dart -e email@email.com\n[Options]\n${argParser.usage}');
-      exit(1);
+      exit(6);
     }
 
     if (registerUtil.validateEmail(argResults['email'])) {
@@ -47,7 +47,7 @@ class Register {
     } else {
       stderr.writeln(
           '[Unable to run Register CLI] You have entered an invalid email address. Check your email address and try again.');
-      exit(1);
+      exit(7);
     }
 
     //set the following parameter to RegisterApiConstants.apiHostStaging
@@ -224,13 +224,13 @@ Future<void> main(List<String> args) async {
               ' Please use the \'-e\' flag to input your email');
       stderr
           .writeln('Usage: \'dart run register_cli.dart -e email@email.com\'');
-      exit(1);
+      exit(2);
     } else {
       stderr.writeln(
           '[Error] Failed getting an atsign. It looks like something went wrong on our side.\n'
           'Please try again or contact support@atsign.com, quoting the text displayed below.');
       stderr.writeln('Cause: ${e.toString()}');
-      exit(1);
+      exit(3);
     }
   } on Exception catch (e) {
     if (e
@@ -240,13 +240,13 @@ Future<void> main(List<String> args) async {
           '[Unable to proceed] Registration has been terminated as you have'
           ' reached the maximum number of verification attempts.\n'
           'Please start again or contact support@atsign.com');
-      exit(1);
+      exit(4);
     } else {
       stderr.writeln(
           '[Error] Failed getting an atsign. It looks like something went wrong on our side.\n'
           'Please try again or contact support@atsign.com, quoting the text displayed below.');
       stderr.writeln('Cause: ${e.toString()}');
-      exit(1);
+      exit(5);
     }
   }
 }

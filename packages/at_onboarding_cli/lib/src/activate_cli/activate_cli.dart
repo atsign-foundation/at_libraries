@@ -57,10 +57,13 @@ Future<void> main(List<String> arguments) async {
       '[Information] Activating your atSign. This may take up to 2 minutes.');
   try {
     await onboardingService.onboard();
-  } on Exception {
+  } on Exception catch(e){
     stderr.writeln(
         '[Error] Activation failed. It looks like something went wrong on our side.\n'
-        'Please try again or contact support@atsign.com');
+        'Please try again or contact support@atsign.com\nCause: ${e.toString()}');
+    await onboardingService.close();
+    exit(3);
+
   }
   await onboardingService.close();
   //free the object after it's used and no longer required
