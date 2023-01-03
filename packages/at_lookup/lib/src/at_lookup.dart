@@ -26,7 +26,7 @@ abstract class AtLookUp {
   Future<String?> executeVerb(VerbBuilder builder, {bool sync = false});
 
   /// set an instance of  [AtChops] for signing and verification operations.
-  set atChops(AtChops atChops);
+  set atChops(AtChops? atChops);
 
-  AtChops get atChops;
+  AtChops? get atChops;
 }

@@ -45,7 +45,7 @@ class AtLookupImpl implements AtLookUp {
   /// Represents the client configurations.
   late Map<String, dynamic> _clientConfig;
 
-  late AtChops _atChops;
+  AtChops? _atChops;
 
   AtLookupImpl(String atSign, String rootDomain, int rootPort,
       {this.privateKey,
@@ -439,7 +439,7 @@ class AtLookupImpl implements AtLookUp {
         fromResponse = fromResponse.trim().replaceAll('data:', '');
         logger.finer('fromResponse $fromResponse');
         var signature =
-            _atChops.signString(fromResponse, SigningKeyType.pkamSha256);
+            _atChops!.signString(fromResponse, SigningKeyType.pkamSha256);
         logger.finer('Sending command pkam:$signature');
         await _sendCommand('pkam:$signature\n');
         var pkamResponse = await messageListener.read();
@@ -533,8 +533,9 @@ class AtLookupImpl implements AtLookUp {
       await requestResponseMutex.acquire();
 
       if (auth && _isAuthRequired()) {
-        if (privateKey != null) {
-          //# TODO replace with [pkamAuthenticate]
+        if (_atChops != null) {
+          await pkamAuthenticate();
+        } else if (privateKey != null) {
           await authenticate(privateKey);
         } else if (cramSecret != null) {
           await authenticate_cram(cramSecret);
@@ -596,10 +597,10 @@ class AtLookupImpl implements AtLookUp {
   }
 
   @override
-  set atChops(AtChops atChops) {
+  set atChops(AtChops? atChops) {
     _atChops = atChops;
   }
 
   @override
-  AtChops get atChops => _atChops;
+  AtChops? get atChops => _atChops;
 }
