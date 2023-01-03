@@ -7,7 +7,8 @@ class SecureSocketUtil {
       String host, String port, SecureSocketConfig secureSocketConfig) async {
     SecureSocket? _secureSocket;
     if (!secureSocketConfig.decryptPackets) {
-      _secureSocket = await SecureSocket.connect(host, int.parse(port));
+      _secureSocket = await SecureSocket.connect(host, int.parse(port),
+          timeout: Duration(seconds: 30));
       _secureSocket.setOption(SocketOption.tcpNoDelay, true);
       return _secureSocket;
     } else {
@@ -25,7 +26,8 @@ class SecureSocketUtil {
         _secureSocket = await SecureSocket.connect(host, int.parse(port),
             context: securityContext,
             keyLog: (line) =>
-                keysFile.writeAsStringSync(line, mode: FileMode.append));
+                keysFile.writeAsStringSync(line, mode: FileMode.append),
+            timeout: Duration(seconds: 30));
         _secureSocket.setOption(SocketOption.tcpNoDelay, true);
         return _secureSocket;
       } catch (e) {
