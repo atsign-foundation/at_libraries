@@ -11,6 +11,7 @@ import 'package:encrypt/encrypt.dart';
 import 'package:zxing2/qrcode.dart';
 import 'package:image/image.dart';
 import 'package:path/path.dart' as path;
+import 'package:at_client/src/util/network_util.dart';
 
 ///class containing service that can onboard/activate/authenticate @signs
 class AtOnboardingServiceImpl implements AtOnboardingService {
@@ -21,11 +22,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   AtClient? _atClient;
   AtSignLogger logger = AtSignLogger('OnboardingCli');
   AtOnboardingPreference atOnboardingPreference;
+  late NetworkUtil networkUtil;
 
   AtOnboardingServiceImpl(atsign, this.atOnboardingPreference) {
     _atSign = AtUtils.formatAtSign(atsign)!;
     //performs atSign format checks on the atSign
-    AtUtils.fixAtSign(_atSign);
+    _atSign = AtUtils.fixAtSign(atsign);
+    networkUtil = NetworkUtil();
   }
 
   @override
@@ -238,17 +241,18 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       throw AtPrivateKeyNotFoundException(
           'Either of private key or .atKeys file not provided in preferences',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
-    } else {
-      _atClient ??= await getAtClient();
-      _isPkamAuthenticated =
-          await _atLookup?.authenticate(atOnboardingPreference.privateKey) ??
-              false;
-      if (!_isAtsignOnboarded &&
-          atOnboardingPreference.atKeysFilePath != null) {
-        await _persistKeysLocalSecondary();
-      }
-      return _isPkamAuthenticated;
     }
+    if (!(await networkUtil.isNetworkAvailable())) {
+      return false;
+    }
+    _atClient ??= await getAtClient();
+    _isPkamAuthenticated =
+        await _atLookup?.authenticate(atOnboardingPreference.privateKey) ??
+            false;
+    if (!_isAtsignOnboarded && atOnboardingPreference.atKeysFilePath != null) {
+      await _persistKeysLocalSecondary();
+    }
+    return _isPkamAuthenticated;
   }
 
   ///method to read and return data from .atKeysFile
@@ -353,6 +357,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       }
       _retryCount++;
     }
+
+    if (_secondaryAddress == null) {
+      logger.severe('Could not find secondary address for $_atSign');
+      exit(1);
+    }
     //resetting retry counter to be used for different operation
     _retryCount = 0;
     while (secureSocket == null && _retryCount < maxRetries) {
@@ -364,6 +373,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       } on Exception catch (e) {
         logger.finer(e);
       }
+      _retryCount++;
     }
     stdout.writeln('\n');
   }
