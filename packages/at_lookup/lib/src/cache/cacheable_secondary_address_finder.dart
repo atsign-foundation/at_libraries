@@ -147,7 +147,8 @@ class SecondaryUrlFinder {
       var prompt = false;
       var once = true;
       // ignore: omit_local_variable_types
-      socket = await SecureSocket.connect(_rootDomain, _rootPort);
+      socket = await SecureSocket.connect(_rootDomain, _rootPort,
+          timeout: Duration(seconds: 30));
       // listen to the received data event stream
       socket.listen((List<int> event) async {
         answer = utf8.decode(event);
