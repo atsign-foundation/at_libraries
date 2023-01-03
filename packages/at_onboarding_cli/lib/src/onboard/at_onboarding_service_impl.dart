@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:at_client/at_client.dart';
+import 'package:at_onboarding_cli/src/util/network_util.dart';
 import 'package:at_utils/at_utils.dart';
 import 'package:at_commons/at_builders.dart';
 import 'package:at_lookup/at_lookup.dart';
@@ -11,7 +12,6 @@ import 'package:encrypt/encrypt.dart';
 import 'package:zxing2/qrcode.dart';
 import 'package:image/image.dart';
 import 'package:path/path.dart' as path;
-import 'package:at_client/src/util/network_util.dart';
 
 ///class containing service that can onboard/activate/authenticate @signs
 class AtOnboardingServiceImpl implements AtOnboardingService {
@@ -22,13 +22,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   AtClient? _atClient;
   AtSignLogger logger = AtSignLogger('OnboardingCli');
   AtOnboardingPreference atOnboardingPreference;
-  late NetworkUtil networkUtil;
 
   AtOnboardingServiceImpl(atsign, this.atOnboardingPreference) {
     _atSign = AtUtils.formatAtSign(atsign)!;
     //performs atSign format checks on the atSign
     _atSign = AtUtils.fixAtSign(atsign);
-    networkUtil = NetworkUtil();
   }
 
   @override
@@ -242,7 +240,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
           'Either of private key or .atKeys file not provided in preferences',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
-    if (!(await networkUtil.isNetworkAvailable())) {
+    if (!(await NetworkUtil.isNetworkAvailable())) {
       return false;
     }
     _atClient ??= await getAtClient();
@@ -369,7 +367,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       stdout.writeln('Connecting to secondary ...');
       try {
         secureSocket = await SecureSocket.connect(
-            _secondaryAddress!.host, _secondaryAddress.port);
+            _secondaryAddress.host, _secondaryAddress.port);
       } on Exception catch (e) {
         logger.finer(e);
       }
