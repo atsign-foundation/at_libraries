@@ -1,3 +1,5 @@
+## 3.0.34
+- feat: added new method pkamAuthenticate in at_lookup_impl which uses at_chops for pkam signing.
 ## 3.0.33
 - fix: Removed race condition (related to management of outbound connection state after timeouts) which
 could in very rare circumstances cause unnecessary long delays
