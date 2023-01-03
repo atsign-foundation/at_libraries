@@ -386,9 +386,10 @@ class AtLookupImpl implements AtLookUp {
     if (privateKey == null) {
       throw UnAuthenticatedException('Private key not passed');
     }
-    await createConnection();
+
     try {
       await _pkamAuthenticationMutex.acquire();
+      await createConnection();
       if (!_connection!.getMetaData()!.isAuthenticated) {
         await _sendCommand((FromVerbBuilder()
               ..atSign = _currentAtSign
@@ -417,6 +418,12 @@ class AtLookupImpl implements AtLookUp {
         }
       }
       return _connection!.getMetaData()!.isAuthenticated;
+    } on Exception catch (e) {
+      logger.severe(e.toString());
+      return false;
+    } catch (e) {
+      logger.severe(e.toString());
+      return false;
     } finally {
       _pkamAuthenticationMutex.release();
     }
@@ -586,7 +593,7 @@ class AtLookupImpl implements AtLookUp {
   }
 
   Future<void> close() async {
-    await _connection!.close();
+    await _connection?.close();
   }
 
   Future<void> _sendCommand(String command) async {
