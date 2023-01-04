@@ -11,9 +11,14 @@ Future<void> main(List<String> arguments) async {
 
   //get atSign and CRAM key from args
   final parser = ArgParser()
-    ..addOption('atsign', abbr: 'a', help: 'atSign to activate')..addOption(
-        'cramkey', abbr: 'c', help: 'CRAM key')..addOption('rootServer',
-        abbr: 'r', help: 'root server', defaultsTo: rootServer)
+    ..addOption('atsign', abbr: 'a', help: 'atSign to activate')
+    ..addOption('cramkey', abbr: 'c', help: 'CRAM key')
+    ..addOption('qr_path', abbr: 'q', help: 'path to qr code')
+    ..addOption('rootServer',
+        abbr: 'r',
+        help: 'root server',
+        defaultsTo: rootServer,
+        mandatory: false)
     ..addFlag('help', abbr: 'h', help: 'Usage instructions', negatable: false);
   ArgResults argResults = parser.parse(arguments);
 
@@ -28,31 +33,42 @@ Future<void> main(List<String> arguments) async {
     exit(1);
   }
 
-  if (!argResults.wasParsed('cramkey')) {
+  if (!argResults.wasParsed('cramkey') && !argResults.wasParsed('qr_path')) {
     stderr.writeln(
-        '--cramkey (or -c) is required. Run with --help (or -h) for more.');
+        'Either of --cramkey(-c) or --qr_path(-q) is required. Run with --help (or -h) for more.');
     exit(2);
   }
 
-  stdout.writeln(
-      '[Information] Root server is ' + argResults['rootServer'] + '\n');
+  stdout.writeln('[Information] Root server is ${argResults['rootServer']}');
 
+  var downloadPath = '${Directory.current.path}/keys';
   //onboarding preference builder can be used to set onboardingService parameters
   AtOnboardingPreference atOnboardingPreference = AtOnboardingPreference()
     ..rootDomain = argResults['rootServer']
-    ..cramSecret = argResults['cramkey']
-    ..downloadPath = '${Directory.current.path}/keys';
+    ..cramSecret = argResults['cramkey'] ??
+        AtOnboardingServiceImpl.getSecretFromQr(argResults['qr_path'])
+    ..downloadPath = downloadPath;
 
   //onboard the atSign
   AtOnboardingService? onboardingService =
-  AtOnboardingServiceImpl(argResults['atsign'], atOnboardingPreference);
+      AtOnboardingServiceImpl(argResults['atsign'], atOnboardingPreference);
 
-  stdout.writeln('[Information] Activating your atSign...\n');
-  await onboardingService.onboard();
+  stdout.writeln(
+      '[Information] Activating your atSign. This may take up to 2 minutes.');
+  try {
+    await onboardingService.onboard();
+  } on Exception catch(e){
+    stderr.writeln(
+        '[Error] Activation failed. It looks like something went wrong on our side.\n'
+        'Please try again or contact support@atsign.com\nCause: ${e.toString()}');
+    await onboardingService.close();
+    exit(3);
+
+  }
   await onboardingService.close();
   //free the object after it's used and no longer required
   onboardingService = null;
-
-  stdout.writeln('-------Atsign activation complete-------');
+  stdout.writeln('[Information] Your .atKeys file has been saved to the following location:\n$downloadPath');
+  stdout.writeln('-------atSign activation complete-------');
+  exit(0);
 }
-

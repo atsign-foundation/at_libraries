@@ -19,14 +19,15 @@ class RegisterUtil {
   }
 
   /// Returns a Future<List<String>> containing free available atSigns of count provided as input.
-  Future<List<String>> getFreeAtSigns({int amount = 1,
-    String authority = RegisterApiConstants.apiHostProd}) async {
+  Future<List<String>> getFreeAtSigns(
+      {int amount = 1,
+      String authority = RegisterApiConstants.apiHostProd}) async {
     List<String> atSigns = <String>[];
     Response response;
     for (int i = 0; i < amount; i++) {
       // get request at my.atsign.com/api/app/v3/get-free-atsign/
       response =
-      await _getRequest(authority, RegisterApiConstants.pathGetFreeAtSign);
+          await _getRequest(authority, RegisterApiConstants.pathGetFreeAtSign);
       if (response.statusCode == 200) {
         String atSign = jsonDecode(response.body)['data']['atsign'];
         atSigns.add(atSign);
@@ -46,7 +47,7 @@ class RegisterUtil {
   Future<bool> registerAtSign(String atSign, String email,
       {oldEmail, String authority = RegisterApiConstants.apiHostProd}) async {
     Response response =
-    await _postRequest(authority, RegisterApiConstants.pathRegisterAtSign, {
+        await _postRequest(authority, RegisterApiConstants.pathRegisterAtSign, {
       'atsign': atSign,
       'email': email,
       'oldEmail': oldEmail,
@@ -54,7 +55,7 @@ class RegisterUtil {
     if (response.statusCode == 200) {
       Map<String, dynamic> jsonDecoded = jsonDecode(response.body);
       bool sentSuccessfully =
-      jsonDecoded['message'].toLowerCase().contains('success');
+          jsonDecoded['message'].toLowerCase().contains('success');
       return sentSuccessfully;
     } else {
       throw at_client.AtClientException.message(
@@ -80,9 +81,9 @@ class RegisterUtil {
   /// Throws [AtException] if [atSign] or [otp] is invalid
   Future<String> validateOtp(String atSign, String email, String otp,
       {String confirmation = 'true',
-        String authority = RegisterApiConstants.apiHostProd}) async {
+      String authority = RegisterApiConstants.apiHostProd}) async {
     Response response =
-    await _postRequest(authority, RegisterApiConstants.pathValidateOtp, {
+        await _postRequest(authority, RegisterApiConstants.pathValidateOtp, {
       'atsign': atSign,
       'email': email,
       'otp': otp,
@@ -95,9 +96,9 @@ class RegisterUtil {
         dataFromResponse.addAll(jsonDecoded['data']);
       }
       if ((jsonDecoded.containsKey('message') &&
-          (jsonDecoded['message'] as String)
-              .toLowerCase()
-              .contains('verified')) &&
+              (jsonDecoded['message'] as String)
+                  .toLowerCase()
+                  .contains('verified')) &&
           jsonDecoded.containsKey('cramkey')) {
         return jsonDecoded['cramkey'];
       } else if (jsonDecoded.containsKey('data') &&
@@ -112,11 +113,10 @@ class RegisterUtil {
               'Oops! You already have the maximum number of free atSigns. Please select one of your existing atSigns.')) {
         stdout.writeln(
             '[Unable to proceed] This email address already has 10 free atSigns associated with it.\n'
-                'To register a new atSign to this email address, please log into the dashboard \'my.atsign.com/login\'\n'
-                ' and remove at least 1 atSign from your account and then try again.\n'
-                'Alternatively, you can retry this process with a different email address.\n');
-        throw at_client.AtClientException.message(
-            "Maximum free atsign limit reached");
+            'To register a new atSign to this email address, please log into the dashboard \'my.atsign.com/login\'.\n'
+            'Remove at least 1 atSign from your account and then try again.\n'
+            'Alternatively, you can retry this process with a different email address.');
+        exit(1);
       } else {
         throw at_client.AtClientException.message(
             '${response.statusCode} ${jsonDecoded['message']}');
@@ -139,8 +139,8 @@ class RegisterUtil {
   }
 
   /// generic POST request
-  Future<Response> _postRequest(String authority, String path,
-      Map<String, String?> data) async {
+  Future<Response> _postRequest(
+      String authority, String path, Map<String, String?> data) async {
     if (_ioClient == null) _createClient();
 
     Uri uri = Uri.https(authority, path);
@@ -159,7 +159,7 @@ class RegisterUtil {
 
   bool validateEmail(String email) {
     return RegExp(
-        r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
         .hasMatch(email);
   }
 
@@ -179,10 +179,10 @@ class RegisterUtil {
     otp = stdin.readLineSync()!.toUpperCase();
     while (!validateVerificationCode(otp!)) {
       stderr.writeln(
-          '\n[Unable to proceed] The verification code you entered is invalid.'
-              '\nPlease check your email for a 4-character verification code.'
-              '\nIf you cannot see the code in your inbox, please check your spam/junk/promotions folders.\n'
-              '\n[Action Required] Enter you verification code:');
+          '[Unable to proceed] The verification code you entered is invalid.\n'
+          'Please check your email for a 4-character verification code.\n'
+          'If you cannot see the code in your inbox, please check your spam/junk/promotions folders.\n'
+          '[Action Required] Enter your verification code:');
       otp = stdin.readLineSync()!.toUpperCase();
     }
     return otp;
