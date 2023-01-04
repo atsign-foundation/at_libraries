@@ -23,9 +23,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   AtOnboardingPreference atOnboardingPreference;
 
   AtOnboardingServiceImpl(atsign, this.atOnboardingPreference) {
-    atsign = AtUtils.formatAtSign(atsign)!;
     //performs atSign format checks on the atSign
-    _atSign = AtUtils.fixAtSign(atsign);
+    _atSign = AtUtils.fixAtSign(AtUtils.formatAtSign(atsign)!);
   }
 
   @override
@@ -332,6 +331,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     int retryCount = 1;
     SecondaryAddress? secondaryAddress;
     SecureSocket? secureSocket;
+    bool connectionFlag = false;
 
     while (retryCount <= maxRetries && secondaryAddress == null) {
       await Future.delayed(Duration(seconds: 3));
@@ -346,12 +346,12 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
 
     if (secondaryAddress == null){
-      logger.severe('Could not find secondary address for $_atSign');
+      logger.severe('Could not find secondary address for $_atSign after $retryCount retries');
       exit(1);
     }
     //resetting retry counter to be used for different operation
     retryCount = 1;
-    while (secureSocket == null && retryCount <= maxRetries) {
+    while (!connectionFlag && retryCount <= maxRetries) {
       await Future.delayed(Duration(seconds: 3));
       logger.finer('retrying connect secondary.......$retryCount/$maxRetries');
       stdout.writeln('Connecting to secondary ...$retryCount/$maxRetries');
@@ -359,6 +359,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         secureSocket = await SecureSocket.connect(
             secondaryAddress.host, secondaryAddress.port,
             timeout: Duration(seconds: 30)); // 30-second timeout should be enough even for slow networks
+        connectionFlag = secureSocket.remoteAddress != null && secureSocket.remotePort != null;
       } on Exception catch (e) {
         logger.finer(e);
       }
