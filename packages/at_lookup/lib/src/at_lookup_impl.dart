@@ -438,10 +438,10 @@ class AtLookupImpl implements AtLookUp {
         }
         fromResponse = fromResponse.trim().replaceAll('data:', '');
         logger.finer('fromResponse $fromResponse');
-        var signature =
+        var signingResult =
             _atChops!.signString(fromResponse, SigningKeyType.pkamSha256);
-        logger.finer('Sending command pkam:$signature');
-        await _sendCommand('pkam:$signature\n');
+        logger.finer('Sending command pkam:${signingResult.result}');
+        await _sendCommand('pkam:${signingResult.result}\n');
         var pkamResponse = await messageListener.read();
         if (pkamResponse == 'data:success') {
           logger.info('auth success');
@@ -534,10 +534,10 @@ class AtLookupImpl implements AtLookUp {
 
       if (auth && _isAuthRequired()) {
         if (_atChops != null) {
-          print('** atchops pkam**');
+          logger.finer('calling pkam using atchops');
           await pkamAuthenticate();
         } else if (privateKey != null) {
-          print('** old pkam**');
+          logger.finer('calling pkam without atchops');
           await authenticate(privateKey);
         } else if (cramSecret != null) {
           await authenticate_cram(cramSecret);
