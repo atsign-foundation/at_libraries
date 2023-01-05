@@ -534,8 +534,10 @@ class AtLookupImpl implements AtLookUp {
 
       if (auth && _isAuthRequired()) {
         if (_atChops != null) {
+          print('** atchops pkam**');
           await pkamAuthenticate();
         } else if (privateKey != null) {
+          print('** old pkam**');
           await authenticate(privateKey);
         } else if (cramSecret != null) {
           await authenticate_cram(cramSecret);
