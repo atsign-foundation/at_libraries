@@ -421,9 +421,6 @@ class AtLookupImpl implements AtLookUp {
     } on Exception catch (e) {
       logger.severe(e.toString());
       return false;
-    } catch (e) {
-      logger.severe(e.toString());
-      return false;
     } finally {
       _pkamAuthenticationMutex.release();
     }
