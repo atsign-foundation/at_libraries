@@ -14,30 +14,31 @@ executables:
 
 dependencies:
    at_utils: ^3.0.11
-   at_client: ^3.0.44
-   at_lookup: ^3.0.30
+   at_client: ^3.0.49
+   at_lookup: ^3.0.33
    zxing2: ^0.1.0
    image: ^3.1.1
    crypton: ^2.0.3
-   at_commons: ^3.0.30
+   at_commons: ^3.0.33
    encrypt: ^5.0.1
    at_server_status: ^1.0.3
    path: ^1.8.1
    args: ^2.3.1
    http: ^0.13.5
+   at_chops: ^1.0.0
 
-#dependency_overrides:
-#  at_lookup:
-#    git:
-#      url: https://github.com/atsign-foundation/at_libraries.git
-#      path: at_lookup
-#      ref: trunk
-#
-#  at_client:
-#    git:
-#      url: https://github.com/atsign-foundation/at_client_sdk.git
-#      path: at_client
-#      ref: trunk
+dependency_overrides:
+  at_lookup:
+    git:
+      url: https://github.com/atsign-foundation/at_libraries.git
+      path: packages/at_lookup
+      ref: uptake_atchops
+
+  at_client:
+    git:
+      url: https://github.com/atsign-foundation/at_client_sdk.git
+      path: packages/at_client
+      ref: uptake_atchops
 #
 #  at_commons:
 #    git:
