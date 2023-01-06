@@ -422,6 +422,7 @@ class AtLookupImpl implements AtLookUp {
     }
   }
 
+  @override
   Future<bool> pkamAuthenticate() async {
     await createConnection();
     try {
