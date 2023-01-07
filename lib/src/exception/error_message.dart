@@ -19,7 +19,8 @@ const Map error_codes = {
   'InvalidAtKeyException': 'AT0016',
   'SecondaryConnectException': 'AT0021',
   'IllegalArgumentException': 'AT0022',
-  'AtTimeoutException': 'AT0023'
+  'AtTimeoutException': 'AT0023',
+  'ServerIsPausedException' : 'AT0024'
 };
 
 // ignore: constant_identifier_names
@@ -43,5 +44,6 @@ const Map error_description = {
   'AT0016': 'Invalid key',
   'AT0021': 'Unable to connect to secondary',
   'AT0022': 'Illegal arguments',
-  'AT0023': 'Timeout waiting for response'
+  'AT0023': 'Timeout waiting for response',
+  'AT0024': 'Server is paused'
 };

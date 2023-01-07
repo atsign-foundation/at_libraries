@@ -32,3 +32,8 @@ class InternalServerException extends AtServerException {
 class InternalServerError extends AtServerException {
   InternalServerError(message) : super(message);
 }
+
+/// Thrown when a request is received on a connection while the server is paused
+class ServerIsPausedException extends AtServerException {
+  ServerIsPausedException(message) : super(message);
+}
