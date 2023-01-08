@@ -1,3 +1,5 @@
+## 3.0.34
+- feat: New server-side exception ServerIsPausedException, error code AT0024
 ## 3.0.33
 - fix: Deprecate AtCompactionConfig class
 ## 3.0.32
