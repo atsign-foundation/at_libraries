@@ -1,6 +1,7 @@
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_chops/at_chops.dart';
+import 'package:at_lookup/src/cache/secondary_address_finder.dart';
 
 abstract class AtLookUp {
   /// update
@@ -25,8 +26,15 @@ abstract class AtLookUp {
 
   Future<String?> executeVerb(VerbBuilder builder, {bool sync = false});
 
-  /// set an instance of  [AtChops] for signing and verification operations.
-  set atChops(AtChops atChops);
+  /// performs a PKAM authentication using private key on the client side and public key on secondary server
+  Future<bool> pkamAuthenticate();
 
-  AtChops get atChops;
+  /// set an instance of  [AtChops] for signing and verification operations.
+  set atChops(AtChops? atChops);
+
+  AtChops? get atChops;
+
+  set secondaryAddressFinder(SecondaryAddressFinder secondaryAddressFinder);
+
+  SecondaryAddressFinder get secondaryAddressFinder;
 }
