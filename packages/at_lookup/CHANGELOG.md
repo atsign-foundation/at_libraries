@@ -1,3 +1,5 @@
+## 3.0.35
+- fix: fallback code for backward compatibility if at_chops instance is not set
 ## 3.0.34
 - feat: added new method pkamAuthenticate in at_lookup_impl which uses at_chops for pkam signing.
 ## 3.0.33
