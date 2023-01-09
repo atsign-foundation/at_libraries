@@ -61,19 +61,19 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     await _waitUntilSecondaryCreated();
     //authenticate into secondary using cram secret
     _isAtsignOnboarded = (await atLookUp
-        .authenticate_cram(atOnboardingPreference.cramSecret))!;
+        .authenticate_cram(atOnboardingPreference.cramSecret));
 
     logger.info('Cram authentication status: $_isAtsignOnboarded');
 
     if (_isAtsignOnboarded) {
-      await _activateAtsign();
+      await _activateAtsign(atLookUp);
     }
 
     return _isAtsignOnboarded;
   }
 
   ///method to generate/update encryption key-pairs to activate an atsign
-  Future<void> _activateAtsign() async {
+  Future<void> _activateAtsign(AtLookupImpl atLookUp) async {
     RSAKeypair _pkamRsaKeypair;
     RSAKeypair _encryptionKeyPair;
     String _selfEncryptionKey;
@@ -110,13 +110,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     String updateCommand =
         'update:$AT_PKAM_PUBLIC_KEY ${_pkamRsaKeypair.publicKey}\n';
     String? pkamUpdateResult =
-        await _atLookup?.executeCommand(updateCommand, auth: false);
+        await atLookUp.executeCommand(updateCommand, auth: false);
     logger.info('PkamPublicKey update result: $pkamUpdateResult');
     atOnboardingPreference.privateKey = _pkamRsaKeypair.privateKey.toString();
 
     //authenticate using pkam to verify insertion of pkamPublicKey
     _isPkamAuthenticated =
-        (await _atLookup?.authenticate(atOnboardingPreference.privateKey))!;
+        (await atLookUp.authenticate(atOnboardingPreference.privateKey));
 
     if (_isPkamAuthenticated) {
       //update user encryption public key to remote secondary
@@ -126,13 +126,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         ..value = _encryptionKeyPair.publicKey.toString()
         ..sharedBy = _atSign;
       String? encryptKeyUpdateResult =
-          await _atLookup?.executeVerb(updateBuilder);
+          await atLookUp.executeVerb(updateBuilder);
       logger
           .info('Encryption public key update result $encryptKeyUpdateResult');
       //deleting cram secret from the keystore as cram auth is complete
       DeleteVerbBuilder deleteBuilder = DeleteVerbBuilder()
         ..atKey = AT_CRAM_SECRET;
-      String? deleteResponse = await _atLookup?.executeVerb(deleteBuilder);
+      String? deleteResponse = await atLookUp.executeVerb(deleteBuilder);
       logger.info('Cram secret delete response : $deleteResponse');
       //displays status of the atsign
       logger.finer(await getServerStatus());
@@ -218,7 +218,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         _atKeysMap[AuthKeyType.encryptionPrivateKey]!);
     logger.finer(
         'EncryptionPrivateKey persist to localSecondary: status $response');
-    response = await _atClient?.getLocalSecondary()?.putValue(
+    response = await atClient?.getLocalSecondary()?.putValue(
         AT_ENCRYPTION_SELF_KEY, _atKeysMap[AuthKeyType.selfEncryptionKey]!);
     logger.finer(
         'Self encryption key persist to localSecondary: status $response');
@@ -385,4 +385,5 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   @override
   AtLookUp? atLookUp;
+
 }
