@@ -74,33 +74,33 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   ///method to generate/update encryption key-pairs to activate an atsign
   Future<void> _activateAtsign(AtLookupImpl atLookUp) async {
-    RSAKeypair _pkamRsaKeypair;
-    RSAKeypair _encryptionKeyPair;
-    String _selfEncryptionKey;
+    RSAKeypair pkamRsaKeypair;
+    RSAKeypair encryptionKeyPair;
+    String selfEncryptionKey;
     Map<String, String> atKeysMap;
 
     //generating pkamKeyPair
     logger.info('Generating pkam keypair');
-    _pkamRsaKeypair = generateRsaKeypair();
+    pkamRsaKeypair = generateRsaKeypair();
 
     //generate user encryption keypair
     logger.info('Generating encryption keypair');
-    _encryptionKeyPair = generateRsaKeypair();
+    encryptionKeyPair = generateRsaKeypair();
 
     //generate selfEncryptionKey
-    _selfEncryptionKey = generateAESKey();
+    selfEncryptionKey = generateAESKey();
 
     stdout.writeln(
         '[Information] Generating you encryption keys and .atKeys file\n');
     //mapping encryption keys pairs to their names
     atKeysMap = <String, String>{
-      AuthKeyType.pkamPublicKey: _pkamRsaKeypair.publicKey.toString(),
-      AuthKeyType.pkamPrivateKey: _pkamRsaKeypair.privateKey.toString(),
-      AuthKeyType.encryptionPublicKey: _encryptionKeyPair.publicKey.toString(),
+      AuthKeyType.pkamPublicKey: pkamRsaKeypair.publicKey.toString(),
+      AuthKeyType.pkamPrivateKey: pkamRsaKeypair.privateKey.toString(),
+      AuthKeyType.encryptionPublicKey: encryptionKeyPair.publicKey.toString(),
       AuthKeyType.encryptionPrivateKey:
-          _encryptionKeyPair.privateKey.toString(),
-      AuthKeyType.selfEncryptionKey: _selfEncryptionKey,
-      _atSign: _selfEncryptionKey,
+          encryptionKeyPair.privateKey.toString(),
+      AuthKeyType.selfEncryptionKey: selfEncryptionKey,
+      _atSign: selfEncryptionKey,
     };
     //generate .atKeys file
     await _generateAtKeysFile(atKeysMap);
@@ -108,11 +108,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     //updating pkamPublicKey to remote secondary
     logger.finer('Updating PkamPublicKey to remote secondary');
     String updateCommand =
-        'update:$AT_PKAM_PUBLIC_KEY ${_pkamRsaKeypair.publicKey}\n';
+        'update:$AT_PKAM_PUBLIC_KEY ${pkamRsaKeypair.publicKey}\n';
     String? pkamUpdateResult =
         await atLookUp.executeCommand(updateCommand, auth: false);
     logger.info('PkamPublicKey update result: $pkamUpdateResult');
-    atOnboardingPreference.privateKey = _pkamRsaKeypair.privateKey.toString();
+    atOnboardingPreference.privateKey = pkamRsaKeypair.privateKey.toString();
 
     //authenticate using pkam to verify insertion of pkamPublicKey
     _isPkamAuthenticated =
@@ -123,7 +123,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       UpdateVerbBuilder updateBuilder = UpdateVerbBuilder()
         ..atKey = 'publickey'
         ..isPublic = true
-        ..value = _encryptionKeyPair.publicKey.toString()
+        ..value = encryptionKeyPair.publicKey.toString()
         ..sharedBy = _atSign;
       String? encryptKeyUpdateResult =
           await atLookUp.executeVerb(updateBuilder);
@@ -180,7 +180,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       }
     }
     //note: in case atKeysFilePath is provided instead of downloadPath;
-    //file is created with whichever name provided as atKeysFilePath(even if filename does not match standary atKeys file name convention)
+    //file is created with whichever name provided as atKeysFilePath(even if filename does not match standard atKeys file name convention)
     IOSink atKeysFile = File(atOnboardingPreference.downloadPath ??
             atOnboardingPreference.atKeysFilePath!)
         .openWrite();
