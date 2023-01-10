@@ -45,7 +45,7 @@ class AtLookupImpl implements AtLookUp {
   /// Represents the client configurations.
   late Map<String, dynamic> _clientConfig;
 
-  late AtChops _atChops;
+  AtChops? _atChops;
 
   AtLookupImpl(String atSign, String rootDomain, int rootPort,
       {this.privateKey,
@@ -422,6 +422,7 @@ class AtLookupImpl implements AtLookUp {
     }
   }
 
+  @override
   Future<bool> pkamAuthenticate() async {
     await createConnection();
     try {
@@ -438,10 +439,10 @@ class AtLookupImpl implements AtLookUp {
         }
         fromResponse = fromResponse.trim().replaceAll('data:', '');
         logger.finer('fromResponse $fromResponse');
-        var signature =
-            _atChops.signString(fromResponse, SigningKeyType.pkamSha256);
-        logger.finer('Sending command pkam:$signature');
-        await _sendCommand('pkam:$signature\n');
+        var signingResult =
+            _atChops!.signString(fromResponse, SigningKeyType.pkamSha256);
+        logger.finer('Sending command pkam:${signingResult.result}');
+        await _sendCommand('pkam:${signingResult.result}\n');
         var pkamResponse = await messageListener.read();
         if (pkamResponse == 'data:success') {
           logger.info('auth success');
@@ -533,8 +534,11 @@ class AtLookupImpl implements AtLookUp {
       await requestResponseMutex.acquire();
 
       if (auth && _isAuthRequired()) {
-        if (privateKey != null) {
-          //# TODO replace with [pkamAuthenticate]
+        if (_atChops != null) {
+          logger.finer('calling pkam using atchops');
+          await pkamAuthenticate();
+        } else if (privateKey != null) {
+          logger.finer('calling pkam without atchops');
           await authenticate(privateKey);
         } else if (cramSecret != null) {
           await authenticate_cram(cramSecret);
@@ -596,10 +600,10 @@ class AtLookupImpl implements AtLookUp {
   }
 
   @override
-  set atChops(AtChops atChops) {
+  set atChops(AtChops? atChops) {
     _atChops = atChops;
   }
 
   @override
-  AtChops get atChops => _atChops;
+  AtChops? get atChops => _atChops;
 }
