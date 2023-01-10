@@ -91,7 +91,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     selfEncryptionKey = generateAESKey();
 
     stdout.writeln(
-        '[Information] Generating you encryption keys and .atKeys file\n');
+        '[Information] Generating your encryption keys and .atKeys file\n');
     //mapping encryption keys pairs to their names
     atKeysMap = <String, String>{
       AuthKeyType.pkamPublicKey: pkamRsaKeypair.publicKey.toString(),
