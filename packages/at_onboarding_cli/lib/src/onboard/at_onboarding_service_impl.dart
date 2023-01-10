@@ -43,7 +43,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   Future<bool> onboard() async {
     //get cram_secret from either from AtOnboardingConfig or decode it from qr code whichever available
     atOnboardingPreference.cramSecret ??=
-        _getSecretFromQr(atOnboardingPreference.qrCodePath);
+        getSecretFromQr(atOnboardingPreference.qrCodePath);
 
     if (atOnboardingPreference.cramSecret == null) {
       throw AtClientException.message(
@@ -60,8 +60,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     //check and wait till secondary exists
     await _waitUntilSecondaryCreated();
     //authenticate into secondary using cram secret
-    _isAtsignOnboarded = (await atLookUp
-        .authenticate_cram(atOnboardingPreference.cramSecret));
+    _isAtsignOnboarded =
+        (await atLookUp.authenticate_cram(atOnboardingPreference.cramSecret));
 
     logger.info('Cram authentication status: $_isAtsignOnboarded');
 
@@ -240,9 +240,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       atLookUp!.atChops = atChops;
       atClient!.atChops = atChops;
       atClient!.getPreferences()!.useAtChops = true;
-      _isPkamAuthenticated =
-          await atLookUp?.pkamAuthenticate() ??
-              false;
+      _isPkamAuthenticated = await atLookUp?.pkamAuthenticate() ?? false;
       if (!_isAtsignOnboarded &&
           atOnboardingPreference.atKeysFilePath != null) {
         await _persistKeysLocalSecondary();
@@ -320,7 +318,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }
 
   ///extracts cram secret from qrCode
-  String? _getSecretFromQr(String? path) {
+  static String? getSecretFromQr(String? path) {
     if (path != null) {
       Image? image = decodePng(File(path).readAsBytesSync());
       LuminanceSource source = RGBLuminanceSource(image!.width, image.height,
@@ -338,33 +336,47 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   ///If not, wait until secondary is created
   Future<void> _waitUntilSecondaryCreated() async {
     final maxRetries = 50;
-    int _retryCount = 0;
-    SecondaryAddress? _secondaryAddress;
+    int retryCount = 1;
+    SecondaryAddress? secondaryAddress;
     SecureSocket? secureSocket;
+    bool connectionFlag = false;
 
-    while (_retryCount < maxRetries && _secondaryAddress == null) {
-      logger.finer('retrying find secondary.......$_retryCount/$maxRetries');
+    while (retryCount <= maxRetries && secondaryAddress == null) {
+      await Future.delayed(Duration(seconds: 3));
+      logger.finer('retrying find secondary.......$retryCount/$maxRetries');
       try {
-        _secondaryAddress =
-            await (atLookUp as AtLookupImpl).secondaryAddressFinder.findSecondary(_atSign);
+        secondaryAddress =
+            await atLookUp?.secondaryAddressFinder.findSecondary(_atSign);
       } on Exception catch (e) {
         logger.finer(e);
       }
-      _retryCount++;
+      retryCount++;
+    }
+
+    if (secondaryAddress == null) {
+      logger.severe(
+          'Could not find secondary address for $_atSign after $retryCount retries');
+      exit(1);
     }
     //resetting retry counter to be used for different operation
-    _retryCount = 0;
-    while (secureSocket == null && _retryCount < maxRetries) {
-      logger.finer('retrying connect secondary.......$_retryCount/$maxRetries');
-      stdout.writeln('Connecting to secondary ...');
+    retryCount = 1;
+    while (!connectionFlag && retryCount <= maxRetries) {
+      await Future.delayed(Duration(seconds: 3));
+      logger.finer('retrying connect secondary.......$retryCount/$maxRetries');
+      stdout.writeln('Connecting to secondary ...$retryCount/$maxRetries');
       try {
         secureSocket = await SecureSocket.connect(
-            _secondaryAddress!.host, _secondaryAddress.port);
+            secondaryAddress.host, secondaryAddress.port,
+            timeout: Duration(
+                seconds:
+                    30)); // 30-second timeout should be enough even for slow networks
+        connectionFlag = secureSocket.remoteAddress != null &&
+            secureSocket.remotePort != null;
       } on Exception catch (e) {
         logger.finer(e);
       }
+      retryCount++;
     }
-    stdout.writeln('\n');
   }
 
   @override
@@ -385,5 +397,4 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   @override
   AtLookUp? atLookUp;
-
 }
