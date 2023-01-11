@@ -68,25 +68,25 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       throw AtClientException.message('Download path not provided',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
-    var atLookUp = AtLookupImpl(_atSign, atOnboardingPreference.rootDomain,
+    AtLookupImpl atLookUpImpl = AtLookupImpl(_atSign, atOnboardingPreference.rootDomain,
         atOnboardingPreference.rootPort);
     //check and wait till secondary exists
-    await _waitUntilSecondaryCreated();
+    await _waitUntilSecondaryCreated(atLookUpImpl);
     //authenticate into secondary using cram secret
     _isAtsignOnboarded =
-        (await atLookUp.authenticate_cram(atOnboardingPreference.cramSecret));
+        (await atLookUpImpl.authenticate_cram(atOnboardingPreference.cramSecret));
 
     logger.info('Cram authentication status: $_isAtsignOnboarded');
 
     if (_isAtsignOnboarded) {
-      await _activateAtsign(atLookUp);
+      await _activateAtsign(atLookUpImpl);
     }
 
     return _isAtsignOnboarded;
   }
 
   ///method to generate/update encryption key-pairs to activate an atsign
-  Future<void> _activateAtsign(AtLookupImpl atLookUp) async {
+  Future<void> _activateAtsign(AtLookupImpl atLookUpImpl) async {
     RSAKeypair pkamRsaKeypair;
     RSAKeypair encryptionKeyPair;
     String selfEncryptionKey;
@@ -122,12 +122,12 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     String updateCommand =
         'update:$AT_PKAM_PUBLIC_KEY ${pkamRsaKeypair.publicKey}\n';
     String? pkamUpdateResult =
-        await atLookUp.executeCommand(updateCommand, auth: false);
+        await atLookUpImpl.executeCommand(updateCommand, auth: false);
     logger.info('PkamPublicKey update result: $pkamUpdateResult');
 
     //authenticate using pkam to verify insertion of pkamPublicKey
     _isPkamAuthenticated =
-        (await atLookUp.authenticate(atKeysMap[AuthKeyType.pkamPrivateKey]));
+        (await atLookUpImpl.authenticate(atKeysMap[AuthKeyType.pkamPrivateKey]));
 
     if (_isPkamAuthenticated) {
       //update user encryption public key to remote secondary
@@ -137,13 +137,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         ..value = encryptionKeyPair.publicKey.toString()
         ..sharedBy = _atSign;
       String? encryptKeyUpdateResult =
-          await atLookUp.executeVerb(updateBuilder);
+          await atLookUpImpl.executeVerb(updateBuilder);
       logger
           .info('Encryption public key update result $encryptKeyUpdateResult');
       //deleting cram secret from the keystore as cram auth is complete
       DeleteVerbBuilder deleteBuilder = DeleteVerbBuilder()
         ..atKey = AT_CRAM_SECRET;
-      String? deleteResponse = await atLookUp.executeVerb(deleteBuilder);
+      String? deleteResponse = await atLookUpImpl.executeVerb(deleteBuilder);
       logger.info('Cram secret delete response : $deleteResponse');
       //displays status of the atsign
       logger.finer(await getServerStatus());
@@ -348,7 +348,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   ///Method to check if secondary belonging to [_atSign] exists
   ///If not, wait until secondary is created
-  Future<void> _waitUntilSecondaryCreated() async {
+  Future<void> _waitUntilSecondaryCreated(AtLookupImpl atLookupImpl) async {
     final maxRetries = 50;
     int retryCount = 1;
     SecondaryAddress? secondaryAddress;
@@ -360,7 +360,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       logger.finer('retrying find secondary.......$retryCount/$maxRetries');
       try {
         secondaryAddress =
-            await _atLookUp?.secondaryAddressFinder.findSecondary(_atSign);
+            await atLookupImpl.secondaryAddressFinder.findSecondary(_atSign);
       } on Exception catch (e) {
         logger.finer(e);
       }
@@ -396,7 +396,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   @override
   Future<void> close() async {
-    await (_atLookUp as AtLookupImpl).close();
+    if(_atLookUp != null) {
+      await (_atLookUp as AtLookupImpl).close();
+    }
     _atClient = null;
     logger.info('Closing current instance of at_onboarding_cli');
     exit(0);
