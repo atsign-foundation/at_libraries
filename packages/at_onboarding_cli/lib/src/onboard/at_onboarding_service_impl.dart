@@ -18,7 +18,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   late final String _atSign;
   bool _isPkamAuthenticated = false;
   bool _isAtsignOnboarded = false;
-  AtSignLogger logger = AtSignLogger('OnboardingCli');
+  static AtSignLogger logger = AtSignLogger('OnboardingCli');
   AtOnboardingPreference atOnboardingPreference;
   AtClient? _atClient;
   AtLookUp? _atLookUp;
@@ -29,23 +29,23 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }
 
   Future<void> _init() async {
-    AtClientManager _atClientManager = AtClientManager.getInstance();
-    await _atClientManager.setCurrentAtSign(
+    AtClientManager atClientManager = AtClientManager.getInstance();
+    await atClientManager.setCurrentAtSign(
         _atSign, atOnboardingPreference.namespace, atOnboardingPreference);
     // ??= to support mocking
-    _atLookUp ??= _atClientManager.atClient.getRemoteSecondary()?.atLookUp;
-    _atClient ??= _atClientManager.atClient;
+    _atLookUp ??= atClientManager.atClient.getRemoteSecondary()?.atLookUp;
+    _atClient ??= atClientManager.atClient;
   }
 
   @override
   @Deprecated('Use getter')
   Future<AtClient?> getAtClient() async {
     if (_atClient == null) {
-      AtClientManager _atClientManager = AtClientManager.getInstance();
-      await _atClientManager.setCurrentAtSign(
+      AtClientManager atClientManager = AtClientManager.getInstance();
+      await atClientManager.setCurrentAtSign(
           _atSign, atOnboardingPreference.namespace, atOnboardingPreference);
-      _atLookUp = _atClientManager.atClient.getRemoteSecondary()?.atLookUp;
-      _atClient = _atClientManager.atClient;
+      _atLookUp = atClientManager.atClient.getRemoteSecondary()?.atLookUp;
+      _atClient = atClientManager.atClient;
     }
     return _atClient;
   }
@@ -122,11 +122,10 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     String? pkamUpdateResult =
         await atLookUp.executeCommand(updateCommand, auth: false);
     logger.info('PkamPublicKey update result: $pkamUpdateResult');
-    atOnboardingPreference.privateKey = pkamRsaKeypair.privateKey.toString();
 
     //authenticate using pkam to verify insertion of pkamPublicKey
     _isPkamAuthenticated =
-        (await atLookUp.authenticate(atOnboardingPreference.privateKey));
+        (await atLookUp.authenticate(atKeysMap[AuthKeyType.pkamPrivateKey]));
 
     if (_isPkamAuthenticated) {
       //update user encryption public key to remote secondary
@@ -273,7 +272,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   ///returns map containing encryption keys
   Future<Map<String, String>> _readAtKeysFile(String? atKeysFilePath) async {
     if (atKeysFilePath == null || atKeysFilePath.isEmpty) {
-      throw AtClientException.message('.atKeys file is null or empty');
+      throw AtClientException.message('atKeys filePath is null or empty. atKeysFile needs to be provided');
     }
     String atAuthData = await File(atKeysFilePath).readAsString();
     Map<String, String> jsonData = <String, String>{};
@@ -340,7 +339,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       String secret = result.text.split(':')[1];
       return secret;
     } on Exception catch (e) {
-      print('exception while getting secret from QR code: $e');
+      logger.severe('exception while getting secret from QR code: $e');
       return null;
     }
   }
@@ -373,6 +372,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
     //resetting retry counter to be used for different operation
     retryCount = 1;
+
     while (!connectionFlag && retryCount <= maxRetries) {
       await Future.delayed(Duration(seconds: 3));
       logger.finer('retrying connect secondary.......$retryCount/$maxRetries');
