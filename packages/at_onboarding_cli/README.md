@@ -13,7 +13,7 @@ To add this package as the dependency in your pubspec.yaml
 
 ```dart  
 dependencies:
-  at_onboarding_cli: ^1.1.2
+  at_onboarding_cli: ^1.2.2
 ```
 Getting Dependencies
 
