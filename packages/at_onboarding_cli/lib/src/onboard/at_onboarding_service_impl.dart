@@ -24,9 +24,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   AtLookUp? _atLookUp;
 
   AtOnboardingServiceImpl(atsign, this.atOnboardingPreference) {
-    _atSign = AtUtils.formatAtSign(atsign)!;
     //performs atSign format checks on the atSign
-    AtUtils.fixAtSign(_atSign);
+    _atSign = AtUtils.formatAtSign(AtUtils.fixAtSign(atsign))!;
   }
 
   Future<void> _init() async {
@@ -209,28 +208,29 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   ///back-up encryption keys to local secondary
   Future<void> _persistKeysLocalSecondary() async {
     //when authenticating keys need to be fetched from atKeys file
-    Map<String, String> _atKeysMap = await _decryptAtKeysFile(
+    Map<String, String> atKeysMap = await _decryptAtKeysFile(
         (await _readAtKeysFile(atOnboardingPreference.atKeysFilePath)));
     //backup keys into local secondary
     bool? response = await _atClient
         ?.getLocalSecondary()
-        ?.putValue(AT_PKAM_PUBLIC_KEY, _atKeysMap[AuthKeyType.pkamPublicKey]!);
+        ?.putValue(AT_PKAM_PUBLIC_KEY, atKeysMap[AuthKeyType.pkamPublicKey]!);
     logger.finer('PkamPublicKey persist to localSecondary: status $response');
-    response = await _atClient?.getLocalSecondary()?.putValue(
-        AT_PKAM_PRIVATE_KEY, _atKeysMap[AuthKeyType.pkamPrivateKey]!);
+    response = await _atClient
+        ?.getLocalSecondary()
+        ?.putValue(AT_PKAM_PRIVATE_KEY, atKeysMap[AuthKeyType.pkamPrivateKey]!);
     logger.finer('PkamPrivateKey persist to localSecondary: status $response');
     response = await _atClient?.getLocalSecondary()?.putValue(
         '$AT_ENCRYPTION_PUBLIC_KEY$_atSign',
-        _atKeysMap[AuthKeyType.encryptionPublicKey]!);
+        atKeysMap[AuthKeyType.encryptionPublicKey]!);
     logger.finer(
         'EncryptionPublicKey persist to localSecondary: status $response');
     response = await _atClient?.getLocalSecondary()?.putValue(
         AT_ENCRYPTION_PRIVATE_KEY,
-        _atKeysMap[AuthKeyType.encryptionPrivateKey]!);
+        atKeysMap[AuthKeyType.encryptionPrivateKey]!);
     logger.finer(
         'EncryptionPrivateKey persist to localSecondary: status $response');
     response = await _atClient?.getLocalSecondary()?.putValue(
-        AT_ENCRYPTION_SELF_KEY, _atKeysMap[AuthKeyType.selfEncryptionKey]!);
+        AT_ENCRYPTION_SELF_KEY, atKeysMap[AuthKeyType.selfEncryptionKey]!);
     logger.finer(
         'Self encryption key persist to localSecondary: status $response');
   }
@@ -294,7 +294,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   Future<Map<String, String>> _decryptAtKeysFile(
       Map<String, String> jsonData) async {
     String decryptionKey = _getDecryptionKey(jsonData);
-    Map<String, String> _atKeysMap = <String, String>{
+    Map<String, String> atKeysMap = <String, String>{
       AuthKeyType.pkamPublicKey: EncryptionUtil.decryptValue(
           jsonData[AuthKeyType.pkamPublicKey]!, decryptionKey),
       AuthKeyType.pkamPrivateKey: EncryptionUtil.decryptValue(
@@ -305,7 +305,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
           jsonData[AuthKeyType.encryptionPrivateKey]!, decryptionKey),
       AuthKeyType.selfEncryptionKey: decryptionKey,
     };
-    return _atKeysMap;
+    return atKeysMap;
   }
 
   ///generates random RSA keypair
@@ -328,7 +328,10 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   ///extracts cram secret from qrCode
   static String? getSecretFromQr(String? path) {
-    if (path != null) {
+    if (path == null) {
+      return null;
+    }
+    try {
       Image? image = decodePng(File(path).readAsBytesSync());
       LuminanceSource source = RGBLuminanceSource(image!.width, image.height,
           image.getBytes(format: Format.abgr).buffer.asInt32List());
@@ -336,7 +339,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       Result result = QRCodeReader().decode(bitmap);
       String secret = result.text.split(':')[1];
       return secret;
-    } else {
+    } on Exception catch (e) {
+      print('exception while getting secret from QR code: $e');
       return null;
     }
   }
@@ -392,7 +396,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   Future<void> close() async {
     await (_atLookUp as AtLookupImpl).close();
     _atClient = null;
-    logger.severe('Killing current instance of at_onboarding_cli');
+    logger.info('Closing current instance of at_onboarding_cli');
     exit(0);
   }
 
