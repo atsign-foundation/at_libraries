@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_null_comparison
+
 import 'dart:convert';
 import 'dart:io';
 import 'package:at_client/at_client.dart';
@@ -97,8 +99,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       AuthKeyType.pkamPublicKey: pkamRsaKeypair.publicKey.toString(),
       AuthKeyType.pkamPrivateKey: pkamRsaKeypair.privateKey.toString(),
       AuthKeyType.encryptionPublicKey: encryptionKeyPair.publicKey.toString(),
-      AuthKeyType.encryptionPrivateKey:
-          encryptionKeyPair.privateKey.toString(),
+      AuthKeyType.encryptionPrivateKey: encryptionKeyPair.privateKey.toString(),
       AuthKeyType.selfEncryptionKey: selfEncryptionKey,
       _atSign: selfEncryptionKey,
     };
@@ -203,8 +204,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         ?.getLocalSecondary()
         ?.putValue(AT_PKAM_PUBLIC_KEY, atKeysMap[AuthKeyType.pkamPublicKey]!);
     logger.finer('PkamPublicKey persist to localSecondary: status $response');
-    response = await _atClient?.getLocalSecondary()?.putValue(
-        AT_PKAM_PRIVATE_KEY, atKeysMap[AuthKeyType.pkamPrivateKey]!);
+    response = await _atClient
+        ?.getLocalSecondary()
+        ?.putValue(AT_PKAM_PRIVATE_KEY, atKeysMap[AuthKeyType.pkamPrivateKey]!);
     logger.finer('PkamPrivateKey persist to localSecondary: status $response');
     response = await _atClient?.getLocalSecondary()?.putValue(
         '$AT_ENCRYPTION_PUBLIC_KEY$_atSign',
@@ -345,8 +347,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       retryCount++;
     }
 
-    if (secondaryAddress == null){
-      logger.severe('Could not find secondary address for $_atSign after $retryCount retries');
+    if (secondaryAddress == null) {
+      logger.severe(
+          'Could not find secondary address for $_atSign after $retryCount retries');
       exit(1);
     }
     //resetting retry counter to be used for different operation
@@ -358,8 +361,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       try {
         secureSocket = await SecureSocket.connect(
             secondaryAddress.host, secondaryAddress.port,
-            timeout: Duration(seconds: 30)); // 30-second timeout should be enough even for slow networks
-        connectionFlag = secureSocket.remoteAddress != null && secureSocket.remotePort != null;
+            timeout: Duration(
+                seconds:
+                    30)); // 30-second timeout should be enough even for slow networks
+        connectionFlag = secureSocket.remoteAddress != null &&
+            secureSocket.remotePort != null;
       } on Exception catch (e) {
         logger.finer(e);
       }
