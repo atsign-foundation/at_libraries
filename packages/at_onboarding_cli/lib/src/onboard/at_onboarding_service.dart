@@ -18,7 +18,7 @@ abstract class AtOnboardingService {
   @Deprecated('use getter')
   AtLookUp? getAtLookup();
 
-  ///kills the current instance of onboarding_service
+  ///Closes the current instance of onboarding_service
   Future<void> close();
 
   set atClient(AtClient? atClient);
