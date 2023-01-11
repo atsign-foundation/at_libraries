@@ -12,51 +12,43 @@ import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart'
     as activate_cli;
 
 Future<void> main() async {
-  AtSignLogger.root_level = 'finer';
-  group('Tests to validate authenticate functionality; ', () {
-
+  AtSignLogger.root_level = 'finest';
+  group('Tests to validate authenticate functionality', () {
     test('Test using atKeys File', () async {
-      String atsign = '@emoji🦄🛠';
-      AtOnboardingPreference atOnboardingPreference =
-          getPreferences(atsign, false);
-      atOnboardingPreference.atKeysFilePath =
-          atOnboardingPreference.downloadPath;
-      await generateAtKeysFile(atsign, atOnboardingPreference.atKeysFilePath);
-      //setting private key to null to ensure that private key is acquired from the atKeysFile
+      String atsign = '@alice🛠';
+      AtOnboardingPreference preference = getPreferences(atsign, false);
+      await generateAtKeysFile(atsign, preference.atKeysFilePath!);
       AtOnboardingService atOnboardingService =
-          AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+          AtOnboardingServiceImpl(atsign, preference);
+      await insertSelfEncKey(await atOnboardingService.getAtClient(), atsign);
       bool status = await atOnboardingService.authenticate();
       expect(true, status);
     });
 
     test('test atLookup auth status', () async {
-      String atsign = '@emoji🦄🛠';
-      AtOnboardingPreference atOnboardingPreference =
-          getPreferences(atsign, false);
-      atOnboardingPreference.atKeysFilePath =
-          atOnboardingPreference.downloadPath;
+      String atsign = '@bob🛠';
+      AtOnboardingPreference preference = getPreferences(atsign, false);
+      await generateAtKeysFile(atsign, preference.atKeysFilePath!);
       AtOnboardingService atOnboardingService =
-          AtOnboardingServiceImpl(atsign, getPreferences(atsign, false));
+          AtOnboardingServiceImpl(atsign, preference);
       await atOnboardingService.authenticate();
       await insertSelfEncKey(await atOnboardingService.getAtClient(), atsign);
       AtLookUp? atLookUp = atOnboardingService.getAtLookup();
       AtKey key = AtKey();
-      key.key = 'testKey2';
-      await atLookUp?.update(key.key!, 'value2');
+      key.key = 'testKey1';
+      await atLookUp?.update(key.key!, 'value1');
       String? response = await atLookUp?.llookup(key.key!);
-      expect('data:value2', response);
+      expect('data:value1', response);
     });
 
     test('test atLookup auth status using getAtClient()[deprecated]', () async {
       String atsign = '@emoji🦄🛠';
-      AtOnboardingPreference atOnboardingPreference =
-          getPreferences(atsign, false);
-      atOnboardingPreference.atKeysFilePath =
-          atOnboardingPreference.downloadPath;
+      AtOnboardingPreference preference = getPreferences(atsign, false);
+      await generateAtKeysFile(atsign, preference.atKeysFilePath!);
       AtOnboardingService atOnboardingService =
-          AtOnboardingServiceImpl(atsign, getPreferences(atsign, false));
-      await atOnboardingService.authenticate();
+          AtOnboardingServiceImpl(atsign, preference);
       await insertSelfEncKey(await atOnboardingService.getAtClient(), atsign);
+      await atOnboardingService.authenticate();
       AtLookUp? atLookUp = atOnboardingService.getAtLookup();
       AtKey key = AtKey();
       key.key = 'testKey2';
@@ -68,8 +60,10 @@ Future<void> main() async {
     test('test atClient authentication using getAtLookup[deprecated]',
         () async {
       String atsign = '@eve🛠';
+      AtOnboardingPreference preference = getPreferences(atsign, false);
+      await generateAtKeysFile(atsign, preference.atKeysFilePath!);
       AtOnboardingService onboardingService =
-          AtOnboardingServiceImpl(atsign, getPreferences(atsign, false));
+          AtOnboardingServiceImpl(atsign, preference);
       AtClient? atClient = await onboardingService.getAtClient();
       await insertSelfEncKey(atClient, atsign);
       AtKey key = AtKey();
@@ -89,13 +83,12 @@ Future<void> main() async {
     String atsign = '@eve🛠';
     AtOnboardingPreference atOnboardingPreference =
         getPreferences(atsign, false);
-    atOnboardingPreference.atKeysFilePath = atOnboardingPreference.downloadPath;
     AtOnboardingService atOnboardingService =
         AtOnboardingServiceImpl(atsign, atOnboardingPreference);
     AtClient? atClient;
 
     test('test authentication', () async {
-      await generateAtKeysFile(atsign, atOnboardingPreference.atKeysFilePath);
+      await generateAtKeysFile(atsign, atOnboardingPreference.atKeysFilePath!);
       await insertSelfEncKey(atClient, atsign);
       bool status = await atOnboardingService.authenticate();
       atClient = await atOnboardingService.getAtClient();
@@ -138,8 +131,6 @@ Future<void> main() async {
           AtOnboardingServiceImpl(atsign, atOnboardingPreference);
       bool status = await atOnboardingService.onboard();
       expect(true, status);
-      atOnboardingPreference.atKeysFilePath =
-          atOnboardingPreference.downloadPath;
       bool status2 = await atOnboardingService.authenticate();
       expect(true, status2);
       AtServerStatus atServerStatus = AtStatusImpl(
@@ -160,7 +151,6 @@ Future<void> main() async {
 
   group('test activate_cli', () {
     String atsign = '@bob🛠';
-    String filePath = '${Directory.current.path}/keys/${atsign}_key.atKeys';
 
     test('activate using activate_cli', () async {
       List<String> args = [
@@ -172,13 +162,13 @@ Future<void> main() async {
         'vip.ve.atsign.zone'
       ];
       await activate_cli.main(args);
-      expect(await File(filePath).exists(), true);
+      expect(await File(getKeysFilePath(atsign)).exists(), true);
     });
 
     test('auth using atKeys file generated from activate_cli', () async {
       AtOnboardingPreference atOnboardingPreference =
           getPreferences(atsign, true);
-      atOnboardingPreference.atKeysFilePath = filePath;
+      atOnboardingPreference.atKeysFilePath = getKeysFilePath(atsign);
 
       AtOnboardingService onboardingService =
           AtOnboardingServiceImpl(atsign, atOnboardingPreference);
@@ -199,14 +189,20 @@ AtOnboardingPreference getPreferences(String atsign, bool isOnboarding) {
     ..commitLogPath = 'storage/hive/client/commit'
     ..privateKey = null
     ..cramSecret = at_demos.cramKeyMap[atsign]
-    ..downloadPath = 'storage/keysFile.atKeys';
+    ..atKeysFilePath = getKeysFilePath(atsign);
+
   if (isOnboarding) {
-    atOnboardingPreference.downloadPath = 'storage/';
+    atOnboardingPreference.downloadPath = '${Directory.current.path}/keys/';
   }
+
   return atOnboardingPreference;
 }
 
-Future<void> generateAtKeysFile(String atsign, String? filePath) async {
+String getKeysFilePath(String atsign) {
+  return '${Directory.current.path}/keys/${atsign}_key.atKeys';
+}
+
+Future<void> generateAtKeysFile(String atsign, String filePath) async {
   Map<String, String?> atKeysMap = <String, String?>{
     AuthKeyType.pkamPublicKey: EncryptionUtil.encryptValue(
         at_demos.pkamPublicKeyMap[atsign]!, at_demos.aesKeyMap[atsign]!),
@@ -219,7 +215,13 @@ Future<void> generateAtKeysFile(String atsign, String? filePath) async {
     AuthKeyType.selfEncryptionKey: at_demos.aesKeyMap[atsign],
     atsign: at_demos.aesKeyMap[atsign]
   };
-  IOSink atKeysFile = File(filePath!).openWrite();
+
+  if (!(File(filePath).existsSync())) {
+    Directory(filePath).parent.create();
+    File(filePath).create();
+  }
+
+  IOSink atKeysFile = File(filePath).openWrite();
   atKeysFile.write(jsonEncode(atKeysMap));
   await atKeysFile.flush();
   await atKeysFile.close();
