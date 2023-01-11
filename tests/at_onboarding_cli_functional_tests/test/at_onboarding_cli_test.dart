@@ -74,6 +74,18 @@ Future<void> main() async {
       expect('value3', response?.value);
     });
 
+    test('test authenticate when .atKeys file not provided', () async {
+      String atsign = '@eve🛠';
+      AtOnboardingPreference preference = getPreferences(atsign, false);
+      preference.atKeysFilePath = null;
+      AtOnboardingService service = AtOnboardingServiceImpl(atsign, preference);
+      expect(
+          () async => await service.authenticate(),
+          throwsA(predicate(
+              (e) => e.toString().contains('atKeys filePath is null or empty.'
+                  'atKeysFile needs to be provided'))));
+    });
+
     tearDown(() async {
       await tearDownFunc();
     });
@@ -144,6 +156,16 @@ Future<void> main() async {
       expect(await File(atOnboardingPreference.atKeysFilePath!).exists(), true);
     });
 
+    test('test onboarding without cram secret', () async {
+      atOnboardingPreference.cramSecret = null;
+      AtOnboardingService service =
+          AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+      expect(
+          () async => await service.onboard(),
+          throwsA(predicate((e) => e.toString().contains(
+              'Either of cram secret or qr code containing cram secret not provided'))));
+    });
+
     tearDown(() async {
       await tearDownFunc();
     });
@@ -151,16 +173,16 @@ Future<void> main() async {
 
   group('test activate_cli', () {
     String atsign = '@bob🛠';
+    List<String> args = [
+      '-a',
+      atsign,
+      '-c',
+      at_demos.cramKeyMap[atsign]!,
+      '-r',
+      'vip.ve.atsign.zone'
+    ];
 
     test('activate using activate_cli', () async {
-      List<String> args = [
-        '-a',
-        atsign,
-        '-c',
-        at_demos.cramKeyMap[atsign]!,
-        '-r',
-        'vip.ve.atsign.zone'
-      ];
       await activate_cli.main(args);
       expect(await File(getKeysFilePath(atsign)).exists(), true);
     });
@@ -174,10 +196,10 @@ Future<void> main() async {
           AtOnboardingServiceImpl(atsign, atOnboardingPreference);
       expect(await onboardingService.authenticate(), true);
     });
-  });
 
-  tearDown(() async {
-    await tearDownFunc();
+    tearDown(() async {
+      await tearDownFunc();
+    });
   });
 }
 
