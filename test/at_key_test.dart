@@ -99,6 +99,7 @@ void main() {
       expect(atKey.sharedBy, '@demo');
       expect(atKey.key, 'test_key');
       expect(atKey.metadata!.isCached, true);
+      expect(atKey.metadata!.isPublic, true);
     });
 
     test('Test to verify cached:public key with namespace', (){
@@ -108,6 +109,7 @@ void main() {
       expect(atKey.sharedBy, '@demo');
       expect(atKey.key, 'test_key');
       expect(atKey.metadata!.isCached, true);
+      expect(atKey.metadata!.isPublic, true);
       expect(atKey.namespace, 'unit_test');
       expect(atKey.metadata!.namespaceAware, true);
     });

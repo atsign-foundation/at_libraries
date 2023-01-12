@@ -275,6 +275,7 @@ class AtKey {
       } else if (keyParts[0] == CACHED) {
         metaData.isCached = true;
         if(keyParts[1] == 'public'){
+          metaData.isPublic = true;
           atKey.sharedWith = null; // Example key: cached:public:phone@bob
         } else {
           atKey.sharedWith = keyParts[1]; // Example key: cached:@alice:phone@bob
