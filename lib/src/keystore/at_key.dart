@@ -272,11 +272,13 @@ class AtKey {
         metaData.isPublic = true;
       } else if (keyParts[0] == 'local') {
         atKey.isLocal = true;
-      }
-      // Example key: cached:@alice:phone@bob
-      else if (keyParts[0] == CACHED) {
+      } else if (keyParts[0] == CACHED) {
         metaData.isCached = true;
-        atKey.sharedWith = keyParts[1];
+        if(keyParts[1] == 'public'){
+          atKey.sharedWith = null; // Example key: cached:public:phone@bob
+        } else {
+          atKey.sharedWith = keyParts[1]; // Example key: cached:@alice:phone@bob
+        }
       } else {
         atKey.sharedWith = keyParts[0];
       }
