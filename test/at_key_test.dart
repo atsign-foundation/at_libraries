@@ -65,7 +65,7 @@ void main() {
       expect(atKey.toString(), testKey);
     });
 
-    test('Test to verify cached key', () {
+    test('Test to verify cached:shared key', () {
       var testKey = 'cached:@alice:phone@bob';
       var atKey = AtKey.fromString(testKey);
       expect(atKey.key, 'phone');
@@ -76,6 +76,40 @@ void main() {
       expect(atKey.metadata!.isPublic, false);
       expect(atKey.isLocal, false);
       expect(atKey.toString(), testKey);
+    });
+
+    test('Test to verify cached:shared key with namespace', () {
+      var testKey = 'cached:@alice:phone.unit_test@charlie';
+      var atKey = AtKey.fromString(testKey);
+      expect(atKey.key, 'phone');
+      expect(atKey.sharedBy, '@charlie');
+      expect(atKey.sharedWith, '@alice');
+      expect(atKey.metadata!.isCached, true);
+      expect(atKey.namespace, 'unit_test');
+      expect(atKey.metadata!.namespaceAware, true);
+      expect(atKey.metadata!.isPublic, false);
+      expect(atKey.isLocal, false);
+      expect(atKey.toString(), testKey);
+    });
+
+    test('Test to verify cached:public key', (){
+      var testKey = 'cached:public:test_key@demo';
+      var atKey = AtKey.fromString(testKey);
+      expect(atKey.sharedWith, null);
+      expect(atKey.sharedBy, '@demo');
+      expect(atKey.key, 'test_key');
+      expect(atKey.metadata!.isCached, true);
+    });
+
+    test('Test to verify cached:public key with namespace', (){
+      var testKey = 'cached:public:test_key.unit_test@demo';
+      var atKey = AtKey.fromString(testKey);
+      expect(atKey.sharedWith, null);
+      expect(atKey.sharedBy, '@demo');
+      expect(atKey.key, 'test_key');
+      expect(atKey.metadata!.isCached, true);
+      expect(atKey.namespace, 'unit_test');
+      expect(atKey.metadata!.namespaceAware, true);
     });
 
     test('Test to verify pkam private key', () {
