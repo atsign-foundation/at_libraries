@@ -1,3 +1,6 @@
+## 3.0.35
+- feat: enforce lowercase on AtKey(all key types included)
+- fix: incorrect behaviour of cached:public keys in AtKey.fromString()
 ## 3.0.34
 - feat: New server-side exception ServerIsPausedException, error code AT0024
 ## 3.0.33
