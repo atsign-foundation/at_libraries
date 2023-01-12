@@ -20,7 +20,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   late final String _atSign;
   bool _isPkamAuthenticated = false;
   bool _isAtsignOnboarded = false;
-  static AtSignLogger logger = AtSignLogger('OnboardingCli');
+  AtSignLogger logger = AtSignLogger('OnboardingCli');
   AtOnboardingPreference atOnboardingPreference;
   AtClient? _atClient;
   AtLookUp? _atLookUp;
@@ -68,18 +68,23 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       throw AtClientException.message('Download path not provided',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
-    AtLookupImpl atLookUpImpl = AtLookupImpl(_atSign, atOnboardingPreference.rootDomain,
-        atOnboardingPreference.rootPort);
-    //check and wait till secondary exists
-    await _waitUntilSecondaryCreated(atLookUpImpl);
-    //authenticate into secondary using cram secret
-    _isAtsignOnboarded =
-        (await atLookUpImpl.authenticate_cram(atOnboardingPreference.cramSecret));
+    // cram auth doesn't use at_chops.So create at_lookup here.
+    AtLookupImpl atLookUpImpl = AtLookupImpl(_atSign,
+        atOnboardingPreference.rootDomain, atOnboardingPreference.rootPort);
+    try {
+      //check and wait till secondary exists
+      await _waitUntilSecondaryCreated(atLookUpImpl);
+      //authenticate into secondary using cram secret
+      _isAtsignOnboarded = (await atLookUpImpl
+          .authenticate_cram(atOnboardingPreference.cramSecret));
 
-    logger.info('Cram authentication status: $_isAtsignOnboarded');
+      logger.info('Cram authentication status: $_isAtsignOnboarded');
 
-    if (_isAtsignOnboarded) {
-      await _activateAtsign(atLookUpImpl);
+      if (_isAtsignOnboarded) {
+        await _activateAtsign(atLookUpImpl);
+      }
+    } finally {
+      await atLookUpImpl.close();
     }
 
     return _isAtsignOnboarded;
@@ -126,8 +131,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     logger.info('PkamPublicKey update result: $pkamUpdateResult');
 
     //authenticate using pkam to verify insertion of pkamPublicKey
-    _isPkamAuthenticated =
-        (await atLookUpImpl.authenticate(atKeysMap[AuthKeyType.pkamPrivateKey]));
+    _isPkamAuthenticated = (await atLookUpImpl
+        .authenticate(atKeysMap[AuthKeyType.pkamPrivateKey]));
 
     if (_isPkamAuthenticated) {
       //update user encryption public key to remote secondary
@@ -274,7 +279,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   ///returns map containing encryption keys
   Future<Map<String, String>> _readAtKeysFile(String? atKeysFilePath) async {
     if (atKeysFilePath == null || atKeysFilePath.isEmpty) {
-      throw AtClientException.message('atKeys filePath is null or empty. atKeysFile needs to be provided');
+      throw AtClientException.message(
+          'atKeys filePath is null or empty. atKeysFile needs to be provided');
     }
     String atAuthData = await File(atKeysFilePath).readAsString();
     Map<String, String> jsonData = <String, String>{};
@@ -341,7 +347,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       String secret = result.text.split(':')[1];
       return secret;
     } on Exception catch (e) {
-      logger.severe('exception while getting secret from QR code: $e');
+      print('exception while getting secret from QR code: $e');
       return null;
     }
   }
@@ -396,7 +402,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   @override
   Future<void> close() async {
-    if(_atLookUp != null) {
+    if (_atLookUp != null) {
       await (_atLookUp as AtLookupImpl).close();
     }
     _atClient = null;
