@@ -11,11 +11,21 @@ abstract class AtOnboardingService {
   Future<bool> authenticate();
 
   ///returns an authenticated instance of AtClient
+  @Deprecated('use getter')
   Future<AtClient?> getAtClient();
 
   ///returns authenticated instance of AtLookup
+  @Deprecated('use getter')
   AtLookUp? getAtLookup();
 
-  ///kills the current instance of onboarding_service
+  ///Closes the current instance of onboarding_service
   Future<void> close();
+
+  set atClient(AtClient? atClient);
+
+  AtClient? get atClient;
+
+  set atLookUp(AtLookUp? atLookUp);
+
+  AtLookUp? get atLookUp;
 }

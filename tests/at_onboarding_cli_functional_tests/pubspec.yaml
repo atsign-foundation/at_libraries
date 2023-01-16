@@ -10,7 +10,7 @@ environment:
 dependencies:
   at_onboarding_cli:
     path: ../../packages/at_onboarding_cli
-  at_client: ^3.0.35
+  at_client: ^3.0.52
   at_lookup: ^3.0.29
   at_commons: ^3.0.24
 
