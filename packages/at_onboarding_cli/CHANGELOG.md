@@ -1,3 +1,5 @@
+## 1.2.3
+- Enable use of AtChops
 ## 1.2.2
 - Minor reformatting of user logs and minor bugfixes
 - Fixed issue with using executables
