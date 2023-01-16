@@ -38,7 +38,7 @@ dependency_overrides:
     git:
       url: https://github.com/atsign-foundation/at_client_sdk.git
       path: packages/at_client
-      ref: trunk
+      ref: gkc-inject-atChops-into-RemoteSecondary
 #
 #  at_commons:
 #    git:

@@ -30,10 +30,10 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     _atSign = AtUtils.formatAtSign(AtUtils.fixAtSign(atsign))!;
   }
 
-  Future<void> _init() async {
+  Future<void> _init(AtChops atChops) async {
     AtClientManager atClientManager = AtClientManager.getInstance();
     await atClientManager.setCurrentAtSign(
-        _atSign, atOnboardingPreference.namespace, atOnboardingPreference);
+        _atSign, atOnboardingPreference.namespace, atOnboardingPreference, atChops: atChops);
     // ??= to support mocking
     _atLookUp ??= atClientManager.atClient.getRemoteSecondary()?.atLookUp;
     _atClient ??= atClientManager.atClient;
@@ -42,13 +42,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   @override
   @Deprecated('Use getter')
   Future<AtClient?> getAtClient() async {
-    if (_atClient == null) {
-      AtClientManager atClientManager = AtClientManager.getInstance();
-      await atClientManager.setCurrentAtSign(
-          _atSign, atOnboardingPreference.namespace, atOnboardingPreference);
-      _atLookUp = atClientManager.atClient.getRemoteSecondary()?.atLookUp;
-      _atClient = atClientManager.atClient;
-    }
     return _atClient;
   }
 
@@ -253,7 +246,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
           exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
     final atChops = _createAtChops(atKeysFileDataMap);
-    await _init();
+    await _init(atChops);
     _atLookUp!.atChops = atChops;
     _atClient!.atChops = atChops;
     _atClient!.getPreferences()!.useAtChops = true;
