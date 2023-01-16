@@ -19,7 +19,7 @@ dependency_overrides:
     git:
       url: https://github.com/atsign-foundation/at_client_sdk.git
       path: packages/at_client
-      ref: trunk
+      ref: gkc-inject-atChops-into-RemoteSecondary
 
 dev_dependencies:
   lints: ^1.0.0
