@@ -6,6 +6,13 @@ repository: https://github.com/atsign-foundation/at_libraries
 environment:
   sdk: '>=2.18.3 <3.0.0'
 
+dependency_overrides:
+  at_commons:
+    git:
+      url: https://github.com/atsign-foundation/at_tools.git
+      path: packages/at_commons
+      ref: gkc-additional-encryption-metadata
+
 dependencies:
   encrypt: ^5.0.1
   crypton: ^2.1.0

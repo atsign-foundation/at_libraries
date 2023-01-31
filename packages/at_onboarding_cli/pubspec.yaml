@@ -12,6 +12,13 @@ executables:
   at_register: register_cli
   at_activate: activate_cli
 
+dependency_overrides:
+  at_commons:
+    git:
+      url: https://github.com/atsign-foundation/at_tools.git
+      path: packages/at_commons
+      ref: gkc-additional-encryption-metadata
+
 dependencies:
    at_utils: ^3.0.11
    at_client: ^3.0.52
