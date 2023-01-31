@@ -25,16 +25,39 @@ void main() {
           'update:email@alice alice@atsign.com\n');
     });
 
-    test('verify shared key command', () {
+    test('verify update command with the shared symmetric key inline and encrypted', () {
+      var pubKeyCS = 'the_checksum_of_the_public_key_used_to_encrypted_the_AES_key';
+      var ske = 'the_AES_key__encrypted_with_some_public_key__encoded_as_base64';
+      var skeEncKeyName = 'key_45678.__public_keys.__global';
+      var skeEncAlgo = 'ECC/SomeCurveName/blah';
       var updateBuilder = UpdateVerbBuilder()
         ..value = 'alice@atsign.com'
-        ..atKey = 'email'
+        ..atKey = 'email.wavi'
         ..sharedBy = 'alice'
         ..sharedWith = 'bob'
-        ..pubKeyChecksum = '123'
-        ..sharedKeyEncrypted = 'abc';
-      expect(updateBuilder.buildCommand(),
-          'update:sharedKeyEnc:abc:pubKeyCS:123:@bob:email@alice alice@atsign.com\n');
+        ..pubKeyChecksum = pubKeyCS
+        ..sharedKeyEncrypted = ske
+        ..skeEncKeyName = skeEncKeyName
+        ..skeEncAlgo = skeEncAlgo
+      ;
+      var updateCommand = updateBuilder.buildCommand();
+      expect(
+          updateCommand,
+          'update'
+          ':sharedKeyEnc:$ske'
+          ':pubKeyCS:$pubKeyCS'
+          ':skeEncKeyName:$skeEncKeyName'
+          ':skeEncAlgo:$skeEncAlgo'
+          ':@bob:email.wavi@alice alice@atsign.com'
+          '\n');
+      var updateVerbParams = getVerbParams(VerbSyntax.update, updateCommand.trim());
+      expect (updateVerbParams[AT_KEY], 'email.wavi');
+      expect (updateVerbParams[AT_SIGN], 'alice');
+      expect (updateVerbParams[FOR_AT_SIGN], 'bob');
+      expect (updateVerbParams[SHARED_WITH_PUBLIC_KEY_CHECK_SUM], pubKeyCS);
+      expect (updateVerbParams[SHARED_KEY_ENCRYPTED], ske);
+      expect (updateVerbParams[SHARED_KEY_ENCRYPTED_ENCRYPTING_KEY_NAME], skeEncKeyName);
+      expect (updateVerbParams[SHARED_KEY_ENCRYPTED_ENCRYPTING_ALGO], skeEncAlgo);
     });
 
     test('verify local key command', () {
@@ -86,16 +109,38 @@ void main() {
           'update:meta:phone@alice:ttb:80000\n');
     });
 
-    test('verify isEncrypted and sharedkey metadata', () {
+    test('verify update:meta command with the shared symmetric key inline and encrypted ', () {
+      var pubKeyCS = 'the_checksum_of_the_public_key_used_to_encrypted_the_AES_key';
+      var ske = 'the_AES_key__encrypted_with_some_public_key__encoded_as_base64';
+      var skeEncKeyName = 'key_45678.__public_keys.__global';
+      var skeEncAlgo = 'ECC/SomeCurveName/blah';
       var updateBuilder = UpdateVerbBuilder()
         ..isEncrypted = true
-        ..atKey = 'phone'
-        ..sharedBy = 'alice'
-        ..sharedWith = 'bob'
-        ..pubKeyChecksum = '123'
-        ..sharedKeyEncrypted = 'abc';
-      expect(updateBuilder.buildCommandForMeta(),
-          'update:meta:@bob:phone@alice:isEncrypted:true:sharedKeyEnc:abc:pubKeyCS:123\n');
+        ..atKey = 'cabbages_and_kings.wonderland'
+        ..sharedBy = 'walrus'
+        ..sharedWith = 'carpenter'
+        ..pubKeyChecksum = pubKeyCS
+        ..sharedKeyEncrypted = ske
+        ..skeEncKeyName = skeEncKeyName
+        ..skeEncAlgo = skeEncAlgo
+      ;
+      var updateMetaCommand = updateBuilder.buildCommandForMeta();
+      expect(
+          updateMetaCommand,
+          'update:meta:@carpenter:cabbages_and_kings.wonderland@walrus:isEncrypted:true'
+          ':sharedKeyEnc:$ske'
+          ':pubKeyCS:$pubKeyCS'
+          ':skeEncKeyName:$skeEncKeyName'
+          ':skeEncAlgo:$skeEncAlgo'
+          '\n');
+      var updateMetaVerbParams = getVerbParams(VerbSyntax.update_meta, updateMetaCommand.trim());
+      expect (updateMetaVerbParams[AT_KEY], 'cabbages_and_kings.wonderland');
+      expect (updateMetaVerbParams[AT_SIGN], 'walrus');
+      expect (updateMetaVerbParams[FOR_AT_SIGN], 'carpenter');
+      expect (updateMetaVerbParams[SHARED_WITH_PUBLIC_KEY_CHECK_SUM], pubKeyCS);
+      expect (updateMetaVerbParams[SHARED_KEY_ENCRYPTED], ske);
+      expect (updateMetaVerbParams[SHARED_KEY_ENCRYPTED_ENCRYPTING_KEY_NAME], skeEncKeyName);
+      expect (updateMetaVerbParams[SHARED_KEY_ENCRYPTED_ENCRYPTING_ALGO], skeEncAlgo);
     });
   });
 
@@ -122,6 +167,48 @@ void main() {
           expect(actualVerbParams[key], expectedVerbParams[key]);
         }
       });
+    });
+    test('Validate the update command when encKeyName, encAlgo are set, but not ivNonce', () {
+      var encKeyName = 'key_23456.__public_keys.__global';
+      var encAlgo = 'RSA';
+      final updateCommand =
+          'update'
+          ':ttl:-1:ttr:-1'
+          ':dataSignature:abc:isBinary:false:isEncrypted:false'
+          ':encKeyName:$encKeyName'
+          ':encAlgo:$encAlgo'
+          ':@bob:kryz.kryz_9850@alice {"stationName":"KRYZ","frequency":"98.5 Mhz"}';
+      var updateVerbParams = getVerbParams(VerbSyntax.update, updateCommand);
+      expect(updateVerbParams[AT_TTL], '-1');
+      expect(updateVerbParams[AT_TTR], '-1');
+      expect(updateVerbParams[AT_KEY], 'kryz.kryz_9850');
+      expect(updateVerbParams[AT_SIGN], 'alice');
+      expect(updateVerbParams[FOR_AT_SIGN], 'bob');
+      expect(updateVerbParams[ENCRYPTING_KEY_NAME], encKeyName);
+      expect(updateVerbParams[ENCRYPTING_ALGO], encAlgo);
+      expect(updateVerbParams[IV_OR_NONCE], null);
+    });
+    test('Validate the update:meta command when encKeyName, encAlgo and ivNonce are set', () {
+      var encKeyName = 'some_symmetric_key_name.some_app_namespace';
+      var encAlgo = 'AES/SIC/PKCS7Padding';
+      var ivNonce = 'ABCDEF12456';
+      final updateMetaCommand =
+          'update:meta:@bob:kryz.kryz_9850@alice'
+          ':ttl:-1:ttb:1000000:ttr:-1'
+          ':dataSignature:abc:isBinary:false:isEncrypted:false'
+          ':encKeyName:$encKeyName'
+          ':encAlgo:$encAlgo'
+          ':ivNonce:$ivNonce'
+          ;
+      var updateMetaVerbParams = getVerbParams(VerbSyntax.update_meta, updateMetaCommand);
+      expect(updateMetaVerbParams[AT_TTL], '-1');
+      expect(updateMetaVerbParams[AT_TTR], '-1');
+      expect(updateMetaVerbParams[AT_KEY], 'kryz.kryz_9850');
+      expect(updateMetaVerbParams[AT_SIGN], 'alice');
+      expect(updateMetaVerbParams[FOR_AT_SIGN], 'bob');
+      expect(updateMetaVerbParams[ENCRYPTING_KEY_NAME], encKeyName);
+      expect(updateMetaVerbParams[ENCRYPTING_ALGO], encAlgo);
+      expect(updateMetaVerbParams[IV_OR_NONCE], ivNonce);
     });
     test('validate update command with negative ttl and ttr', () {
       final updateCommand =
@@ -276,8 +363,94 @@ void main() {
         ..sharedBy = '@alice'
         ..isPublic = true;
       expect(updateVerbBuilder.buildKey(), 'public:phone@alice');
-      updateVerbBuilder.sharedWith = null;
+      expect(updateVerbBuilder.sharedWith, null);
+      updateVerbBuilder.sharedWith=null;
       expect(updateVerbBuilder.buildKey(), 'public:phone@alice');
+    });
+
+    UpdateVerbBuilder createBuilderWithAllMetadata() {
+      var ttl = 12345;
+      var ttb = 54321;
+      var ccd = false;
+      var ttr = 1000;
+      var dataSignature = 'someDataSignature';
+      var sharedKeyStatus = SharedKeyStatus.LOCAL_UPDATED.name;
+      var sharedKeyEncrypted = 'xyz123abc456';
+      var pubKeyChecksum = 'the_checksum';
+      var encoding = 'some_encoding';
+      var encKeyName = 'some_enc_key_name';
+      var encAlgo = 'some_enc_algo';
+      var ivNonce = 'some_iv_or_nonce';
+      var skeEncKeyName = 'some_ske_enc_key_name';
+      var skeEncAlgo = 'some_ske_enc_algo';
+      var isBinary = true;
+      var isEncrypted = true;
+      return UpdateVerbBuilder()
+        ..atKey = 'phone.details.wavi'
+        ..sharedBy = '@alice'
+        ..sharedWith = '@bob'
+        ..ttl=ttl
+        ..ttb=ttb
+        ..ccd=ccd
+        ..ttr=ttr
+        ..dataSignature=dataSignature
+        ..sharedKeyStatus=sharedKeyStatus
+        ..isBinary=isBinary
+        ..isEncrypted=isEncrypted
+        ..sharedKeyEncrypted=sharedKeyEncrypted
+        ..pubKeyChecksum=pubKeyChecksum
+        ..encoding=encoding
+        ..encKeyName=encKeyName
+        ..encAlgo=encAlgo
+        ..ivNonce=ivNonce
+        ..skeEncKeyName=skeEncKeyName
+        ..skeEncAlgo=skeEncAlgo
+        ..value='HELLO_WORLD'
+      ;
+    }
+    test('verify metadata is fully passed from builder to the atKeyObj which is built by buildKey', () {
+      var updateVerbBuilder = createBuilderWithAllMetadata();
+      expect(updateVerbBuilder.buildKey(), '@bob:phone.details.wavi@alice');
+      expect(updateVerbBuilder.atKeyObj.metadata!.ttl, updateVerbBuilder.ttl);
+      expect(updateVerbBuilder.atKeyObj.metadata!.ttb, updateVerbBuilder.ttb);
+      expect(updateVerbBuilder.atKeyObj.metadata!.ccd, updateVerbBuilder.ccd);
+      expect(updateVerbBuilder.atKeyObj.metadata!.ttr, updateVerbBuilder.ttr);
+      expect(updateVerbBuilder.atKeyObj.metadata!.dataSignature, updateVerbBuilder.dataSignature);
+      expect(updateVerbBuilder.atKeyObj.metadata!.sharedKeyStatus, updateVerbBuilder.sharedKeyStatus);
+      expect(updateVerbBuilder.atKeyObj.metadata!.isBinary, updateVerbBuilder.isBinary);
+      expect(updateVerbBuilder.atKeyObj.metadata!.isEncrypted, updateVerbBuilder.isEncrypted);
+      expect(updateVerbBuilder.atKeyObj.metadata!.sharedKeyEnc, updateVerbBuilder.sharedKeyEncrypted);
+      expect(updateVerbBuilder.atKeyObj.metadata!.pubKeyCS, updateVerbBuilder.pubKeyChecksum);
+      expect(updateVerbBuilder.atKeyObj.metadata!.encoding, updateVerbBuilder.encoding);
+      expect(updateVerbBuilder.atKeyObj.metadata!.encKeyName, updateVerbBuilder.encKeyName);
+      expect(updateVerbBuilder.atKeyObj.metadata!.encAlgo, updateVerbBuilder.encAlgo);
+      expect(updateVerbBuilder.atKeyObj.metadata!.ivNonce, updateVerbBuilder.ivNonce);
+      expect(updateVerbBuilder.atKeyObj.metadata!.skeEncKeyName, updateVerbBuilder.skeEncKeyName);
+      expect(updateVerbBuilder.atKeyObj.metadata!.skeEncAlgo, updateVerbBuilder.skeEncAlgo);
+    });
+
+    test('verify round trip from builder, to command for update, to builder', () {
+      var initialBuilder = createBuilderWithAllMetadata();
+      var command = initialBuilder.buildCommand();
+      var roundTrippedBuilder = UpdateVerbBuilder.getBuilder(command.trim());
+      expect(initialBuilder == roundTrippedBuilder, true);
+    });
+
+    test('verify round trip from builder, to command for update meta, to builder', () {
+      var initialBuilder = createBuilderWithAllMetadata();
+      initialBuilder.operation = UPDATE_META;
+
+      // When the update:meta command is built, it will NOT include the value, so
+      // we'll make two assertions: (1) builder after round-tripping via buildCommandForMeta()
+      // will NOT be the same as the initial builder, and (2) builder after round-tripping via
+      // buildCommandForMeta() WILL be the same as the initial builder, if the `value` in the
+      // initial builder is set to null
+      var command = initialBuilder.buildCommandForMeta();
+      var roundTrippedBuilder = UpdateVerbBuilder.getBuilder(command.trim());
+      expect(initialBuilder == roundTrippedBuilder, false);
+
+      initialBuilder.value = null;
+      expect(initialBuilder == roundTrippedBuilder, true);
     });
   });
 }

@@ -20,11 +20,56 @@ class VerbSyntax {
   static const sync = r'^sync:(?<from_commit_seq>[0-9]+|-1)(:(?<regex>.+))?$';
   static const syncFrom =
       r'^sync:from:(?<from_commit_seq>[0-9]+|-1)(:limit:(?<limit>\d+))(:(?<regex>.+))?$';
+
+  // NB: When adding metadata, you must add it to both the [update] and [update_meta] regexes,
+  // and the order must be the same.
   static const update =
-      r'^update:json:(?<json>.+)$|^update:(?:ttl:(?<ttl>(-?)\d+):)?(?:ttb:(?<ttb>(-?)\d+):)?(?:ttr:(?<ttr>(-?)\d+):)?(ccd:(?<ccd>true|false):)?(?:dataSignature:(?<dataSignature>[^:@]+):)?(?:sharedKeyStatus:(?<sharedKeyStatus>[^:@]+):)?(isBinary:(?<isBinary>true|false):)?(isEncrypted:(?<isEncrypted>true|false):)?(sharedKeyEnc:(?<sharedKeyEnc>[^:@]+):)?(pubKeyCS:(?<pubKeyCS>[^:@]+):)?(encoding:(?<encoding>\w+):)?(priority:(?<priority>low|medium|high):)?((?:public:)|(@(?<forAtSign>[^@:\s]*):))?(?<atKey>[^:@]((?!:{2})[^@])+)(?:@(?<atSign>[^@\s]*))? (?<value>.+$)';
+      r'^update:json:(?<json>.+)$'
+      r'|'
+      r'^update'
+      r'(:ttl:(?<ttl>(-?)\d+))?'
+      r'(:ttb:(?<ttb>(-?)\d+))?'
+      r'(:ttr:(?<ttr>(-?)\d+))?'
+      r'(:ccd:(?<ccd>true|false))?'
+      r'(:dataSignature:(?<dataSignature>[^:@\s]+))?'
+      r'(:sharedKeyStatus:(?<sharedKeyStatus>[^:@\s]+))?'
+      r'(:isBinary:(?<isBinary>true|false))?'
+      r'(:isEncrypted:(?<isEncrypted>true|false))?'
+      r'(:sharedKeyEnc:(?<sharedKeyEnc>[^:@\s]+))?'
+      r'(:pubKeyCS:(?<pubKeyCS>[^:@\s]+))?'
+      r'(:encoding:(?<encoding>[^:@\s]+))?'
+      r'(:priority:(?<priority>low|medium|high))?'
+      r'(:encKeyName:(?<encKeyName>[^:@\s]+))?'
+      r'(:encAlgo:(?<encAlgo>[^:@\s]+))?'
+      r'(:ivNonce:(?<ivNonce>[^:@\s]+))?'
+      r'(:skeEncKeyName:(?<skeEncKeyName>[^:@\s]+))?'
+      r'(:skeEncAlgo:(?<skeEncAlgo>[^:@\s]+))?'
+      r':((public:)|(@(?<forAtSign>[^@:\s]*):))?(?<atKey>[^:@]((?!:{2})[^@])+)(@(?<atSign>[^@:\s]*))? (?<value>.+$)';
+
+  // NB: When adding metadata, you must add it to both the [update] and [update_meta] regexes,
+  // and the order must be the same.
   // ignore: constant_identifier_names
   static const update_meta =
-      r'^update:meta:((?:public:)|((?<forAtSign>@?[^@\s]*):))?(?<atKey>((?!:{2})[^@])+)@(?<atSign>[^@:\s]*)(:ttl:(?<ttl>(-?)\d+))?(:ttb:(?<ttb>(-?)\d+))?(:ttr:(?<ttr>(-?)\d+))?(:ccd:(?<ccd>true|false))?(?:sharedKeyStatus:(?<sharedKeyStatus>[^:@]+):)?(:isBinary:(?<isBinary>true|false))?(:isEncrypted:(?<isEncrypted>true|false))?(sharedKeyEnc:(?<sharedKeyEnc>[^:@]+):)?(pubKeyCS:(?<pubKeyCS>[^:@]+))?$';
+      r'^update:meta:((public:)|(@(?<forAtSign>[^@:\s]*):))?'
+      r'(?<atKey>[^:@]((?!:{2})[^@])+)@(?<atSign>[^@:\s]*)'
+      r'(:ttl:(?<ttl>(-?)\d+))?'
+      r'(:ttb:(?<ttb>(-?)\d+))?'
+      r'(:ttr:(?<ttr>(-?)\d+))?'
+      r'(:ccd:(?<ccd>true|false))?'
+      r'(:dataSignature:(?<dataSignature>[^:@\s]+))?'
+      r'(:sharedKeyStatus:(?<sharedKeyStatus>[^:@\s]+))?'
+      r'(:isBinary:(?<isBinary>true|false))?'
+      r'(:isEncrypted:(?<isEncrypted>true|false))?'
+      r'(:sharedKeyEnc:(?<sharedKeyEnc>[^:@\s]+))?'
+      r'(:pubKeyCS:(?<pubKeyCS>[^:@\s]+))?'
+      r'(:encoding:(?<encoding>[^:@\s]+))?'
+      r'(:priority:(?<priority>low|medium|high))?'
+      r'(:encKeyName:(?<encKeyName>[^:@\s]+))?'
+      r'(:encAlgo:(?<encAlgo>[^:@\s]+))?'
+      r'(:ivNonce:(?<ivNonce>[^:@\s]+))?'
+      r'(:skeEncKeyName:(?<skeEncKeyName>[^:@\s]+))?'
+      r'(:skeEncAlgo:(?<skeEncAlgo>[^:@\s]+))?'
+      r'$';
   static const delete =
       r'^delete:(priority:(?<priority>low|medium|high):)?(?:cached:)?((?:public:)|(@(?<forAtSign>[^@:\s]*):))?(?<atKey>[^:]((?!:{2})[^@])+)(@(?<atSign>[^@\s]+))?$';
   static const monitor = r'^monitor(:(?<epochMillis>\d+))?( (?<regex>.+))?$';

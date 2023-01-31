@@ -393,13 +393,14 @@ class LocalKey extends AtKey {
 }
 
 class Metadata {
-  /// Represents the time in milliseconds beyond which the key expires
+  /// Time in milliseconds after which the [AtKey] expires.
   int? ttl;
 
-  /// Represents the time in milliseconds from when the key becomes active
+  /// Time in milliseconds after which the [AtKey] becomes active.
   int? ttb;
 
   /// Represents the time frequency in seconds when the cached key gets refreshed
+  /// Time in **seconds** after which a cached copy of this [AtKey] should be refreshed.
   int? ttr;
 
   /// CCD (Cascade Delete) means if a shared key is deleted, then the corresponding cached key will also be deleted
@@ -448,29 +449,87 @@ class Metadata {
   /// If value of the key is blob (images, videos etc), the binary data is encoded to text and [isBinary] is set to true.
   bool? isBinary = false;
 
-  /// Represents if the notify text is encrypted
-  /// When set to true, implies the value is encrypted
+  /// Is the value encrypted, or not
   bool? isEncrypted;
 
   /// When set to true, indicates the key is a cached key
   bool isCached = false;
 
-  /// Stores the encrypted shared key
+  /// Stores the shared key, 'inline' and encrypted, in the metadata of the keystore entry for the encrypted data
   ///
-  /// The value is encrypted with the shared key and shared key is encrypted with the sharedWith atSign encryption public key
+  /// Will be set only if [sharedWith] is set. Will be encrypted using a public key of the [sharedWith] atsign.
+  /// See also [skeEncKeyName]
   String? sharedKeyEnc;
 
-  /// Stores the checksum of the [ReservedKey.encryptionPublicKey] of the SharedWith atSign.
-  ///
-  /// Used to verify if the encryption key-pair used to encrypt and decrypt the value are same
+  /// Stores the checksum of the encryption public key used to encrypt the [sharedKeyEnc]. We use this
+  /// to verify that the encryption key-pair used to encrypt and decrypt the value are same
   String? pubKeyCS;
 
-  /// Represents the type of encoding (ex: base64) when the value contains a new line character's
+  /// If the [AtValue] is public data (i.e. it is not encrypted) and contains one or more new line (\n) characters,
+  /// then the data will be encoded, and the encoding will be set to type of encoding (e.g. "base64")
   String? encoding;
+
+  /// The name of the key used to encrypt the [AtValue]
+  /// * If not provided, use [sharedKeyEnc] in this metaData.
+  /// * If [sharedKeyEnc] is not provided in this metadata, use the default shared key.
+  /// For example if this is @bob and the data was shared by @alice, then @bob will use
+  /// the key at `@bob:shared_key@alice`
+  /// * When [encKeyName] is provided, just the key name must be provided - neither the visibility prefix
+  /// nor the sharedBy suffix should be included. For example @alice might choose to encrypt some data
+  /// to share with bob at `@bob:some_data.wavi@alice`, using the shared key they have shared at
+  /// `@bob:key_12345.__shared_keys.wavi@alice`. The [encKeyName] in this case _must_ be provided as
+  /// `key_12345.__shared_keys.wavi`
+  /// * Note: The same scheme holds for data encrypted by @bob for @bob's own use. In this case
+  /// we don't call it a "shared" key but instead we call it a "self" encryption key.
+  /// * Note that the legacy default self encryption key is not stored in the keyStore but is kept
+  /// in the set of keys held by applications.
+  /// * In future we will (1) store the self encryption key in the keyStore, encrypted with one of
+  /// our encryption public keys, and (2) allow creation of many 'self' encryption keys and store them
+  /// in an application namespace. For example @bob might create a self encryption key at
+  /// `key_54321.__self_keys.wavi@bob`; if used to encrypt some data for self, then the encKeyName would be
+  /// set to `key_54321.__self_keys.wavi` since the sharedBy of the encrypting key will be the same as the
+  /// `sharedBy` of the encrypted key.
+  String? encKeyName;
+
+  /// The name of the algorithm used to encrypt the [AtValue].
+  /// * For **data**, the default algorithm is `AES/SIC/PKCS7Padding`
+  /// * For **keys**, the default algorithm is `RSA`
+  String? encAlgo;
+  
+  /// Initialization Vector or nonce used when the data was encrypted with the shared symmetric key.
+  String? ivNonce;
+
+  /// When [sharedKeyEnc] is provided in the metadata, [skeEncKeyName] is the name of the public
+  /// key which was used to encrypt it. `skeEncKeyName` is an abbreviation for the EncryptionKeyName
+  /// used to encrypt the SharedKeyEncrypted.
+  /// * If [skeEncKeyName] is null, then the name of the default public key is used. For example,
+  /// if we are @bob and someone has shared data with us, and has provided the shared key inline in [sharedKeyEnc],
+  /// the default public key used is "public:publickey@bob".
+  /// * When multiple asymmetric keypairs are in use, @bob will need to know which of them was used to
+  /// encrypt [sharedKeyEnc]. [skeEncKeyName] will only be null when the legacy default public key
+  /// was used; conversely if the legacy default public key was used then [skeEncKeyName] must be
+  /// null. Non-null values _must_ look like this "<keyName>.__public_keys.<namespace>" - i.e. must not include
+  /// either the visibility prefix, which is always `public:`, nor the ownership suffix, which is always
+  /// the receiving atSign (in this case `@bob`)
+  String? skeEncKeyName;
+
+  /// The name of the algorithm used to encrypt the [sharedKeyEnc]
+  ///
+  /// When [sharedKeyEnc] is provided in the metadata, [skeEncAlgo] is the name of the algorithm
+  /// which was used to encrypt that shared key, using the public key at [skeEncKeyName].
+  /// * The default algorithm is `RSA`
+  String? skeEncAlgo;
 
   @override
   String toString() {
-    return 'Metadata{ttl: $ttl, ttb: $ttb, ttr: $ttr,ccd: $ccd, isPublic: $isPublic, isHidden: $isHidden, availableAt : ${availableAt?.toUtc().toString()}, expiresAt : ${expiresAt?.toUtc().toString()}, refreshAt : ${refreshAt?.toUtc().toString()}, createdAt : ${createdAt?.toUtc().toString()},updatedAt : ${updatedAt?.toUtc().toString()},isBinary : $isBinary, isEncrypted : $isEncrypted, isCached : $isCached, dataSignature: $dataSignature, sharedKeyStatus: $sharedKeyStatus, encryptedSharedKey: $sharedKeyEnc, pubKeyCheckSum: $pubKeyCS, encoding: $encoding}';
+    return 'Metadata{ttl: $ttl, ttb: $ttb, ttr: $ttr,ccd: $ccd, isPublic: $isPublic, isHidden: $isHidden'
+        ', availableAt : ${availableAt?.toUtc().toString()}, expiresAt : ${expiresAt?.toUtc().toString()}'
+        ', refreshAt : ${refreshAt?.toUtc().toString()}, createdAt : ${createdAt?.toUtc().toString()}'
+        ', updatedAt : ${updatedAt?.toUtc().toString()}, isBinary : $isBinary, isEncrypted : $isEncrypted'
+        ', isCached : $isCached, dataSignature: $dataSignature, sharedKeyStatus: $sharedKeyStatus'
+        ', encryptedSharedKey: $sharedKeyEnc, pubKeyCheckSum: $pubKeyCS, encoding: $encoding'
+        ', encKeyName: $encKeyName, encAlgo: $encAlgo, ivNonce: $ivNonce'
+        ', skeEncKeyName: $skeEncKeyName, skeEncAlgo: $skeEncAlgo}';
   }
 
   Map toJson() {
@@ -492,60 +551,67 @@ class Metadata {
     map[SHARED_KEY_ENCRYPTED] = sharedKeyEnc;
     map[SHARED_WITH_PUBLIC_KEY_CHECK_SUM] = pubKeyCS;
     map[ENCODING] = encoding;
+    map[ENCRYPTING_KEY_NAME] = encKeyName;
+    map[ENCRYPTING_ALGO] = encAlgo;
+    map[IV_OR_NONCE] = ivNonce;
+    map[SHARED_KEY_ENCRYPTED_ENCRYPTING_KEY_NAME] = skeEncKeyName;
+    map[SHARED_KEY_ENCRYPTED_ENCRYPTING_ALGO] = skeEncAlgo;
     return map;
   }
 
   static Metadata fromJson(Map json) {
     var metaData = Metadata();
-    try {
-      metaData.expiresAt =
-          (json['expiresAt'] == null || json['expiresAt'] == 'null')
-              ? null
-              : DateTime.parse(json['expiresAt']);
-      metaData.refreshAt =
-          (json['refreshAt'] == null || json['refreshAt'] == 'null')
-              ? null
-              : DateTime.parse(json['refreshAt']);
-      metaData.availableAt =
-          (json['availableAt'] == null || json['availableAt'] == 'null')
-              ? null
-              : DateTime.parse(json['availableAt']);
-      metaData.createdAt =
-          (json[CREATED_AT] == null || json[CREATED_AT] == 'null')
-              ? null
-              : DateTime.parse(json[CREATED_AT]);
-      metaData.updatedAt =
-          (json[UPDATED_AT] == null || json[UPDATED_AT] == 'null')
-              ? null
-              : DateTime.parse(json[UPDATED_AT]);
-      metaData.ttl = (json[AT_TTL] is String)
-          ? int.parse(json[AT_TTL])
-          : (json[AT_TTL] == null)
-              ? 0
-              : json[AT_TTL];
-      metaData.ttb = (json[AT_TTB] is String)
-          ? int.parse(json[AT_TTB])
-          : (json[AT_TTB] == null)
-              ? 0
-              : json[AT_TTB];
-      metaData.ttr = (json[AT_TTR] is String)
-          ? int.parse(json[AT_TTR])
-          : (json[AT_TTR] == null)
-              ? 0
-              : json[AT_TTR];
-      metaData.ccd = json[CCD];
-      metaData.isBinary = json[IS_BINARY];
-      metaData.isEncrypted = json[IS_ENCRYPTED];
-      metaData.isPublic = json[IS_PUBLIC];
-      metaData.dataSignature = json[PUBLIC_DATA_SIGNATURE];
-      metaData.sharedKeyStatus = json[SHARED_KEY_STATUS];
-      metaData.sharedKeyEnc = json[SHARED_KEY_ENCRYPTED];
-      metaData.pubKeyCS = json[SHARED_WITH_PUBLIC_KEY_CHECK_SUM];
-      metaData.encoding = json[ENCODING];
-    } catch (error) {
-      // TODO swallowing the error does not seem like the right thing to do
-      print('AtMetaData.fromJson error: ${error.toString()}');
-    }
+
+    metaData.expiresAt =
+        (json['expiresAt'] == null || json['expiresAt'] == 'null')
+            ? null
+            : DateTime.parse(json['expiresAt']);
+    metaData.refreshAt =
+        (json['refreshAt'] == null || json['refreshAt'] == 'null')
+            ? null
+            : DateTime.parse(json['refreshAt']);
+    metaData.availableAt =
+        (json['availableAt'] == null || json['availableAt'] == 'null')
+            ? null
+            : DateTime.parse(json['availableAt']);
+    metaData.createdAt =
+        (json[CREATED_AT] == null || json[CREATED_AT] == 'null')
+            ? null
+            : DateTime.parse(json[CREATED_AT]);
+    metaData.updatedAt =
+        (json[UPDATED_AT] == null || json[UPDATED_AT] == 'null')
+            ? null
+            : DateTime.parse(json[UPDATED_AT]);
+    metaData.ttl = (json[AT_TTL] is String)
+        ? int.parse(json[AT_TTL])
+        : (json[AT_TTL] == null)
+            ? 0
+            : json[AT_TTL];
+    metaData.ttb = (json[AT_TTB] is String)
+        ? int.parse(json[AT_TTB])
+        : (json[AT_TTB] == null)
+            ? 0
+            : json[AT_TTB];
+    metaData.ttr = (json[AT_TTR] is String)
+        ? int.parse(json[AT_TTR])
+        : (json[AT_TTR] == null)
+            ? 0
+            : json[AT_TTR];
+    metaData.ccd = json[CCD];
+    metaData.isBinary = json[IS_BINARY];
+    metaData.isEncrypted = json[IS_ENCRYPTED];
+    metaData.isPublic = json[IS_PUBLIC];
+    metaData.dataSignature = json[PUBLIC_DATA_SIGNATURE];
+    metaData.sharedKeyStatus = json[SHARED_KEY_STATUS];
+    metaData.sharedKeyEnc = json[SHARED_KEY_ENCRYPTED];
+    metaData.pubKeyCS = json[SHARED_WITH_PUBLIC_KEY_CHECK_SUM];
+    metaData.encoding = json[ENCODING];
+    metaData.encKeyName = json[ENCRYPTING_KEY_NAME];
+    metaData.encAlgo = json[ENCRYPTING_ALGO];
+    metaData.ivNonce = json[IV_OR_NONCE];
+    metaData.skeEncKeyName = json[SHARED_KEY_ENCRYPTED_ENCRYPTING_KEY_NAME];
+    metaData.skeEncAlgo = json[SHARED_KEY_ENCRYPTED_ENCRYPTING_ALGO];
+
     return metaData;
   }
 
@@ -573,7 +639,12 @@ class Metadata {
           isCached == other.isCached &&
           sharedKeyEnc == other.sharedKeyEnc &&
           pubKeyCS == other.pubKeyCS &&
-          encoding == other.encoding;
+          encoding == other.encoding &&
+          encKeyName == other.encKeyName &&
+          encAlgo == other.encAlgo &&
+          ivNonce == other.ivNonce &&
+          skeEncKeyName == other.skeEncKeyName &&
+          skeEncAlgo == other.skeEncAlgo;
 
   @override
   int get hashCode =>
@@ -596,7 +667,12 @@ class Metadata {
       isCached.hashCode ^
       sharedKeyEnc.hashCode ^
       pubKeyCS.hashCode ^
-      encoding.hashCode;
+      encoding.hashCode ^
+      encKeyName.hashCode ^
+      encAlgo.hashCode ^
+      ivNonce.hashCode ^
+      skeEncKeyName.hashCode ^
+      skeEncAlgo.hashCode;
 }
 
 class AtValue {
