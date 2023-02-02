@@ -1,3 +1,5 @@
+## 3.0.13
+- feat: Introduce StdErr(Standard Error) logging type which writes log output to standard error stream
 ## 3.0.12
 - Deprecate formatAtSign() in atsign_util and moved the functionality to fixAtSign()
 - Upgrade dependency at_commons to latest version v3.0.42

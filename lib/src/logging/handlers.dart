@@ -29,3 +29,11 @@ class FileLoggingHandler implements LoggingHandler {
     f.closeSync();
   }
 }
+
+class StdErrLoggingHandler implements LoggingHandler {
+  @override
+  void call(LogRecord record) {
+    stderr.write(
+        '${record.level.name}|${record.time}|${record.loggerName}|${record.message} \n');
+  }
+}

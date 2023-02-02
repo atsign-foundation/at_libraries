@@ -7,11 +7,12 @@ import 'package:logging/logging.dart' as logging;
 /// Class for AtSignLogger Implementation
 class AtSignLogger {
   late logging.Logger logger;
-  static String _root_level = 'info';
-  bool _hierarchicalLoggingEnabled = false;
   String? _level;
 
-  static var loggingHandler = ConsoleLoggingHandler();
+  static String _root_level = 'info';
+  static LoggingType loggingType = LoggingType.console;
+  static var loggingHandler = _getLoggingHandler(loggingType);
+  bool _hierarchicalLoggingEnabled = false;
 
   AtSignLogger(String name) {
     logger = logging.Logger.detached(name);
@@ -52,6 +53,18 @@ class AtSignLogger {
 
   static String get root_level {
     return _root_level;
+  }
+
+  /// Returns an instance of Logging Handler basing on the [LoggingType]
+  static LoggingHandler _getLoggingHandler(LoggingType loggingType) {
+    switch (loggingType) {
+      case LoggingType.console:
+        return ConsoleLoggingHandler();
+      case LoggingType.stdErr:
+        return StdErrLoggingHandler();
+      default:
+        return ConsoleLoggingHandler();
+    }
   }
 
 //  static set rootLogFilePath(String path) {
@@ -96,3 +109,8 @@ class LogLevel {
     'all': logging.Level.ALL
   };
 }
+
+/// Enum to represent supported logging types.
+/// console: Writes the log output to the user screen
+/// standardError: Writes the log output to the standard error stream
+enum LoggingType { console, stdErr }
