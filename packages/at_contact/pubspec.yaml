@@ -13,7 +13,7 @@ dependency_overrides:
     git:
       url: https://github.com/atsign-foundation/at_tools.git
       path: packages/at_commons
-      ref: gkc-additional-encryption-metadata
+      ref: gkc-new-encryption-metadata-2
 
 dependencies:
   intl: ^0.17.0
@@ -21,18 +21,6 @@ dependencies:
   at_commons: ^3.0.17
   at_utils: ^3.0.10
   uuid: ^3.0.4
-
-#dependency_overrides:
-#  at_commons:
-#    git:
-#      url: https://github.com/atsign-foundation/at_tools.git
-#      path: at_commons
-#      ref: trunk
-#  at_utils:
-#    git:
-#      url: https://github.com/atsign-foundation/at_tools.git
-#      path: at_utils
-#      ref: trunk
 
 dev_dependencies:
   lints: ^1.0.1
