@@ -13,8 +13,15 @@ void main() {
         ..isPublic = true
         ..atKey = 'email'
         ..sharedBy = 'alice';
-      expect(notifyVerbBuilder.buildCommand(),
+      var command = notifyVerbBuilder.buildCommand();
+      expect(command,
           'notify:id:123:notifier:SYSTEM:public:email@alice:alice@gmail.com\n');
+      var params = VerbUtil.getVerbParam(VerbSyntax.notify, command.trim())!;
+      expect(params[ID], '123');
+      expect(params[VALUE], 'alice@gmail.com');
+      expect(params[IS_PUBLIC], 'true');
+      expect(params[AT_KEY], 'email');
+      expect(params[AT_SIGN], 'alice');
     });
 
     test('notify public key with ttl', () {

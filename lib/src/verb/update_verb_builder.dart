@@ -224,7 +224,7 @@ class UpdateVerbBuilder extends AbstractVerbBuilder {
     if (verbParams == null) {
       return null;
     }
-    builder.isPublic = command.contains('public:');
+    builder.isPublic = verbParams[IS_PUBLIC] == 'true';
     builder.sharedWith = VerbUtil.formatAtSign(verbParams[FOR_AT_SIGN]);
     builder.sharedBy = VerbUtil.formatAtSign(verbParams[AT_SIGN]);
     builder.atKey = verbParams[AT_KEY];

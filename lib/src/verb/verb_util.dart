@@ -1,5 +1,7 @@
 import 'dart:collection';
 
+import '../at_constants.dart';
+
 class VerbUtil {
   static const String newLineReplacePattern = '~NL~';
   static Iterable<RegExpMatch> _getMatches(RegExp regex, String command) {
@@ -25,6 +27,10 @@ class VerbUtil {
       return null;
     }
     var verbParams = _processMatches(regexMatches);
+
+    verbParams[IS_PUBLIC] =
+      verbParams[PUBLIC_SCOPE_PARAM] == 'public' ?
+      'true' : 'false';
     return verbParams;
   }
 
