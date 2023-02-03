@@ -29,7 +29,7 @@ class VerbSyntax {
       r'^sync:from:(?<from_commit_seq>[0-9]+|-1)(:limit:(?<limit>\d+))(:(?<regex>.+))?$';
 
   @visibleForTesting
-  static const metadata =
+  static const metadataFragment =
       r'(:ttl:(?<ttl>(-?)\d+))?'
       r'(:ttb:(?<ttb>(-?)\d+))?'
       r'(:ttr:(?<ttr>(-?)\d+))?'
@@ -51,36 +51,33 @@ class VerbSyntax {
       r'^update:json:(?<json>.+)$'
       r'|'
       r'^update'
-      '$metadata'
+      '$metadataFragment'
       r'(:((?<publicScope>public)|(@(?<forAtSign>[^:@\s]+))))?'
-      r':(?<atKey>[^:@]((?!:{2})[^:@\s])+)'
+      r':((?<atKey>[^:@\s]+)|(privatekey:at_pkam_publickey))'
       r'(@(?<atSign>[^:@\s]+))?'
       r' (?<value>.+)'
       r'$';
 
-  // NB: When adding metadata, you must add it to both the [update] and [update_meta] regexes,
-  // and the order must be the same.
   // ignore: constant_identifier_names
   static const update_meta =
       r'^update:meta'
       r'(:((?<publicScope>public)|(@(?<forAtSign>[^:@\s]+))))?'
       r':(?<atKey>[^:@]((?!:{2})[^:@])+)'
       r'@(?<atSign>[^:@\s]+)'
-      '$metadata'
+      '$metadataFragment'
       r'$';
   static const delete =
       r'^delete'
       r'(:priority:(?<priority>low|medium|high))?'
       r'(:cached)?'
       r'(:((?<publicScope>public)|(@(?<forAtSign>[^:@\s]+))))?'
-      r':(?<atKey>[^@:]((?!:{2})[^@:])+)'
+      r':((?<atKey>[^:@\s]+)|(privatekey:at_secret))'
       r'(@(?<atSign>[^:@\s]+))?'
       r'$';
   static const monitor = r'^monitor(:(?<epochMillis>\d+))?( (?<regex>.+))?$';
   static const stream =
       r'^stream:((?<operation>init|send|receive|done|resume))?((@(?<receiver>[^@:\s]+)))?( ?namespace:(?<namespace>[\w-]+))?( ?startByte:(?<startByte>\d+))?( (?<streamId>[\w-]*))?( (?<fileName>.* ))?((?<length>\d*))?$';
 
-  // notify:id:123:notifier:SYSTEM:public:email@alice:alice@gmail.com\n
   static const notify =
       r'^notify'
       r'(:id:(?<id>[\w\d\-\_]+))?'
@@ -91,7 +88,7 @@ class VerbSyntax {
       r'(:latestN:(?<latestN>\d+))?'
       r'(:notifier:(?<notifier>[^\s:]+))?'
       r'(:ttln:(?<ttln>\d+))?'
-      '$metadata'
+      '$metadataFragment'
       r':((?<publicScope>public)|(@(?<forAtSign>[^:@\s]+)))'
       r':(?<atKey>[^:@]((?!:{2})[^@])+)'
       r'(@(?<atSign>[^:@\s]+))?'
