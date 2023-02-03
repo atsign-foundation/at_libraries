@@ -53,7 +53,7 @@ class VerbSyntax {
       r'^update'
       '$metadataFragment'
       r'(:((?<publicScope>public)|(@(?<forAtSign>[^:@\s]+))))?'
-      r':((?<atKey>[^:@\s]+)|(privatekey:at_pkam_publickey))'
+      r':(?<atKey>(([^:@\s]+)|(privatekey:at_pkam_publickey)))'
       r'(@(?<atSign>[^:@\s]+))?'
       r' (?<value>.+)'
       r'$';
@@ -71,7 +71,7 @@ class VerbSyntax {
       r'(:priority:(?<priority>low|medium|high))?'
       r'(:cached)?'
       r'(:((?<publicScope>public)|(@(?<forAtSign>[^:@\s]+))))?'
-      r':((?<atKey>[^:@\s]+)|(privatekey:at_secret))'
+      r':(?<atKey>(([^:@\s]+)|(privatekey:at_secret)))'
       r'(@(?<atSign>[^:@\s]+))?'
       r'$';
   static const monitor = r'^monitor(:(?<epochMillis>\d+))?( (?<regex>.+))?$';
