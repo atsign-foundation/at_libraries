@@ -1,9 +1,16 @@
-import 'package:at_commons/at_commons.dart';
 import 'package:at_commons/src/keystore/at_key_builder_impl.dart';
 import 'package:at_commons/src/utils/at_key_regex_utils.dart';
 import 'package:at_commons/src/utils/string_utils.dart';
+import 'package:meta/meta.dart';
+
+import '../at_constants.dart';
+import '../exception/at_exceptions.dart';
+import 'key_type.dart';
 
 class AtKey {
+  /// The 'identifier' part of an atProtocol key name. For example if the key is
+  /// `@bob:city.address.my_app@alice` then the [key] would be `city.address` and
+  /// the [namespace] would be `my_app`
   String? key;
   String? _sharedWith;
   String? _sharedBy;
@@ -38,33 +45,8 @@ class AtKey {
   /// These keys will never be synced between the client and secondary server.
   bool _isLocal = false;
 
-  String? get namespace => _namespace;
-
-  set namespace(String? namespace) {
-    if (namespace.isNotNullOrEmpty) {
-      _namespace = namespace?.toLowerCase();
-    }
-  }
-
-  String? get sharedBy => _sharedBy;
-
-  set sharedBy(String? sharedByAtSign) {
-    assertStartsWithAtIfNotEmpty(sharedByAtSign);
-    _sharedBy = sharedByAtSign?.toLowerCase();
-  }
-
-  String? get sharedWith => _sharedWith;
-
-  set sharedWith(String? sharedWithAtSign) {
-    assertStartsWithAtIfNotEmpty(sharedWithAtSign);
-    if (sharedWithAtSign.isNotNullOrEmpty &&
-        (isLocal == true || metadata?.isPublic == true)) {
-      throw InvalidAtKeyException(
-          'isLocal or isPublic cannot be true when sharedWith is set');
-    }
-    _sharedWith = sharedWithAtSign?.toLowerCase();
-  }
-
+  /// When set to true, indicates that this key is a [LocalKey]. A [LocalKey] will
+  /// remain in local storage on the client, and will never be synced to the cloud atServer.
   bool get isLocal => _isLocal;
 
   set isLocal(bool isLocal) {
@@ -73,6 +55,41 @@ class AtKey {
           'sharedWith must be null when isLocal is set to true');
     }
     _isLocal = isLocal;
+  }
+
+  String? get namespace => _namespace;
+
+  set namespace(String? namespace) {
+    if (namespace.isNotNullOrEmpty) {
+      _namespace = namespace?.toLowerCase();
+    }
+  }
+
+  /// The 'owner' part of an atProtocol key name. For example if the key is
+  /// `@bob:city.address.my_app@alice` then [sharedBy] is `@alice`
+  String? get sharedBy => _sharedBy;
+
+  /// The 'owner' part of an atProtocol key name. For example if the key is
+  /// `@bob:city.address.my_app@alice` then [sharedBy] is `@alice`
+  set sharedBy(String? sharedByAtSign) {
+    assertStartsWithAtIfNotEmpty(sharedByAtSign);
+    _sharedBy = sharedByAtSign?.toLowerCase();
+  }
+
+  /// The 'recipient' part of an atProtocol key name. For example if the key is
+  /// `@bob:city.address.my_app@alice` then [sharedWith] is `@bob`
+  String? get sharedWith => _sharedWith;
+
+  /// The 'recipient' part of an atProtocol key name. For example if the key is
+  /// `@bob:city.address.my_app@alice` then [sharedWith] is `@bob`
+  set sharedWith(String? sharedWithAtSign) {
+    assertStartsWithAtIfNotEmpty(sharedWithAtSign);
+    if (sharedWithAtSign.isNotNullOrEmpty &&
+        (isLocal == true || metadata?.isPublic == true)) {
+      throw InvalidAtKeyException(
+          'isLocal or isPublic cannot be true when sharedWith is set');
+    }
+    _sharedWith = sharedWithAtSign?.toLowerCase();
   }
 
   String _dotNamespaceIfPresent() {
@@ -393,6 +410,10 @@ class LocalKey extends AtKey {
 }
 
 class Metadata {
+  @visibleForTesting
+  /// When set to `false`, the Map produced by toJson will not include fields whose values are null
+  bool fullJson = true;
+
   /// Time in milliseconds after which the [AtKey] expires.
   int? ttl;
 
@@ -432,7 +453,8 @@ class Metadata {
   /// Represents the status of the [SharedKey]
   String? sharedKeyStatus;
 
-  /// When set to true, implies the key is a [PublicKey]
+  /// if [isPublic] is true, then [atKey] is accessible by all atSigns.
+  /// if [isPublic] is false, then [atKey] is only accessible by either [sharedWith] or [sharedBy]
   bool? isPublic = false;
 
   /// When set to true, implies the key is a HiddenKey
@@ -532,30 +554,88 @@ class Metadata {
         ', skeEncKeyName: $skeEncKeyName, skeEncAlgo: $skeEncAlgo}';
   }
 
+  /// Creates a fragment which can be included in any atProtocol commands which use
+  /// Metadata - e.g. `update`, `update:meta` and `notify`
+  String toAtProtocolFragment() {
+    StringBuffer sb = StringBuffer();
+
+    // NB The order of the verb parameters is important - it MUST match the order
+    // in the regular expressions [VerbSyntax.update] and [VerbSyntax.update_meta]
+    if (ttl != null) {
+      sb.write(':ttl:$ttl');
+    }
+    if (ttb != null) {
+      sb.write(':ttb:$ttb');
+    }
+    if (ttr != null) {
+      sb.write(':ttr:$ttr');
+    }
+    if (ccd != null) {
+      sb.write(':ccd:$ccd');
+    }
+    if (dataSignature.isNotNullOrEmpty) {
+      sb.write(':$PUBLIC_DATA_SIGNATURE:$dataSignature');
+    }
+    if (sharedKeyStatus.isNotNullOrEmpty) {
+      sb.write(':$SHARED_KEY_STATUS:$sharedKeyStatus');
+    }
+    if (isBinary != null) {
+      sb.write(':isBinary:$isBinary');
+    }
+    if (isEncrypted != null) {
+      sb.write(':isEncrypted:$isEncrypted');
+    }
+    if (sharedKeyEnc.isNotNullOrEmpty) {
+      sb.write(':$SHARED_KEY_ENCRYPTED:$sharedKeyEnc');
+    }
+    if (pubKeyCS.isNotNullOrEmpty) {
+      sb.write(':$SHARED_WITH_PUBLIC_KEY_CHECK_SUM:$pubKeyCS');
+    }
+    if (encoding.isNotNullOrEmpty) {
+      sb.write(':$ENCODING:$encoding');
+    }
+    if (encKeyName.isNotNullOrEmpty) {
+      sb.write(':$ENCRYPTING_KEY_NAME:$encKeyName');
+    }
+    if (encAlgo.isNotNullOrEmpty) {
+      sb.write(':$ENCRYPTING_ALGO:$encAlgo');
+    }
+    if (ivNonce.isNotNullOrEmpty) {
+      sb.write(':$IV_OR_NONCE:$ivNonce');
+    }
+    if (skeEncKeyName.isNotNullOrEmpty) {
+      sb.write(':$SHARED_KEY_ENCRYPTED_ENCRYPTING_KEY_NAME:$skeEncKeyName');
+    }
+    if (skeEncAlgo.isNotNullOrEmpty) {
+      sb.write(':$SHARED_KEY_ENCRYPTED_ENCRYPTING_ALGO:$skeEncAlgo');
+    }
+    return sb.toString();
+  }
+
   Map toJson() {
     var map = {};
-    map['availableAt'] = availableAt?.toUtc().toString();
-    map['expiresAt'] = expiresAt?.toUtc().toString();
-    map['refreshAt'] = refreshAt?.toUtc().toString();
-    map[CREATED_AT] = createdAt?.toUtc().toString();
-    map[UPDATED_AT] = updatedAt?.toUtc().toString();
-    map['isPublic'] = isPublic;
-    map[AT_TTL] = ttl;
-    map[AT_TTB] = ttb;
-    map[AT_TTR] = ttr;
-    map[CCD] = ccd;
-    map[IS_BINARY] = isBinary;
-    map[IS_ENCRYPTED] = isEncrypted;
-    map[PUBLIC_DATA_SIGNATURE] = dataSignature;
-    map[SHARED_KEY_STATUS] = sharedKeyStatus;
-    map[SHARED_KEY_ENCRYPTED] = sharedKeyEnc;
-    map[SHARED_WITH_PUBLIC_KEY_CHECK_SUM] = pubKeyCS;
-    map[ENCODING] = encoding;
-    map[ENCRYPTING_KEY_NAME] = encKeyName;
-    map[ENCRYPTING_ALGO] = encAlgo;
-    map[IV_OR_NONCE] = ivNonce;
-    map[SHARED_KEY_ENCRYPTED_ENCRYPTING_KEY_NAME] = skeEncKeyName;
-    map[SHARED_KEY_ENCRYPTED_ENCRYPTING_ALGO] = skeEncAlgo;
+    if (fullJson || availableAt != null) {map['availableAt'] = availableAt?.toUtc().toString();}
+    if (fullJson || expiresAt != null) {map['expiresAt'] = expiresAt?.toUtc().toString();}
+    if (fullJson || refreshAt != null) {map['refreshAt'] = refreshAt?.toUtc().toString();}
+    if (fullJson || createdAt != null) {map[CREATED_AT] = createdAt?.toUtc().toString();}
+    if (fullJson || updatedAt != null) {map[UPDATED_AT] = updatedAt?.toUtc().toString();}
+    if (fullJson || isPublic != null) {map['isPublic'] = isPublic;}
+    if (fullJson || ttl != null) {map[AT_TTL] = ttl;}
+    if (fullJson || ttb != null) {map[AT_TTB] = ttb;}
+    if (fullJson || ttr != null) {map[AT_TTR] = ttr;}
+    if (fullJson || ccd != null) {map[CCD] = ccd;}
+    if (fullJson || isBinary != null) {map[IS_BINARY] = isBinary;}
+    if (fullJson || isEncrypted != null) {map[IS_ENCRYPTED] = isEncrypted;}
+    if (fullJson || dataSignature != null) {map[PUBLIC_DATA_SIGNATURE] = dataSignature;}
+    if (fullJson || sharedKeyStatus != null) {map[SHARED_KEY_STATUS] = sharedKeyStatus;}
+    if (fullJson || sharedKeyEnc != null) {map[SHARED_KEY_ENCRYPTED] = sharedKeyEnc;}
+    if (fullJson || pubKeyCS != null) {map[SHARED_WITH_PUBLIC_KEY_CHECK_SUM] = pubKeyCS;}
+    if (fullJson || encoding != null) {map[ENCODING] = encoding;}
+    if (fullJson || encKeyName != null) {map[ENCRYPTING_KEY_NAME] = encKeyName;}
+    if (fullJson || encAlgo != null) {map[ENCRYPTING_ALGO] = encAlgo;}
+    if (fullJson || ivNonce != null) {map[IV_OR_NONCE] = ivNonce;}
+    if (fullJson || skeEncKeyName != null) {map[SHARED_KEY_ENCRYPTED_ENCRYPTING_KEY_NAME] = skeEncKeyName;}
+    if (fullJson || skeEncAlgo != null) {map[SHARED_KEY_ENCRYPTED_ENCRYPTING_ALGO] = skeEncAlgo;}
     return map;
   }
 

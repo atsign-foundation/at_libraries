@@ -277,38 +277,30 @@ void main() {
                   'When isLocal is set to true, cannot set isPublic to true or set a non-null sharedWith')));
     });
 
-    test(
-        'test to verify local key with sharedWith populated throws invalid atkey exception',
-        () {
-      var updateVerbBuilder = UpdateVerbBuilder()
-        ..isLocal = true
-        ..sharedWith = '@alice'
-        ..atKey = 'phone'
-        ..sharedBy = '@bob';
-
-      expect(
-          () => updateVerbBuilder.buildCommand(),
-          throwsA(predicate((dynamic e) =>
-              e is InvalidAtKeyException &&
-              e.message ==
-                  'sharedWith must be null when isLocal is set to true')));
+    test('test to verify local key with sharedWith populated throws invalid atkey exception', () {
+      expect(() {
+        UpdateVerbBuilder()
+          ..isLocal = true
+          ..sharedWith = '@alice'
+          ..atKey = 'phone'
+          ..sharedBy = '@bob';
+      },
+          throwsA(predicate(
+              (dynamic e) => e is InvalidAtKeyException
+                  && e.message == 'isLocal or isPublic cannot be true when sharedWith is set')));
     });
 
-    test(
-        'test to verify isPublic set to true with sharedWith populated throws invalid atkey exception',
-        () {
-      var updateVerbBuilder = UpdateVerbBuilder()
-        ..isPublic = true
-        ..sharedWith = '@alice'
-        ..atKey = 'phone'
-        ..sharedBy = '@bob';
-
-      expect(
-          () => updateVerbBuilder.buildCommand(),
-          throwsA(predicate((dynamic e) =>
-              e is InvalidAtKeyException &&
-              e.message ==
-                  'When isPublic is set to true, sharedWith cannot be populated')));
+    test('test to verify isPublic set to true with sharedWith populated throws invalid atkey exception', () {
+      expect(() {
+        UpdateVerbBuilder()
+          ..isPublic = true
+          ..sharedWith = '@alice'
+          ..atKey = 'phone'
+          ..sharedBy = '@bob';
+      },
+          throwsA(predicate(
+              (dynamic e) => e is InvalidAtKeyException
+                  && e.message == 'isLocal or isPublic cannot be true when sharedWith is set')));
     });
 
     test('test to verify Key cannot be null or empty', () {
