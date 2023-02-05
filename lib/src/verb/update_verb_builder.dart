@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_commons/src/verb/metadata_using_verb_builder.dart';
 
+
 /// Update builder generates a command to update [value] for a key [atKey] in the secondary server of [sharedBy].
 /// Use [getBuilder] method if you want to convert command to a builder.
 ///
@@ -105,7 +106,7 @@ class UpdateVerbBuilder extends MetadataUsingVerbBuilder {
     if (verbParams == null) {
       return null;
     }
-    builder.isPublic = verbParams[IS_PUBLIC] == 'true';
+    builder.isPublic = verbParams[PUBLIC_SCOPE_PARAM] == 'public';
     builder.sharedWith = VerbUtil.formatAtSign(verbParams[FOR_AT_SIGN]);
     builder.sharedBy = VerbUtil.formatAtSign(verbParams[AT_SIGN]);
     builder.atKey = verbParams[AT_KEY];

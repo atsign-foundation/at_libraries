@@ -14,7 +14,10 @@ class VerbUtil {
     var paramsMap = HashMap<String, String?>();
     for (var f in matches) {
       for (var name in f.groupNames) {
-        paramsMap.putIfAbsent(name, () => f.namedGroup(name));
+        var namedGroup = f.namedGroup(name);
+        if (namedGroup != null) {
+          paramsMap.putIfAbsent(name, () => f.namedGroup(name));
+        }
       }
     }
     return paramsMap;
@@ -28,9 +31,6 @@ class VerbUtil {
     }
     var verbParams = _processMatches(regexMatches);
 
-    verbParams[IS_PUBLIC] =
-      verbParams[PUBLIC_SCOPE_PARAM] == 'public' ?
-      'true' : 'false';
     return verbParams;
   }
 
