@@ -1,7 +1,5 @@
 import 'dart:collection';
 
-import '../at_constants.dart';
-
 class VerbUtil {
   static const String newLineReplacePattern = '~NL~';
   static Iterable<RegExpMatch> _getMatches(RegExp regex, String command) {

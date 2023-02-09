@@ -1,5 +1,3 @@
-import 'package:meta/meta.dart';
-
 import '../keystore/at_key.dart';
 import 'abstract_verb_builder.dart';
 import 'verb_util.dart';
