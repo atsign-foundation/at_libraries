@@ -48,6 +48,30 @@ void main() {
               e.message == 'command does not match the regex')));
     });
   });
+  group('A group of tests to verify pkam verb regex', () {
+    test('pkam regex without signing algo', () {
+      var command = 'pkam:abcd1234';
+      var verbParams = getVerbParams(VerbSyntax.pkam, command);
+      expect(verbParams[AT_PKAM_SIGNATURE], 'abcd1234');
+    });
+    test('pkam regex with rsa signing algo', () {
+      var command = 'pkam:signingAlgo:rsa256:abcd1234';
+      var verbParams = getVerbParams(VerbSyntax.pkam, command);
+      expect(verbParams[AT_PKAM_SIGNING_ALGO], 'rsa256');
+      expect(verbParams[AT_PKAM_SIGNATURE], 'abcd1234');
+    });
+    test('pkam regex with ecc signing algo', () {
+      var command = 'pkam:signingAlgo:ecc_secp256r1:abcd1234';
+      var verbParams = getVerbParams(VerbSyntax.pkam, command);
+      expect(verbParams[AT_PKAM_SIGNING_ALGO], 'ecc_secp256r1');
+      expect(verbParams[AT_PKAM_SIGNATURE], 'abcd1234');
+    });
+    test('pkam regex with invalid signing algo', () {
+      var command = 'pkam:signingAlgo:ecc:abcd1234';
+      var verbParams = getVerbParams(VerbSyntax.pkam, command);
+      expect(verbParams[AT_PKAM_SIGNING_ALGO], isNull);
+    });
+  });
 }
 
 Map getVerbParams(String regex, String command) {

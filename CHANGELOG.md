@@ -1,3 +1,6 @@
+## 3.0.36
+- feat: change is pkam syntax to support different signing algorithms.
+- fix: pub score issues.
 ## 3.0.35
 - feat: enforce lowercase on AtKey(all key types included)
 - fix: incorrect behaviour of cached:public keys in AtKey.fromString()

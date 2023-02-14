@@ -6,7 +6,7 @@ class VerbSyntax {
       r'^from:(?<atSign>@?[^:@\s]+)(:clientConfig:(?<clientConfig>\{.+\}))?$';
   static const pol = r'^pol$';
   static const cram = r'^cram:(?<digest>.+$)';
-  static const pkam = r'^pkam:(?<signature>.+$)';
+  static const pkam = r'^pkam:(signingAlgo:(?<signingAlgo>ecc_secp256r1|rsa256):)?(?<signature>.+$)';
   static const llookup =
       r'^llookup'
       r'(:(?<operation>meta|all))?'

@@ -20,7 +20,7 @@ const Map error_codes = {
   'SecondaryConnectException': 'AT0021',
   'IllegalArgumentException': 'AT0022',
   'AtTimeoutException': 'AT0023',
-  'ServerIsPausedException' : 'AT0024'
+  'ServerIsPausedException': 'AT0024'
 };
 
 // ignore: constant_identifier_names

@@ -5,6 +5,7 @@ const String AT_KEY = 'atKey';
 const String AT_VALUE = 'value';
 const String AT_DIGEST = 'digest';
 const String AT_PKAM_SIGNATURE = 'signature';
+const String AT_PKAM_SIGNING_ALGO = 'signingAlgo';
 const String PUBLIC_SCOPE_PARAM = 'publicScope';
 const String AT_PKAM_PRIVATE_KEY = 'privatekey:at_pkam_privatekey';
 const String AT_PKAM_PUBLIC_KEY = 'privatekey:at_pkam_publickey';
