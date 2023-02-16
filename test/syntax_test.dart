@@ -54,10 +54,10 @@ void main() {
       var verbParams = getVerbParams(VerbSyntax.pkam, command);
       expect(verbParams[AT_PKAM_SIGNATURE], 'abcd1234');
     });
-    test('pkam regex with rsa signing algo', () {
-      var command = 'pkam:signingAlgo:rsa256:abcd1234';
+    test('pkam regex with sha signing algo', () {
+      var command = 'pkam:signingAlgo:sha256:abcd1234';
       var verbParams = getVerbParams(VerbSyntax.pkam, command);
-      expect(verbParams[AT_PKAM_SIGNING_ALGO], 'rsa256');
+      expect(verbParams[AT_PKAM_SIGNING_ALGO], 'sha256');
       expect(verbParams[AT_PKAM_SIGNATURE], 'abcd1234');
     });
     test('pkam regex with ecc signing algo', () {

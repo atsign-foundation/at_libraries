@@ -291,11 +291,12 @@ class AtKey {
         atKey.isLocal = true;
       } else if (keyParts[0] == CACHED) {
         metaData.isCached = true;
-        if(keyParts[1] == 'public'){
+        if (keyParts[1] == 'public') {
           metaData.isPublic = true;
           atKey.sharedWith = null; // Example key: cached:public:phone@bob
         } else {
-          atKey.sharedWith = keyParts[1]; // Example key: cached:@alice:phone@bob
+          atKey.sharedWith =
+              keyParts[1]; // Example key: cached:@alice:phone@bob
         }
       } else {
         atKey.sharedWith = keyParts[0];
@@ -364,7 +365,8 @@ class SelfKey extends AtKey {
     // keys is a self key.
     // @alice:phone@alice or phone@alice
     if (_sharedWith != null && _sharedWith!.isNotEmpty) {
-      return '$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy'.toLowerCase();
+      return '$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy'
+          .toLowerCase();
     }
     return '$key${_dotNamespaceIfPresent()}$_sharedBy'.toLowerCase();
   }
@@ -378,7 +380,8 @@ class SharedKey extends AtKey {
 
   @override
   String toString() {
-    return '$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy'.toLowerCase();
+    return '$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy'
+        .toLowerCase();
   }
 }
 
@@ -411,6 +414,7 @@ class LocalKey extends AtKey {
 
 class Metadata {
   @visibleForTesting
+
   /// When set to `false`, the Map produced by toJson will not include fields whose values are null
   bool fullJson = true;
 
@@ -517,7 +521,7 @@ class Metadata {
   /// * For **data**, the default algorithm is `AES/SIC/PKCS7Padding`
   /// * For **keys**, the default algorithm is `RSA`
   String? encAlgo;
-  
+
   /// Initialization Vector or nonce used when the data was encrypted with the shared symmetric key.
   String? ivNonce;
 
@@ -614,28 +618,72 @@ class Metadata {
 
   Map toJson() {
     var map = {};
-    if (fullJson || availableAt != null) {map['availableAt'] = availableAt?.toUtc().toString();}
-    if (fullJson || expiresAt != null) {map['expiresAt'] = expiresAt?.toUtc().toString();}
-    if (fullJson || refreshAt != null) {map['refreshAt'] = refreshAt?.toUtc().toString();}
-    if (fullJson || createdAt != null) {map[CREATED_AT] = createdAt?.toUtc().toString();}
-    if (fullJson || updatedAt != null) {map[UPDATED_AT] = updatedAt?.toUtc().toString();}
-    if (fullJson || isPublic != null) {map['isPublic'] = isPublic;}
-    if (fullJson || ttl != null) {map[AT_TTL] = ttl;}
-    if (fullJson || ttb != null) {map[AT_TTB] = ttb;}
-    if (fullJson || ttr != null) {map[AT_TTR] = ttr;}
-    if (fullJson || ccd != null) {map[CCD] = ccd;}
-    if (fullJson || isBinary != null) {map[IS_BINARY] = isBinary;}
-    if (fullJson || isEncrypted != null) {map[IS_ENCRYPTED] = isEncrypted;}
-    if (fullJson || dataSignature != null) {map[PUBLIC_DATA_SIGNATURE] = dataSignature;}
-    if (fullJson || sharedKeyStatus != null) {map[SHARED_KEY_STATUS] = sharedKeyStatus;}
-    if (fullJson || sharedKeyEnc != null) {map[SHARED_KEY_ENCRYPTED] = sharedKeyEnc;}
-    if (fullJson || pubKeyCS != null) {map[SHARED_WITH_PUBLIC_KEY_CHECK_SUM] = pubKeyCS;}
-    if (fullJson || encoding != null) {map[ENCODING] = encoding;}
-    if (fullJson || encKeyName != null) {map[ENCRYPTING_KEY_NAME] = encKeyName;}
-    if (fullJson || encAlgo != null) {map[ENCRYPTING_ALGO] = encAlgo;}
-    if (fullJson || ivNonce != null) {map[IV_OR_NONCE] = ivNonce;}
-    if (fullJson || skeEncKeyName != null) {map[SHARED_KEY_ENCRYPTED_ENCRYPTING_KEY_NAME] = skeEncKeyName;}
-    if (fullJson || skeEncAlgo != null) {map[SHARED_KEY_ENCRYPTED_ENCRYPTING_ALGO] = skeEncAlgo;}
+    if (fullJson || availableAt != null) {
+      map['availableAt'] = availableAt?.toUtc().toString();
+    }
+    if (fullJson || expiresAt != null) {
+      map['expiresAt'] = expiresAt?.toUtc().toString();
+    }
+    if (fullJson || refreshAt != null) {
+      map['refreshAt'] = refreshAt?.toUtc().toString();
+    }
+    if (fullJson || createdAt != null) {
+      map[CREATED_AT] = createdAt?.toUtc().toString();
+    }
+    if (fullJson || updatedAt != null) {
+      map[UPDATED_AT] = updatedAt?.toUtc().toString();
+    }
+    if (fullJson || isPublic != null) {
+      map['isPublic'] = isPublic;
+    }
+    if (fullJson || ttl != null) {
+      map[AT_TTL] = ttl;
+    }
+    if (fullJson || ttb != null) {
+      map[AT_TTB] = ttb;
+    }
+    if (fullJson || ttr != null) {
+      map[AT_TTR] = ttr;
+    }
+    if (fullJson || ccd != null) {
+      map[CCD] = ccd;
+    }
+    if (fullJson || isBinary != null) {
+      map[IS_BINARY] = isBinary;
+    }
+    if (fullJson || isEncrypted != null) {
+      map[IS_ENCRYPTED] = isEncrypted;
+    }
+    if (fullJson || dataSignature != null) {
+      map[PUBLIC_DATA_SIGNATURE] = dataSignature;
+    }
+    if (fullJson || sharedKeyStatus != null) {
+      map[SHARED_KEY_STATUS] = sharedKeyStatus;
+    }
+    if (fullJson || sharedKeyEnc != null) {
+      map[SHARED_KEY_ENCRYPTED] = sharedKeyEnc;
+    }
+    if (fullJson || pubKeyCS != null) {
+      map[SHARED_WITH_PUBLIC_KEY_CHECK_SUM] = pubKeyCS;
+    }
+    if (fullJson || encoding != null) {
+      map[ENCODING] = encoding;
+    }
+    if (fullJson || encKeyName != null) {
+      map[ENCRYPTING_KEY_NAME] = encKeyName;
+    }
+    if (fullJson || encAlgo != null) {
+      map[ENCRYPTING_ALGO] = encAlgo;
+    }
+    if (fullJson || ivNonce != null) {
+      map[IV_OR_NONCE] = ivNonce;
+    }
+    if (fullJson || skeEncKeyName != null) {
+      map[SHARED_KEY_ENCRYPTED_ENCRYPTING_KEY_NAME] = skeEncKeyName;
+    }
+    if (fullJson || skeEncAlgo != null) {
+      map[SHARED_KEY_ENCRYPTED_ENCRYPTING_ALGO] = skeEncAlgo;
+    }
     return map;
   }
 

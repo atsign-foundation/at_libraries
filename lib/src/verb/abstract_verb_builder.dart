@@ -7,7 +7,7 @@ import 'package:at_commons/src/utils/string_utils.dart';
 /// the key (common for all verb builder) from the verb builder instances.
 abstract class AbstractVerbBuilder implements VerbBuilder {
   /// Represents the AtKey instance to populate the verb builder data
-  AtKey atKeyObj = AtKey()..metadata=Metadata();
+  AtKey atKeyObj = AtKey()..metadata = Metadata();
 
   /// Validates the [AtKey]
   ///

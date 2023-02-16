@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_commons/src/verb/metadata_using_verb_builder.dart';
 
-
 /// Update builder generates a command to update [value] for a key [atKey] in the secondary server of [sharedBy].
 /// Use [getBuilder] method if you want to convert command to a builder.
 ///
@@ -47,8 +46,9 @@ class UpdateVerbBuilder extends MetadataUsingVerbBuilder {
 
   /// See [AtKey.isLocal]
   bool get isLocal => atKeyObj.isLocal;
+
   /// See [AtKey.isLocal]
-  set isLocal (bool b) => atKeyObj.isLocal = b;
+  set isLocal(bool b) => atKeyObj.isLocal = b;
 
   String? operation;
 
@@ -59,11 +59,11 @@ class UpdateVerbBuilder extends MetadataUsingVerbBuilder {
     String atKeyName = buildKey();
     if (isJson) {
       var updateParams = UpdateParams()
-      ..atKey = atKeyName
-      ..value = value
-      ..sharedBy = sharedBy
-      ..sharedWith = sharedWith
-      ..metadata = metadata;
+        ..atKey = atKeyName
+        ..value = value
+        ..sharedBy = sharedBy
+        ..sharedWith = sharedWith
+        ..metadata = metadata;
       var json = updateParams.toJson();
       var command = 'update:json:${jsonEncode(json)}\n';
       return command;
@@ -93,7 +93,8 @@ class UpdateVerbBuilder extends MetadataUsingVerbBuilder {
 
   static UpdateVerbBuilder? getBuilder(String command) {
     if (command != command.trim()) {
-      throw IllegalArgumentException('Commands may not have leading or trailing whitespace');
+      throw IllegalArgumentException(
+          'Commands may not have leading or trailing whitespace');
     }
     var builder = UpdateVerbBuilder();
     HashMap<String, String?>? verbParams;
@@ -143,7 +144,8 @@ class UpdateVerbBuilder extends MetadataUsingVerbBuilder {
     builder.encKeyName = verbParams[ENCRYPTING_KEY_NAME];
     builder.encAlgo = verbParams[ENCRYPTING_ALGO];
     builder.ivNonce = verbParams[IV_OR_NONCE];
-    builder.skeEncKeyName = verbParams[SHARED_KEY_ENCRYPTED_ENCRYPTING_KEY_NAME];
+    builder.skeEncKeyName =
+        verbParams[SHARED_KEY_ENCRYPTED_ENCRYPTING_KEY_NAME];
     builder.skeEncAlgo = verbParams[SHARED_KEY_ENCRYPTED_ENCRYPTING_ALGO];
 
     builder.value = verbParams[VALUE];

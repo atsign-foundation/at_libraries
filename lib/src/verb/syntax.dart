@@ -6,9 +6,9 @@ class VerbSyntax {
       r'^from:(?<atSign>@?[^:@\s]+)(:clientConfig:(?<clientConfig>\{.+\}))?$';
   static const pol = r'^pol$';
   static const cram = r'^cram:(?<digest>.+$)';
-  static const pkam = r'^pkam:(signingAlgo:(?<signingAlgo>ecc_secp256r1|rsa256):)?(?<signature>.+$)';
-  static const llookup =
-      r'^llookup'
+  static const pkam =
+      r'^pkam:(signingAlgo:(?<signingAlgo>ecc_secp256r1|sha256):)?(?<signature>.+$)';
+  static const llookup = r'^llookup'
       r'(:(?<operation>meta|all))?'
       r'(:cached)?'
       r'(:((?<publicScope>public)|(@(?<forAtSign>[^:@\s]+))))?'
@@ -29,8 +29,7 @@ class VerbSyntax {
       r'^sync:from:(?<from_commit_seq>[0-9]+|-1)(:limit:(?<limit>\d+))(:(?<regex>.+))?$';
 
   @visibleForTesting
-  static const metadataFragment =
-      r'(:ttl:(?<ttl>(-?)\d+))?'
+  static const metadataFragment = r'(:ttl:(?<ttl>(-?)\d+))?'
       r'(:ttb:(?<ttb>(-?)\d+))?'
       r'(:ttr:(?<ttr>(-?)\d+))?'
       r'(:ccd:(?<ccd>true|false))?'
@@ -47,8 +46,7 @@ class VerbSyntax {
       r'(:skeEncKeyName:(?<skeEncKeyName>[^:@\s]+))?'
       r'(:skeEncAlgo:(?<skeEncAlgo>[^:@\s]+))?';
 
-  static const update =
-      r'^update:json:(?<json>.+)$'
+  static const update = r'^update:json:(?<json>.+)$'
       r'|'
       r'^update'
       '$metadataFragment'
@@ -59,15 +57,13 @@ class VerbSyntax {
       r'$';
 
   // ignore: constant_identifier_names
-  static const update_meta =
-      r'^update:meta'
+  static const update_meta = r'^update:meta'
       r'(:((?<publicScope>public)|(@(?<forAtSign>[^:@\s]+))))?'
       r':(?<atKey>[^:@]((?!:{2})[^:@])+)'
       r'@(?<atSign>[^:@\s]+)'
       '$metadataFragment'
       r'$';
-  static const delete =
-      r'^delete'
+  static const delete = r'^delete'
       r'(:priority:(?<priority>low|medium|high))?'
       r'(:cached)?'
       r'(:((?<publicScope>public)|(@(?<forAtSign>[^:@\s]+))))?'
@@ -78,8 +74,7 @@ class VerbSyntax {
   static const stream =
       r'^stream:((?<operation>init|send|receive|done|resume))?((@(?<receiver>[^@:\s]+)))?( ?namespace:(?<namespace>[\w-]+))?( ?startByte:(?<startByte>\d+))?( (?<streamId>[\w-]*))?( (?<fileName>.* ))?((?<length>\d*))?$';
 
-  static const notify =
-      r'^notify'
+  static const notify = r'^notify'
       r'(:id:(?<id>[\w\d\-\_]+))?'
       r'(:(?<operation>update|delete))?'
       r'(:messageType:(?<messageType>key|text))?'
@@ -98,8 +93,7 @@ class VerbSyntax {
       r'^notify:list(:(?<fromDate>\d{4}-[01]?\d?-[0123]?\d?))?(:(?<toDate>\d{4}-[01]?\d?-[0123]?\d?))?(:(?<regex>[^:]+))?';
   static const notifyStatus = r'^notify:status:(?<notificationId>\S+)$';
   static const notifyFetch = r'^notify:fetch:(?<notificationId>\S+)$';
-  static const notifyAll =
-      r'^notify:all:'
+  static const notifyAll = r'^notify:all:'
       r'((?<operation>update|delete):)?'
       r'(messageType:((?<messageType>key|text):))?'
       r'(?:ttl:(?<ttl>\d+):)?'

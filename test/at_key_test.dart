@@ -92,7 +92,7 @@ void main() {
       expect(atKey.toString(), testKey);
     });
 
-    test('Test to verify cached:public key', (){
+    test('Test to verify cached:public key', () {
       var testKey = 'cached:public:test_key@demo';
       var atKey = AtKey.fromString(testKey);
       expect(atKey.sharedWith, null);
@@ -102,7 +102,7 @@ void main() {
       expect(atKey.metadata!.isPublic, true);
     });
 
-    test('Test to verify cached:public key with namespace', (){
+    test('Test to verify cached:public key with namespace', () {
       var testKey = 'cached:public:test_key.unit_test@demo';
       var atKey = AtKey.fromString(testKey);
       expect(atKey.sharedWith, null);
@@ -681,7 +681,8 @@ void main() {
       expect('public:phone.wavi@alice', atKey.toString());
     });
 
-    test('A test to verify a public key creation and conversion to lower_case', () {
+    test('A test to verify a public key creation and conversion to lower_case',
+        () {
       var atKey = AtKey()
         ..key = 'CELLphone'
         ..sharedBy = '@PRESIDENT'
@@ -700,11 +701,12 @@ void main() {
 
     test(
         'A test to verify a public-key creation on a public key conversion to lower_case',
-            () {
-          var atKey =
-          AtKey.public('MOBILE', namespace: 'LTE', sharedBy: '@ANOnymous').build();
-          expect('public:mobile.lte@anonymous', atKey.toString());
-        });
+        () {
+      var atKey =
+          AtKey.public('MOBILE', namespace: 'LTE', sharedBy: '@ANOnymous')
+              .build();
+      expect('public:mobile.lte@anonymous', atKey.toString());
+    });
 
     // Shared keys
     test('A test to verify a sharedWith key creation', () {
@@ -716,7 +718,9 @@ void main() {
       expect('@bob:phone.wavi@alice', atKey.toString());
     });
 
-    test('A test to verify a sharedWith key creation and conversion to lower_case', () {
+    test(
+        'A test to verify a sharedWith key creation and conversion to lower_case',
+        () {
       var atKey = AtKey()
         ..key = 'phoneNEW'
         ..sharedWith = '@bobBY'
@@ -736,12 +740,12 @@ void main() {
 
     test(
         'A test to verify a sharedWith key creation and conversion to lower_case',
-            () {
-          var atKey = (AtKey.shared('phONe', namespace: 'wAvi', sharedBy: '@alIce')
+        () {
+      var atKey = (AtKey.shared('phONe', namespace: 'wAvi', sharedBy: '@alIce')
             ..sharedWith('@bob'))
-              .build();
-          expect('@bob:phone.wavi@alice', atKey.toString());
-        });
+          .build();
+      expect('@bob:phone.wavi@alice', atKey.toString());
+    });
 
     // Self keys
     test('A test to verify a self key creation', () {
@@ -753,7 +757,8 @@ void main() {
       expect('@alice:phone.wavi@alice', atKey.toString());
     });
 
-    test('A test to verify a self key creation and conversion to lower_case', () {
+    test('A test to verify a self key creation and conversion to lower_case',
+        () {
       var atKey = AtKey()
         ..key = 'pHonE'
         ..sharedWith = '@Alice'

@@ -114,12 +114,13 @@ void main() {
         ..skeEncKeyName = 'ske_ekn'
         ..skeEncAlgo = 'ske_ea';
       var command = notifyVerbBuilder.buildCommand();
-      expect(command,
+      expect(
+          command,
           'notify:id:123:notifier:SYSTEM'
-              ':sharedKeyEnc:abc:pubKeyCS:123'
-              ':encKeyName:ekn:encAlgo:ea:ivNonce:ivn'
-              ':skeEncKeyName:ske_ekn:skeEncAlgo:ske_ea'
-              ':@bob:email@alice:alice@atsign.com\n');
+          ':sharedKeyEnc:abc:pubKeyCS:123'
+          ':encKeyName:ekn:encAlgo:ea:ivNonce:ivn'
+          ':skeEncKeyName:ske_ekn:skeEncAlgo:ske_ea'
+          ':@bob:email@alice:alice@atsign.com\n');
       var params = VerbUtil.getVerbParam(VerbSyntax.notify, command.trim())!;
       expect(params.length, 13);
       expect(params[PUBLIC_SCOPE_PARAM], null);

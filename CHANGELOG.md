@@ -1,3 +1,6 @@
+## 3.0.37
+- fix: change signing algo in pkam syntax from rsa256 to sha256.
+- fix: pub score issues.
 ## 3.0.36
 - feat: change is pkam syntax to support different signing algorithms.
 - fix: pub score issues.
