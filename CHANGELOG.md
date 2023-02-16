@@ -1,3 +1,5 @@
+## 3.0.38
+- fix: add hashing algorithm to pkam syntax.
 ## 3.0.37
 - fix: change signing algo in pkam syntax from rsa256 to sha256.
 - fix: pub score issues.
