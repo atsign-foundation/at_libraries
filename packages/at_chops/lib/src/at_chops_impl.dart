@@ -7,6 +7,7 @@ import 'package:at_chops/src/algorithm/at_algorithm.dart';
 import 'package:at_chops/src/algorithm/at_iv.dart';
 import 'package:at_chops/src/algorithm/default_encryption_algo.dart';
 import 'package:at_chops/src/algorithm/default_signing_algo.dart';
+import 'package:at_chops/src/algorithm/ecc_signing_algo.dart';
 import 'package:at_chops/src/algorithm/pkam_signing_algo.dart';
 import 'package:at_chops/src/at_chops_base.dart';
 import 'package:at_chops/src/key/impl/aes_key.dart';
@@ -297,7 +298,15 @@ class AtChopsImpl extends AtChops {
       AtSigningVerificationInput verificationInput) {
     if (verificationInput.signingAlgorithm != null) {
       return verificationInput.signingAlgorithm;
-    } else if (verificationInput.signingMode != null &&
+    }
+    if (verificationInput.publicKey != null) {
+      if (verificationInput.signingAlgoType == SigningAlgoType.ecc_secp256r1) {
+        return EccSigningAlgo()..publicKey = verificationInput.publicKey;
+      }
+
+      //#TODO return other algo if public key is passed
+    }
+    if (verificationInput.signingMode != null &&
         verificationInput.signingMode == AtSigningMode.pkam) {
       return PkamSigningAlgo(atChopsKeys.atPkamKeyPair!);
     } else if (verificationInput.signingMode != null &&

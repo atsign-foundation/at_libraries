@@ -10,6 +10,7 @@ dependencies:
   encrypt: ^5.0.1
   crypton: ^2.1.0
   crypto: ^3.0.2
+  ecdsa: ^0.0.4
   at_commons: ^3.0.30
   pointycastle: ^3.6.2
 

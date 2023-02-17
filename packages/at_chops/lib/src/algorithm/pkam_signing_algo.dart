@@ -32,7 +32,7 @@ class PkamSigningAlgo implements AtSigningAlgorithm {
   bool verify(Uint8List signedData, Uint8List signature) {
     final rsaPublicKey =
         RSAPublicKey.fromString(_pkamKeyPair.atPublicKey.publicKey);
-    _hashingAlgoType ??= HashingAlgoType.sha256;
+    _hashingAlgoType ??= HashingAlgoType.sha256; //default to sha256
     switch (_hashingAlgoType) {
       case HashingAlgoType.sha256:
         return rsaPublicKey.verifySHA256Signature(signedData, signature);
