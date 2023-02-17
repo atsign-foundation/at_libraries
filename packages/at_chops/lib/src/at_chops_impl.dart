@@ -4,14 +4,15 @@ import 'dart:typed_data';
 import 'package:at_chops/src/algorithm/aes_encryption_algo.dart';
 import 'package:at_chops/src/algorithm/at_algorithm.dart';
 import 'package:at_chops/src/algorithm/at_iv.dart';
+import 'package:at_chops/src/algorithm/default_encryption_algo.dart';
 import 'package:at_chops/src/algorithm/default_signing_algo.dart';
 import 'package:at_chops/src/algorithm/pkam_signing_algo.dart';
-import 'package:at_chops/src/algorithm/default_encryption_algo.dart';
 import 'package:at_chops/src/at_chops_base.dart';
 import 'package:at_chops/src/key/impl/aes_key.dart';
 import 'package:at_chops/src/key/impl/at_chops_keys.dart';
 import 'package:at_chops/src/key/impl/at_encryption_key_pair.dart';
 import 'package:at_chops/src/key/key_type.dart';
+import 'package:at_chops/src/metadata/at_signing_input.dart';
 import 'package:at_chops/src/metadata/encryption_metadata.dart';
 import 'package:at_chops/src/metadata/encryption_result.dart';
 import 'package:at_chops/src/metadata/signing_metadata.dart';
@@ -135,29 +136,76 @@ class AtChopsImpl extends AtChops {
 
   @override
   AtSigningResult signBytes(Uint8List data, SigningKeyType signingKeyType,
-      {AtSigningAlgorithm? signingAlgorithm}) {
+      {AtSigningAlgorithm? signingAlgorithm, int digestLength = 256}) {
     signingAlgorithm ??= _getSigningAlgorithm(signingKeyType)!;
     final atSigningMetadata = AtSigningMetaData(
-        signingAlgorithm.runtimeType.toString(), signingKeyType);
+        signingAlgorithm.runtimeType.toString(),
+        signingKeyType,
+        DateTime.now().toUtc(),
+        DefaultSigningAlgo.generateDigestSpec(digestLength));
     final atSigningResult = AtSigningResult()
       ..atSigningMetaData = atSigningMetadata
       ..atSigningResultType = AtSigningResultType.bytes;
-    atSigningResult.result = signingAlgorithm.sign(data);
+    atSigningResult.result = signingAlgorithm.sign(data, digestLength);
     return atSigningResult;
   }
 
   @override
   AtSigningResult verifySignatureBytes(
       Uint8List data, Uint8List signature, SigningKeyType signingKeyType,
-      {AtSigningAlgorithm? signingAlgorithm}) {
+      {AtSigningAlgorithm? signingAlgorithm, int digestLength = 256}) {
     signingAlgorithm ??= _getSigningAlgorithm(signingKeyType)!;
     final atSigningMetadata = AtSigningMetaData(
-        signingAlgorithm.runtimeType.toString(), signingKeyType);
+        signingAlgorithm.runtimeType.toString(),
+        signingKeyType,
+        DateTime.now().toUtc(),
+        DefaultSigningAlgo.generateDigestSpec(digestLength));
     final atSigningResult = AtSigningResult()
       ..atSigningMetaData = atSigningMetadata
       ..atSigningResultType = AtSigningResultType.bool;
-    atSigningResult.result = signingAlgorithm.verify(data, signature);
+    atSigningResult.result = signingAlgorithm.verify(data, signature, 256);
     return atSigningResult;
+  }
+
+  @override
+  //TODO: does this method need to have a fixed digest length of 256 as its already used somewhere
+  AtSigningResult signString(String data, SigningKeyType signingKeyType,
+      {AtSigningAlgorithm? signingAlgorithm}) {
+    final signingResult = signBytes(
+        utf8.encode(data) as Uint8List, signingKeyType,
+        signingAlgorithm: signingAlgorithm);
+    final atSigningMetadata = signingResult.atSigningMetaData;
+    final atSigningResult = AtSigningResult()
+      ..atSigningMetaData = atSigningMetadata
+      ..atSigningResultType = AtSigningResultType.string;
+    atSigningResult.result = base64Encode(signingResult.result);
+    return atSigningResult;
+  }
+
+  @override
+  AtSigningResult verifySignatureString(
+      String data, String signature, SigningKeyType signingKeyType,
+      {AtSigningAlgorithm? atSigningAlgorithm}) {
+    final signingResult = verifySignatureBytes(
+        utf8.encode(data) as Uint8List, base64Decode(signature), signingKeyType,
+        signingAlgorithm: atSigningAlgorithm);
+    final atSigningMetadata = signingResult.atSigningMetaData;
+    final atSigningResult = AtSigningResult()
+      ..atSigningMetaData = atSigningMetadata
+      ..atSigningResultType = AtSigningResultType.bool;
+    atSigningResult.result = signingResult.result;
+    return atSigningResult;
+  }
+
+  @override
+  AtSigningResult sign(AtSigningInput signingInput) {
+    final dataBytes = utf8.encode(signingInput.plainText) as Uint8List;
+    return signBytes(dataBytes, signingInput.signingKeyType, digestLength: signingInput.digestLength);
+  }
+
+  @override
+  AtSigningResult verify(AtSigningInput verifyInput){
+    return verifySignatureBytes(data, signature, signingKeyType);
   }
 
   AtEncryptionAlgorithm? _getEncryptionAlgorithm(
@@ -201,34 +249,5 @@ class AtChopsImpl extends AtChops {
         throw Exception(
             'Cannot find signing algorithm for signing key type $signingKeyType');
     }
-  }
-
-  @override
-  AtSigningResult signString(String data, SigningKeyType signingKeyType,
-      {AtSigningAlgorithm? signingAlgorithm}) {
-    final signingResult = signBytes(
-        utf8.encode(data) as Uint8List, signingKeyType,
-        signingAlgorithm: signingAlgorithm);
-    final atSigningMetadata = signingResult.atSigningMetaData;
-    final atSigningResult = AtSigningResult()
-      ..atSigningMetaData = atSigningMetadata
-      ..atSigningResultType = AtSigningResultType.string;
-    atSigningResult.result = base64Encode(signingResult.result);
-    return atSigningResult;
-  }
-
-  @override
-  AtSigningResult verifySignatureString(
-      String data, String signature, SigningKeyType signingKeyType,
-      {AtSigningAlgorithm? signingAlgorithm}) {
-    final signingResult = verifySignatureBytes(
-        utf8.encode(data) as Uint8List, base64Decode(signature), signingKeyType,
-        signingAlgorithm: signingAlgorithm);
-    final atSigningMetadata = signingResult.atSigningMetaData;
-    final atSigningResult = AtSigningResult()
-      ..atSigningMetaData = atSigningMetadata
-      ..atSigningResultType = AtSigningResultType.bool;
-    atSigningResult.result = signingResult.result;
-    return atSigningResult;
   }
 }

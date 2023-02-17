@@ -27,10 +27,10 @@ abstract class SymmetricEncryptionAlgorithm extends AtEncryptionAlgorithm {
 /// Signed data signature is verified with public key of the key pair.
 abstract class AtSigningAlgorithm {
   /// Signs the data using [AtPrivateKey] of [AsymmetricKeyPair]
-  Uint8List sign(Uint8List data);
+  Uint8List sign(Uint8List data, int digestLength);
 
   /// Verifies the data signature using [AtPublicKey] of [AsymmetricKeyPair]
-  bool verify(Uint8List signedData, Uint8List signature);
+  bool verify(Uint8List signedData, Uint8List signature, int digestLength);
 }
 
 /// Interface for hashing data. Refer [DefaultHash] for sample implementation.

@@ -11,6 +11,7 @@ dependencies:
   crypton: ^2.1.0
   crypto: ^3.0.2
   at_commons: ^3.0.30
+  pointycastle: ^3.6.2
 
 
 dev_dependencies:

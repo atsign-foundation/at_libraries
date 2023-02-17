@@ -5,6 +5,8 @@ class AtSigningResult {
   late AtSigningResultType atSigningResultType;
   dynamic result;
   late AtSigningMetaData atSigningMetaData;
+
+  //TODO serialization/deserialization
 }
 
 enum AtSigningResultType { bytes, string, bool }
