@@ -168,7 +168,6 @@ class AtChopsImpl extends AtChops {
   }
 
   @override
-  //TODO: does this method need to have a fixed digest length of 256 as its already used somewhere
   AtSigningResult signString(String data, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm}) {
     final signingResult = signBytes(
@@ -185,10 +184,10 @@ class AtChopsImpl extends AtChops {
   @override
   AtSigningResult verifySignatureString(
       String data, String signature, SigningKeyType signingKeyType,
-      {AtSigningAlgorithm? atSigningAlgorithm}) {
+      {AtSigningAlgorithm? signingAlgorithm}) {
     final signingResult = verifySignatureBytes(
         utf8.encode(data) as Uint8List, base64Decode(signature), signingKeyType,
-        signingAlgorithm: atSigningAlgorithm);
+        signingAlgorithm: signingAlgorithm);
     final atSigningMetadata = signingResult.atSigningMetaData;
     final atSigningResult = AtSigningResult()
       ..atSigningMetaData = atSigningMetadata
@@ -206,7 +205,11 @@ class AtChopsImpl extends AtChops {
 
   @override
   AtSigningResult verify(AtSigningInput verifyInput) {
-    return verifySignatureBytes(data, signature, signingKeyType);
+    final dataBytes = utf8.encode(verifyInput.plainText) as Uint8List;
+    final digestBytes = utf8.encode(verifyInput.digest!) as Uint8List;
+    return verifySignatureBytes(
+        dataBytes, digestBytes, verifyInput.signingKeyType,
+        signingAlgorithm: verifyInput.signingAlgorithm);
   }
 
   AtEncryptionAlgorithm? _getEncryptionAlgorithm(

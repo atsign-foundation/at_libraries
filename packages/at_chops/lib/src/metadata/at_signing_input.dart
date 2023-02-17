@@ -5,7 +5,7 @@ import 'package:at_commons/at_commons.dart';
 ///Bean type class to be used for passing data_signing related input information
 class AtSigningInput {
   ///data as String that is to be signed
-  String plainText;
+  dynamic plainText;
 
   ///Expected length of the digest [use 256 (or) 512]
   ///256 will use SHA-256 for signing

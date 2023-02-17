@@ -38,3 +38,5 @@ class DefaultSigningAlgo implements AtSigningAlgorithm {
     return 'SHA-2/$digestLength';
   }
 }
+
+//TODO enum that contains signing algorithms to choose from
