@@ -1,34 +1,52 @@
 import 'package:at_chops/at_chops.dart';
+import 'package:at_chops/src/algorithm/algo_type.dart';
 import 'package:at_chops/src/algorithm/at_algorithm.dart';
 import 'package:at_commons/at_commons.dart';
 
-///Bean type class to be used for passing data_signing related input information
+// Input for data signing
 class AtSigningInput {
-  ///data as String that is to be signed
-  dynamic plainText;
+  dynamic _data;
 
-  ///Expected length of the digest [use 256 (or) 512]
-  ///256 will use SHA-256 for signing
-  ///512 will use SHA-512 for signing
-  int digestLength;
+  HashingAlgoType? hashingAlgoType;
 
-  ///used while verification
-  ///Digest that needs to be verified
-  String? digest;
-
-  ///PublicKey used to verify digest
-  String? verificationPublicKey;
-
-  SigningKeyType signingKeyType;
+  SigningAlgoType? signingAlgoType;
 
   AtSigningAlgorithm? signingAlgorithm;
 
-  AtSigningInput(this.plainText, this.signingKeyType, InputType inputType,
-      {this.digest, this.signingAlgorithm, this.digestLength = 256}) {
-    if (inputType == InputType.verificationInput && digest == null) {
-      throw AtException('Digest required for verification');
-    }
-  }
+  AtSigningMode? signingMode;
+
+  AtSigningInput(this._data);
+
+  dynamic get data => _data;
+
+  //#TODO implement toString
 }
 
-enum InputType { signingInput, verificationInput }
+// Input for data signature verification
+class AtSigningVerificationInput {
+  dynamic _data;
+
+  dynamic _signature;
+
+  String _publicKey;
+
+  HashingAlgoType? hashingAlgoType;
+
+  SigningAlgoType? signingAlgoType;
+
+  AtSigningMode? signingMode;
+
+  AtSigningAlgorithm? signingAlgorithm;
+
+  AtSigningVerificationInput(this._data, this._signature, this._publicKey);
+
+  dynamic get data => _data;
+
+  dynamic get signature => _signature;
+
+  String get publicKey => _publicKey;
+
+  //#TODO implement toString
+}
+
+enum AtSigningMode { pkam, data, sim }

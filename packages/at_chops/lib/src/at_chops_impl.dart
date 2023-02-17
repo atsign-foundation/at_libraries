@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:at_chops/src/algorithm/aes_encryption_algo.dart';
+import 'package:at_chops/src/algorithm/algo_type.dart';
 import 'package:at_chops/src/algorithm/at_algorithm.dart';
 import 'package:at_chops/src/algorithm/at_iv.dart';
 import 'package:at_chops/src/algorithm/default_encryption_algo.dart';
@@ -136,34 +137,31 @@ class AtChopsImpl extends AtChops {
 
   @override
   AtSigningResult signBytes(Uint8List data, SigningKeyType signingKeyType,
-      {AtSigningAlgorithm? signingAlgorithm, int digestLength = 256}) {
+      {AtSigningAlgorithm? signingAlgorithm}) {
     signingAlgorithm ??= _getSigningAlgorithm(signingKeyType)!;
-    final atSigningMetadata = AtSigningMetaData(
-        signingAlgorithm.runtimeType.toString(),
-        signingKeyType,
-        DateTime.now().toUtc(),
-        DefaultSigningAlgo.generateDigestSpec(digestLength));
+
+    // hard coding signing and hashing algo since this method is deprecated
+    final atSigningMetadata = AtSigningMetaData(SigningAlgoType.rsa2048,
+        HashingAlgoType.sha256, DateTime.now().toUtc());
     final atSigningResult = AtSigningResult()
       ..atSigningMetaData = atSigningMetadata
       ..atSigningResultType = AtSigningResultType.bytes;
-    atSigningResult.result = signingAlgorithm.sign(data, digestLength);
+    atSigningResult.result = signingAlgorithm.sign(data);
     return atSigningResult;
   }
 
   @override
   AtSigningResult verifySignatureBytes(
       Uint8List data, Uint8List signature, SigningKeyType signingKeyType,
-      {AtSigningAlgorithm? signingAlgorithm, int digestLength = 256}) {
+      {AtSigningAlgorithm? signingAlgorithm}) {
     signingAlgorithm ??= _getSigningAlgorithm(signingKeyType)!;
-    final atSigningMetadata = AtSigningMetaData(
-        signingAlgorithm.runtimeType.toString(),
-        signingKeyType,
-        DateTime.now().toUtc(),
-        DefaultSigningAlgo.generateDigestSpec(digestLength));
+    // hard coding signing and hashing algo since this method is deprecated
+    final atSigningMetadata = AtSigningMetaData(SigningAlgoType.rsa2048,
+        HashingAlgoType.sha256, DateTime.now().toUtc());
     final atSigningResult = AtSigningResult()
       ..atSigningMetaData = atSigningMetadata
       ..atSigningResultType = AtSigningResultType.bool;
-    atSigningResult.result = signingAlgorithm.verify(data, signature, 256);
+    atSigningResult.result = signingAlgorithm.verify(data, signature);
     return atSigningResult;
   }
 
@@ -198,18 +196,44 @@ class AtChopsImpl extends AtChops {
 
   @override
   AtSigningResult sign(AtSigningInput signingInput) {
-    final dataBytes = utf8.encode(signingInput.plainText) as Uint8List;
-    return signBytes(dataBytes, signingInput.signingKeyType,
-        digestLength: signingInput.digestLength);
+    final dataBytes = _getBytes(signingInput.data);
+    return _signBytes(dataBytes, signingInput,
+        signingAlgorithm: signingInput.signingAlgorithm);
+  }
+
+  // change this method to public in the next major release and remove exisitng public method.
+  AtSigningResult _signBytes(Uint8List data, AtSigningInput signingInput,
+      {AtSigningAlgorithm? signingAlgorithm}) {
+    signingAlgorithm ??= _getSigningAlgorithmV2(signingInput)!;
+    final atSigningMetadata = AtSigningMetaData(signingInput.signingAlgoType,
+        signingInput.hashingAlgoType, DateTime.now().toUtc());
+    final atSigningResult = AtSigningResult()
+      ..atSigningMetaData = atSigningMetadata
+      ..atSigningResultType = AtSigningResultType.bytes;
+    atSigningResult.result = signingAlgorithm.sign(data);
+    return atSigningResult;
   }
 
   @override
-  AtSigningResult verify(AtSigningInput verifyInput) {
-    final dataBytes = utf8.encode(verifyInput.plainText) as Uint8List;
-    final digestBytes = utf8.encode(verifyInput.digest!) as Uint8List;
-    return verifySignatureBytes(
-        dataBytes, digestBytes, verifyInput.signingKeyType,
-        signingAlgorithm: verifyInput.signingAlgorithm);
+  AtSigningResult verify(AtSigningVerificationInput verificationInput) {
+    final dataBytes = _getBytes(verificationInput.data);
+    final signatureBytes = _getBytes(verificationInput.signature);
+    return _verifySignatureBytes(dataBytes, signatureBytes, verificationInput);
+  }
+
+  AtSigningResult _verifySignatureBytes(Uint8List data, Uint8List signature,
+      AtSigningVerificationInput verificationInput,
+      {AtSigningAlgorithm? signingAlgorithm}) {
+    signingAlgorithm ??= _getVerificationAlgorithm(verificationInput)!;
+    final atSigningMetadata = AtSigningMetaData(
+        verificationInput.signingAlgoType,
+        verificationInput.hashingAlgoType,
+        DateTime.now().toUtc());
+    final atSigningResult = AtSigningResult()
+      ..atSigningMetaData = atSigningMetadata
+      ..atSigningResultType = AtSigningResultType.bool;
+    atSigningResult.result = signingAlgorithm.verify(data, signature);
+    return atSigningResult;
   }
 
   AtEncryptionAlgorithm? _getEncryptionAlgorithm(
@@ -245,13 +269,50 @@ class AtChopsImpl extends AtChops {
   AtSigningAlgorithm? _getSigningAlgorithm(SigningKeyType signingKeyType) {
     switch (signingKeyType) {
       case SigningKeyType.pkamSha256:
-        return PkamSigningAlgo(atChopsKeys.atPkamKeyPair!, signingKeyType);
+        return PkamSigningAlgo(atChopsKeys.atPkamKeyPair!);
       case SigningKeyType.signingSha256:
-        return DefaultSigningAlgo(
-            atChopsKeys.atEncryptionKeyPair!, signingKeyType);
+        return DefaultSigningAlgo(atChopsKeys.atEncryptionKeyPair!);
       default:
         throw Exception(
             'Cannot find signing algorithm for signing key type $signingKeyType');
     }
+  }
+
+  AtSigningAlgorithm? _getSigningAlgorithmV2(AtSigningInput signingInput) {
+    if (signingInput.signingAlgorithm != null) {
+      return signingInput.signingAlgorithm;
+    } else if (signingInput.signingMode != null &&
+        signingInput.signingMode == AtSigningMode.pkam) {
+      return PkamSigningAlgo(atChopsKeys.atPkamKeyPair!);
+    } else if (signingInput.signingMode != null &&
+        signingInput.signingMode == AtSigningMode.data) {
+      return DefaultSigningAlgo(atChopsKeys.atEncryptionKeyPair!);
+    } else {
+      throw Exception(
+          'Cannot find signing algorithm for signing input  $signingInput');
+    }
+  }
+
+  AtSigningAlgorithm? _getVerificationAlgorithm(
+      AtSigningVerificationInput verificationInput) {
+    if (verificationInput.signingAlgorithm != null) {
+      return verificationInput.signingAlgorithm;
+    } else if (verificationInput.signingMode != null &&
+        verificationInput.signingMode == AtSigningMode.pkam) {
+      return PkamSigningAlgo(atChopsKeys.atPkamKeyPair!);
+    } else if (verificationInput.signingMode != null &&
+        verificationInput.signingMode == AtSigningMode.data) {
+      return DefaultSigningAlgo(atChopsKeys.atEncryptionKeyPair!);
+    } else {
+      throw Exception(
+          'Cannot find signing algorithm for signing input  $verificationInput');
+    }
+  }
+
+  Uint8List _getBytes(dynamic data) {
+    if (data is String) {
+      return utf8.encode(data) as Uint8List;
+    }
+    return data;
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:at_chops/src/algorithm/algo_type.dart';
 import 'package:at_chops/src/algorithm/at_iv.dart';
 import 'package:at_chops/src/key/at_key_pair.dart';
 import 'package:at_chops/src/key/at_private_key.dart';
@@ -27,10 +28,14 @@ abstract class SymmetricEncryptionAlgorithm extends AtEncryptionAlgorithm {
 /// Signed data signature is verified with public key of the key pair.
 abstract class AtSigningAlgorithm {
   /// Signs the data using [AtPrivateKey] of [AsymmetricKeyPair]
-  Uint8List sign(Uint8List data, int digestLength);
+  Uint8List sign(Uint8List data);
 
   /// Verifies the data signature using [AtPublicKey] of [AsymmetricKeyPair]
-  bool verify(Uint8List signedData, Uint8List signature, int digestLength);
+  bool verify(Uint8List signedData, Uint8List signature);
+
+  void setHashingAlgoType(HashingAlgoType? hashingAlgoType);
+
+  void setSigningAlgoType(SigningAlgoType? signingAlgoType);
 }
 
 /// Interface for hashing data. Refer [DefaultHash] for sample implementation.

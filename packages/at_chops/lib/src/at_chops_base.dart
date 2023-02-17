@@ -65,14 +65,14 @@ abstract class AtChops {
   /// If [signingKeyType] is [SigningKeyType.pkamSha256] then [signingAlgorithm] will be set to [PkamSigningAlgo]
   /// If [signingKeyType] is [SigningKeyType.signingSha256] then [signingAlgorithm] will be set to [DefaultSigningAlgo]
   AtSigningResult signBytes(Uint8List data, SigningKeyType signingKeyType,
-      {AtSigningAlgorithm? signingAlgorithm, int digestLength});
+      {AtSigningAlgorithm? signingAlgorithm});
 
   /// Verify the [signature] of bytes [data] using a [signingAlgorithm]
   /// If [signingKeyType] is [SigningKeyType.pkamSha256] then [signingAlgorithm] will be set to [PkamSigningAlgo]
   /// If [signingKeyType] is [SigningKeyType.signingSha256] then [signingAlgorithm] will be set to [DefaultSigningAlgo]
   AtSigningResult verifySignatureBytes(
       Uint8List data, Uint8List signature, SigningKeyType signingKeyType,
-      {AtSigningAlgorithm? signingAlgorithm, int digestLength});
+      {AtSigningAlgorithm? signingAlgorithm});
 
   /// Sign the input string [data] using a [signingAlgorithm].
   /// If [signingKeyType] is [SigningKeyType.pkamSha256] then [signingAlgorithm] will be set to [PkamSigningAlgo]
@@ -93,7 +93,7 @@ abstract class AtChops {
   AtSigningResult sign(AtSigningInput signingInput);
 
   ///TODO needs documentation
-  AtSigningResult verify(AtSigningInput verifyInput);
+  AtSigningResult verify(AtSigningVerificationInput verifyInput);
 
   /// Create a string hash of input [signedData] using a [hashingAlgorithm].
   /// Refer to [DefaultHash] for default implementation of hashing.
