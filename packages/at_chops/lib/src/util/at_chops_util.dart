@@ -41,7 +41,7 @@ class AtChopsUtil {
   }
 
   static SymmetricKey generateSymmetricKey(EncryptionKeyType keyType) {
-    switch(keyType) {
+    switch (keyType) {
       case EncryptionKeyType.aes128:
         return AESKey.generate(16);
       case EncryptionKeyType.aes192:

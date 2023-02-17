@@ -2,10 +2,10 @@ import 'dart:typed_data';
 
 import 'package:at_chops/src/algorithm/at_algorithm.dart';
 import 'package:at_chops/src/algorithm/at_iv.dart';
-import 'package:at_chops/src/key/key_type.dart';
 import 'package:at_chops/src/key/impl/at_encryption_key_pair.dart';
-import 'package:crypton/crypton.dart';
+import 'package:at_chops/src/key/key_type.dart';
 import 'package:at_commons/at_commons.dart';
+import 'package:crypton/crypton.dart';
 
 class DefaultEncryptionAlgo implements AtEncryptionAlgorithm {
   final AtEncryptionKeyPair _encryptionKeypair;

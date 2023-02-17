@@ -16,7 +16,7 @@ class PkamSigningAlgo implements AtSigningAlgorithm {
   Uint8List sign(Uint8List data, int digestLength) {
     final rsaPrivateKey =
         RSAPrivateKey.fromString(_pkamKeyPair.atPrivateKey.privateKey);
-    switch(digestLength){
+    switch (digestLength) {
       case 256:
         return rsaPrivateKey.createSHA256Signature(data);
       case 512:
@@ -24,14 +24,13 @@ class PkamSigningAlgo implements AtSigningAlgorithm {
       default:
         throw AtException('Invalid digestLength provided');
     }
-
   }
 
   @override
   bool verify(Uint8List signedData, Uint8List signature, int digestLength) {
     final rsaPublicKey =
         RSAPublicKey.fromString(_pkamKeyPair.atPublicKey.publicKey);
-    switch(digestLength){
+    switch (digestLength) {
       case 256:
         return rsaPublicKey.verifySHA256Signature(signedData, signature);
       case 512:

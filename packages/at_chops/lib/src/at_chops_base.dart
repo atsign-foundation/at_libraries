@@ -81,8 +81,7 @@ abstract class AtChops {
   /// 2) Preferred length of signature
   ///Output: base64Encoded signature generated using [algorithm] and [digestLength]
   @Deprecated('Use sign() instead')
-  AtSigningResult signString(
-      String data, SigningKeyType signingKeyType,
+  AtSigningResult signString(String data, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? atSingingAlgorithm});
 
   ///Verifies dataSignature in [data] to [signature] using [publicKey]
@@ -95,7 +94,8 @@ abstract class AtChops {
   ///case NotVerified - Returns [AtSignatureVerificationResult] object with [AtSignatureVerificationResult.isVerified] set to false
   ///and the exception is stored in [AtSignatureVerificationResult.exception]
   @Deprecated('Use verify() instead')
-  AtSigningResult verifyStringSignature(String data, String signature, SigningKeyType signingKeyType,
+  AtSigningResult verifyStringSignature(
+      String data, String signature, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? atSigningAlgorithm});
 
   ///Method that generates dataSignature for type[AtSignatureInput] using an [RSAPrivateKey]

@@ -200,11 +200,12 @@ class AtChopsImpl extends AtChops {
   @override
   AtSigningResult sign(AtSigningInput signingInput) {
     final dataBytes = utf8.encode(signingInput.plainText) as Uint8List;
-    return signBytes(dataBytes, signingInput.signingKeyType, digestLength: signingInput.digestLength);
+    return signBytes(dataBytes, signingInput.signingKeyType,
+        digestLength: signingInput.digestLength);
   }
 
   @override
-  AtSigningResult verify(AtSigningInput verifyInput){
+  AtSigningResult verify(AtSigningInput verifyInput) {
     return verifySignatureBytes(data, signature, signingKeyType);
   }
 

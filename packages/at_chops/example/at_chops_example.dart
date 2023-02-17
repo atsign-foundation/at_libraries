@@ -23,7 +23,8 @@ void main() {
   // 2 - Signing and data verification using asymmetric key pair
   final digest = 'sample pkam digest';
   //2.1 sign the digest using [atPkamKeyPair.privateKey]
-  final signingResult = atChops.signString(digest, SigningKeyType.signingSha256);
+  final signingResult =
+      atChops.signString(digest, SigningKeyType.signingSha256);
   //2.2 verify the signature using [atPkamKeyPair.publicKey]
   final verificationResult = atChops.verifySignatureString(
       digest, signingResult.result, SigningKeyType.signingSha256);

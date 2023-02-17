@@ -12,5 +12,3 @@ export 'src/metadata/encryption_result.dart';
 export 'src/metadata/signing_metadata.dart';
 export 'src/metadata/signing_result.dart';
 export 'src/util/at_chops_util.dart';
-export 'src/util/at_data_signing_exception.dart';
-export 'src/util/at_signature_verification_result.dart';
