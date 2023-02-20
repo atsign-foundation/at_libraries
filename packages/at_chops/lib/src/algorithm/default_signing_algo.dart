@@ -33,7 +33,7 @@ class DefaultSigningAlgo implements AtSigningAlgorithm {
 
   @override
   bool verify(Uint8List signedData, Uint8List signature, {String? publicKey}) {
-    var rsaPublicKey;
+    RSAPublicKey? rsaPublicKey;
     if (publicKey != null) {
       rsaPublicKey = RSAPublicKey.fromString(publicKey);
     } else if (_encryptionKeyPair != null) {

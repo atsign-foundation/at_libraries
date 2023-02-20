@@ -11,5 +11,10 @@ class AtSigningMetaData {
   AtSigningMetaData(
       this.signingAlgoType, this.hashingAlgoType, this.signatureTimestamp);
 
-  //TODO serialization/deserialization
+  @override
+  toString() {
+    return 'HashingAlgo: ${hashingAlgoType?.name}, '
+        'SigningAlgo: ${signingAlgoType?.name}, '
+        'SignatureTimestamp: ${signatureTimestamp.toString()}';
+  }
 }

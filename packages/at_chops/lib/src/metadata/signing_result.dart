@@ -6,7 +6,12 @@ class AtSigningResult {
   dynamic result;
   late AtSigningMetaData atSigningMetaData;
 
-  //TODO serialization/deserialization
+  @override
+  toString() {
+    return 'ResultType: ${atSigningResultType.name},'
+        'Result: ${result.toString()},'
+        'SigningMetadata: ${atSigningMetaData.toString()}';
+  }
 }
 
 enum AtSigningResultType { bytes, string, bool }
