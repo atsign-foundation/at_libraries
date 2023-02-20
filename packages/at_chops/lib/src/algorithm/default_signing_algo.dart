@@ -8,15 +8,18 @@ import 'package:crypton/crypton.dart';
 
 /// Data signing and verification using sha256 hash and atsign encryption keypair
 class DefaultSigningAlgo implements AtSigningAlgorithm {
-  final AtEncryptionKeyPair _encryptionKeyPair;
+  final AtEncryptionKeyPair? _encryptionKeyPair;
   SigningAlgoType? _signingAlgoType;
   HashingAlgoType? _hashingAlgoType;
   DefaultSigningAlgo(this._encryptionKeyPair);
 
   @override
   Uint8List sign(Uint8List data) {
+    if (_encryptionKeyPair == null) {
+      throw AtException('encryption key pair not set for default signing algo');
+    }
     final rsaPrivateKey =
-        RSAPrivateKey.fromString(_encryptionKeyPair.atPrivateKey.privateKey);
+        RSAPrivateKey.fromString(_encryptionKeyPair!.atPrivateKey.privateKey);
     _hashingAlgoType ??= HashingAlgoType.sha256; //default to sha256
     switch (_hashingAlgoType) {
       case HashingAlgoType.sha256:
@@ -29,9 +32,17 @@ class DefaultSigningAlgo implements AtSigningAlgorithm {
   }
 
   @override
-  bool verify(Uint8List signedData, Uint8List signature) {
-    final rsaPublicKey =
-        RSAPublicKey.fromString(_encryptionKeyPair.atPublicKey.publicKey);
+  bool verify(Uint8List signedData, Uint8List signature, {String? publicKey}) {
+    var rsaPublicKey;
+    if (publicKey != null) {
+      rsaPublicKey = RSAPublicKey.fromString(publicKey);
+    } else if (_encryptionKeyPair != null) {
+      rsaPublicKey =
+          RSAPublicKey.fromString(_encryptionKeyPair!.atPublicKey.publicKey);
+    } else {
+      throw AtException(
+          'Encryption key pair or public key not set for default signing algo');
+    }
     _hashingAlgoType ??= HashingAlgoType.sha256;
     switch (_hashingAlgoType) {
       case HashingAlgoType.sha256:

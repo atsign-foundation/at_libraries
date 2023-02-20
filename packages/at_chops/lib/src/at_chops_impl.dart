@@ -20,9 +20,12 @@ import 'package:at_chops/src/metadata/encryption_result.dart';
 import 'package:at_chops/src/metadata/signing_metadata.dart';
 import 'package:at_chops/src/metadata/signing_result.dart';
 import 'package:at_commons/at_commons.dart';
+import 'package:at_utils/at_logger.dart';
 
 class AtChopsImpl extends AtChops {
   AtChopsImpl(AtChopsKeys atChopsKeys) : super(atChopsKeys);
+
+  final AtSignLogger _logger = AtSignLogger('AtChopsImpl');
 
   @override
   AtEncryptionResult decryptBytes(
@@ -226,6 +229,8 @@ class AtChopsImpl extends AtChops {
       AtSigningVerificationInput verificationInput,
       {AtSigningAlgorithm? signingAlgorithm}) {
     signingAlgorithm ??= _getVerificationAlgorithm(verificationInput)!;
+    _logger
+        .finer('verification algo: ${signingAlgorithm.runtimeType.toString()}');
     final atSigningMetadata = AtSigningMetaData(
         verificationInput.signingAlgoType,
         verificationInput.hashingAlgoType,
@@ -233,7 +238,9 @@ class AtChopsImpl extends AtChops {
     final atSigningResult = AtSigningResult()
       ..atSigningMetaData = atSigningMetadata
       ..atSigningResultType = AtSigningResultType.bool;
-    atSigningResult.result = signingAlgorithm.verify(data, signature);
+    atSigningResult.result = signingAlgorithm.verify(data, signature,
+        publicKey: verificationInput.publicKey);
+    _logger.finer('verification result: ${atSigningResult.result}');
     return atSigningResult;
   }
 
@@ -299,16 +306,11 @@ class AtChopsImpl extends AtChops {
     if (verificationInput.signingAlgorithm != null) {
       return verificationInput.signingAlgorithm;
     }
-    if (verificationInput.publicKey != null) {
-      if (verificationInput.signingAlgoType == SigningAlgoType.ecc_secp256r1) {
-        return EccSigningAlgo()..publicKey = verificationInput.publicKey;
-      }
-
-      //#TODO return other algo if public key is passed
-    }
-    if (verificationInput.signingMode != null &&
+    if (verificationInput.signingAlgoType == SigningAlgoType.ecc_secp256r1) {
+      return EccSigningAlgo();
+    } else if (verificationInput.signingMode != null &&
         verificationInput.signingMode == AtSigningMode.pkam) {
-      return PkamSigningAlgo(atChopsKeys.atPkamKeyPair!);
+      return PkamSigningAlgo(atChopsKeys.atPkamKeyPair);
     } else if (verificationInput.signingMode != null &&
         verificationInput.signingMode == AtSigningMode.data) {
       return DefaultSigningAlgo(atChopsKeys.atEncryptionKeyPair!);

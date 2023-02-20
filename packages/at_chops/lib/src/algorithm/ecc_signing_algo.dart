@@ -6,11 +6,9 @@ import 'package:crypto/crypto.dart';
 import 'package:ecdsa/ecdsa.dart' as ecdsa;
 import 'package:elliptic/elliptic.dart';
 import 'package:at_chops/src/algorithm/at_algorithm.dart';
-import 'package:at_chops/src/key/key_type.dart';
 
 /// Data signing and verification for ECDSA - elliptic curve
 class EccSigningAlgo implements AtSigningAlgorithm {
-  String? publicKey;
   SigningAlgoType? _signingAlgoType;
   HashingAlgoType? _hashingAlgoType;
   EccSigningAlgo();
@@ -21,7 +19,7 @@ class EccSigningAlgo implements AtSigningAlgorithm {
   }
 
   @override
-  bool verify(Uint8List signedData, Uint8List signature) {
+  bool verify(Uint8List signedData, Uint8List signature, {String? publicKey}) {
     if (publicKey == null) {
       throw AtException('public key not set not ecc verification');
     }
@@ -29,7 +27,7 @@ class EccSigningAlgo implements AtSigningAlgorithm {
     var hashHex = sha256.convert(signedData).toString();
     var hash = List<int>.generate(hashHex.length ~/ 2,
         (i) => int.parse(hashHex.substring(i * 2, i * 2 + 2), radix: 16));
-    var pubKey = ec.hexToPublicKey(publicKey!);
+    var pubKey = ec.hexToPublicKey(publicKey);
     var eccSignature =
         ecdsa.Signature.fromCompactHex(String.fromCharCodes(signature));
     return ecdsa.verify(pubKey, hash, eccSignature);

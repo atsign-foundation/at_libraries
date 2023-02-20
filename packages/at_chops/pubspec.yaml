@@ -13,6 +13,7 @@ dependencies:
   ecdsa: ^0.0.4
   at_commons: ^3.0.30
   pointycastle: ^3.6.2
+  at_utils: ^3.0.11
 
 
 dev_dependencies:

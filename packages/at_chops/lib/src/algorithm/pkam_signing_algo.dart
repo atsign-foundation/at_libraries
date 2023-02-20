@@ -8,15 +8,18 @@ import 'package:crypton/crypton.dart';
 
 /// Data signing and verification for Public Key Authentication Mechanism - Pkam
 class PkamSigningAlgo implements AtSigningAlgorithm {
-  final AtPkamKeyPair _pkamKeyPair;
+  final AtPkamKeyPair? _pkamKeyPair;
   SigningAlgoType? _signingAlgoType;
   HashingAlgoType? _hashingAlgoType;
   PkamSigningAlgo(this._pkamKeyPair);
 
   @override
   Uint8List sign(Uint8List data) {
+    if (_pkamKeyPair == null) {
+      throw Exception('pkam key pair is null. cannot sign data');
+    }
     final rsaPrivateKey =
-        RSAPrivateKey.fromString(_pkamKeyPair.atPrivateKey.privateKey);
+        RSAPrivateKey.fromString(_pkamKeyPair!.atPrivateKey.privateKey);
     _hashingAlgoType ??= HashingAlgoType.sha256; //default to sha256
     switch (_hashingAlgoType) {
       case HashingAlgoType.sha256:
@@ -29,9 +32,18 @@ class PkamSigningAlgo implements AtSigningAlgorithm {
   }
 
   @override
-  bool verify(Uint8List signedData, Uint8List signature) {
-    final rsaPublicKey =
-        RSAPublicKey.fromString(_pkamKeyPair.atPublicKey.publicKey);
+  bool verify(Uint8List signedData, Uint8List signature, {String? publicKey}) {
+    var rsaPublicKey;
+    if (publicKey != null) {
+      rsaPublicKey = RSAPublicKey.fromString(publicKey);
+    } else if (_pkamKeyPair != null) {
+      rsaPublicKey =
+          RSAPublicKey.fromString(_pkamKeyPair!.atPublicKey.publicKey);
+    } else {
+      throw AtException(
+          'Pkam key pair or public key not set for pkam verification');
+    }
+
     _hashingAlgoType ??= HashingAlgoType.sha256; //default to sha256
     switch (_hashingAlgoType) {
       case HashingAlgoType.sha256:
