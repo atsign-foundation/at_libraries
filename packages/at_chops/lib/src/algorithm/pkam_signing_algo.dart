@@ -56,9 +56,15 @@ class PkamSigningAlgo implements AtSigningAlgorithm {
   }
 
   @override
+  HashingAlgoType? getHashingAlgo() => _hashingAlgoType;
+
+  @override
   void setHashingAlgoType(HashingAlgoType? hashingAlgoType) {
     _hashingAlgoType = hashingAlgoType;
   }
+
+  @override
+  SigningAlgoType? getSigningAlgo() => _signingAlgoType;
 
   @override
   void setSigningAlgoType(SigningAlgoType? signingAlgoType) {

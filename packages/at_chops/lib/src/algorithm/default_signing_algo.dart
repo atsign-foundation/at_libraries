@@ -6,11 +6,16 @@ import 'package:at_chops/src/key/impl/at_encryption_key_pair.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:crypton/crypton.dart';
 
-/// Data signing and verification using sha256 hash and atsign encryption keypair
+/// Data signing and verification using atsign encryption keypair
+/// [_signingAlgoType] and [_hashingAlgoType] need to be specified
+/// Allowed specifications are listed in [SigningAlgoType] and [HashingAlgoType]
+/// Default [_signingAlgoType] is [SigningAlgoType.rsa2048]
+/// Default [_hashingAlgoType] is [HashingAlgoType.sha256]
 class DefaultSigningAlgo implements AtSigningAlgorithm {
   final AtEncryptionKeyPair? _encryptionKeyPair;
   SigningAlgoType? _signingAlgoType;
   HashingAlgoType? _hashingAlgoType;
+
   DefaultSigningAlgo(this._encryptionKeyPair);
 
   @override
@@ -55,9 +60,15 @@ class DefaultSigningAlgo implements AtSigningAlgorithm {
   }
 
   @override
+  HashingAlgoType? getHashingAlgo() => _hashingAlgoType;
+
+  @override
   void setHashingAlgoType(HashingAlgoType? hashingAlgoType) {
     _hashingAlgoType = hashingAlgoType;
   }
+
+  @override
+  SigningAlgoType? getSigningAlgo() => _signingAlgoType;
 
   @override
   void setSigningAlgoType(SigningAlgoType? signingAlgoType) {

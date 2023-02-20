@@ -1,11 +1,11 @@
 import 'dart:typed_data';
 
 import 'package:at_chops/src/algorithm/algo_type.dart';
+import 'package:at_chops/src/algorithm/at_algorithm.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:crypto/crypto.dart';
 import 'package:ecdsa/ecdsa.dart' as ecdsa;
 import 'package:elliptic/elliptic.dart';
-import 'package:at_chops/src/algorithm/at_algorithm.dart';
 
 /// Data signing and verification for ECDSA - elliptic curve
 class EccSigningAlgo implements AtSigningAlgorithm {
@@ -34,9 +34,15 @@ class EccSigningAlgo implements AtSigningAlgorithm {
   }
 
   @override
+  HashingAlgoType? getHashingAlgo() => _hashingAlgoType;
+
+  @override
   void setHashingAlgoType(HashingAlgoType? hashingAlgoType) {
     // TODO: implement setHashingAlgoType
   }
+
+  @override
+  SigningAlgoType? getSigningAlgo() => _signingAlgoType;
 
   @override
   void setSigningAlgoType(SigningAlgoType? signingAlgoType) {
