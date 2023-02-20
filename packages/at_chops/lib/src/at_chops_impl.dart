@@ -209,8 +209,14 @@ class AtChopsImpl extends AtChops {
   AtSigningResult _signBytes(Uint8List data, AtSigningInput signingInput,
       {AtSigningAlgorithm? signingAlgorithm}) {
     signingAlgorithm ??= _getSigningAlgorithmV2(signingInput)!;
-    final atSigningMetadata = AtSigningMetaData(signingInput.signingAlgoType,
-        signingInput.hashingAlgoType, DateTime.now().toUtc());
+    final atSigningMetadata = AtSigningMetaData(
+        signingInput.signingAlgoType ??
+            signingAlgorithm.getSigningAlgo() ??
+            SigningAlgoType.rsa2048,
+        signingInput.hashingAlgoType ??
+            signingAlgorithm.getHashingAlgo() ??
+            HashingAlgoType.sha256,
+        DateTime.now().toUtc());
     final atSigningResult = AtSigningResult()
       ..atSigningMetaData = atSigningMetadata
       ..atSigningResultType = AtSigningResultType.bytes;
@@ -232,8 +238,12 @@ class AtChopsImpl extends AtChops {
     _logger
         .finer('verification algo: ${signingAlgorithm.runtimeType.toString()}');
     final atSigningMetadata = AtSigningMetaData(
-        verificationInput.signingAlgoType,
-        verificationInput.hashingAlgoType,
+        verificationInput.signingAlgoType ??
+            signingAlgorithm.getSigningAlgo() ??
+            SigningAlgoType.rsa2048,
+        verificationInput.hashingAlgoType ??
+            signingAlgorithm.getHashingAlgo() ??
+            HashingAlgoType.sha256,
         DateTime.now().toUtc());
     final atSigningResult = AtSigningResult()
       ..atSigningMetaData = atSigningMetadata
@@ -323,7 +333,10 @@ class AtChopsImpl extends AtChops {
   Uint8List _getBytes(dynamic data) {
     if (data is String) {
       return utf8.encode(data) as Uint8List;
+    } else if (data is Uint8List) {
+      return data;
+    } else {
+      throw AtException('Unrecognized type of data: $data');
     }
-    return data;
   }
 }

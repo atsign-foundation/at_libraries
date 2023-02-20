@@ -8,9 +8,9 @@ class AtSigningResult {
 
   @override
   toString() {
-    return 'ResultType: ${atSigningResultType.name},'
-        'Result: ${result.toString()},'
-        'SigningMetadata: ${atSigningMetaData.toString()}';
+    return 'ResultType: ${atSigningResultType.name}, '
+        'Result: ${result.toString()}, '
+        'SigningMetadata: {${atSigningMetaData.toString()}}';
   }
 }
 
