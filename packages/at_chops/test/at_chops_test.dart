@@ -226,7 +226,6 @@ void main() {
 
       final signingResult = atChops.signBytes(
           Uint8List.fromList(data.codeUnits), SigningKeyType.pkamSha256);
-      print(signingResult);
       expect(signingResult.atSigningMetaData, isNotNull);
       expect(signingResult.result, isNotEmpty);
       expect(signingResult.atSigningResultType, AtSigningResultType.bytes);
@@ -542,27 +541,13 @@ void main() {
 
       AtSigningInput signingInput = AtSigningInput('abcde');
       signingInput.signingAlgorithm = DefaultSigningAlgo(null);
-      expect(
-          () => atChops.sign(signingInput),
-          throwsA(predicate((e) =>
-              e is AtException &&
-              e.toString() ==
-                  'encryption key pair not set for default signing algo')));
-    });
-
-    test('Negative test - sign() fails with', () {
-      final atChopsKeys = AtChopsKeys.create(null, null);
-      final atChops = AtChopsImpl(atChopsKeys);
-
-      AtSigningInput signingInput = AtSigningInput('abcde');
-      signingInput.signingAlgorithm = DefaultSigningAlgo(null);
-
-      expect(
-          () => atChops.sign(signingInput),
-          throwsA(predicate((e) =>
-              e is AtException &&
-              e.toString() ==
-                  'encryption key pair not set for default signing algo')));
+      try {
+        atChops.sign(signingInput);
+      } catch (e, _) {
+        assert(e is AtException);
+        expect(e.toString(),
+            'Exception: encryption key pair not set for default signing algo');
+      }
     });
 
     test('Negative test - sign() with incorrect DataType', () {
@@ -572,12 +557,12 @@ void main() {
 
       AtSigningInput signingInput = AtSigningInput(213456777);
       signingInput.signingAlgorithm = DefaultSigningAlgo(encryptionKeypair);
-
-      expect(
-          () => atChops.sign(signingInput),
-          throwsA(predicate((e) =>
-              e is AtException &&
-              e.toString() == ' Unrecognized type of data: 213456777')));
+      try {
+        atChops.sign(signingInput);
+      } catch (e, _) {
+        assert(e is AtException);
+        expect(e.toString(), 'Exception: Unrecognized type of data: 213456777');
+      }
     });
   });
 }

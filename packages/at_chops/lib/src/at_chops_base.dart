@@ -89,10 +89,14 @@ abstract class AtChops {
       String data, String signature, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm});
 
-  ///TODO needs documentation
+  ///Generate data signature
+  ///Inputs need to passed through [AtSigningInput]
+  ///Please refer to [AtSigningInput] docs to create a valid input instance
   AtSigningResult sign(AtSigningInput signingInput);
 
-  ///TODO needs documentation
+  ///Verifies data with a valid signature
+  ///Inputs need to passed through [AtSigningVerificationInput]
+  ///Please refer to [AtSigningVerificationInput] docs to create a valid input instance
   AtSigningResult verify(AtSigningVerificationInput verifyInput);
 
   /// Create a string hash of input [signedData] using a [hashingAlgorithm].
