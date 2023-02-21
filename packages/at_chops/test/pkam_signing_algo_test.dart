@@ -11,7 +11,8 @@ void main() {
         'Test pkam signing and verification using generated rsa 2048 key pair, default signing and hashing algo',
         () {
       var pkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
-      final pkamSigningAlgo = PkamSigningAlgo(pkamKeyPair);
+      final pkamSigningAlgo = PkamSigningAlgo(
+          pkamKeyPair, SigningAlgoType.rsa2048, HashingAlgoType.sha256);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
@@ -23,7 +24,8 @@ void main() {
         'Test pkam signing and verification using generated rsa 4096 key pair, default signing and hashing algo',
         () {
       var pkamKeyPair = AtChopsUtil.generateAtPkamKeyPair(keySize: 4096);
-      final pkamSigningAlgo = PkamSigningAlgo(pkamKeyPair);
+      final pkamSigningAlgo = PkamSigningAlgo(
+          pkamKeyPair, SigningAlgoType.rsa4096, HashingAlgoType.sha256);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
@@ -33,8 +35,8 @@ void main() {
     });
     test('Test pkam signing and verification - set sha256 hashing algo', () {
       var pkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
-      final pkamSigningAlgo = PkamSigningAlgo(pkamKeyPair);
-      pkamSigningAlgo.setHashingAlgoType(HashingAlgoType.sha256);
+      final pkamSigningAlgo = PkamSigningAlgo(
+          pkamKeyPair, SigningAlgoType.rsa4096, HashingAlgoType.sha256);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
@@ -44,8 +46,8 @@ void main() {
     });
     test('Test pkam signing and verification - set sha512 hashing algo', () {
       var pkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
-      final pkamSigningAlgo = PkamSigningAlgo(pkamKeyPair);
-      pkamSigningAlgo.setHashingAlgoType(HashingAlgoType.sha512);
+      final pkamSigningAlgo = PkamSigningAlgo(
+          pkamKeyPair, SigningAlgoType.rsa4096, HashingAlgoType.sha512);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
@@ -57,8 +59,8 @@ void main() {
         'Test pkam signing and verification - set md5 hashing algo - not supported',
         () {
       var pkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
-      final pkamSigningAlgo = PkamSigningAlgo(pkamKeyPair);
-      pkamSigningAlgo.setHashingAlgoType(HashingAlgoType.md5);
+      final pkamSigningAlgo = PkamSigningAlgo(
+          pkamKeyPair, SigningAlgoType.rsa4096, HashingAlgoType.md5);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
@@ -70,7 +72,8 @@ void main() {
                   'Hashing algo HashingAlgoType.md5 is invalid/not supported'))));
     });
     test('Test pkam signing - pkam key pair not set', () {
-      final pkamSigningAlgo = PkamSigningAlgo(null);
+      final pkamSigningAlgo = PkamSigningAlgo(
+          null, SigningAlgoType.rsa4096, HashingAlgoType.sha256);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
@@ -84,8 +87,8 @@ void main() {
     });
     test('Test pkam verification - passing public key', () {
       var pkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
-      final pkamSigningAlgo = PkamSigningAlgo(pkamKeyPair);
-      pkamSigningAlgo.setHashingAlgoType(HashingAlgoType.sha512);
+      final pkamSigningAlgo = PkamSigningAlgo(
+          pkamKeyPair, SigningAlgoType.rsa4096, HashingAlgoType.sha512);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);

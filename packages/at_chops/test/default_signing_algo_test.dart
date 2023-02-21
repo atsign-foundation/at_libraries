@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:at_chops/at_chops.dart';
 import 'package:at_chops/src/algorithm/default_signing_algo.dart';
 import 'package:at_commons/at_commons.dart';
+import 'package:crypto/crypto.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -11,7 +12,8 @@ void main() {
         'Test default signing and verification using generated rsa 2048 key pair, default signing and hashing algo',
         () {
       var keyPair = AtChopsUtil.generateAtEncryptionKeyPair();
-      final defaultSigningAlgo = DefaultSigningAlgo(keyPair);
+      final defaultSigningAlgo = DefaultSigningAlgo(
+          keyPair, SigningAlgoType.rsa2048, HashingAlgoType.sha256);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
@@ -24,7 +26,8 @@ void main() {
         'Test default signing and verification using generated rsa 4096 key pair, default signing and hashing algo',
         () {
       var keyPair = AtChopsUtil.generateAtEncryptionKeyPair(keySize: 4096);
-      final defaultSigningAlgo = DefaultSigningAlgo(keyPair);
+      final defaultSigningAlgo = DefaultSigningAlgo(
+          keyPair, SigningAlgoType.rsa4096, HashingAlgoType.sha256);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
@@ -35,8 +38,8 @@ void main() {
     });
     test('Test default signing and verification - set sha256 hashing algo', () {
       var keyPair = AtChopsUtil.generateAtEncryptionKeyPair();
-      final defaultSigningAlgo = DefaultSigningAlgo(keyPair);
-      defaultSigningAlgo.setHashingAlgoType(HashingAlgoType.sha256);
+      final defaultSigningAlgo = DefaultSigningAlgo(
+          keyPair, SigningAlgoType.rsa2048, HashingAlgoType.sha256);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
@@ -47,8 +50,8 @@ void main() {
     });
     test('Test default signing and verification - set sha512 hashing algo', () {
       var keyPair = AtChopsUtil.generateAtEncryptionKeyPair();
-      final defaultSigningAlgo = DefaultSigningAlgo(keyPair);
-      defaultSigningAlgo.setHashingAlgoType(HashingAlgoType.sha512);
+      final defaultSigningAlgo = DefaultSigningAlgo(
+          keyPair, SigningAlgoType.rsa2048, HashingAlgoType.sha512);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
@@ -61,8 +64,8 @@ void main() {
         'Test default signing and verification - set md5 hashing algo - not supported',
         () {
       var keyPair = AtChopsUtil.generateAtEncryptionKeyPair();
-      final defaultSigningAlgo = DefaultSigningAlgo(keyPair);
-      defaultSigningAlgo.setHashingAlgoType(HashingAlgoType.md5);
+      final defaultSigningAlgo = DefaultSigningAlgo(
+          keyPair, SigningAlgoType.rsa2048, HashingAlgoType.md5);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
@@ -74,7 +77,8 @@ void main() {
                   'Hashing algo HashingAlgoType.md5 is invalid/not supported'))));
     });
     test('Test default signing - key pair not set', () {
-      final defaultSigningAlgo = DefaultSigningAlgo(null);
+      final defaultSigningAlgo = DefaultSigningAlgo(
+          null, SigningAlgoType.rsa2048, HashingAlgoType.sha256);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
@@ -87,7 +91,8 @@ void main() {
     });
     test('Test default verification - passing public key', () {
       var keyPair = AtChopsUtil.generateAtEncryptionKeyPair();
-      final defaultSigningAlgo = DefaultSigningAlgo(keyPair);
+      final defaultSigningAlgo = DefaultSigningAlgo(
+          keyPair, SigningAlgoType.rsa2048, HashingAlgoType.sha256);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);

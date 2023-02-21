@@ -89,17 +89,17 @@ abstract class AtChops {
       String data, String signature, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm});
 
-  ///Generate data signature
-  ///Inputs need to passed through [AtSigningInput]
-  ///Please refer to [AtSigningInput] docs to create a valid input instance
+  /// Compute data signature using the private key from a key pair
+  /// Input has to be set using [AtSigningInput] object
+  /// Please refer to [AtSigningInput] to create a valid input instance
   AtSigningResult sign(AtSigningInput signingInput);
 
-  ///Verifies data with a valid signature
-  ///Inputs need to passed through [AtSigningVerificationInput]
-  ///Please refer to [AtSigningVerificationInput] docs to create a valid input instance
+  /// Verifies the signature computed for input data using the public key from a key pair
+  /// Input has to set using [AtSigningVerificationInput] obect
+  /// Please refer to [AtSigningVerificationInput] docs to create a valid input instance
   AtSigningResult verify(AtSigningVerificationInput verifyInput);
 
-  /// Create a string hash of input [signedData] using a [hashingAlgorithm].
+  /// Create a hash of input [signedData] using a [hashingAlgorithm].
   /// Refer to [DefaultHash] for default implementation of hashing.
   String hash(Uint8List signedData, AtHashingAlgorithm hashingAlgorithm);
 }

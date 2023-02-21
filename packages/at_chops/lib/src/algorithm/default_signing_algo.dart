@@ -7,16 +7,14 @@ import 'package:at_commons/at_commons.dart';
 import 'package:crypton/crypton.dart';
 
 /// Data signing and verification using atsign encryption keypair
-/// [_signingAlgoType] and [_hashingAlgoType] need to be specified
-/// Allowed specifications are listed in [SigningAlgoType] and [HashingAlgoType]
-/// Default [_signingAlgoType] is [SigningAlgoType.rsa2048]
-/// Default [_hashingAlgoType] is [HashingAlgoType.sha256]
+/// Allowed algorithms are listed in [SigningAlgoType] and [HashingAlgoType]
 class DefaultSigningAlgo implements AtSigningAlgorithm {
   final AtEncryptionKeyPair? _encryptionKeyPair;
-  SigningAlgoType? _signingAlgoType;
-  HashingAlgoType? _hashingAlgoType;
+  SigningAlgoType _signingAlgoType;
+  HashingAlgoType _hashingAlgoType;
 
-  DefaultSigningAlgo(this._encryptionKeyPair);
+  DefaultSigningAlgo(
+      this._encryptionKeyPair, this._signingAlgoType, this._hashingAlgoType);
 
   @override
   Uint8List sign(Uint8List data) {
@@ -25,14 +23,14 @@ class DefaultSigningAlgo implements AtSigningAlgorithm {
     }
     final rsaPrivateKey =
         RSAPrivateKey.fromString(_encryptionKeyPair!.atPrivateKey.privateKey);
-    _hashingAlgoType ??= HashingAlgoType.sha256; //default to sha256
     switch (_hashingAlgoType) {
       case HashingAlgoType.sha256:
         return rsaPrivateKey.createSHA256Signature(data);
       case HashingAlgoType.sha512:
         return rsaPrivateKey.createSHA512Signature(data);
       default:
-        throw AtException('Hashing algo $_hashingAlgoType is invalid/not supported');
+        throw AtException(
+            'Hashing algo $_hashingAlgoType is invalid/not supported');
     }
   }
 
@@ -48,7 +46,6 @@ class DefaultSigningAlgo implements AtSigningAlgorithm {
       throw AtException(
           'Encryption key pair or public key not set for default signing algo');
     }
-    _hashingAlgoType ??= HashingAlgoType.sha256;
     switch (_hashingAlgoType) {
       case HashingAlgoType.sha256:
         return rsaPublicKey.verifySHA256Signature(signedData, signature);
@@ -57,21 +54,5 @@ class DefaultSigningAlgo implements AtSigningAlgorithm {
       default:
         throw AtException('Invalid hashing algo $_hashingAlgoType provided');
     }
-  }
-
-  @override
-  HashingAlgoType? getHashingAlgo() => _hashingAlgoType;
-
-  @override
-  void setHashingAlgoType(HashingAlgoType? hashingAlgoType) {
-    _hashingAlgoType = hashingAlgoType;
-  }
-
-  @override
-  SigningAlgoType? getSigningAlgo() => _signingAlgoType;
-
-  @override
-  void setSigningAlgoType(SigningAlgoType? signingAlgoType) {
-    _signingAlgoType = signingAlgoType;
   }
 }

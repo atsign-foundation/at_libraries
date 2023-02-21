@@ -32,14 +32,6 @@ abstract class AtSigningAlgorithm {
 
   /// Verifies the data signature using [AtPublicKey] of [AsymmetricKeyPair] or the passed [publicKey]
   bool verify(Uint8List signedData, Uint8List signature, {String? publicKey});
-
-  HashingAlgoType? getHashingAlgo();
-
-  void setHashingAlgoType(HashingAlgoType? hashingAlgoType);
-
-  SigningAlgoType? getSigningAlgo();
-
-  void setSigningAlgoType(SigningAlgoType? signingAlgoType);
 }
 
 /// Interface for hashing data. Refer [DefaultHash] for sample implementation.

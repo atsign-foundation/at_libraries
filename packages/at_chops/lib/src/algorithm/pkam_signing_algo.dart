@@ -9,9 +9,10 @@ import 'package:crypton/crypton.dart';
 /// Data signing and verification for Public Key Authentication Mechanism - Pkam
 class PkamSigningAlgo implements AtSigningAlgorithm {
   final AtPkamKeyPair? _pkamKeyPair;
-  SigningAlgoType? _signingAlgoType;
-  HashingAlgoType? _hashingAlgoType;
-  PkamSigningAlgo(this._pkamKeyPair);
+  SigningAlgoType _signingAlgoType;
+  HashingAlgoType _hashingAlgoType;
+  PkamSigningAlgo(
+      this._pkamKeyPair, this._signingAlgoType, this._hashingAlgoType);
 
   @override
   Uint8List sign(Uint8List data) {
@@ -20,7 +21,6 @@ class PkamSigningAlgo implements AtSigningAlgorithm {
     }
     final rsaPrivateKey =
         RSAPrivateKey.fromString(_pkamKeyPair!.atPrivateKey.privateKey);
-    _hashingAlgoType ??= HashingAlgoType.sha256; //default to sha256
     switch (_hashingAlgoType) {
       case HashingAlgoType.sha256:
         return rsaPrivateKey.createSHA256Signature(data);
@@ -45,7 +45,6 @@ class PkamSigningAlgo implements AtSigningAlgorithm {
           'Pkam key pair or public key not set for pkam verification');
     }
 
-    _hashingAlgoType ??= HashingAlgoType.sha256; //default to sha256
     switch (_hashingAlgoType) {
       case HashingAlgoType.sha256:
         return rsaPublicKey.verifySHA256Signature(signedData, signature);
@@ -56,19 +55,7 @@ class PkamSigningAlgo implements AtSigningAlgorithm {
     }
   }
 
-  @override
   HashingAlgoType? getHashingAlgo() => _hashingAlgoType;
 
-  @override
-  void setHashingAlgoType(HashingAlgoType? hashingAlgoType) {
-    _hashingAlgoType = hashingAlgoType;
-  }
-
-  @override
   SigningAlgoType? getSigningAlgo() => _signingAlgoType;
-
-  @override
-  void setSigningAlgoType(SigningAlgoType? signingAlgoType) {
-    _signingAlgoType = signingAlgoType;
-  }
 }

@@ -209,14 +209,8 @@ class AtChopsImpl extends AtChops {
   AtSigningResult _signBytes(Uint8List data, AtSigningInput signingInput,
       {AtSigningAlgorithm? signingAlgorithm}) {
     signingAlgorithm ??= _getSigningAlgorithmV2(signingInput)!;
-    final atSigningMetadata = AtSigningMetaData(
-        signingInput.signingAlgoType ??
-            signingAlgorithm.getSigningAlgo() ??
-            SigningAlgoType.rsa2048,
-        signingInput.hashingAlgoType ??
-            signingAlgorithm.getHashingAlgo() ??
-            HashingAlgoType.sha256,
-        DateTime.now().toUtc());
+    final atSigningMetadata = AtSigningMetaData(signingInput.signingAlgoType,
+        signingInput.hashingAlgoType, DateTime.now().toUtc());
     final atSigningResult = AtSigningResult()
       ..atSigningMetaData = atSigningMetadata
       ..atSigningResultType = AtSigningResultType.bytes;
@@ -238,12 +232,8 @@ class AtChopsImpl extends AtChops {
     _logger
         .finer('verification algo: ${signingAlgorithm.runtimeType.toString()}');
     final atSigningMetadata = AtSigningMetaData(
-        verificationInput.signingAlgoType ??
-            signingAlgorithm.getSigningAlgo() ??
-            SigningAlgoType.rsa2048,
-        verificationInput.hashingAlgoType ??
-            signingAlgorithm.getHashingAlgo() ??
-            HashingAlgoType.sha256,
+        verificationInput.signingAlgoType,
+        verificationInput.hashingAlgoType,
         DateTime.now().toUtc());
     final atSigningResult = AtSigningResult()
       ..atSigningMetaData = atSigningMetadata
@@ -287,9 +277,11 @@ class AtChopsImpl extends AtChops {
   AtSigningAlgorithm? _getSigningAlgorithm(SigningKeyType signingKeyType) {
     switch (signingKeyType) {
       case SigningKeyType.pkamSha256:
-        return PkamSigningAlgo(atChopsKeys.atPkamKeyPair!);
+        return PkamSigningAlgo(atChopsKeys.atPkamKeyPair!,
+            SigningAlgoType.rsa2048, HashingAlgoType.sha256);
       case SigningKeyType.signingSha256:
-        return DefaultSigningAlgo(atChopsKeys.atEncryptionKeyPair!);
+        return DefaultSigningAlgo(atChopsKeys.atEncryptionKeyPair!,
+            SigningAlgoType.rsa2048, HashingAlgoType.sha256);
       default:
         throw Exception(
             'Cannot find signing algorithm for signing key type $signingKeyType');
@@ -301,10 +293,12 @@ class AtChopsImpl extends AtChops {
       return signingInput.signingAlgorithm;
     } else if (signingInput.signingMode != null &&
         signingInput.signingMode == AtSigningMode.pkam) {
-      return PkamSigningAlgo(atChopsKeys.atPkamKeyPair!);
+      return PkamSigningAlgo(atChopsKeys.atPkamKeyPair!,
+          signingInput.signingAlgoType, signingInput.hashingAlgoType);
     } else if (signingInput.signingMode != null &&
         signingInput.signingMode == AtSigningMode.data) {
-      return DefaultSigningAlgo(atChopsKeys.atEncryptionKeyPair!);
+      return DefaultSigningAlgo(atChopsKeys.atEncryptionKeyPair!,
+          signingInput.signingAlgoType, signingInput.hashingAlgoType);
     } else {
       throw Exception(
           'Cannot find signing algorithm for signing input  $signingInput');
@@ -320,10 +314,12 @@ class AtChopsImpl extends AtChops {
       return EccSigningAlgo();
     } else if (verificationInput.signingMode != null &&
         verificationInput.signingMode == AtSigningMode.pkam) {
-      return PkamSigningAlgo(atChopsKeys.atPkamKeyPair);
+      return PkamSigningAlgo(atChopsKeys.atPkamKeyPair!,
+          verificationInput.signingAlgoType, verificationInput.hashingAlgoType);
     } else if (verificationInput.signingMode != null &&
         verificationInput.signingMode == AtSigningMode.data) {
-      return DefaultSigningAlgo(atChopsKeys.atEncryptionKeyPair!);
+      return DefaultSigningAlgo(atChopsKeys.atEncryptionKeyPair!,
+          verificationInput.signingAlgoType, verificationInput.hashingAlgoType);
     } else {
       throw Exception(
           'Cannot find signing algorithm for signing input  $verificationInput');
