@@ -32,7 +32,7 @@ class DefaultSigningAlgo implements AtSigningAlgorithm {
       case HashingAlgoType.sha512:
         return rsaPrivateKey.createSHA512Signature(data);
       default:
-        throw AtException('Invalid hashing algo $_hashingAlgoType provided');
+        throw AtException('Hashing algo $_hashingAlgoType is invalid/not supported');
     }
   }
 
