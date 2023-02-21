@@ -1,15 +1,8 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:at_chops/at_chops.dart';
 import 'package:at_chops/src/algorithm/ecc_signing_algo.dart';
-import 'package:ecdsa/ecdsa.dart';
 import 'package:elliptic/elliptic.dart';
-import 'package:at_chops/src/algorithm/at_algorithm.dart';
-import 'package:at_chops/src/algorithm/default_signing_algo.dart';
 import 'package:at_commons/at_commons.dart';
-import 'package:at_utils/at_logger.dart';
-import 'package:crypton/crypton.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -27,7 +20,7 @@ void main() {
       var verifyResult = eccAlgo.verify(dataInBytes, signature);
       expect(verifyResult, true);
     });
-    test('Test ecc verification by passing public key', () {
+    test('Test ecc verification - passing public key', () {
       final eccAlgo = EccSigningAlgo();
       var ec = getSecp256r1();
       final eccPrivateKey = ec.generatePrivateKey();

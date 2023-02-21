@@ -16,7 +16,7 @@ class PkamSigningAlgo implements AtSigningAlgorithm {
   @override
   Uint8List sign(Uint8List data) {
     if (_pkamKeyPair == null) {
-      throw Exception('pkam key pair is null. cannot sign data');
+      throw AtException('pkam key pair is null. cannot sign data');
     }
     final rsaPrivateKey =
         RSAPrivateKey.fromString(_pkamKeyPair!.atPrivateKey.privateKey);
@@ -27,7 +27,8 @@ class PkamSigningAlgo implements AtSigningAlgorithm {
       case HashingAlgoType.sha512:
         return rsaPrivateKey.createSHA512Signature(data);
       default:
-        throw AtException('Invalid hashing algo $_hashingAlgoType provided');
+        throw AtException(
+            'Hashing algo $_hashingAlgoType is invalid/not supported');
     }
   }
 
