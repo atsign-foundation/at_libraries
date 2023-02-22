@@ -220,6 +220,7 @@ class AtChopsImpl extends AtChops {
 
   @override
   AtSigningResult verify(AtSigningVerificationInput verificationInput) {
+    _logger.finer('Calling verify for input : $verificationInput ');
     final dataBytes = _getBytes(verificationInput.data);
     final signatureBytes = _getBytes(verificationInput.signature);
     return _verifySignatureBytes(dataBytes, signatureBytes, verificationInput);
@@ -314,11 +315,19 @@ class AtChopsImpl extends AtChops {
       return EccSigningAlgo();
     } else if (verificationInput.signingMode != null &&
         verificationInput.signingMode == AtSigningMode.pkam) {
-      return PkamSigningAlgo(atChopsKeys.atPkamKeyPair!,
-          verificationInput.signingAlgoType, verificationInput.hashingAlgoType);
+      if (atChopsKeys.atPkamKeyPair != null) {
+        return PkamSigningAlgo(
+            atChopsKeys.atPkamKeyPair,
+            verificationInput.signingAlgoType,
+            verificationInput.hashingAlgoType);
+      } else {
+        return PkamSigningAlgo(null, verificationInput.signingAlgoType,
+            verificationInput.hashingAlgoType);
+      }
     } else if (verificationInput.signingMode != null &&
-        verificationInput.signingMode == AtSigningMode.data) {
-      return DefaultSigningAlgo(atChopsKeys.atEncryptionKeyPair!,
+        verificationInput.signingMode == AtSigningMode.data &&
+        atChopsKeys.atEncryptionKeyPair != null) {
+      return DefaultSigningAlgo(atChopsKeys.atEncryptionKeyPair,
           verificationInput.signingAlgoType, verificationInput.hashingAlgoType);
     } else {
       throw Exception(
