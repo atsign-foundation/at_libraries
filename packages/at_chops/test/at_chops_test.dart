@@ -460,6 +460,72 @@ void main() {
       expect(verificationResult.result, true);
     });
 
+    test(
+        'Negative test - verify() fails when verifying sha256 sign using sha512',
+        () {
+      final data = 'data is important';
+      final encryptionKeypair = AtChopsUtil.generateAtEncryptionKeyPair();
+      final atChopsKeys = AtChopsKeys.create(encryptionKeypair, null);
+      final atChops = AtChopsImpl(atChopsKeys);
+
+      AtSigningInput signingInput = AtSigningInput(data);
+      signingInput.signingAlgoType = SigningAlgoType.rsa2048;
+      signingInput.hashingAlgoType = HashingAlgoType.sha256;
+      signingInput.signingAlgorithm = DefaultSigningAlgo(encryptionKeypair,
+          signingInput.signingAlgoType, signingInput.hashingAlgoType);
+      final signingResult = atChops.sign(signingInput);
+
+      AtSigningVerificationInput? verificationInput =
+          AtSigningVerificationInput(data, signingResult.result,
+              encryptionKeypair.atPublicKey.publicKey);
+      verificationInput.signingAlgoType = SigningAlgoType.rsa2048;
+      verificationInput.hashingAlgoType = HashingAlgoType.sha512;
+      verificationInput.signingAlgorithm = DefaultSigningAlgo(encryptionKeypair,
+          verificationInput.signingAlgoType, verificationInput.hashingAlgoType);
+
+      AtSigningResult verificationResult = atChops.verify(verificationInput);
+      expect(verificationResult.atSigningMetaData, isNotNull);
+      expect(verificationResult.atSigningResultType, AtSigningResultType.bool);
+      expect(verificationResult.atSigningMetaData.signingAlgoType,
+          SigningAlgoType.rsa2048);
+      expect(verificationResult.atSigningMetaData.hashingAlgoType,
+          HashingAlgoType.sha512);
+      expect(verificationResult.result, false);
+    });
+
+    test(
+        'Negative test - verify() fails when verifying sha512 sign using sha256',
+        () {
+      final data = 'data atad';
+      final encryptionKeypair = AtChopsUtil.generateAtEncryptionKeyPair();
+      final atChopsKeys = AtChopsKeys.create(encryptionKeypair, null);
+      final atChops = AtChopsImpl(atChopsKeys);
+
+      AtSigningInput signingInput = AtSigningInput(data);
+      signingInput.signingAlgoType = SigningAlgoType.rsa2048;
+      signingInput.hashingAlgoType = HashingAlgoType.sha512;
+      signingInput.signingAlgorithm = DefaultSigningAlgo(encryptionKeypair,
+          signingInput.signingAlgoType, signingInput.hashingAlgoType);
+      final signingResult = atChops.sign(signingInput);
+
+      AtSigningVerificationInput? verificationInput =
+          AtSigningVerificationInput(data, signingResult.result,
+              encryptionKeypair.atPublicKey.publicKey);
+      verificationInput.signingAlgoType = SigningAlgoType.rsa2048;
+      verificationInput.hashingAlgoType = HashingAlgoType.sha256;
+      verificationInput.signingAlgorithm = DefaultSigningAlgo(encryptionKeypair,
+          verificationInput.signingAlgoType, verificationInput.hashingAlgoType);
+
+      AtSigningResult verificationResult = atChops.verify(verificationInput);
+      expect(verificationResult.atSigningMetaData, isNotNull);
+      expect(verificationResult.atSigningResultType, AtSigningResultType.bool);
+      expect(verificationResult.atSigningMetaData.signingAlgoType,
+          SigningAlgoType.rsa2048);
+      expect(verificationResult.atSigningMetaData.hashingAlgoType,
+          HashingAlgoType.sha256);
+      expect(verificationResult.result, false);
+    });
+
     test('Negative test - verify() fails with sha256 as hashing algo', () {
       final data = 'random data string';
       final encryptionKeypair = AtChopsUtil.generateAtEncryptionKeyPair();
