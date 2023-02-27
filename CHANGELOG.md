@@ -1,3 +1,5 @@
+## 3.0.39
+- feat: add new exceptions for at_chops operations.
 ## 3.0.38
 - fix: add hashing algorithm to pkam syntax.
 ## 3.0.37
