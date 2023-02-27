@@ -62,15 +62,21 @@ abstract class AtChops {
       InitialisationVector? iv});
 
   /// Sign the input bytes [data] using a [signingAlgorithm].
+  // ignore: deprecated_member_use_from_same_package
   /// If [signingKeyType] is [SigningKeyType.pkamSha256] then [signingAlgorithm] will be set to [PkamSigningAlgo]
+  // ignore: deprecated_member_use_from_same_package
   /// If [signingKeyType] is [SigningKeyType.signingSha256] then [signingAlgorithm] will be set to [DefaultSigningAlgo]
+  // ignore: deprecated_member_use_from_same_package
   AtSigningResult signBytes(Uint8List data, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm});
 
   /// Verify the [signature] of bytes [data] using a [signingAlgorithm]
+  // ignore: deprecated_member_use_from_same_package
   /// If [signingKeyType] is [SigningKeyType.pkamSha256] then [signingAlgorithm] will be set to [PkamSigningAlgo]
+  // ignore: deprecated_member_use_from_same_package
   /// If [signingKeyType] is [SigningKeyType.signingSha256] then [signingAlgorithm] will be set to [DefaultSigningAlgo]
   AtSigningResult verifySignatureBytes(
+      // ignore: deprecated_member_use_from_same_package
       Uint8List data, Uint8List signature, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm});
 

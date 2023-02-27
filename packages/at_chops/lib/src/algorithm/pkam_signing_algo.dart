@@ -9,10 +9,8 @@ import 'package:crypton/crypton.dart';
 /// Data signing and verification for Public Key Authentication Mechanism - Pkam
 class PkamSigningAlgo implements AtSigningAlgorithm {
   final AtPkamKeyPair? _pkamKeyPair;
-  SigningAlgoType _signingAlgoType;
-  HashingAlgoType _hashingAlgoType;
-  PkamSigningAlgo(
-      this._pkamKeyPair, this._signingAlgoType, this._hashingAlgoType);
+  final HashingAlgoType _hashingAlgoType;
+  PkamSigningAlgo(this._pkamKeyPair, this._hashingAlgoType);
 
   @override
   Uint8List sign(Uint8List data) {
@@ -34,7 +32,7 @@ class PkamSigningAlgo implements AtSigningAlgorithm {
 
   @override
   bool verify(Uint8List signedData, Uint8List signature, {String? publicKey}) {
-    var rsaPublicKey;
+    RSAPublicKey rsaPublicKey;
     if (publicKey != null) {
       rsaPublicKey = RSAPublicKey.fromString(publicKey);
     } else if (_pkamKeyPair != null) {
@@ -54,8 +52,4 @@ class PkamSigningAlgo implements AtSigningAlgorithm {
         throw AtException('Invalid hashing algo $_hashingAlgoType provided');
     }
   }
-
-  HashingAlgoType? getHashingAlgo() => _hashingAlgoType;
-
-  SigningAlgoType? getSigningAlgo() => _signingAlgoType;
 }

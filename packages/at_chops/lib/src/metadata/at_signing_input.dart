@@ -18,7 +18,7 @@ class AtSigningInput {
   /// Data either needs to be of type [String] or [Uint8List]
   ///
   /// AtException will be thrown if data is of any other type
-  dynamic _data;
+  final dynamic _data;
 
   /// Choose [HashingAlgoType] from [HashingAlgoType.values]
   ///
@@ -62,17 +62,17 @@ class AtSigningVerificationInput {
   /// Data that has to verified
   ///
   /// Data has to be either of base64encoded [String] or [Uint8List]
-  dynamic _data;
+  final dynamic _data;
 
   /// Signature of [_data] that will be used to verify
   ///
   /// Signature needs to be either of type base64encoded [String] or [Uint8List]
-  dynamic _signature;
+  final dynamic _signature;
 
   /// Mandatory input
   ///
   /// PublicKey from AsymmetricKeypair whose private key was used to compute [_signature]
-  String _publicKey;
+  final String _publicKey;
 
   /// Choose [HashingAlgoType] from [HashingAlgoType.values]
   ///

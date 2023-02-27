@@ -140,6 +140,7 @@ class AtChopsImpl extends AtChops {
   }
 
   @override
+  // ignore: deprecated_member_use_from_same_package
   AtSigningResult signBytes(Uint8List data, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm}) {
     signingAlgorithm ??= _getSigningAlgorithm(signingKeyType)!;
@@ -156,7 +157,10 @@ class AtChopsImpl extends AtChops {
 
   @override
   AtSigningResult verifySignatureBytes(
-      Uint8List data, Uint8List signature, SigningKeyType signingKeyType,
+      Uint8List data,
+      Uint8List signature,
+      // ignore: deprecated_member_use_from_same_package
+      SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm}) {
     signingAlgorithm ??= _getSigningAlgorithm(signingKeyType)!;
     // hard coding signing and hashing algo since this method is deprecated
@@ -170,6 +174,7 @@ class AtChopsImpl extends AtChops {
   }
 
   @override
+  // ignore: deprecated_member_use_from_same_package
   AtSigningResult signString(String data, SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm}) {
     final signingResult = signBytes(
@@ -185,7 +190,11 @@ class AtChopsImpl extends AtChops {
 
   @override
   AtSigningResult verifySignatureString(
-      String data, String signature, SigningKeyType signingKeyType,
+      // ignore: deprecated_member_use_from_same_package
+      String data,
+      String signature,
+      // ignore: deprecated_member_use_from_same_package
+      SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm}) {
     final signingResult = verifySignatureBytes(
         utf8.encode(data) as Uint8List, base64Decode(signature), signingKeyType,
@@ -219,11 +228,11 @@ class AtChopsImpl extends AtChops {
   }
 
   @override
-  AtSigningResult verify(AtSigningVerificationInput verificationInput) {
-    _logger.finer('Calling verify for input : $verificationInput ');
-    final dataBytes = _getBytes(verificationInput.data);
-    final signatureBytes = _getBytes(verificationInput.signature);
-    return _verifySignatureBytes(dataBytes, signatureBytes, verificationInput);
+  AtSigningResult verify(AtSigningVerificationInput verifyInput) {
+    _logger.finer('Calling verify for input : $verifyInput ');
+    final dataBytes = _getBytes(verifyInput.data);
+    final signatureBytes = _getBytes(verifyInput.signature);
+    return _verifySignatureBytes(dataBytes, signatureBytes, verifyInput);
   }
 
   AtSigningResult _verifySignatureBytes(Uint8List data, Uint8List signature,
@@ -249,8 +258,7 @@ class AtChopsImpl extends AtChops {
       EncryptionKeyType encryptionKeyType, String? keyName) {
     switch (encryptionKeyType) {
       case EncryptionKeyType.rsa2048:
-        return DefaultEncryptionAlgo(
-            _getEncryptionKeyPair(keyName)!, encryptionKeyType);
+        return DefaultEncryptionAlgo(_getEncryptionKeyPair(keyName)!);
       case EncryptionKeyType.rsa4096:
         // TODO: Handle this case.
         break;
@@ -275,14 +283,18 @@ class AtChopsImpl extends AtChops {
     return null;
   }
 
+  // ignore: deprecated_member_use_from_same_package
   AtSigningAlgorithm? _getSigningAlgorithm(SigningKeyType signingKeyType) {
     switch (signingKeyType) {
+      // ignore: deprecated_member_use_from_same_package
       case SigningKeyType.pkamSha256:
-        return PkamSigningAlgo(atChopsKeys.atPkamKeyPair!,
-            SigningAlgoType.rsa2048, HashingAlgoType.sha256);
+        return PkamSigningAlgo(
+            atChopsKeys.atPkamKeyPair!, HashingAlgoType.sha256);
+
+      // ignore: deprecated_member_use_from_same_package
       case SigningKeyType.signingSha256:
-        return DefaultSigningAlgo(atChopsKeys.atEncryptionKeyPair!,
-            SigningAlgoType.rsa2048, HashingAlgoType.sha256);
+        return DefaultSigningAlgo(
+            atChopsKeys.atEncryptionKeyPair!, HashingAlgoType.sha256);
       default:
         throw Exception(
             'Cannot find signing algorithm for signing key type $signingKeyType');
@@ -294,12 +306,12 @@ class AtChopsImpl extends AtChops {
       return signingInput.signingAlgorithm;
     } else if (signingInput.signingMode != null &&
         signingInput.signingMode == AtSigningMode.pkam) {
-      return PkamSigningAlgo(atChopsKeys.atPkamKeyPair!,
-          signingInput.signingAlgoType, signingInput.hashingAlgoType);
+      return PkamSigningAlgo(
+          atChopsKeys.atPkamKeyPair!, signingInput.hashingAlgoType);
     } else if (signingInput.signingMode != null &&
         signingInput.signingMode == AtSigningMode.data) {
-      return DefaultSigningAlgo(atChopsKeys.atEncryptionKeyPair!,
-          signingInput.signingAlgoType, signingInput.hashingAlgoType);
+      return DefaultSigningAlgo(
+          atChopsKeys.atEncryptionKeyPair!, signingInput.hashingAlgoType);
     } else {
       throw Exception(
           'Cannot find signing algorithm for signing input  $signingInput');
@@ -317,18 +329,15 @@ class AtChopsImpl extends AtChops {
         verificationInput.signingMode == AtSigningMode.pkam) {
       if (atChopsKeys.atPkamKeyPair != null) {
         return PkamSigningAlgo(
-            atChopsKeys.atPkamKeyPair,
-            verificationInput.signingAlgoType,
-            verificationInput.hashingAlgoType);
+            atChopsKeys.atPkamKeyPair, verificationInput.hashingAlgoType);
       } else {
-        return PkamSigningAlgo(null, verificationInput.signingAlgoType,
-            verificationInput.hashingAlgoType);
+        return PkamSigningAlgo(null, verificationInput.hashingAlgoType);
       }
     } else if (verificationInput.signingMode != null &&
         verificationInput.signingMode == AtSigningMode.data &&
         atChopsKeys.atEncryptionKeyPair != null) {
-      return DefaultSigningAlgo(atChopsKeys.atEncryptionKeyPair,
-          verificationInput.signingAlgoType, verificationInput.hashingAlgoType);
+      return DefaultSigningAlgo(
+          atChopsKeys.atEncryptionKeyPair, verificationInput.hashingAlgoType);
     } else {
       throw Exception(
           'Cannot find signing algorithm for signing input  $verificationInput');

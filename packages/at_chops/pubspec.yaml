@@ -11,6 +11,7 @@ dependencies:
   crypton: ^2.1.0
   crypto: ^3.0.2
   ecdsa: ^0.0.4
+  elliptic: ^0.3.8
   at_commons: ^3.0.38
   pointycastle: ^3.6.2
   at_utils: ^3.0.11

@@ -10,11 +10,10 @@ import 'package:crypton/crypton.dart';
 /// Allowed algorithms are listed in [SigningAlgoType] and [HashingAlgoType]
 class DefaultSigningAlgo implements AtSigningAlgorithm {
   final AtEncryptionKeyPair? _encryptionKeyPair;
-  SigningAlgoType _signingAlgoType;
-  HashingAlgoType _hashingAlgoType;
+  final HashingAlgoType _hashingAlgoType;
 
   DefaultSigningAlgo(
-      this._encryptionKeyPair, this._signingAlgoType, this._hashingAlgoType);
+      this._encryptionKeyPair, this._hashingAlgoType);
 
   @override
   Uint8List sign(Uint8List data) {

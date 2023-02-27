@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:at_chops/src/algorithm/algo_type.dart';
 import 'package:at_chops/src/algorithm/at_algorithm.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:crypto/crypto.dart';
@@ -36,7 +35,7 @@ class EccSigningAlgo implements AtSigningAlgorithm {
     var hashHex = sha256.convert(signedData).toString();
     var hash = List<int>.generate(hashHex.length ~/ 2,
         (i) => int.parse(hashHex.substring(i * 2, i * 2 + 2), radix: 16));
-    var pubKey;
+    elliptic.PublicKey pubKey;
     if (publicKey != null) {
       pubKey = ec.hexToPublicKey(publicKey);
     } else {

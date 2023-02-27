@@ -28,10 +28,12 @@ void main() {
   final digest = 'sample pkam digest';
   //2.1 sign the digest using [atPkamKeyPair.privateKey]
   final signingResult =
+  // ignore: deprecated_member_use_from_same_package
       atChops.signString(digest, SigningKeyType.signingSha256);
 
   //2.2 verify the signature using [atPkamKeyPair.publicKey]
   final verificationResult = atChops.verifySignatureString(
+    // ignore: deprecated_member_use_from_same_package
       digest, signingResult.result, SigningKeyType.signingSha256);
   assert(verificationResult.result, true);
 
@@ -41,7 +43,7 @@ void main() {
   //3.1.1 Create a valid instance of AtSigningInput
   AtSigningInput signingInput = AtSigningInput(plainText);
   AtSigningAlgorithm signingAlgorithm = DefaultSigningAlgo(
-      atEncryptionKeyPair, SigningAlgoType.rsa2048, HashingAlgoType.sha512);
+      atEncryptionKeyPair, HashingAlgoType.sha512);
   signingInput.signingAlgorithm = signingAlgorithm;
   //3.1.2 Use the instance of AtSigningInput to generate a signature
   final signResult = atChops.sign(signingInput);
@@ -50,7 +52,7 @@ void main() {
   AtSigningVerificationInput? verificationInput = AtSigningVerificationInput(
       plainText, signResult.result, atEncryptionKeyPair.atPublicKey.publicKey);
   AtSigningAlgorithm verifyAlgorithm = DefaultSigningAlgo(
-      atEncryptionKeyPair, SigningAlgoType.rsa2048, HashingAlgoType.sha512);
+      atEncryptionKeyPair, HashingAlgoType.sha512);
   verificationInput.signingAlgorithm = verifyAlgorithm;
   //3.2.2 Use the instance of AtSigningVerificationInput to verify the signature
   AtSigningResult verifyResult = atChops.verify(verificationInput);

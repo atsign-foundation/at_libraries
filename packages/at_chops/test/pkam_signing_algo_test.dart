@@ -12,7 +12,7 @@ void main() {
         () {
       var pkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
       final pkamSigningAlgo = PkamSigningAlgo(
-          pkamKeyPair, SigningAlgoType.rsa2048, HashingAlgoType.sha256);
+          pkamKeyPair, HashingAlgoType.sha256);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
@@ -25,7 +25,7 @@ void main() {
         () {
       var pkamKeyPair = AtChopsUtil.generateAtPkamKeyPair(keySize: 4096);
       final pkamSigningAlgo = PkamSigningAlgo(
-          pkamKeyPair, SigningAlgoType.rsa4096, HashingAlgoType.sha256);
+          pkamKeyPair, HashingAlgoType.sha256);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
@@ -36,7 +36,7 @@ void main() {
     test('Test pkam signing and verification - set sha256 hashing algo', () {
       var pkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
       final pkamSigningAlgo = PkamSigningAlgo(
-          pkamKeyPair, SigningAlgoType.rsa4096, HashingAlgoType.sha256);
+          pkamKeyPair, HashingAlgoType.sha256);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
@@ -47,7 +47,7 @@ void main() {
     test('Test pkam signing and verification - set sha512 hashing algo', () {
       var pkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
       final pkamSigningAlgo = PkamSigningAlgo(
-          pkamKeyPair, SigningAlgoType.rsa4096, HashingAlgoType.sha512);
+          pkamKeyPair, HashingAlgoType.sha512);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
@@ -60,7 +60,7 @@ void main() {
         () {
       var pkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
       final pkamSigningAlgo = PkamSigningAlgo(
-          pkamKeyPair, SigningAlgoType.rsa4096, HashingAlgoType.md5);
+          pkamKeyPair, HashingAlgoType.md5);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
@@ -73,7 +73,7 @@ void main() {
     });
     test('Test pkam signing - pkam key pair not set', () {
       final pkamSigningAlgo = PkamSigningAlgo(
-          null, SigningAlgoType.rsa4096, HashingAlgoType.sha256);
+          null, HashingAlgoType.sha256);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
@@ -88,7 +88,7 @@ void main() {
     test('Test pkam verification - passing public key', () {
       var pkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
       final pkamSigningAlgo = PkamSigningAlgo(
-          pkamKeyPair, SigningAlgoType.rsa4096, HashingAlgoType.sha512);
+          pkamKeyPair, HashingAlgoType.sha512);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
