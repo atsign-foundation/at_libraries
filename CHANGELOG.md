@@ -1,3 +1,5 @@
+## 3.0.39
+- fix: Add notification expiry to the notify verb builder.
 ## 3.0.38
 - fix: add hashing algorithm to pkam syntax.
 ## 3.0.37

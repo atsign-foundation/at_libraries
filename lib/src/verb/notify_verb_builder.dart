@@ -54,6 +54,9 @@ class NotifyVerbBuilder extends MetadataUsingVerbBuilder {
       sb.write(':latestN:$latestN');
     }
     sb.write(':notifier:$notifier');
+    if (ttln != null) {
+      sb.write(':ttln:$ttln');
+    }
 
     // Add in all of the metadata parameters in atProtocol command format
     sb.write(metadata.toAtProtocolFragment());
