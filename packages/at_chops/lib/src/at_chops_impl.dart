@@ -50,7 +50,7 @@ class AtChopsImpl extends AtChops {
       }
       return atEncryptionResult;
     } on Exception catch (e) {
-      throw AtException(e.toString())
+      throw AtDecryptionException(e.toString())
         ..stack(AtChainedException(
             Intent.decryptData,
             ExceptionScenario.decryptionFailed,
@@ -75,7 +75,7 @@ class AtChopsImpl extends AtChops {
         ..atEncryptionResultType = AtEncryptionResultType.string;
       atEncryptionResult.result = utf8.decode(decryptionResult.result);
       return atEncryptionResult;
-    } on AtException {
+    } on AtDecryptionException {
       rethrow;
     }
   }
@@ -103,7 +103,7 @@ class AtChopsImpl extends AtChops {
       }
       return atEncryptionResult;
     } on Exception catch (e) {
-      throw AtException(e.toString())
+      throw AtEncryptionException(e.toString())
         ..stack(AtChainedException(
             Intent.decryptData,
             ExceptionScenario.decryptionFailed,
@@ -129,7 +129,7 @@ class AtChopsImpl extends AtChops {
         ..atEncryptionResultType = AtEncryptionResultType.string;
       atEncryptionResult.result = base64.encode(encryptionResult.result);
       return atEncryptionResult;
-    } on AtException {
+    } on AtEncryptionException {
       rethrow;
     }
   }
@@ -223,7 +223,11 @@ class AtChopsImpl extends AtChops {
     final atSigningResult = AtSigningResult()
       ..atSigningMetaData = atSigningMetadata
       ..atSigningResultType = AtSigningResultType.bytes;
-    atSigningResult.result = signingAlgorithm.sign(data);
+    try {
+      atSigningResult.result = signingAlgorithm.sign(data);
+    } on AtSigningException {
+      rethrow;
+    }
     return atSigningResult;
   }
 
@@ -248,8 +252,12 @@ class AtChopsImpl extends AtChops {
     final atSigningResult = AtSigningResult()
       ..atSigningMetaData = atSigningMetadata
       ..atSigningResultType = AtSigningResultType.bool;
-    atSigningResult.result = signingAlgorithm.verify(data, signature,
-        publicKey: verificationInput.publicKey);
+    try {
+      atSigningResult.result = signingAlgorithm.verify(data, signature,
+          publicKey: verificationInput.publicKey);
+    } on AtSigningVerificationException {
+      rethrow;
+    }
     _logger.finer('verification result: ${atSigningResult.result}');
     return atSigningResult;
   }
@@ -270,7 +278,7 @@ class AtChopsImpl extends AtChops {
       case EncryptionKeyType.aes256:
         return AESEncryptionAlgo(atChopsKeys.symmetricKey! as AESKey);
       default:
-        throw Exception(
+        throw AtEncryptionException(
             'Cannot find encryption algorithm for encryption key type $encryptionKeyType');
     }
   }
@@ -296,7 +304,7 @@ class AtChopsImpl extends AtChops {
         return DefaultSigningAlgo(
             atChopsKeys.atEncryptionKeyPair!, HashingAlgoType.sha256);
       default:
-        throw Exception(
+        throw AtSigningException(
             'Cannot find signing algorithm for signing key type $signingKeyType');
     }
   }
@@ -313,7 +321,7 @@ class AtChopsImpl extends AtChops {
       return DefaultSigningAlgo(
           atChopsKeys.atEncryptionKeyPair!, signingInput.hashingAlgoType);
     } else {
-      throw Exception(
+      throw AtSigningException(
           'Cannot find signing algorithm for signing input  $signingInput');
     }
   }
@@ -339,7 +347,7 @@ class AtChopsImpl extends AtChops {
       return DefaultSigningAlgo(
           atChopsKeys.atEncryptionKeyPair, verificationInput.hashingAlgoType);
     } else {
-      throw Exception(
+      throw AtSigningVerificationException(
           'Cannot find signing algorithm for signing input  $verificationInput');
     }
   }
@@ -350,7 +358,7 @@ class AtChopsImpl extends AtChops {
     } else if (data is Uint8List) {
       return data;
     } else {
-      throw AtException('Unrecognized type of data: $data');
+      throw InvalidDataException('Unrecognized type of data: $data');
     }
   }
 }

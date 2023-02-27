@@ -59,6 +59,33 @@ void main() {
           defaultSigningAlgo.verify(dataInBytes, signatureInBytes);
       expect(verifyResult, true);
     });
+    test('Test invalid default signing and verification - sign with sha256 and verify with sha512 hashing algo', () {
+      var keyPair = AtChopsUtil.generateAtEncryptionKeyPair();
+      final defaultSigningAlgo_sha256 =
+      DefaultSigningAlgo(keyPair, HashingAlgoType.sha256);
+      final defaultSigningAlgo_sha512 = DefaultSigningAlgo(keyPair, HashingAlgoType.sha512);
+      final dataToSign =
+          '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
+      final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
+      final signatureInBytes = defaultSigningAlgo_sha256.sign(dataInBytes);
+      var verifyResult =
+      defaultSigningAlgo_sha512.verify(dataInBytes, signatureInBytes);
+      expect(verifyResult, false);
+    });
+
+    test('Test invalid default signing and verification - sign with sha512 and verify with sha256 hashing algo', () {
+      var keyPair = AtChopsUtil.generateAtEncryptionKeyPair();
+      final defaultSigningAlgo_sha256 =
+      DefaultSigningAlgo(keyPair, HashingAlgoType.sha256);
+      final defaultSigningAlgo_sha512 = DefaultSigningAlgo(keyPair, HashingAlgoType.sha512);
+      final dataToSign =
+          '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
+      final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
+      final signatureInBytes = defaultSigningAlgo_sha512.sign(dataInBytes);
+      var verifyResult =
+      defaultSigningAlgo_sha256.verify(dataInBytes, signatureInBytes);
+      expect(verifyResult, false);
+    });
     test(
         'Test default signing and verification - set md5 hashing algo - not supported',
         () {
@@ -71,7 +98,7 @@ void main() {
       expect(
           () => defaultSigningAlgo.sign(dataInBytes),
           throwsA(predicate((e) =>
-              e is AtException &&
+              e is AtSigningException &&
               e.toString().contains(
                   'Hashing algo HashingAlgoType.md5 is invalid/not supported'))));
     });
@@ -84,7 +111,7 @@ void main() {
       expect(
           () => defaultSigningAlgo.sign(dataInBytes),
           throwsA(predicate((e) =>
-              e is AtException &&
+              e is AtSigningException &&
               e.toString().contains(
                   'encryption key pair not set for default signing algo'))));
     });
@@ -100,6 +127,21 @@ void main() {
       var verifyResult = defaultSigningAlgo
           .verify(dataInBytes, signatureInBytes, publicKey: publicKeyString);
       expect(verifyResult, true);
+    });
+
+    test('Test invalid verification - passing different public key', () {
+      var keyPair = AtChopsUtil.generateAtEncryptionKeyPair();
+      var keyPair2 = AtChopsUtil.generateAtEncryptionKeyPair();
+      final defaultSigningAlgo = DefaultSigningAlgo(
+          keyPair, HashingAlgoType.sha256);
+      final dataToSign =
+          '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
+      final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
+      final signatureInBytes = defaultSigningAlgo.sign(dataInBytes);
+      final publicKeyString = keyPair2.atPublicKey.publicKey;
+      var verifyResult = defaultSigningAlgo
+          .verify(dataInBytes, signatureInBytes, publicKey: publicKeyString);
+      expect(verifyResult, false);
     });
   });
 }

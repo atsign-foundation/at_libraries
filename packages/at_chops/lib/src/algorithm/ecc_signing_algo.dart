@@ -16,7 +16,7 @@ class EccSigningAlgo implements AtSigningAlgorithm {
   @override
   Uint8List sign(Uint8List data) {
     if (_privateKey == null) {
-      throw AtException(
+      throw AtSigningException(
           'elliptic private key has to be set for signing operation');
     }
     var hashHex = sha256.convert(data).toString();
@@ -29,7 +29,7 @@ class EccSigningAlgo implements AtSigningAlgorithm {
   @override
   bool verify(Uint8List signedData, Uint8List signature, {String? publicKey}) {
     if (publicKey == null && _privateKey == null) {
-      throw AtException('public key not set not ecc verification');
+      throw AtSigningVerificationException('public key not set not ecc verification');
     }
     var ec = elliptic.getSecp256r1();
     var hashHex = sha256.convert(signedData).toString();

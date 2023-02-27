@@ -33,7 +33,7 @@ void main() {
       var verifyResult = pkamSigningAlgo.verify(dataInBytes, signatureInBytes);
       expect(verifyResult, true);
     });
-    test('Test pkam signing and verification - set sha256 hashing algo', () {
+    test('Test pkam signing and verification - set sha256 hashing algo.', () {
       var pkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
       final pkamSigningAlgo = PkamSigningAlgo(
           pkamKeyPair, HashingAlgoType.sha256);
@@ -43,6 +43,33 @@ void main() {
       final signatureInBytes = pkamSigningAlgo.sign(dataInBytes);
       var verifyResult = pkamSigningAlgo.verify(dataInBytes, signatureInBytes);
       expect(verifyResult, true);
+    });
+    test('Test pkam signing and verification - sign with sha256 and verify with sha512.', () {
+      var pkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
+      final pkamSigningAlgo256 = PkamSigningAlgo(
+          pkamKeyPair, HashingAlgoType.sha256);
+      final pkamSigningAlgo512 = PkamSigningAlgo(
+          pkamKeyPair, HashingAlgoType.sha512);
+      final dataToSign =
+          '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
+      final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
+      final signatureInBytes = pkamSigningAlgo256.sign(dataInBytes);
+      var verifyResult = pkamSigningAlgo512.verify(dataInBytes, signatureInBytes);
+      expect(verifyResult, false);
+    });
+
+    test('Test pkam signing and verification - sign with sha512 and verify with sha256.', () {
+      var pkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
+      final pkamSigningAlgo256 = PkamSigningAlgo(
+          pkamKeyPair, HashingAlgoType.sha256);
+      final pkamSigningAlgo512 = PkamSigningAlgo(
+          pkamKeyPair, HashingAlgoType.sha512);
+      final dataToSign =
+          '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
+      final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
+      final signatureInBytes = pkamSigningAlgo512.sign(dataInBytes);
+      var verifyResult = pkamSigningAlgo256.verify(dataInBytes, signatureInBytes);
+      expect(verifyResult, false);
     });
     test('Test pkam signing and verification - set sha512 hashing algo', () {
       var pkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();

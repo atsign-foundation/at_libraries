@@ -12,13 +12,13 @@ class DefaultSigningAlgo implements AtSigningAlgorithm {
   final AtEncryptionKeyPair? _encryptionKeyPair;
   final HashingAlgoType _hashingAlgoType;
 
-  DefaultSigningAlgo(
-      this._encryptionKeyPair, this._hashingAlgoType);
+  DefaultSigningAlgo(this._encryptionKeyPair, this._hashingAlgoType);
 
   @override
   Uint8List sign(Uint8List data) {
     if (_encryptionKeyPair == null) {
-      throw AtException('encryption key pair not set for default signing algo');
+      throw AtSigningException(
+          'encryption key pair not set for default signing algo');
     }
     final rsaPrivateKey =
         RSAPrivateKey.fromString(_encryptionKeyPair!.atPrivateKey.privateKey);
@@ -28,7 +28,7 @@ class DefaultSigningAlgo implements AtSigningAlgorithm {
       case HashingAlgoType.sha512:
         return rsaPrivateKey.createSHA512Signature(data);
       default:
-        throw AtException(
+        throw AtSigningException(
             'Hashing algo $_hashingAlgoType is invalid/not supported');
     }
   }
@@ -42,7 +42,7 @@ class DefaultSigningAlgo implements AtSigningAlgorithm {
       rsaPublicKey =
           RSAPublicKey.fromString(_encryptionKeyPair!.atPublicKey.publicKey);
     } else {
-      throw AtException(
+      throw AtSigningVerificationException(
           'Encryption key pair or public key not set for default signing algo');
     }
     switch (_hashingAlgoType) {
@@ -51,7 +51,8 @@ class DefaultSigningAlgo implements AtSigningAlgorithm {
       case HashingAlgoType.sha512:
         return rsaPublicKey.verifySHA512Signature(signedData, signature);
       default:
-        throw AtException('Invalid hashing algo $_hashingAlgoType provided');
+        throw AtSigningVerificationException(
+            'Invalid hashing algo $_hashingAlgoType provided');
     }
   }
 }

@@ -621,7 +621,7 @@ void main() {
       try {
         atChops.sign(signingInput);
       } catch (e, _) {
-        assert(e is AtException);
+        assert(e is AtSigningException);
         expect(e.toString(),
             'Exception: encryption key pair not set for default signing algo');
       }
@@ -638,7 +638,7 @@ void main() {
       try {
         atChops.sign(signingInput);
       } catch (e, _) {
-        assert(e is AtException);
+        assert(e is InvalidDataException);
         expect(e.toString(), 'Exception: Unrecognized type of data: 213456777');
       }
     });

@@ -33,6 +33,20 @@ void main() {
           publicKey: publicKey.toString());
       expect(verifyResult, true);
     });
+    test('Test invalid ecc verification - passing different public key', () {
+      final eccAlgo = EccSigningAlgo();
+      var ec = getSecp256r1();
+      var ec2 = getSecp256r1();
+      final eccPrivateKey = ec.generatePrivateKey();
+      eccAlgo.privateKey = eccPrivateKey;
+      final publicKey = ec2.generatePrivateKey().publicKey;
+      final dataToSign = 'Hello World';
+      final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
+      final signature = eccAlgo.sign(dataInBytes);
+      var verifyResult = eccAlgo.verify(dataInBytes, signature,
+          publicKey: publicKey.toString());
+      expect(verifyResult, false);
+    });
     test('Test ecc signing - private key not set', () {
       final eccAlgo = EccSigningAlgo();
       final dataToSign = 'Hello World';
