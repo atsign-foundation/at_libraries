@@ -193,6 +193,21 @@ class InvalidAtKeyException extends AtException {
   InvalidAtKeyException(message) : super(message);
 }
 
+/// Exception thrown for issues occurring during data signing or pkam signing operations.
+class AtSigningException extends AtException {
+  AtSigningException(message) : super(message);
+}
+
+/// Exception thrown for issues occurring during data signing verification or pkam signing verification operations.
+class AtSigningVerificationException extends AtException {
+  AtSigningVerificationException(message) : super(message);
+}
+
+/// Exception thrown when data provided to a method is invalid.
+class InvalidDataException extends AtException {
+  InvalidDataException(message) : super(message);
+}
+
 enum ExceptionScenario {
   noNetworkConnectivity,
   rootServerNotReachable,
