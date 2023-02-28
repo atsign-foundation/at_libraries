@@ -1,6 +1,5 @@
-import 'package:crypto/crypto.dart';
-
 import 'package:at_chops/src/algorithm/at_algorithm.dart';
+import 'package:crypto/crypto.dart';
 
 class DefaultHash implements AtHashingAlgorithm {
   @override
