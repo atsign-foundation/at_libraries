@@ -1,3 +1,5 @@
+## 1.2.4
+_ fix: Onboarding_cli throws exception when atsign does not start with '@'
 ## 1.2.3
 - Enable use of AtChops
 ## 1.2.2
