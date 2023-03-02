@@ -2,18 +2,19 @@
 
 import 'dart:convert';
 import 'dart:io';
+
+import 'package:at_chops/at_chops.dart';
 import 'package:at_client/at_client.dart';
-import 'package:at_utils/at_utils.dart';
 import 'package:at_commons/at_builders.dart';
 import 'package:at_lookup/at_lookup.dart';
-import 'package:at_server_status/at_server_status.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
+import 'package:at_server_status/at_server_status.dart';
+import 'package:at_utils/at_utils.dart';
 import 'package:crypton/crypton.dart';
 import 'package:encrypt/encrypt.dart';
-import 'package:zxing2/qrcode.dart';
 import 'package:image/image.dart';
 import 'package:path/path.dart' as path;
-import 'package:at_chops/at_chops.dart';
+import 'package:zxing2/qrcode.dart';
 
 ///class containing service that can onboard/activate/authenticate @signs
 class AtOnboardingServiceImpl implements AtOnboardingService {
@@ -27,7 +28,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   AtOnboardingServiceImpl(atsign, this.atOnboardingPreference) {
     //performs atSign format checks on the atSign
-    _atSign = AtUtils.formatAtSign(AtUtils.fixAtSign(atsign))!;
+    _atSign = AtUtils.fixAtSign(AtUtils.formatAtSign(atsign)!);
   }
 
   Future<void> _init(AtChops atChops) async {
