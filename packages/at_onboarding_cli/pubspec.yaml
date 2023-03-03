@@ -19,13 +19,17 @@ dependencies:
    zxing2: ^0.1.0
    image: ^3.1.1
    crypton: ^2.0.3
-   at_commons: ^3.0.33
+   at_commons: ^3.0.39
    encrypt: ^5.0.1
    at_server_status: ^1.0.3
    path: ^1.8.1
    args: ^2.3.1
    http: ^0.13.5
-   at_chops: ^1.0.0
+   at_chops: ^1.0.1
+
+dependency_overrides:
+  at_lookup:
+    path: ../../packages/at_lookup
 
 #dependency_overrides:
 #  at_client:

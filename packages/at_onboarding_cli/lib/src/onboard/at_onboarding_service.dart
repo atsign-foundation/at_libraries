@@ -1,3 +1,4 @@
+import 'package:at_chops/at_chops.dart';
 import 'package:at_client/at_client.dart';
 import 'package:at_lookup/at_lookup.dart';
 
@@ -28,4 +29,8 @@ abstract class AtOnboardingService {
   set atLookUp(AtLookUp? atLookUp);
 
   AtLookUp? get atLookUp;
+
+  set atChops(AtChops? atChops);
+
+  AtChops? get atChops;
 }

@@ -33,7 +33,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   Future<void> _init(AtChops atChops) async {
     AtClientManager atClientManager = AtClientManager.getInstance();
     await atClientManager.setCurrentAtSign(
-        _atSign, atOnboardingPreference.namespace, atOnboardingPreference, atChops: atChops);
+        _atSign, atOnboardingPreference.namespace, atOnboardingPreference,
+        atChops: atChops);
     // ??= to support mocking
     _atLookUp ??= atClientManager.atClient.getRemoteSecondary()?.atLookUp;
     _atClient ??= atClientManager.atClient;
@@ -245,12 +246,21 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
           'Unable to read pkam private key from provided .atKeys path: ${atOnboardingPreference.atKeysFilePath}',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
-    final atChops = _createAtChops(atKeysFileDataMap);
-    await _init(atChops);
+    atChops ??= _createAtChops(atKeysFileDataMap);
+    await _init(atChops!);
     _atLookUp!.atChops = atChops;
     _atClient!.atChops = atChops;
     _atClient!.getPreferences()!.useAtChops = true;
-    _isPkamAuthenticated = await _atLookUp?.pkamAuthenticate() ?? false;
+    if (atChops.runtimeType.toString() == 'AtChopsImpl') {
+      _isPkamAuthenticated = await _atLookUp?.pkamAuthenticate() ?? false;
+    } else {
+      // Q: how we decide the signing algo type when there are more than 2 signing algo in the future?
+      _isPkamAuthenticated = await _atLookUp?.pkamAuthenticate(
+              signingAlgoType: SigningAlgoType.ecc_secp256r1,
+              hashingAlgoType: HashingAlgoType.sha256) ??
+          false;
+    }
+
     if (!_isAtsignOnboarded && atOnboardingPreference.atKeysFilePath != null) {
       await _persistKeysLocalSecondary();
     }
@@ -424,4 +434,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   @override
   AtLookUp? get atLookUp => _atLookUp;
+
+  @override
+  AtChops? atChops;
 }
