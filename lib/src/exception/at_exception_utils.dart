@@ -36,6 +36,8 @@ class AtExceptionUtils {
         return IllegalArgumentException(errorDescription);
       case 'AT0023':
         return AtTimeoutException(errorDescription);
+      case 'AT0024':
+        return ServerIsPausedException(errorDescription);
       case 'AT0401':
         return UnAuthenticatedException(errorDescription);
       default:
