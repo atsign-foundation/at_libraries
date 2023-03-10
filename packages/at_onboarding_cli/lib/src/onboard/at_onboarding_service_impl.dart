@@ -251,15 +251,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     _atLookUp!.atChops = atChops;
     _atClient!.atChops = atChops;
     _atClient!.getPreferences()!.useAtChops = true;
-    if (atChops.runtimeType.toString() == 'AtChopsImpl') {
-      _isPkamAuthenticated = await _atLookUp?.pkamAuthenticate() ?? false;
-    } else {
-      // Q: how we decide the signing algo type when there are more than 2 signing algo in the future?
-      _isPkamAuthenticated = await _atLookUp?.pkamAuthenticate(
-              signingAlgoType: SigningAlgoType.ecc_secp256r1,
-              hashingAlgoType: HashingAlgoType.sha256) ??
-          false;
-    }
+    _isPkamAuthenticated = (await _atLookUp?.pkamAuthenticate(
+        signingAlgoType: atOnboardingPreference.signingAlgoType,
+        hashingAlgoType: atOnboardingPreference.hashingAlgoType))!;
 
     if (!_isAtsignOnboarded && atOnboardingPreference.atKeysFilePath != null) {
       await _persistKeysLocalSecondary();
