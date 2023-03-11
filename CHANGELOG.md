@@ -1,3 +1,5 @@
+## 3.0.42
+- fix: Tightened the validation of 'public' key names. Keys like this: `public:@bob:foo.bar@alice` will now correctly be identified as not being valid.
 ## 3.0.41
 - fix: Add 'configkey' to list of reserved keys for key validation purposes
 ## 3.0.40

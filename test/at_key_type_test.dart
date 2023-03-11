@@ -64,12 +64,24 @@ void main() {
       var keyType = AtKey.getKeyType('phone@bob', enforceNameSpace: true);
       expect(keyType, equals(KeyType.invalidKey));
     });
+
     test('Test self key type with atsign and without namespace', () {
       var keyType = AtKey.getKeyType('@bob:phone@bob', enforceNameSpace: true);
       expect(keyType, equals(KeyType.invalidKey));
     });
+
     test('Test local key type with atsign and without namespace', () {
       var keyType = AtKey.getKeyType('local:phone@bob', enforceNameSpace: true);
+      expect(keyType, equals(KeyType.invalidKey));
+    });
+
+    test('Test malformed key cached:public:cached:public:privateaccount.wavi@dying36dragonfly', () {
+      var keyType = AtKey.getKeyType('cached:public:cached:public:privateaccount.wavi@dying36dragonfly', enforceNameSpace: false);
+      expect(keyType, equals(KeyType.invalidKey));
+    });
+
+    test('Test malformed key public:@public:image.wavi@colin', () {
+      var keyType = AtKey.getKeyType('public:@public:image.wavi@colin', enforceNameSpace: false);
       expect(keyType, equals(KeyType.invalidKey));
     });
   });
