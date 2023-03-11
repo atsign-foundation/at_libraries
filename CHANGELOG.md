@@ -1,3 +1,5 @@
+## 3.0.41
+- fix: Add 'configkey' to list of reserved keys for key validation purposes
 ## 3.0.40
 - fix: Add notification expiry to the notify verb builder.
 ## 3.0.39

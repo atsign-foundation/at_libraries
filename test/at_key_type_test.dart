@@ -130,5 +130,10 @@ void main() {
       var keyType = AtKey.getKeyType('privatekey:at_secret');
       expect(keyType, equals(KeyType.reservedKey));
     });
+
+    test('Test reserved key type for config key (blocklist/allowlist)', () {
+      var keyType = AtKey.getKeyType('configkey');
+      expect(keyType, equals(KeyType.reservedKey));
+    });
   });
 }

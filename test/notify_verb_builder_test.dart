@@ -59,7 +59,7 @@ void main() {
         ..sharedWith = 'bob'
         ..pubKeyChecksum = '123'
         ..sharedKeyEncrypted = 'abc'
-      ..ttln = 100;
+        ..ttln = 100;
       var command = notifyVerbBuilder.buildCommand();
       expect(command,
           'notify:id:123:notifier:SYSTEM:ttln:100:sharedKeyEnc:abc:pubKeyCS:123:@bob:email@alice:alice@atsign.com\n');
