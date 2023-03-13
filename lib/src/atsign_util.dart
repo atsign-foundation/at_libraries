@@ -23,12 +23,13 @@ class AtUtils {
   /// Apply all the rules on the provided atSign and return fixedAtSign
   static String fixAtSign(String atSign) {
     // @signs are always lowercase Latin
-    if (atSign == '') {
+    if (atSign == '' || atSign.isEmpty) {
       throw InvalidAtSignException(AtMessage.noAtSign.text);
     }
     atSign = atSign.toLowerCase();
-    if (atSign.contains('@') == false) {
-      throw InvalidAtSignException(AtMessage.noAtSign.text);
+    // if atsign does not start with '@' prepend an '@'
+    if (!atSign.startsWith('@')) {
+      atSign = '@$atSign';
     }
     // @signs can only have one @ character in them
     var noAT = atSign.replaceFirst('@', '');
@@ -36,7 +37,7 @@ class AtUtils {
       throw InvalidAtSignException(AtMessage.moreThanOneAt.text);
     }
     // The dot "." can be used in an @sign but it is removed so @colinconstable is the same as @colin.constable
-    // As is home.phone@colin stays home.phone@colin
+    // home.phone@colin stays home.phone@colin
     // but home.phone@colin.constable gets translated to home.phone@colinconstable
     // This is for clarity for humans
     var split = atSign.split('@');
@@ -73,6 +74,7 @@ class AtUtils {
   }
 
   /// Return AtSign by appending '@' at the beginning if not present
+  @Deprecated('Use formatAtSign()')
   static String? formatAtSign(String? atSign) {
     // verify whether atSign started with '@' or not
     if ((atSign != null && atSign.isNotEmpty) && !atSign.startsWith('@')) {
