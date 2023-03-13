@@ -6,15 +6,21 @@ import 'package:test/test.dart';
 void main() {
   group('A group of positive atsign tests', () {
     test('atsign in upper case', () {
-      var atSign = 'PHONE@BOB';
+      var atSign = '@BOB';
       atSign = AtUtils.fixAtSign(atSign);
-      expect(atSign, 'phone@bob');
+      expect(atSign, '@bob');
     });
 
     test('atsign contains .', () {
-      var atSign = 'home.phone@colin.constable';
+      var atSign = '@colin.constable';
       atSign = AtUtils.fixAtSign(atSign);
-      expect(atSign, 'home.phone@colinconstable');
+      expect(atSign, '@colinconstable');
+    });
+
+    test('@ is prepended when atsign does not start with @', () {
+      var atsign = 'randomFlex';
+      atsign = AtUtils.fixAtSign(atsign);
+      expect(atsign, '@randomflex');
     });
   });
   group('A group of invalid atsign test', () {
@@ -28,18 +34,8 @@ void main() {
                   'invalid @sign: must include one @ character and at least one character on the right')));
     });
 
-    test('atsign without @ - InvalidAtSignException', () {
-      var atSign = 'bob';
-      expect(
-          () => AtUtils.fixAtSign(atSign),
-          throwsA(predicate((dynamic e) =>
-              e is InvalidAtSignException &&
-              e.message ==
-                  'invalid @sign: must include one @ character and at least one character on the right')));
-    });
-
     test('atsign with more @ - InvalidAtSignException', () {
-      var atSign = 'phone@bob@alice';
+      var atSign = '@bob@alice';
       expect(
           () => AtUtils.fixAtSign(atSign),
           throwsA(predicate((dynamic e) =>
@@ -55,11 +51,11 @@ void main() {
           throwsA(predicate((dynamic e) =>
               e is InvalidAtSignException &&
               e.message ==
-                  'invalid @sign: must include one @ character and at least one character on the right')));
+                  'invalid @sign: Cannot Contain more than one @ character')));
     });
 
     test('white spaces in atsign - InvalidAtSignException', () {
-      var atSign = 'pho ne@bob';
+      var atSign = '@b ob';
       expect(
           () => AtUtils.fixAtSign(atSign),
           throwsA(predicate((dynamic e) =>
@@ -69,7 +65,7 @@ void main() {
     });
 
     test('reserved characters in atsign : + - InvalidAtSignException', () {
-      var atSign = 'phone@\U+237E';
+      var atSign = '@\U+237E';
       expect(
           () => AtUtils.fixAtSign(atSign),
           throwsA(predicate((dynamic e) =>
@@ -79,7 +75,7 @@ void main() {
     });
 
     test('reserved characters with ascii codes - InvalidAtsignException', () {
-      var atSign = 'phone@U' + String.fromCharCode(43);
+      var atSign = '@U' + String.fromCharCode(43);
       expect(
           () => AtUtils.fixAtSign(atSign),
           throwsA(predicate((dynamic e) =>
@@ -99,7 +95,7 @@ void main() {
     });
 
     test('special characters in atsign - * InvalidAtSignException', () {
-      var atSign = 'phone^:@b*b';
+      var atSign = '@b*b';
       expect(
           () => AtUtils.fixAtSign(atSign),
           throwsA(predicate((dynamic e) =>
@@ -109,7 +105,7 @@ void main() {
     });
 
     test('control characters in atsign - InvalidAtSignException', () {
-      var atSign = 'phone@\u2400';
+      var atSign = '@\u2400';
       expect(
           () => AtUtils.fixAtSign(atSign),
           throwsA(predicate((dynamic e) =>
