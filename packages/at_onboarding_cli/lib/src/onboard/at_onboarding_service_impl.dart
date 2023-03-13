@@ -91,10 +91,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     String selfEncryptionKey;
     Map<String, String> atKeysMap;
 
-    //generating pkamKeyPair
-    logger.info('Generating pkam keypair');
-    pkamRsaKeypair = generateRsaKeypair();
-
     //generate user encryption keypair
     logger.info('Generating encryption keypair');
     encryptionKeyPair = generateRsaKeypair();
@@ -106,20 +102,38 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         '[Information] Generating your encryption keys and .atKeys file\n');
     //mapping encryption keys pairs to their names
     atKeysMap = <String, String>{
-      AuthKeyType.pkamPublicKey: pkamRsaKeypair.publicKey.toString(),
-      AuthKeyType.pkamPrivateKey: pkamRsaKeypair.privateKey.toString(),
       AuthKeyType.encryptionPublicKey: encryptionKeyPair.publicKey.toString(),
       AuthKeyType.encryptionPrivateKey: encryptionKeyPair.privateKey.toString(),
       AuthKeyType.selfEncryptionKey: selfEncryptionKey,
       _atSign: selfEncryptionKey,
     };
+    var pkamPublicKey;
+    //generating pkamKeyPair only if authMode is keysFile
+    if (atOnboardingPreference.authMode == PkamAuthMode.keysFile) {
+      logger.info('Generating pkam keypair');
+      pkamRsaKeypair = generateRsaKeypair();
+      atKeysMap[AuthKeyType.pkamPublicKey] =
+          pkamRsaKeypair.publicKey.toString();
+      atKeysMap[AuthKeyType.pkamPrivateKey] =
+          pkamRsaKeypair.privateKey.toString();
+      pkamPublicKey = pkamRsaKeypair.publicKey.toString();
+    } else if (atOnboardingPreference.authMode == PkamAuthMode.sim) {
+      pkamPublicKey =
+          atChops!.readPublicKey(atOnboardingPreference.publicKeyId!);
+      logger.info('pkam  public key from sim: $pkamPublicKey');
+      atKeysMap[AuthKeyType.pkamPublicKey] = pkamPublicKey;
+      // encryption key pair and self encryption symmetric key are not available to injected at_chops. Set it here
+      atChops!.atChopsKeys.atEncryptionKeyPair = AtEncryptionKeyPair.create(
+          encryptionKeyPair.publicKey.toString(),
+          encryptionKeyPair.privateKey.toString());
+      atChops!.atChopsKeys.symmetricKey = AESKey(selfEncryptionKey);
+    }
     //generate .atKeys file
     await _generateAtKeysFile(atKeysMap);
 
     //updating pkamPublicKey to remote secondary
     logger.finer('Updating PkamPublicKey to remote secondary');
-    String updateCommand =
-        'update:$AT_PKAM_PUBLIC_KEY ${pkamRsaKeypair.publicKey}\n';
+    String updateCommand = 'update:$AT_PKAM_PUBLIC_KEY ${pkamPublicKey}\n';
     String? pkamUpdateResult =
         await atLookUpImpl.executeCommand(updateCommand, auth: false);
     logger.info('PkamPublicKey update result: $pkamUpdateResult');
@@ -155,11 +169,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   ///write newly created encryption keypairs into atKeys file
   Future<void> _generateAtKeysFile(Map<String, String> atKeysMap) async {
     //encrypting all keys with self encryption key
+    if (atOnboardingPreference.authMode == PkamAuthMode.keysFile) {
+      atKeysMap[AuthKeyType.pkamPrivateKey] = EncryptionUtil.encryptValue(
+          atKeysMap[AuthKeyType.pkamPrivateKey]!,
+          atKeysMap[AuthKeyType.selfEncryptionKey]!);
+    }
     atKeysMap[AuthKeyType.pkamPublicKey] = EncryptionUtil.encryptValue(
         atKeysMap[AuthKeyType.pkamPublicKey]!,
-        atKeysMap[AuthKeyType.selfEncryptionKey]!);
-    atKeysMap[AuthKeyType.pkamPrivateKey] = EncryptionUtil.encryptValue(
-        atKeysMap[AuthKeyType.pkamPrivateKey]!,
         atKeysMap[AuthKeyType.selfEncryptionKey]!);
     atKeysMap[AuthKeyType.encryptionPublicKey] = EncryptionUtil.encryptValue(
         atKeysMap[AuthKeyType.encryptionPublicKey]!,
@@ -215,10 +231,12 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         ?.getLocalSecondary()
         ?.putValue(AT_PKAM_PUBLIC_KEY, atKeysMap[AuthKeyType.pkamPublicKey]!);
     logger.finer('PkamPublicKey persist to localSecondary: status $response');
-    response = await _atClient
-        ?.getLocalSecondary()
-        ?.putValue(AT_PKAM_PRIVATE_KEY, atKeysMap[AuthKeyType.pkamPrivateKey]!);
-    logger.finer('PkamPrivateKey persist to localSecondary: status $response');
+    if (atOnboardingPreference.authMode == PkamAuthMode.keysFile) {
+      response = await _atClient?.getLocalSecondary()?.putValue(
+          AT_PKAM_PRIVATE_KEY, atKeysMap[AuthKeyType.pkamPrivateKey]!);
+      logger
+          .finer('PkamPrivateKey persist to localSecondary: status $response');
+    }
     response = await _atClient?.getLocalSecondary()?.putValue(
         '$AT_ENCRYPTION_PUBLIC_KEY$_atSign',
         atKeysMap[AuthKeyType.encryptionPublicKey]!);
@@ -241,7 +259,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         await _readAtKeysFile(atOnboardingPreference.atKeysFilePath));
     var pkamPrivateKey = atKeysFileDataMap[AuthKeyType.pkamPrivateKey];
 
-    if (pkamPrivateKey == null) {
+    if (atOnboardingPreference.authMode == PkamAuthMode.keysFile &&
+        pkamPrivateKey == null) {
       throw AtPrivateKeyNotFoundException(
           'Unable to read pkam private key from provided .atKeys path: ${atOnboardingPreference.atKeysFilePath}',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
@@ -299,16 +318,18 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       Map<String, String> jsonData) async {
     String decryptionKey = _getDecryptionKey(jsonData);
     Map<String, String> atKeysMap = <String, String>{
-      AuthKeyType.pkamPublicKey: EncryptionUtil.decryptValue(
-          jsonData[AuthKeyType.pkamPublicKey]!, decryptionKey),
-      AuthKeyType.pkamPrivateKey: EncryptionUtil.decryptValue(
-          jsonData[AuthKeyType.pkamPrivateKey]!, decryptionKey),
       AuthKeyType.encryptionPublicKey: EncryptionUtil.decryptValue(
           jsonData[AuthKeyType.encryptionPublicKey]!, decryptionKey),
       AuthKeyType.encryptionPrivateKey: EncryptionUtil.decryptValue(
           jsonData[AuthKeyType.encryptionPrivateKey]!, decryptionKey),
       AuthKeyType.selfEncryptionKey: decryptionKey,
     };
+    if (atOnboardingPreference.authMode == PkamAuthMode.keysFile) {
+      atKeysMap[AuthKeyType.pkamPublicKey] = EncryptionUtil.decryptValue(
+          jsonData[AuthKeyType.pkamPublicKey]!, decryptionKey);
+      atKeysMap[AuthKeyType.pkamPrivateKey] = EncryptionUtil.decryptValue(
+          jsonData[AuthKeyType.pkamPrivateKey]!, decryptionKey);
+    }
     return atKeysMap;
   }
 

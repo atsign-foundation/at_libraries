@@ -18,4 +18,12 @@ class AtChopsKeys {
   AtPkamKeyPair? get atPkamKeyPair => _atPkamKeyPair;
 
   SymmetricKey? get symmetricKey => _symmetricKey;
+
+  set atEncryptionKeyPair(AtEncryptionKeyPair? value) {
+    _atEncryptionKeyPair = value;
+  }
+
+  set symmetricKey(SymmetricKey? value) {
+    _symmetricKey = value;
+  }
 }

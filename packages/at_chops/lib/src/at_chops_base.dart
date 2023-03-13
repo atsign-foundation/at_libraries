@@ -108,4 +108,8 @@ abstract class AtChops {
   /// Create a hash of input [signedData] using a [hashingAlgorithm].
   /// Refer to [DefaultHash] for default implementation of hashing.
   String hash(Uint8List signedData, AtHashingAlgorithm hashingAlgorithm);
+
+  /// Reads a public key from SIM card based on ID. SIM card should have an IOTSafe compliant app
+  /// with a key pair preinstalled.
+  String readPublicKey(String publicKeyId);
 }

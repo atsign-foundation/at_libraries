@@ -17,6 +17,9 @@ class AtOnboardingPreference extends AtClientPreference {
   HashingAlgoType hashingAlgoType = HashingAlgoType.sha256;
 
   PkamAuthMode authMode = PkamAuthMode.keysFile;
+
+  // if [authMode] is sim, specify publicKeyId to be read from sim
+  String? publicKeyId;
 }
 
 enum PkamAuthMode { keysFile, sim }
