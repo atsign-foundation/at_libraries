@@ -391,7 +391,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       }
       retryCount++;
     }
-
+    print('secondaryAddress ** $secondaryAddress');
     if (secondaryAddress == null) {
       logger.severe(
           'Could not find secondary address for $_atSign after $retryCount retries');
@@ -412,8 +412,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
                     30)); // 30-second timeout should be enough even for slow networks
         connectionFlag = secureSocket.remoteAddress != null &&
             secureSocket.remotePort != null;
-      } on Exception catch (e) {
+      } on Exception catch (e, trace) {
         logger.finer(e);
+        print(trace);
       }
       retryCount++;
     }
