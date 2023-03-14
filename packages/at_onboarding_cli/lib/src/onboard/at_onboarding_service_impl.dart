@@ -373,7 +373,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   ///Method to check if secondary belonging to [_atSign] exists
   ///If not, wait until secondary is created
   Future<void> _waitUntilSecondaryCreated(AtLookupImpl atLookupImpl) async {
-    final maxRetries = 50;
+    final maxRetries = 5;
     int retryCount = 1;
     SecondaryAddress? secondaryAddress;
     SecureSocket? secureSocket;
@@ -385,8 +385,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       try {
         secondaryAddress =
             await atLookupImpl.secondaryAddressFinder.findSecondary(_atSign);
-      } on Exception catch (e) {
+      } on Exception catch (e, trace) {
         logger.finer(e);
+        print(trace);
       }
       retryCount++;
     }
