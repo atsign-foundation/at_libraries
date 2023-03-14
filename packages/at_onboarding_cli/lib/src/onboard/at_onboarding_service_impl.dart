@@ -74,9 +74,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
       logger.info('Cram authentication status: $_isAtsignOnboarded');
 
-      if (_isAtsignOnboarded) {
-        await _activateAtsign(atLookUpImpl);
-      }
+      // if (_isAtsignOnboarded) {
+      //   await _activateAtsign(atLookUpImpl);
+      // }
     } finally {
       await atLookUpImpl.close();
     }
