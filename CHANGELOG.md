@@ -1,6 +1,5 @@
 ## 3.0.12
-- Deprecate formatAtSign() in atsign_util
-- Moved the functionality of formatAtSign() to fixAtSign()
+- Deprecate formatAtSign() in atsign_util and moved the functionality to fixAtSign()
 - Upgrade dependency at_commons to latest version v3.0.42
 ## 3.0.11
 - Change the ConsoleLoggingHandler to static reference
