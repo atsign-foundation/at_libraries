@@ -52,7 +52,7 @@ class MonitorVerbBuilder implements VerbBuilder {
       monitorCommand += ':multiplexed';
     }
     if (lastNotificationTime != null) {
-      monitorCommand += ':${lastNotificationTime.toString()}';
+      monitorCommand += ':$lastNotificationTime';
     }
     if (regex != null && regex!.trim().isNotEmpty) {
       monitorCommand += ' $regex';
