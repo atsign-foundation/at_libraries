@@ -1,3 +1,9 @@
+## 3.0.43
+- feat: Enhanced the monitor verb syntax
+  1. added `strict` flag to allow client to request that only regex-matching notifications are sent -
+     e.g. do not send other 'control' type notifications like the 'statsNotifications'
+  2. added `multiplexed` flag to allow client to indicate that
+     this socket is also being used for request-response interactions
 ## 3.0.42
 - fix: Tightened the validation of 'public' key names. Keys like this: `public:@bob:foo.bar@alice` will now correctly be identified as not being valid.
 ## 3.0.41
