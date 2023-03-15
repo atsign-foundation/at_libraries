@@ -4,25 +4,19 @@ import 'package:at_commons/at_commons.dart';
 import 'package:at_commons/src/verb/verb_builder.dart';
 
 /// Monitor builder generates a command that streams incoming notifications from the secondary server to
-/// the current client.
-/// ```
-/// // Receives all of the notifications
-///    var builder = MonitorVerbBuilder();
-///
-/// // Receives notifications for those keys that matches a specific regex
-///    var builder = MonitorVerbBuilder()..regex = '.alice';
-/// ```
-/// See [VerbSyntax.monitor] for syntax details.
+/// the current client. See also [VerbSyntax.monitor]
 class MonitorVerbBuilder implements VerbBuilder {
   @Deprecated('not used')
   bool auth = true;
 
   String? _regex;
-  String? get regex => _regex;
+
+  /// The regular expression to be used when building the monitor command.
   /// When [regex] is supplied, server will send notifications which match the regex. If [strict]
   /// is true, then only those regex-matching notifications will be sent. If [strict] is false,
   /// then other 'control' notifications (e.g. the statsNotification) which don't necessarily
   /// match the [regex] will also be sent
+  String? get regex => _regex;
   set regex (String? r) {
     if (r != null && r.trim().isEmpty) {
       r = null;
@@ -30,15 +24,18 @@ class MonitorVerbBuilder implements VerbBuilder {
     _regex = r;
   }
 
-  /// Milliseconds since epoch. When supplied, server will only send notifications received at
+  /// The timestamp, in milliseconds since epoch, to be used when building the monitor command.
+  /// When [lastNotificationTime] is supplied, server will only send notifications received at
   /// or after that timestamp
   int? lastNotificationTime;
 
+  /// Whether this monitor command is to be built with the 'strict' flag or not.
   /// When [strict] is true, server will only send notifications which match the [regex]; no other
   /// 'control' notifications such as statsNotifications will be sent on this connection unless
   /// they match the [regex]
   bool strict = false;
 
+  /// Whether this monitor command is to be built with the 'multiplexed' flag or not.
   /// When [multiplexed] is true, the server will understand that this is a connection
   /// which the client is using not just for notifications but also for request-response
   /// interactions. In this case, the server will only send notifications once there is
