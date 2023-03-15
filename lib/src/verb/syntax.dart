@@ -70,7 +70,26 @@ class VerbSyntax {
       r':(?<atKey>(([^:@\s]+)|(privatekey:at_secret)))'
       r'(@(?<atSign>[^:@\s]+))?'
       r'$';
-  static const monitor = r'^monitor(:(?<epochMillis>\d+))?( (?<regex>.+))?$';
+
+  /// * When 'strict' is set, server will only send notifications which match the regex; no other
+  ///   'control' notifications such as statsNotifications will be sent on this connection unless
+  ///   they match the regex
+  /// * When 'multiplexed' is set, the server will understand that this is a connection
+  ///   which the client is using not just for notifications but also for request-response
+  ///   interactions. In this case, the server will only send notifications when there is no request
+  ///   currently being handled
+  /// * When 'epochMillis' is supplied, server will only send notifications received at or after
+  ///   that timestamp
+  /// * When 'regex' is supplied, server will send notifications which match the regex. If 'strict'
+  ///   is set, then only those regex-matching notifications will be sent. If 'strict' is not set,
+  ///   then other 'control' notifications (e.g. the statsNotification) which don't necessarily
+  ///   match the regex will also be sent
+  static const monitor = r'^monitor'
+      r'(:(?<strict>strict))?'
+      r'(:(?<multiplexed>multiplexed))?'
+      r'(:(?<epochMillis>\d+))?'
+      r'( (?<regex>.+))?'
+      r'$';
   static const stream =
       r'^stream:((?<operation>init|send|receive|done|resume))?((@(?<receiver>[^@:\s]+)))?( ?namespace:(?<namespace>[\w-]+))?( ?startByte:(?<startByte>\d+))?( (?<streamId>[\w-]*))?( (?<fileName>.* ))?((?<length>\d*))?$';
 
