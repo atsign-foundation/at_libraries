@@ -28,7 +28,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   AtOnboardingServiceImpl(atsign, this.atOnboardingPreference) {
     //performs atSign format checks on the atSign
-    _atSign = AtUtils.fixAtSign(AtUtils.formatAtSign(atsign)!);
+    _atSign = AtUtils.fixAtSign(atsign);
   }
 
   Future<void> _init(AtChops atChops) async {
