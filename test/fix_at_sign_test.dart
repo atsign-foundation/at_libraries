@@ -125,6 +125,7 @@ void main() {
     });
 
     test('Test to validate when atSign is null', () {
+      // ignore: deprecated_member_use_from_same_package
       var atSign = AtUtils.formatAtSign(null);
       expect(atSign, null);
     });
