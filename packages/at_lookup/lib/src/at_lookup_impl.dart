@@ -451,7 +451,13 @@ class AtLookupImpl implements AtLookUp {
           ..signingMode = AtSigningMode.pkam;
         var signingResult = _atChops!.sign(atSigningInput);
         logger.finer('Sending command pkam:${signingResult.result}');
-        await _sendCommand('pkam:${signingResult.result}\n');
+        var pkamCommand = 'pkam:${signingResult.result}\n';
+        if (signingAlgoType == SigningAlgoType.ecc_secp256r1 &&
+            hashingAlgoType == HashingAlgoType.sha256) {
+          pkamCommand =
+              'pkam:signingAlgo:ecc_secp256r1:hashingAlgo:sha256:${signingResult.result}\n';
+        }
+        await _sendCommand(pkamCommand);
         var pkamResponse = await messageListener.read();
         if (pkamResponse == 'data:success') {
           logger.info('auth success');
