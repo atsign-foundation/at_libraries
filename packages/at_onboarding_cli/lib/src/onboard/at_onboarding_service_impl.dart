@@ -74,9 +74,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
       logger.info('Cram authentication status: $_isAtsignOnboarded');
 
-      // if (_isAtsignOnboarded) {
-      //   await _activateAtsign(atLookUpImpl);
-      // }
+      if (_isAtsignOnboarded) {
+        await _activateAtsign(atLookUpImpl);
+      }
     } finally {
       await atLookUpImpl.close();
     }
@@ -121,49 +121,49 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       pkamPublicKey =
           atChops!.readPublicKey(atOnboardingPreference.publicKeyId!);
       logger.info('pkam  public key from sim: $pkamPublicKey');
-      atKeysMap[AuthKeyType.pkamPublicKey] = pkamPublicKey;
-      // encryption key pair and self encryption symmetric key are not available to injected at_chops. Set it here
-      atChops!.atChopsKeys.atEncryptionKeyPair = AtEncryptionKeyPair.create(
-          encryptionKeyPair.publicKey.toString(),
-          encryptionKeyPair.privateKey.toString());
-      atChops!.atChopsKeys.symmetricKey = AESKey(selfEncryptionKey);
+      // atKeysMap[AuthKeyType.pkamPublicKey] = pkamPublicKey;
+      // // encryption key pair and self encryption symmetric key are not available to injected at_chops. Set it here
+      // atChops!.atChopsKeys.atEncryptionKeyPair = AtEncryptionKeyPair.create(
+      //     encryptionKeyPair.publicKey.toString(),
+      //     encryptionKeyPair.privateKey.toString());
+      // atChops!.atChopsKeys.symmetricKey = AESKey(selfEncryptionKey);
     }
     //generate .atKeys file
-    await _generateAtKeysFile(atKeysMap);
-
-    //updating pkamPublicKey to remote secondary
-    logger.finer('Updating PkamPublicKey to remote secondary');
-    String updateCommand = 'update:$AT_PKAM_PUBLIC_KEY ${pkamPublicKey}\n';
-    String? pkamUpdateResult =
-        await atLookUpImpl.executeCommand(updateCommand, auth: false);
-    logger.info('PkamPublicKey update result: $pkamUpdateResult');
-
-    //authenticate using pkam to verify insertion of pkamPublicKey
-    _isPkamAuthenticated = (await atLookUpImpl
-        .authenticate(atKeysMap[AuthKeyType.pkamPrivateKey]));
-
-    if (_isPkamAuthenticated) {
-      //update user encryption public key to remote secondary
-      UpdateVerbBuilder updateBuilder = UpdateVerbBuilder()
-        ..atKey = 'publickey'
-        ..isPublic = true
-        ..value = encryptionKeyPair.publicKey.toString()
-        ..sharedBy = _atSign;
-      String? encryptKeyUpdateResult =
-          await atLookUpImpl.executeVerb(updateBuilder);
-      logger
-          .info('Encryption public key update result $encryptKeyUpdateResult');
-      //deleting cram secret from the keystore as cram auth is complete
-      DeleteVerbBuilder deleteBuilder = DeleteVerbBuilder()
-        ..atKey = AT_CRAM_SECRET;
-      String? deleteResponse = await atLookUpImpl.executeVerb(deleteBuilder);
-      logger.info('Cram secret delete response : $deleteResponse');
-      //displays status of the atsign
-      logger.finer(await getServerStatus());
-      logger.info('----------atSign activated---------');
-    } else {
-      throw AtClientException.message('Pkam Authentication Failed');
-    }
+    // await _generateAtKeysFile(atKeysMap);
+    //
+    // //updating pkamPublicKey to remote secondary
+    // logger.finer('Updating PkamPublicKey to remote secondary');
+    // String updateCommand = 'update:$AT_PKAM_PUBLIC_KEY ${pkamPublicKey}\n';
+    // String? pkamUpdateResult =
+    //     await atLookUpImpl.executeCommand(updateCommand, auth: false);
+    // logger.info('PkamPublicKey update result: $pkamUpdateResult');
+    //
+    // //authenticate using pkam to verify insertion of pkamPublicKey
+    // _isPkamAuthenticated = (await atLookUpImpl
+    //     .authenticate(atKeysMap[AuthKeyType.pkamPrivateKey]));
+    //
+    // if (_isPkamAuthenticated) {
+    //   //update user encryption public key to remote secondary
+    //   UpdateVerbBuilder updateBuilder = UpdateVerbBuilder()
+    //     ..atKey = 'publickey'
+    //     ..isPublic = true
+    //     ..value = encryptionKeyPair.publicKey.toString()
+    //     ..sharedBy = _atSign;
+    //   String? encryptKeyUpdateResult =
+    //       await atLookUpImpl.executeVerb(updateBuilder);
+    //   logger
+    //       .info('Encryption public key update result $encryptKeyUpdateResult');
+    //   //deleting cram secret from the keystore as cram auth is complete
+    //   DeleteVerbBuilder deleteBuilder = DeleteVerbBuilder()
+    //     ..atKey = AT_CRAM_SECRET;
+    //   String? deleteResponse = await atLookUpImpl.executeVerb(deleteBuilder);
+    //   logger.info('Cram secret delete response : $deleteResponse');
+    //   //displays status of the atsign
+    //   logger.finer(await getServerStatus());
+    //   logger.info('----------atSign activated---------');
+    // } else {
+    //   throw AtClientException.message('Pkam Authentication Failed');
+    // }
   }
 
   ///write newly created encryption keypairs into atKeys file
