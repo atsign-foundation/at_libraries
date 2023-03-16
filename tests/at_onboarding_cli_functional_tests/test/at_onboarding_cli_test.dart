@@ -2,20 +2,20 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:at_client/at_client.dart';
-import 'package:at_lookup/at_lookup.dart';
-import 'package:at_utils/at_logger.dart';
-import 'package:at_onboarding_cli/at_onboarding_cli.dart';
-import 'package:at_server_status/at_server_status.dart';
-import 'package:test/test.dart';
 import 'package:at_demo_data/at_demo_data.dart' as at_demos;
+import 'package:at_lookup/at_lookup.dart';
+import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart'
     as activate_cli;
+import 'package:at_server_status/at_server_status.dart';
+import 'package:at_utils/at_logger.dart';
+import 'package:test/test.dart';
 
 Future<void> main() async {
   AtSignLogger.root_level = 'finest';
   group('Tests to validate authenticate functionality', () {
     test('Test using atKeys File', () async {
-      String atsign = '@alice🛠';
+      String atsign = 'alice🛠';
       AtOnboardingPreference preference = getPreferences(atsign, false);
       await generateAtKeysFile(atsign, preference.atKeysFilePath!);
       AtOnboardingService atOnboardingService =
