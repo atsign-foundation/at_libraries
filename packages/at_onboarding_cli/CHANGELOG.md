@@ -1,5 +1,6 @@
 ## 1.2.4
-_ fix: Onboarding_cli throws exception when atsign does not start with '@'
+- fix: Onboarding_cli throws exception when atsign does not start with '@'
+- build: upgrade dependency at_utils to v3.0.12
 ## 1.2.3
 - Enable use of AtChops
 ## 1.2.2
