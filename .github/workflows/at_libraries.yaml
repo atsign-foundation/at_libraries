@@ -27,7 +27,7 @@ jobs:
           - at_server_status
           - at_onboarding_cli
     steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3.4.0
 
       - uses: dart-lang/setup-dart@a57a6c04cf7d4840e88432aad6281d1e125f0d46 # v1.4
         with:
@@ -49,7 +49,7 @@ jobs:
         package:
           - at_lookup
     steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3.4.0
 
       - uses: dart-lang/setup-dart@a57a6c04cf7d4840e88432aad6281d1e125f0d46 # v1.4
         with:
@@ -73,7 +73,7 @@ jobs:
       working-directory: tests/at_onboarding_cli_functional_tests
 
     steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v2.5.0
+      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v2.5.0
 
       - uses: dart-lang/setup-dart@a57a6c04cf7d4840e88432aad6281d1e125f0d46 # v1.4
         with:
