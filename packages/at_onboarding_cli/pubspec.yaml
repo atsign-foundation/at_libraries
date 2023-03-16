@@ -13,7 +13,7 @@ executables:
   at_activate: activate_cli
 
 dependencies:
-   at_utils: ^3.0.11
+   at_utils: ^3.0.12
    at_client: ^3.0.52
    at_lookup: ^3.0.35
    zxing2: ^0.1.0
