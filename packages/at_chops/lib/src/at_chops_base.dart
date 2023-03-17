@@ -77,7 +77,9 @@ abstract class AtChops {
   /// If [signingKeyType] is [SigningKeyType.signingSha256] then [signingAlgorithm] will be set to [DefaultSigningAlgo]
   AtSigningResult verifySignatureBytes(
       // ignore: deprecated_member_use_from_same_package
-      Uint8List data, Uint8List signature, SigningKeyType signingKeyType,
+      Uint8List data,
+      Uint8List signature,
+      SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm});
 
   /// Sign the input string [data] using a [signingAlgorithm].
