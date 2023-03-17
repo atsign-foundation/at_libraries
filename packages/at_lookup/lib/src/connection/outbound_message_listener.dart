@@ -9,6 +9,16 @@ import 'package:meta/meta.dart';
 
 ///Listener class for messages received by [RemoteSecondary]
 class OutboundMessageListener {
+  /// if [read] is called without its transientWaitTimeMillis parameter set, then it will default to this value
+  /// See [read] for further explanation
+  @experimental
+  static int defaultTransientWaitTimeMillis = 10000;
+
+  /// if [read] is called without its maxWaitTimeMillis parameter set, then it will default to this value
+  /// See [read] for further explanation
+  @experimental
+  static int defaultMaxWaitTimeMillis = 30000;
+
   final logger = AtSignLogger('OutboundMessageListener');
   late ByteBuffer _buffer;
   final Queue _queue = Queue();
@@ -17,6 +27,7 @@ class OutboundMessageListener {
   final int newLineCodeUnit = 10;
   final int atCharCodeUnit = 64;
   late DateTime _lastReceivedTime;
+  String? serverNetworkSessionId;
 
   OutboundMessageListener(this._connection, {int bufferCapacity = 10240000}) {
     _buffer = ByteBuffer(capacity: bufferCapacity);
@@ -60,7 +71,7 @@ class OutboundMessageListener {
         List<int> temp = (_buffer.getData().toList())..removeLast();
         result = utf8.decode(temp);
         result = _stripPrompt(result);
-        logger.finer('RECEIVED $result');
+        logger.finer('[$serverNetworkSessionId] RECEIVED: $result');
         _queue.add(result);
         //clear the buffer after adding result to queue
         _buffer.clear();
@@ -97,12 +108,16 @@ class OutboundMessageListener {
   }
 
   /// Reads the response sent by remote socket from the queue.
-  /// If there is no message in queue after [maxWaitMilliSeconds], return null. Defaults to 90 seconds.
+  /// If there is no message in queue after [maxWaitMilliSeconds], return null. Defaults to [defaultMaxWaitTimeMillis]
   /// Whenever data is received on client socket from server, [_lastReceivedTime] will be updated to current time.
-  /// [transientWaitTimeMillis] specifies the max duration to wait between current time and [_lastReceivedTime] before timing out.Defaults to 10 seconds.
+  /// [transientWaitTimeMillis] specifies the max duration to wait between current time and [_lastReceivedTime] before timing out.
+  /// Defaults to [defaultTransientWaitTimeMillis]
   Future<String> read(
-      {int maxWaitMilliSeconds = 90000,
-      int transientWaitTimeMillis = 10000}) async {
+      {int? maxWaitMilliSeconds,
+      int? transientWaitTimeMillis}) async {
+    transientWaitTimeMillis ??= defaultTransientWaitTimeMillis;
+    maxWaitMilliSeconds ??= defaultMaxWaitTimeMillis;
+
     String result;
     _lastReceivedTime = DateTime.now();
     var startTime = DateTime.now();
@@ -164,6 +179,7 @@ class OutboundMessageListener {
   Duration? delayBeforeClose;
 
   Future<void> _closeConnection() async {
+    logger.finer("_closeConnection called for session [$serverNetworkSessionId]");
     if (!_connection.isInValid()) {
       if (delayBeforeClose != null) {
         await Future.delayed(delayBeforeClose!);

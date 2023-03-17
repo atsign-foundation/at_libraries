@@ -16,7 +16,7 @@ import 'package:mutex/mutex.dart';
 import 'package:at_chops/at_chops.dart';
 
 class AtLookupImpl implements AtLookUp {
-  final logger = AtSignLogger('AtLookup');
+  late final AtSignLogger logger;
 
   /// Listener for reading verb responses from the remote server
   late OutboundMessageListener messageListener;
@@ -25,6 +25,7 @@ class AtLookupImpl implements AtLookUp {
 
   OutboundConnection? get connection => _connection;
 
+  @override
   late SecondaryAddressFinder secondaryAddressFinder;
 
   late String _currentAtSign;
@@ -47,13 +48,22 @@ class AtLookupImpl implements AtLookUp {
 
   AtChops? _atChops;
 
+  Duration? socketConnectTimeout;
+
+  Duration defaultSocketConnectTimeout = Duration(seconds: 10);
+
+  String? _serverNetworkSessionId;
+  String? get serverNetworkSessionId => _serverNetworkSessionId;
+
   AtLookupImpl(String atSign, String rootDomain, int rootPort,
       {this.privateKey,
       this.cramSecret,
       SecondaryAddressFinder? secondaryAddressFinder,
       SecureSocketConfig? secureSocketConfig,
-      Map<String, dynamic>? clientConfig}) {
+      Map<String, dynamic>? clientConfig,
+      this.socketConnectTimeout}) {
     _currentAtSign = atSign;
+    logger = AtSignLogger('AtLookup ($_currentAtSign)');
     _rootDomain = rootDomain;
     _rootPort = rootPort;
     this.secondaryAddressFinder = secondaryAddressFinder ??
@@ -62,6 +72,7 @@ class AtLookupImpl implements AtLookUp {
     // Stores the client configurations.
     // If client configurations are not available, defaults to empty map
     _clientConfig = clientConfig ?? {};
+    socketConnectTimeout ??= defaultSocketConnectTimeout;
   }
 
   @Deprecated('use CacheableSecondaryAddressFinder')
@@ -156,7 +167,7 @@ class AtLookupImpl implements AtLookUp {
       logger.finer('value: $value dataSignature:$dataSignature');
       var isDataValid = publicKey.verifySHA256Signature(
           utf8.encode(value) as Uint8List, base64Decode(dataSignature));
-      logger.finer('atlookup data verify result: $isDataValid');
+      logger.finer('atLookup data verify result: $isDataValid');
       return 'data:$value';
     } on Exception catch (e) {
       logger.severe(
@@ -215,17 +226,26 @@ class AtLookupImpl implements AtLookUp {
   }
 
   Future<void> createConnection() async {
+    //checks for network availability. Throws AtConnectException when unavailable
+    await networkAvailabilityCheck();
+
     if (!isConnectionAvailable()) {
       logger.info('Creating new connection');
+
       //1. find secondary url for atsign from lookup library
+      logger.info('  Finding secondary address');
       SecondaryAddress secondaryAddress =
           await secondaryAddressFinder.findSecondary(_currentAtSign);
       var host = secondaryAddress.host;
       var port = secondaryAddress.port;
+
       //2. create a connection to secondary server
+      logger.info('  Creating outbound connection to $secondaryAddress');
       await createOutBoundConnection(
           host, port.toString(), _currentAtSign, _secureSocketConfig);
-      //3. listen to server response
+
+      //3. set up listener to handle responses
+      logger.info('  Starting listener for outbound connection');
       messageListener = OutboundMessageListener(_connection!);
       messageListener.listen();
       logger.info('New connection created OK');
@@ -394,20 +414,28 @@ class AtLookupImpl implements AtLookUp {
               ..atSign = _currentAtSign
               ..clientConfig = _clientConfig)
             .buildCommand());
-        var fromResponse = await (messageListener.read());
+        var fromResponse = await (messageListener.read(
+            transientWaitTimeMillis: 5000, maxWaitMilliSeconds: 10000));
         logger.finer('from result:$fromResponse');
         if (fromResponse.isEmpty) {
           return false;
         }
+
+        // The fromResponse looks like data:<serverNetworkSessionId>@<atsign>:<random stuff>
         fromResponse = fromResponse.trim().replaceAll('data:', '');
         logger.finer('fromResponse $fromResponse');
+
+        _serverNetworkSessionId = fromResponse.split('@')[0];
+        messageListener.serverNetworkSessionId = _serverNetworkSessionId;
+
         var key = RSAPrivateKey.fromString(privateKey);
         var sha256signature =
             key.createSHA256Signature(utf8.encode(fromResponse) as Uint8List);
         var signature = base64Encode(sha256signature);
         logger.finer('Sending command pkam:$signature');
         await _sendCommand('pkam:$signature\n');
-        var pkamResponse = await messageListener.read();
+        var pkamResponse = await messageListener.read(
+            transientWaitTimeMillis: 5000, maxWaitMilliSeconds: 10000);
         if (pkamResponse == 'data:success') {
           logger.info('auth success');
           _connection!.getMetaData()!.isAuthenticated = true;
@@ -432,18 +460,25 @@ class AtLookupImpl implements AtLookUp {
               ..atSign = _currentAtSign
               ..clientConfig = _clientConfig)
             .buildCommand());
-        var fromResponse = await (messageListener.read());
+        var fromResponse = await (messageListener.read(
+            transientWaitTimeMillis: 5000, maxWaitMilliSeconds: 10000));
         logger.finer('from result:$fromResponse');
         if (fromResponse.isEmpty) {
           return false;
         }
+        // The fromResponse looks like data:<serverNetworkSessionId>@<atsign>:<random stuff>
         fromResponse = fromResponse.trim().replaceAll('data:', '');
         logger.finer('fromResponse $fromResponse');
+
+        _serverNetworkSessionId = fromResponse.split('@')[0];
+        messageListener.serverNetworkSessionId = _serverNetworkSessionId;
+
         var signingResult =
             _atChops!.signString(fromResponse, SigningKeyType.pkamSha256);
         logger.finer('Sending command pkam:${signingResult.result}');
         await _sendCommand('pkam:${signingResult.result}\n');
-        var pkamResponse = await messageListener.read();
+        var pkamResponse = await messageListener.read(
+            transientWaitTimeMillis: 5000, maxWaitMilliSeconds: 10000);
         if (pkamResponse == 'data:success') {
           logger.info('auth success');
           _connection!.getMetaData()!.isAuthenticated = true;
@@ -535,24 +570,30 @@ class AtLookupImpl implements AtLookUp {
 
       if (auth && _isAuthRequired()) {
         if (_atChops != null) {
-          logger.finer('calling pkam using atchops');
+          logger.finer('Using AtChops to do the PKAM signing');
           await pkamAuthenticate();
         } else if (privateKey != null) {
-          logger.finer('calling pkam without atchops');
+          logger.finer('NOT using atChops to do the PKAM signing');
           await authenticate(privateKey);
         } else if (cramSecret != null) {
           await authenticate_cram(cramSecret);
         } else {
           throw UnAuthenticatedException(
-              'Unable to perform atlookup auth. Private key/cram secret is not set');
+              'Unable to perform atLookup auth. Private key/cram secret is not set');
         }
       }
       try {
         await _sendCommand(command);
+      } on Exception catch (e) {
+        logger.severe('Exception while sending to server - ${e.toString()}');
+        rethrow;
+      }
+      try {
         var result = await messageListener.read();
         return result;
       } on Exception catch (e) {
-        logger.severe('Exception in sending to server, ${e.toString()}');
+        logger
+            .severe('Exception while getting server response - ${e.toString()}');
         rethrow;
       }
     } finally {
@@ -568,15 +609,24 @@ class AtLookupImpl implements AtLookUp {
   Future<bool> createOutBoundConnection(String host, String port,
       String toAtSign, SecureSocketConfig secureSocketConfig) async {
     try {
-      SecureSocket secureSocket = await SecureSocketUtil.createSecureSocket(
-          host, port, secureSocketConfig);
+      logger.info('     createOutBoundConnection called');
+      logger.info('     Calling SecureSocketUtil.createSecureSocket with connect timeout $socketConnectTimeout');
+      SecureSocket secureSocket;
+      try {
+        secureSocket =
+            await SecureSocketUtil.createSecureSocket(host, port, secureSocketConfig, socketConnectTimeout: socketConnectTimeout);
+      } catch (e) {
+        logger.warning("Failed to create secure socket with exception $e");
+        rethrow;
+      }
+
+      logger.info('     Creating OutboundConnectionImpl with the new secureSocket');
       _connection = OutboundConnectionImpl(secureSocket);
       if (outboundConnectionTimeout != null) {
         _connection!.setIdleTime(outboundConnectionTimeout);
       }
     } on SocketException {
-      throw SecondaryConnectException(
-          'unable to connect to secondary $toAtSign on $host:$port');
+      throw SecondaryConnectException('unable to connect to secondary $toAtSign on $host:$port');
     }
     return true;
   }
@@ -589,13 +639,23 @@ class AtLookupImpl implements AtLookUp {
     return _connection!.isInValid();
   }
 
+  ///performs network availability check before creating a connection
+  ///throws AtConnectException when network is unavailable
+  Future<void> networkAvailabilityCheck() async {
+    if (!(await AtNetworkUtil.isNetworkAvailable())) {
+      throw AtConnectException(
+          'Failed to create connection due to network unavailability',
+          exceptionScenario: ExceptionScenario.noNetworkConnectivity);
+    }
+  }
+
   Future<void> close() async {
-    await _connection!.close();
+    await _connection?.close();
   }
 
   Future<void> _sendCommand(String command) async {
     await createConnection();
-    logger.finer('SENDING: $command');
+    logger.finer('[$_serverNetworkSessionId] SENDING: $command');
     await _connection!.write(command);
   }
 

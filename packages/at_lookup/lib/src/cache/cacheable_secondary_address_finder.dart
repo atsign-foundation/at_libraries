@@ -120,6 +120,7 @@ class SecondaryUrlFinder {
   final String _rootDomain;
   final int _rootPort;
   SecondaryUrlFinder(this._rootDomain, this._rootPort);
+  final AtSignLogger _logger = AtSignLogger('CacheableSecondaryAddressFinder');
 
   Future<String?> findSecondaryUrl(String atSign) async {
     if (_rootDomain.startsWith("proxy:")) {
@@ -138,16 +139,23 @@ class SecondaryUrlFinder {
     String? response;
     SecureSocket? socket;
     try {
-      AtSignLogger('AtLookup')
-          .finer('AtLookup.findSecondary received atsign: $atsign');
+      _logger.finer('AtLookup.findSecondary received atsign: $atsign');
       if (atsign.startsWith('@')) atsign = atsign.replaceFirst('@', '');
       var answer = '';
       String? secondary;
       var ans = false;
       var prompt = false;
       var once = true;
-      // ignore: omit_local_variable_types
-      socket = await SecureSocket.connect(_rootDomain, _rootPort);
+      var connectTimeout = Duration(seconds:20);
+      try {
+        _logger.info('Connecting to root server at $_rootDomain:$_rootPort to look up $atsign with timeout $connectTimeout');
+        // If the SecureSocket.connect times out after `connectTimeout`, it will (allegedly) throw a SocketException
+        // If the Future.timeout() after `connectTimeout * 1.5` causes the timeout, it will throw a TimeoutException
+        socket = await SecureSocket.connect(_rootDomain, _rootPort, timeout: connectTimeout).timeout(connectTimeout * 1.5);
+      } catch (e, st) {
+        _logger.info("Failed to connect with exception $e and stack trace $st");
+        rethrow;
+      }
       // listen to the received data event stream
       socket.listen((List<int> event) async {
         answer = utf8.decode(event);
@@ -187,9 +195,8 @@ class SecondaryUrlFinder {
       await socket.flush();
       socket.destroy();
       throw AtTimeoutException('AtLookup.findSecondary timed out');
-    } on SocketException {
-      throw RootServerConnectivityException(
-          'Failed connecting to root server url $_rootDomain on port $_rootPort');
+    } on SocketException catch (se) {
+      throw RootServerConnectivityException(se.message);
     } on Exception catch (exception) {
       AtSignLogger('AtLookup').severe('AtLookup.findSecondary connection to ' +
           _rootDomain +
