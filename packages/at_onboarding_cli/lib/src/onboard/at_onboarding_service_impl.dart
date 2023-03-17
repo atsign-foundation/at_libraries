@@ -6,11 +6,10 @@ import 'dart:io';
 import 'package:at_chops/at_chops.dart';
 import 'package:at_client/at_client.dart';
 import 'package:at_commons/at_builders.dart';
-import 'package:at_onboarding_cli/src/factory/service_factories.dart';
-import 'package:at_utils/at_utils.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_server_status/at_server_status.dart';
+import 'package:at_utils/at_utils.dart';
 import 'package:crypton/crypton.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:image/image.dart';
@@ -26,32 +25,20 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   AtOnboardingPreference atOnboardingPreference;
   AtClient? _atClient;
   AtLookUp? _atLookUp;
+  AtServiceFactory? atServiceFactory;
 
-  AtOnboardingServiceImpl(atsign, this.atOnboardingPreference) {
+  AtOnboardingServiceImpl(atsign, this.atOnboardingPreference, {this.atServiceFactory}) {
     //performs atSign format checks on the atSign
     _atSign = AtUtils.fixAtSign(atsign);
   }
 
-  Future<void> _initAtClient(AtChops atChops) async {
+  Future<void> _init(AtChops atChops) async {
     AtClientManager atClientManager = AtClientManager.getInstance();
-    AtServiceFactory serviceFactory = DefaultAtServiceFactory();
-    if (atOnboardingPreference.skipSync == true) {
-      serviceFactory = ServiceFactoryWithNoOpSyncService();
-    }
     await atClientManager.setCurrentAtSign(
-        _atSign, atOnboardingPreference.namespace, atOnboardingPreference,
-        atChops: atChops, serviceFactory: serviceFactory);
+        _atSign, atOnboardingPreference.namespace, atOnboardingPreference, atChops: atChops, serviceFactory: atServiceFactory);
     // ??= to support mocking
     _atLookUp ??= atClientManager.atClient.getRemoteSecondary()?.atLookUp;
     _atClient ??= atClientManager.atClient;
-  }
-
-  Future<void> _init(Map<String, String> atKeysFileDataMap) async {
-    atChops ??= _createAtChops(atKeysFileDataMap);
-    await _initAtClient(atChops!);
-    _atLookUp!.atChops = atChops;
-    _atClient!.atChops = atChops;
-    _atClient!.getPreferences()!.useAtChops = true;
   }
 
   @override
@@ -62,10 +49,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   @override
   Future<bool> onboard() async {
-    // #TODO uncomment this code after isOnboarded is implemented
-    // if(isOnboarded()) {
-    //   return true;
-    // }
     //get cram_secret from either from AtOnboardingConfig or decode it from qr code whichever available
     atOnboardingPreference.cramSecret ??=
         getSecretFromQr(atOnboardingPreference.qrCodePath);
@@ -104,38 +87,60 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   ///method to generate/update encryption key-pairs to activate an atsign
   Future<void> _activateAtsign(AtLookupImpl atLookUpImpl) async {
-    //1. Generate pkam key pair(if authMode is keyFile), encryption key pair and self encryption key
-    Map<String, String> atKeysMap = await _generateKeyPairs();
+    RSAKeypair pkamRsaKeypair;
+    RSAKeypair encryptionKeyPair;
+    String selfEncryptionKey;
+    Map<String, String> atKeysMap;
 
-    //2. generate .atKeys file using a copy of atKeysMap
-    await _generateAtKeysFile(Map.of(atKeysMap));
+    //generating pkamKeyPair
+    logger.info('Generating pkam keypair');
+    pkamRsaKeypair = generateRsaKeypair();
 
-    //3. Updating pkamPublicKey to remote secondary
+    //generate user encryption keypair
+    logger.info('Generating encryption keypair');
+    encryptionKeyPair = generateRsaKeypair();
+
+    //generate selfEncryptionKey
+    selfEncryptionKey = generateAESKey();
+
+    stdout.writeln(
+        '[Information] Generating your encryption keys and .atKeys file\n');
+    //mapping encryption keys pairs to their names
+    atKeysMap = <String, String>{
+      AuthKeyType.pkamPublicKey: pkamRsaKeypair.publicKey.toString(),
+      AuthKeyType.pkamPrivateKey: pkamRsaKeypair.privateKey.toString(),
+      AuthKeyType.encryptionPublicKey: encryptionKeyPair.publicKey.toString(),
+      AuthKeyType.encryptionPrivateKey: encryptionKeyPair.privateKey.toString(),
+      AuthKeyType.selfEncryptionKey: selfEncryptionKey,
+      _atSign: selfEncryptionKey,
+    };
+    //generate .atKeys file
+    await _generateAtKeysFile(atKeysMap);
+
+    //updating pkamPublicKey to remote secondary
     logger.finer('Updating PkamPublicKey to remote secondary');
-    final pkamPublicKey = atKeysMap[AuthKeyType.pkamPublicKey];
-    String updateCommand = 'update:$AT_PKAM_PUBLIC_KEY $pkamPublicKey\n';
+    String updateCommand =
+        'update:$AT_PKAM_PUBLIC_KEY ${pkamRsaKeypair.publicKey}\n';
     String? pkamUpdateResult =
         await atLookUpImpl.executeCommand(updateCommand, auth: false);
     logger.info('PkamPublicKey update result: $pkamUpdateResult');
 
-    //4. initialise atClient and atChops and attempt a pkam auth to server.
-    await _init(atKeysMap);
-    _isPkamAuthenticated = (await _atLookUp?.pkamAuthenticate(
-        signingAlgoType: atOnboardingPreference.signingAlgoType,
-        hashingAlgoType: atOnboardingPreference.hashingAlgoType))!;
+    //authenticate using pkam to verify insertion of pkamPublicKey
+    _isPkamAuthenticated = (await atLookUpImpl
+        .authenticate(atKeysMap[AuthKeyType.pkamPrivateKey]));
 
-    //5. If Pkam auth is success, update encryption public key to secondary and delete cram key from server
     if (_isPkamAuthenticated) {
-      final encryptionPublicKey = atKeysMap[AuthKeyType.encryptionPublicKey];
+      //update user encryption public key to remote secondary
       UpdateVerbBuilder updateBuilder = UpdateVerbBuilder()
         ..atKey = 'publickey'
         ..isPublic = true
-        ..value = encryptionPublicKey
+        ..value = encryptionKeyPair.publicKey.toString()
         ..sharedBy = _atSign;
       String? encryptKeyUpdateResult =
           await atLookUpImpl.executeVerb(updateBuilder);
       logger
           .info('Encryption public key update result $encryptKeyUpdateResult');
+      //deleting cram secret from the keystore as cram auth is complete
       DeleteVerbBuilder deleteBuilder = DeleteVerbBuilder()
         ..atKey = AT_CRAM_SECRET;
       String? deleteResponse = await atLookUpImpl.executeVerb(deleteBuilder);
@@ -148,63 +153,14 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
   }
 
-  Future<Map<String, String>> _generateKeyPairs() async {
-    //generate user encryption keypair
-    logger.info('Generating encryption keypair');
-    var encryptionKeyPair = generateRsaKeypair();
-
-    //generate selfEncryptionKey
-    var selfEncryptionKey = generateAESKey();
-
-    stdout.writeln(
-        '[Information] Generating your encryption keys and .atKeys file\n');
-    //mapping encryption keys pairs to their names
-    Map<String, String> atKeysMap = <String, String>{};
-    var pkamPublicKey;
-    //generating pkamKeyPair only if authMode is keysFile
-    if (atOnboardingPreference.authMode == PkamAuthMode.keysFile) {
-      logger.info('Generating pkam keypair');
-      var pkamRsaKeypair = generateRsaKeypair();
-      atKeysMap[AuthKeyType.pkamPublicKey] =
-          pkamRsaKeypair.publicKey.toString();
-      atKeysMap[AuthKeyType.pkamPrivateKey] =
-          pkamRsaKeypair.privateKey.toString();
-      pkamPublicKey = pkamRsaKeypair.publicKey.toString();
-    } else if (atOnboardingPreference.authMode == PkamAuthMode.sim) {
-      // get the public key from secure element
-      pkamPublicKey =
-          atChops!.readPublicKey(atOnboardingPreference.publicKeyId!);
-      logger.info('pkam  public key from sim: $pkamPublicKey');
-      atKeysMap[AuthKeyType.pkamPublicKey] = pkamPublicKey;
-      // encryption key pair and self encryption symmetric key
-      // are not available to injected at_chops. Set it here
-      atChops!.atChopsKeys.atEncryptionKeyPair = AtEncryptionKeyPair.create(
-          encryptionKeyPair.publicKey.toString(),
-          encryptionKeyPair.privateKey.toString());
-      atChops!.atChopsKeys.symmetricKey = AESKey(selfEncryptionKey);
-    }
-    //Standard order of an atKeys file is ->
-    // pkam keypair -> encryption keypair -> selfEncryption key -> @sign: selfEncryptionKey[self encryption key again]
-    atKeysMap[AuthKeyType.encryptionPublicKey] =
-        encryptionKeyPair.publicKey.toString();
-    atKeysMap[AuthKeyType.encryptionPrivateKey] =
-        encryptionKeyPair.privateKey.toString();
-    atKeysMap[AuthKeyType.selfEncryptionKey] = selfEncryptionKey;
-    atKeysMap[_atSign] = selfEncryptionKey;
-
-    return atKeysMap;
-  }
-
   ///write newly created encryption keypairs into atKeys file
   Future<void> _generateAtKeysFile(Map<String, String> atKeysMap) async {
     //encrypting all keys with self encryption key
-    if (atOnboardingPreference.authMode == PkamAuthMode.keysFile) {
-      atKeysMap[AuthKeyType.pkamPrivateKey] = EncryptionUtil.encryptValue(
-          atKeysMap[AuthKeyType.pkamPrivateKey]!,
-          atKeysMap[AuthKeyType.selfEncryptionKey]!);
-    }
     atKeysMap[AuthKeyType.pkamPublicKey] = EncryptionUtil.encryptValue(
         atKeysMap[AuthKeyType.pkamPublicKey]!,
+        atKeysMap[AuthKeyType.selfEncryptionKey]!);
+    atKeysMap[AuthKeyType.pkamPrivateKey] = EncryptionUtil.encryptValue(
+        atKeysMap[AuthKeyType.pkamPrivateKey]!,
         atKeysMap[AuthKeyType.selfEncryptionKey]!);
     atKeysMap[AuthKeyType.encryptionPublicKey] = EncryptionUtil.encryptValue(
         atKeysMap[AuthKeyType.encryptionPublicKey]!,
@@ -260,12 +216,10 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         ?.getLocalSecondary()
         ?.putValue(AT_PKAM_PUBLIC_KEY, atKeysMap[AuthKeyType.pkamPublicKey]!);
     logger.finer('PkamPublicKey persist to localSecondary: status $response');
-    if (atOnboardingPreference.authMode == PkamAuthMode.keysFile) {
-      response = await _atClient?.getLocalSecondary()?.putValue(
-          AT_PKAM_PRIVATE_KEY, atKeysMap[AuthKeyType.pkamPrivateKey]!);
-      logger
-          .finer('PkamPrivateKey persist to localSecondary: status $response');
-    }
+    response = await _atClient
+        ?.getLocalSecondary()
+        ?.putValue(AT_PKAM_PRIVATE_KEY, atKeysMap[AuthKeyType.pkamPrivateKey]!);
+    logger.finer('PkamPrivateKey persist to localSecondary: status $response');
     response = await _atClient?.getLocalSecondary()?.putValue(
         '$AT_ENCRYPTION_PUBLIC_KEY$_atSign',
         atKeysMap[AuthKeyType.encryptionPublicKey]!);
@@ -288,32 +242,30 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         await _readAtKeysFile(atOnboardingPreference.atKeysFilePath));
     var pkamPrivateKey = atKeysFileDataMap[AuthKeyType.pkamPrivateKey];
 
-    if (atOnboardingPreference.authMode == PkamAuthMode.keysFile &&
-        pkamPrivateKey == null) {
+    if (pkamPrivateKey == null) {
       throw AtPrivateKeyNotFoundException(
           'Unable to read pkam private key from provided .atKeys path: ${atOnboardingPreference.atKeysFilePath}',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
-    await _init(atKeysFileDataMap);
-    logger.finer('pkam auth');
-    _isPkamAuthenticated = (await _atLookUp?.pkamAuthenticate(
-        signingAlgoType: atOnboardingPreference.signingAlgoType,
-        hashingAlgoType: atOnboardingPreference.hashingAlgoType))!;
-    logger.finer('pkam auth result: $_isPkamAuthenticated');
-
+    final atChops = _createAtChops(atKeysFileDataMap);
+    await _init(atChops);
+    _atLookUp!.atChops = atChops;
+    _atClient!.atChops = atChops;
+    _atClient!.getPreferences()!.useAtChops = true;
+    _isPkamAuthenticated = await _atLookUp?.pkamAuthenticate() ?? false;
     if (!_isAtsignOnboarded && atOnboardingPreference.atKeysFilePath != null) {
       await _persistKeysLocalSecondary();
     }
     return _isPkamAuthenticated;
   }
 
-  AtChops _createAtChops(Map<String, String> atKeysDataMap) {
+  AtChops _createAtChops(Map<String, String> atKeysFileDataMap) {
     final atEncryptionKeyPair = AtEncryptionKeyPair.create(
-        atKeysDataMap[AuthKeyType.encryptionPublicKey]!,
-        atKeysDataMap[AuthKeyType.encryptionPrivateKey]!);
+        atKeysFileDataMap[AuthKeyType.encryptionPublicKey]!,
+        atKeysFileDataMap[AuthKeyType.encryptionPrivateKey]!);
     final atPkamKeyPair = AtPkamKeyPair.create(
-        atKeysDataMap[AuthKeyType.pkamPublicKey]!,
-        atKeysDataMap[AuthKeyType.pkamPrivateKey]!);
+        atKeysFileDataMap[AuthKeyType.pkamPublicKey]!,
+        atKeysFileDataMap[AuthKeyType.pkamPrivateKey]!);
     final atChopsKeys = AtChopsKeys.create(atEncryptionKeyPair, atPkamKeyPair);
     return AtChopsImpl(atChopsKeys);
   }
@@ -345,18 +297,16 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       Map<String, String> jsonData) async {
     String decryptionKey = _getDecryptionKey(jsonData);
     Map<String, String> atKeysMap = <String, String>{
+      AuthKeyType.pkamPublicKey: EncryptionUtil.decryptValue(
+          jsonData[AuthKeyType.pkamPublicKey]!, decryptionKey),
+      AuthKeyType.pkamPrivateKey: EncryptionUtil.decryptValue(
+          jsonData[AuthKeyType.pkamPrivateKey]!, decryptionKey),
       AuthKeyType.encryptionPublicKey: EncryptionUtil.decryptValue(
           jsonData[AuthKeyType.encryptionPublicKey]!, decryptionKey),
       AuthKeyType.encryptionPrivateKey: EncryptionUtil.decryptValue(
           jsonData[AuthKeyType.encryptionPrivateKey]!, decryptionKey),
       AuthKeyType.selfEncryptionKey: decryptionKey,
     };
-    if (atOnboardingPreference.authMode == PkamAuthMode.keysFile) {
-      atKeysMap[AuthKeyType.pkamPublicKey] = EncryptionUtil.decryptValue(
-          jsonData[AuthKeyType.pkamPublicKey]!, decryptionKey);
-      atKeysMap[AuthKeyType.pkamPrivateKey] = EncryptionUtil.decryptValue(
-          jsonData[AuthKeyType.pkamPrivateKey]!, decryptionKey);
-    }
     return atKeysMap;
   }
 
@@ -400,7 +350,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   ///Method to check if secondary belonging to [_atSign] exists
   ///If not, wait until secondary is created
   Future<void> _waitUntilSecondaryCreated(AtLookupImpl atLookupImpl) async {
-    final maxRetries = 5;
+    final maxRetries = 50;
     int retryCount = 1;
     SecondaryAddress? secondaryAddress;
     SecureSocket? secureSocket;
@@ -412,13 +362,12 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       try {
         secondaryAddress =
             await atLookupImpl.secondaryAddressFinder.findSecondary(_atSign);
-      } on Exception catch (e, trace) {
+      } on Exception catch (e) {
         logger.finer(e);
-        print(trace);
       }
       retryCount++;
     }
-    print('secondaryAddress ** $secondaryAddress');
+
     if (secondaryAddress == null) {
       logger.severe(
           'Could not find secondary address for $_atSign after $retryCount retries');
@@ -439,9 +388,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
                     30)); // 30-second timeout should be enough even for slow networks
         connectionFlag = secureSocket.remoteAddress != null &&
             secureSocket.remotePort != null;
-      } on Exception catch (e, trace) {
+      } on Exception catch (e) {
         logger.finer(e);
-        print(trace);
       }
       retryCount++;
     }
@@ -478,13 +426,4 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   @override
   AtLookUp? get atLookUp => _atLookUp;
-
-  @override
-  AtChops? atChops;
-
-  @override
-  Future<bool> isOnboarded() async {
-    // #TODO implement once AtClient offline access feature is complete.
-    throw UnimplementedError();
-  }
 }
