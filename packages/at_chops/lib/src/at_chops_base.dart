@@ -111,7 +111,8 @@ abstract class AtChops {
   /// Refer to [DefaultHash] for default implementation of hashing.
   String hash(Uint8List signedData, AtHashingAlgorithm hashingAlgorithm);
 
-  /// Reads a public key from SIM card based on ID. SIM card should have an IOTSafe compliant app
-  /// with a key pair preinstalled.
+  /// Reads a public key from a secure element or any other source
+  /// Clients can implement this method if want to use a different keypair for pkam authentication.
+  /// e.g. Secure element can be a SIM card with an IOTSafe compliant app with a key pair preinstalled.
   String readPublicKey(String publicKeyId);
 }

@@ -364,7 +364,7 @@ class AtChopsImpl extends AtChops {
 
   @override
   String readPublicKey(String publicKeyId) {
-    // This method is implemented only for extensions of AtChops that use secure element for private keys
+    // This method is implemented only for extensions of AtChops that use secure element or any other source for private keys apart from the default source(.atKeys file)
     throw UnimplementedError();
   }
 }
