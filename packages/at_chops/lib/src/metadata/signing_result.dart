@@ -5,6 +5,13 @@ class AtSigningResult {
   late AtSigningResultType atSigningResultType;
   dynamic result;
   late AtSigningMetaData atSigningMetaData;
+
+  @override
+  toString() {
+    return 'ResultType: ${atSigningResultType.name}, '
+        'Result: ${result.toString()}, '
+        'SigningMetadata: {${atSigningMetaData.toString()}}';
+  }
 }
 
 enum AtSigningResultType { bytes, string, bool }

@@ -1,8 +1,20 @@
-import 'package:at_chops/src/key/key_type.dart';
+import 'package:at_chops/src/algorithm/algo_type.dart';
 
 /// Class which represents metadata for data signing.
 class AtSigningMetaData {
-  String atSigningAlgorithm;
-  SigningKeyType signingKeyType;
-  AtSigningMetaData(this.atSigningAlgorithm, this.signingKeyType);
+  HashingAlgoType? hashingAlgoType;
+  SigningAlgoType? signingAlgoType;
+
+  ///Timestamp of signature creation in UTC
+  DateTime signatureTimestamp;
+
+  AtSigningMetaData(
+      this.signingAlgoType, this.hashingAlgoType, this.signatureTimestamp);
+
+  @override
+  toString() {
+    return 'HashingAlgo: ${hashingAlgoType?.name}, '
+        'SigningAlgo: ${signingAlgoType?.name}, '
+        'SignatureTimestamp: ${signatureTimestamp.toString()}';
+  }
 }
