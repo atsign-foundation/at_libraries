@@ -61,12 +61,12 @@ class AtSigningInput {
 class AtSigningVerificationInput {
   /// Data that has to verified
   ///
-  /// Data has to be either of base64encoded [String] or [Uint8List]
+  /// Data has to be either of [String] or [Uint8List]
   final dynamic _data;
 
   /// Signature of [_data] that will be used to verify
   ///
-  /// Signature needs to be either of type base64encoded [String] or [Uint8List]
+  /// Signature has to be base64decoded if signing result is base64Encoded.
   final dynamic _signature;
 
   /// Mandatory input

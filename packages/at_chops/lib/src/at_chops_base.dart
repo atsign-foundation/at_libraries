@@ -76,9 +76,9 @@ abstract class AtChops {
   // ignore: deprecated_member_use_from_same_package
   /// If [signingKeyType] is [SigningKeyType.signingSha256] then [signingAlgorithm] will be set to [DefaultSigningAlgo]
   AtSigningResult verifySignatureBytes(
-      // ignore: deprecated_member_use_from_same_package
       Uint8List data,
       Uint8List signature,
+      // ignore: deprecated_member_use_from_same_package
       SigningKeyType signingKeyType,
       {AtSigningAlgorithm? signingAlgorithm});
 
@@ -100,11 +100,13 @@ abstract class AtChops {
   /// Compute data signature using the private key from a key pair
   /// Input has to be set using [AtSigningInput] object
   /// Please refer to [AtSigningInput] to create a valid input instance
+  /// [AtSigningResult.result] should be base64Encoded
   AtSigningResult sign(AtSigningInput signingInput);
 
-  /// Verifies the signature computed for input data using the public key from a key pair
-  /// Input has to set using [AtSigningVerificationInput] obect
+  /// Verifies the signature computed for inpuat data using the public key from a key pair
+  /// Input has to set using [AtSigningVerificationInput] object
   /// Please refer to [AtSigningVerificationInput] docs to create a valid input instance
+  /// [AtSigningVerificationInput.result] should be base64Decoded if [AtSigningResult.result] is base64Encoded
   AtSigningResult verify(AtSigningVerificationInput verifyInput);
 
   /// Create a hash of input [signedData] using a [hashingAlgorithm].

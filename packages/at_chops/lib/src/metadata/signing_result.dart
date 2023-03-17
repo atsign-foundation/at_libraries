@@ -1,8 +1,10 @@
 import 'package:at_chops/src/metadata/signing_metadata.dart';
 
-// Class that contains the signing/verification result with data type [AtSigningResultType] and metadata [AtSigningMetaData]
+/// Class that contains the signing/verification result with data type [AtSigningResultType] and metadata [AtSigningMetaData]
+/// [result] should be base64Encoded string
 class AtSigningResult {
   late AtSigningResultType atSigningResultType;
+
   dynamic result;
   late AtSigningMetaData atSigningMetaData;
 
