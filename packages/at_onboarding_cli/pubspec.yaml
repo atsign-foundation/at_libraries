@@ -14,7 +14,7 @@ executables:
 
 dependencies:
    at_utils: ^3.0.12
-   at_client: ^3.0.52
+   at_client: ^3.0.56
    at_lookup: ^3.0.35
    zxing2: ^0.1.0
    image: ^3.1.1
