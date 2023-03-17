@@ -3,8 +3,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:at_client/at_client.dart';
+import 'package:at_onboarding_cli/src/factory/service_factories.dart';
 import 'package:at_utils/at_utils.dart';
-import 'package:at_commons/at_builders.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_server_status/at_server_status.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
@@ -32,9 +32,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   Future<void> _init(AtChops atChops) async {
     AtClientManager atClientManager = AtClientManager.getInstance();
+    AtServiceFactory serviceFactory = DefaultAtServiceFactory();
+    if (atOnboardingPreference.skipSync == true) {
+      serviceFactory = ServiceFactoryWithNoOpSyncService();
+    }
     await atClientManager.setCurrentAtSign(
         _atSign, atOnboardingPreference.namespace, atOnboardingPreference,
-        atChops: atChops);
+        atChops: atChops, serviceFactory: serviceFactory);
     // ??= to support mocking
     _atLookUp ??= atClientManager.atClient.getRemoteSecondary()?.atLookUp;
     _atClient ??= atClientManager.atClient;
@@ -121,23 +125,23 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       pkamPublicKey =
           atChops!.readPublicKey(atOnboardingPreference.publicKeyId!);
       logger.info('pkam  public key from sim: $pkamPublicKey');
-      // atKeysMap[AuthKeyType.pkamPublicKey] = pkamPublicKey;
-      // // encryption key pair and self encryption symmetric key are not available to injected at_chops. Set it here
-      // atChops!.atChopsKeys.atEncryptionKeyPair = AtEncryptionKeyPair.create(
-      //     encryptionKeyPair.publicKey.toString(),
-      //     encryptionKeyPair.privateKey.toString());
-      // atChops!.atChopsKeys.symmetricKey = AESKey(selfEncryptionKey);
+      atKeysMap[AuthKeyType.pkamPublicKey] = pkamPublicKey;
+      // encryption key pair and self encryption symmetric key are not available to injected at_chops. Set it here
+      atChops!.atChopsKeys.atEncryptionKeyPair = AtEncryptionKeyPair.create(
+          encryptionKeyPair.publicKey.toString(),
+          encryptionKeyPair.privateKey.toString());
+      atChops!.atChopsKeys.symmetricKey = AESKey(selfEncryptionKey);
     }
     //generate .atKeys file
-    // await _generateAtKeysFile(atKeysMap);
+    await _generateAtKeysFile(atKeysMap);
     //
-    // //updating pkamPublicKey to remote secondary
-    // logger.finer('Updating PkamPublicKey to remote secondary');
-    // String updateCommand = 'update:$AT_PKAM_PUBLIC_KEY ${pkamPublicKey}\n';
-    // String? pkamUpdateResult =
-    //     await atLookUpImpl.executeCommand(updateCommand, auth: false);
-    // logger.info('PkamPublicKey update result: $pkamUpdateResult');
-    //
+    //updating pkamPublicKey to remote secondary
+    logger.finer('Updating PkamPublicKey to remote secondary');
+    String updateCommand = 'update:$AT_PKAM_PUBLIC_KEY ${pkamPublicKey}\n';
+    String? pkamUpdateResult =
+        await atLookUpImpl.executeCommand(updateCommand, auth: false);
+    logger.info('PkamPublicKey update result: $pkamUpdateResult');
+    // commented for testing in sim
     // //authenticate using pkam to verify insertion of pkamPublicKey
     // _isPkamAuthenticated = (await atLookUpImpl
     //     .authenticate(atKeysMap[AuthKeyType.pkamPrivateKey]));
@@ -270,13 +274,15 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     _atLookUp!.atChops = atChops;
     _atClient!.atChops = atChops;
     _atClient!.getPreferences()!.useAtChops = true;
+    logger.finer('pkam auth');
     _isPkamAuthenticated = (await _atLookUp?.pkamAuthenticate(
         signingAlgoType: atOnboardingPreference.signingAlgoType,
         hashingAlgoType: atOnboardingPreference.hashingAlgoType))!;
-
-    if (!_isAtsignOnboarded && atOnboardingPreference.atKeysFilePath != null) {
-      await _persistKeysLocalSecondary();
-    }
+    logger.finer('pkam auth result: $_isPkamAuthenticated');
+    // commented for testing in sim
+    // if (!_isAtsignOnboarded && atOnboardingPreference.atKeysFilePath != null) {
+    //   await _persistKeysLocalSecondary();
+    // }
     return _isPkamAuthenticated;
   }
 
