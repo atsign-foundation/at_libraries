@@ -361,4 +361,10 @@ class AtChopsImpl extends AtChops {
       throw InvalidDataException('Unrecognized type of data: $data');
     }
   }
+
+  @override
+  String readPublicKey(String publicKeyId) {
+    // This method is implemented only for extensions of AtChops that use secure element for private keys
+    throw UnimplementedError();
+  }
 }
