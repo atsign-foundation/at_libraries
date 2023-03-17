@@ -1,3 +1,5 @@
+## 3.0.36
+feat: Multiple network- and logging-related enhancements
 ## 3.0.35
 - fix: fallback code for backward compatibility if at_chops instance is not set
 ## 3.0.34
