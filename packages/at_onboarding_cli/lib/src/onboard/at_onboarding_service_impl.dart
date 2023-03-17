@@ -25,6 +25,10 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   AtOnboardingPreference atOnboardingPreference;
   AtClient? _atClient;
   AtLookUp? _atLookUp;
+  /// The object which controls what types of AtClients, NotificationServices
+  /// and SyncServices get created when we call [AtClientManager.setCurrentAtSign].
+  /// If [atServiceFactory] is not set, AtClientManager.setCurrentAtSign will use
+  /// a [DefaultAtServiceFactory]
   AtServiceFactory? atServiceFactory;
 
   AtOnboardingServiceImpl(atsign, this.atOnboardingPreference, {this.atServiceFactory}) {
