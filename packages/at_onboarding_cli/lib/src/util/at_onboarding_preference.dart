@@ -20,6 +20,8 @@ class AtOnboardingPreference extends AtClientPreference {
 
   // if [authMode] is sim, specify publicKeyId to be read from sim
   String? publicKeyId;
+
+  bool skipSync = false;
 }
 
 enum PkamAuthMode { keysFile, sim }

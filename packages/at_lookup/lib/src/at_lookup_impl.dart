@@ -424,8 +424,8 @@ class AtLookupImpl implements AtLookUp {
 
   @override
   Future<bool> pkamAuthenticate(
-      {SigningAlgoType signingAlgoType = SigningAlgoType.rsa2048,
-      HashingAlgoType hashingAlgoType = HashingAlgoType.sha256}) async {
+      {SigningAlgoType? signingAlgoType,
+      HashingAlgoType? hashingAlgoType}) async {
     await createConnection();
     try {
       await _pkamAuthenticationMutex.acquire();
@@ -441,13 +441,24 @@ class AtLookupImpl implements AtLookUp {
         }
         fromResponse = fromResponse.trim().replaceAll('data:', '');
         logger.finer('fromResponse $fromResponse');
+        signingAlgoType ??= SigningAlgoType.rsa2048;
+        hashingAlgoType ??= HashingAlgoType.sha256;
+        logger.finer(
+            'signingAlgoType: $signingAlgoType hashingAlgoType:$hashingAlgoType');
         final atSigningInput = AtSigningInput(fromResponse)
           ..signingAlgoType = signingAlgoType
           ..hashingAlgoType = hashingAlgoType
           ..signingMode = AtSigningMode.pkam;
         var signingResult = _atChops!.sign(atSigningInput);
-        logger.finer('Sending command pkam:${signingResult.result}');
-        await _sendCommand('pkam:${signingResult.result}\n');
+
+        var pkamCommand = 'pkam:${signingResult.result}\n';
+        if (signingAlgoType == SigningAlgoType.ecc_secp256r1 &&
+            hashingAlgoType == HashingAlgoType.sha256) {
+          pkamCommand =
+              'pkam:signingAlgo:ecc_secp256r1:hashingAlgo:sha256:${signingResult.result}\n';
+        }
+        logger.finer('pkamCommand:${pkamCommand}');
+        await _sendCommand(pkamCommand);
         var pkamResponse = await messageListener.read();
         if (pkamResponse == 'data:success') {
           logger.info('auth success');
