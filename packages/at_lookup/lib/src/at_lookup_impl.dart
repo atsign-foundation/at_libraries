@@ -423,7 +423,9 @@ class AtLookupImpl implements AtLookUp {
   }
 
   @override
-  Future<bool> pkamAuthenticate() async {
+  Future<bool> pkamAuthenticate(
+      {SigningAlgoType? signingAlgoType,
+      HashingAlgoType? hashingAlgoType}) async {
     await createConnection();
     try {
       await _pkamAuthenticationMutex.acquire();
@@ -439,10 +441,21 @@ class AtLookupImpl implements AtLookUp {
         }
         fromResponse = fromResponse.trim().replaceAll('data:', '');
         logger.finer('fromResponse $fromResponse');
-        var signingResult =
-            _atChops!.signString(fromResponse, SigningKeyType.pkamSha256);
-        logger.finer('Sending command pkam:${signingResult.result}');
-        await _sendCommand('pkam:${signingResult.result}\n');
+
+        signingAlgoType ??= SigningAlgoType.rsa2048;
+        hashingAlgoType ??= HashingAlgoType.sha256;
+        logger.finer(
+            'signingAlgoType: $signingAlgoType hashingAlgoType:$hashingAlgoType');
+        final atSigningInput = AtSigningInput(fromResponse)
+          ..signingAlgoType = signingAlgoType
+          ..hashingAlgoType = hashingAlgoType
+          ..signingMode = AtSigningMode.pkam;
+        var signingResult = _atChops!.sign(atSigningInput);
+        var pkamCommand =
+            'pkam:signingAlgo:${signingAlgoType.name}:hashingAlgo:${hashingAlgoType.name}:${signingResult.result}\n';
+        logger.finer('pkamCommand:$pkamCommand');
+        await _sendCommand(pkamCommand);
+
         var pkamResponse = await messageListener.read();
         if (pkamResponse == 'data:success') {
           logger.info('auth success');

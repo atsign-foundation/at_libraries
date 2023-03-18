@@ -1,3 +1,6 @@
+## 3.0.36
+- feat: changes to call at_chops.sign() method which supports different signing algorithms.
+- chore: upgrade at_commons to 3.0.39 and at_utils to 3.0.12
 ## 3.0.35
 - fix: fallback code for backward compatibility if at_chops instance is not set
 ## 3.0.34
