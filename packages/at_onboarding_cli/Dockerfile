@@ -1,0 +1,22 @@
+FROM dart:2.19.4@sha256:5d2f42239d719bef7fe60abb37273aea16d8526980662b696c218663ac005d96 AS buildimage
+ENV HOMEDIR=/atsign
+ENV BINARYDIR=/atsign/at_activate
+ENV USER_ID=1024
+ENV GROUP_ID=1024
+WORKDIR /atsign
+# Context for this Dockerfile needs to be at_server repo packages/at_root_server
+# If building manually then (from packages/at_root_server):
+## sudo docker build -t atsigncompany/root .
+COPY . .
+RUN \
+  mkdir -p $HOMEDIR ; \
+  mkdir -p $BINARYDIR ; \
+  dart pub get ; \
+  dart pub upgrade ; \
+  dart compile exe bin/activate_cli.dart -o $BINARYDIR/at_activate ; \
+  tar cvzf /atsign/at_activate.`uname -m`.tar.gz at_activate/at_activate
+
+  
+# Second stage of build FROM scratch
+FROM scratch AS export-stage
+COPY --from=buildimage /atsign/at_activate.*.tar.gz .
