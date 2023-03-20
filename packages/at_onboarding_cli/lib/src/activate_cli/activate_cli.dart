@@ -43,7 +43,7 @@ Future<void> main(List<String> arguments) async {
 
   stdout.writeln('[Information] Root server is ${argResults['rootServer']}');
 
-  // var downloadPath = '${Directory.current.path}/keys';
+  // var downloadPath = '${Directory.current.path}/.atsign/keys';
   var homeDirectory = getHomeDirectory();
   var downloadPath = "$homeDirectory/.atsign/keys";
 
