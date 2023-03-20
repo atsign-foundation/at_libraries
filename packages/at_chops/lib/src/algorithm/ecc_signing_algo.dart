@@ -47,8 +47,6 @@ class EccSigningAlgo implements AtSigningAlgorithm {
     return ecdsa.verify(pubKey, hash, eccSignature);
   }
 
-  elliptic.PrivateKey? get privateKey => _privateKey;
-
   set privateKey(elliptic.PrivateKey? value) {
     _privateKey = value;
   }

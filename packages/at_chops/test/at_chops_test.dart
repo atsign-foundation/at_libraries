@@ -358,8 +358,10 @@ void main() {
           DefaultSigningAlgo(encryptionKeypair, signingInput.hashingAlgoType);
       final signingResult = atChops.sign(signingInput);
       expect(signingResult.atSigningMetaData, isNotNull);
-      expect(signingResult.result,
-          base64Encode(rsaPrivateKey.createSHA256Signature(utf8.encode(data) as Uint8List)));
+      expect(
+          signingResult.result,
+          base64Encode(rsaPrivateKey
+              .createSHA256Signature(utf8.encode(data) as Uint8List)));
       expect(signingResult.atSigningResultType, AtSigningResultType.bytes);
       expect(signingResult.atSigningMetaData.signingAlgoType,
           SigningAlgoType.rsa2048);
@@ -399,8 +401,10 @@ void main() {
       signingInput.signingAlgorithm = signingAlgorithm;
       final signingResult = atChops.sign(signingInput);
       expect(signingResult.atSigningMetaData, isNotNull);
-      expect(signingResult.result,
-          base64Encode(rsaPrivateKey.createSHA256Signature(utf8.encode(data) as Uint8List)));
+      expect(
+          signingResult.result,
+          base64Encode(rsaPrivateKey
+              .createSHA256Signature(utf8.encode(data) as Uint8List)));
       expect(signingResult.atSigningResultType, AtSigningResultType.bytes);
       expect(signingResult.atSigningMetaData.signingAlgoType,
           SigningAlgoType.rsa2048);
@@ -443,8 +447,10 @@ void main() {
       signingInput.signingAlgorithm = signingAlgorithm;
       final signingResult = atChops.sign(signingInput);
       expect(signingResult.atSigningMetaData, isNotNull);
-      expect(signingResult.result,
-          base64Encode(rsaPrivateKey.createSHA512Signature(utf8.encode(data) as Uint8List)));
+      expect(
+          signingResult.result,
+          base64Encode(rsaPrivateKey
+              .createSHA512Signature(utf8.encode(data) as Uint8List)));
       expect(signingResult.atSigningResultType, AtSigningResultType.bytes);
       expect(signingResult.atSigningMetaData.signingAlgoType,
           SigningAlgoType.rsa2048);
