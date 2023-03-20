@@ -1,3 +1,5 @@
+## 1.2.5
+- feat: atkeys file now placed in standard location ~/.atsign/keys
 ## 1.2.4
 - fix: Onboarding_cli throws exception when atsign does not start with '@'
 - build: upgrade dependency at_utils to v3.0.12
