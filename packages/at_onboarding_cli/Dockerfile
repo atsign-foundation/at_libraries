@@ -14,7 +14,7 @@ RUN \
   dart pub get ; \
   dart pub upgrade ; \
   dart compile exe bin/activate_cli.dart -o $BINARYDIR/at_activate ; \
-  tar cvzf /atsign/at_activate.`uname -m`.tar.gz at_activate/at_activate
+  tar cvzf /atsign/at_activate."$(uname -m)".tgz "$BINARYDIR"/at_activate
 
   
 # Second stage of build FROM scratch
