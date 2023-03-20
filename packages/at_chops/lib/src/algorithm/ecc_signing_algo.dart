@@ -30,7 +30,7 @@ class EccSigningAlgo implements AtSigningAlgorithm {
   bool verify(Uint8List signedData, Uint8List signature, {String? publicKey}) {
     if (publicKey == null && _privateKey == null) {
       throw AtSigningVerificationException(
-          'public key not set not ecc verification');
+          'Cannot verify signature - publicKey not provided or privateKey not available');
     }
     var ec = elliptic.getSecp256r1();
     var hashHex = sha256.convert(signedData).toString();
