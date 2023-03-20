@@ -5,6 +5,7 @@ export 'src/at_chops_impl.dart';
 export 'src/key/impl/at_chops_keys.dart';
 export 'src/key/impl/at_encryption_key_pair.dart';
 export 'src/key/impl/at_pkam_key_pair.dart';
+export 'src/key/impl/aes_key.dart';
 export 'src/key/key_type.dart';
 export 'src/metadata/at_signing_input.dart';
 export 'src/metadata/encryption_metadata.dart';
