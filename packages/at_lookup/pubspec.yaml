@@ -17,16 +17,7 @@ dependencies:
   mutex: ^3.0.0
   mocktail: ^0.3.0
   meta: ^1.8.0
-  at_chops: ^1.0.0
-
-dependency_overrides:
-  # TODO replace overrides with at_chops published version
-  at_chops:
-    git:
-      url: https://github.com/atsign-foundation/at_libraries.git
-      path: packages/at_chops
-      ref: at_chops_changes_pkam_secure_element
-#    path: ../at_chops
+  at_chops: ^1.0.2
 
 dev_dependencies:
   lints: ^1.0.1
