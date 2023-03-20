@@ -4,9 +4,9 @@ ENV BINARYDIR=/atsign/at_activate
 ENV USER_ID=1024
 ENV GROUP_ID=1024
 WORKDIR /atsign
-# Context for this Dockerfile needs to be at_server repo packages/at_root_server
-# If building manually then (from packages/at_root_server):
-## sudo docker build -t atsigncompany/root .
+# Context for this Dockerfile needs to be {at_libraries_repo}/packages/at_onboarding_cli
+# If building manually then (from packages/at_onboarding_cli):
+## docker build -t atsigncompany/at_activate .
 COPY . .
 RUN \
   mkdir -p $HOMEDIR ; \
