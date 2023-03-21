@@ -47,6 +47,9 @@ class AtLookupImpl implements AtLookUp {
 
   AtChops? _atChops;
 
+  /// To use a specific signing algorithm for pkam auth, set the [SigningAlgoType] and [HashingAlgoType] in clientConfig map
+  /// e.g clientConfig[AT_PKAM_SIGNING_ALGO] = SigningAlgoType.ecc_secp256r1
+  /// clientConfig[AT_PKAM_HASHING_ALGO] = HashingAlgoType.sha256
   AtLookupImpl(String atSign, String rootDomain, int rootPort,
       {this.privateKey,
       this.cramSecret,
@@ -423,9 +426,7 @@ class AtLookupImpl implements AtLookUp {
   }
 
   @override
-  Future<bool> pkamAuthenticate(
-      {SigningAlgoType signingAlgoType = SigningAlgoType.rsa2048,
-      HashingAlgoType hashingAlgoType = HashingAlgoType.sha256}) async {
+  Future<bool> pkamAuthenticate() async {
     await createConnection();
     try {
       await _pkamAuthenticationMutex.acquire();
@@ -441,7 +442,10 @@ class AtLookupImpl implements AtLookUp {
         }
         fromResponse = fromResponse.trim().replaceAll('data:', '');
         logger.finer('fromResponse $fromResponse');
-
+        var signingAlgoType =
+            _clientConfig[AT_PKAM_SIGNING_ALGO] ?? SigningAlgoType.rsa2048;
+        var hashingAlgoType =
+            _clientConfig[AT_PKAM_HASHING_ALGO] ?? HashingAlgoType.sha256;
         logger.finer(
             'signingAlgoType: $signingAlgoType hashingAlgoType:$hashingAlgoType');
         final atSigningInput = AtSigningInput(fromResponse)
