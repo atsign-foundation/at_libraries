@@ -26,6 +26,7 @@ jobs:
           - at_contact
           - at_server_status
           - at_onboarding_cli
+          - at_chops
     steps:
       - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3.4.0
 
@@ -62,6 +63,46 @@ jobs:
       - name: Analyze project source in ${{ matrix.package }}
         working-directory: packages/${{ matrix.package }}
         run: dart analyze
+
+      - name: run tests
+        working-directory: packages/${{ matrix.package }}
+        run: dart test --concurrency=1
+
+  at_chops_build_and_test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - at_chops
+    steps:
+      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3.4.0
+
+      - uses: dart-lang/setup-dart@a57a6c04cf7d4840e88432aad6281d1e125f0d46 # v1.4
+        with:
+          sdk: stable
+
+      #Installation of dependencies and running dart analyzer already done in initial step
+
+      - name: run tests
+        working-directory: packages/${{ matrix.package }}
+        run: dart test --concurrency=1
+
+  at_onboarding_cli_build_and_test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - at_onboarding_cli
+    steps:
+      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3.4.0
+
+      - uses: dart-lang/setup-dart@a57a6c04cf7d4840e88432aad6281d1e125f0d46 # v1.4
+        with:
+          sdk: stable
+
+      #Installation of dependencies and running dart analyzer already done in initial step
 
       - name: run tests
         working-directory: packages/${{ matrix.package }}
