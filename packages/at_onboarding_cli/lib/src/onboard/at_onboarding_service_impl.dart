@@ -8,11 +8,9 @@ import 'package:at_client/at_client.dart';
 import 'package:at_commons/at_builders.dart';
 import 'package:at_onboarding_cli/src/factory/service_factories.dart';
 import 'package:at_utils/at_utils.dart';
-import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_server_status/at_server_status.dart';
-import 'package:at_utils/at_utils.dart';
 import 'package:crypton/crypton.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:image/image.dart';
@@ -111,11 +109,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
     //2. generate .atKeys file using a copy of atKeysMap
     await _generateAtKeysFile(Map.of(atKeysMap));
-    //
+
     //3. Updating pkamPublicKey to remote secondary
     logger.finer('Updating PkamPublicKey to remote secondary');
     final pkamPublicKey = atKeysMap[AuthKeyType.pkamPublicKey];
-    String updateCommand = 'update:$AT_PKAM_PUBLIC_KEY ${pkamPublicKey}\n';
+    String updateCommand = 'update:$AT_PKAM_PUBLIC_KEY $pkamPublicKey\n';
     String? pkamUpdateResult =
         await atLookUpImpl.executeCommand(updateCommand, auth: false);
     logger.info('PkamPublicKey update result: $pkamUpdateResult');
@@ -161,12 +159,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     stdout.writeln(
         '[Information] Generating your encryption keys and .atKeys file\n');
     //mapping encryption keys pairs to their names
-    Map<String, String> atKeysMap = <String, String>{
-      AuthKeyType.encryptionPublicKey: encryptionKeyPair.publicKey.toString(),
-      AuthKeyType.encryptionPrivateKey: encryptionKeyPair.privateKey.toString(),
-      AuthKeyType.selfEncryptionKey: selfEncryptionKey,
-      _atSign: selfEncryptionKey,
-    };
+    Map<String, String> atKeysMap = <String, String>{};
     var pkamPublicKey;
     //generating pkamKeyPair only if authMode is keysFile
     if (atOnboardingPreference.authMode == PkamAuthMode.keysFile) {
@@ -183,12 +176,22 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
           atChops!.readPublicKey(atOnboardingPreference.publicKeyId!);
       logger.info('pkam  public key from sim: $pkamPublicKey');
       atKeysMap[AuthKeyType.pkamPublicKey] = pkamPublicKey;
-      // encryption key pair and self encryption symmetric key are not available to injected at_chops. Set it here
+      // encryption key pair and self encryption symmetric key
+      // are not available to injected at_chops. Set it here
       atChops!.atChopsKeys.atEncryptionKeyPair = AtEncryptionKeyPair.create(
           encryptionKeyPair.publicKey.toString(),
           encryptionKeyPair.privateKey.toString());
       atChops!.atChopsKeys.symmetricKey = AESKey(selfEncryptionKey);
     }
+    //Standard order of an atKeys file is ->
+    // pkam keypair -> encryption keypair -> selfEncryption key -> @sign: selfEncryptionKey[self encryption key again]
+    atKeysMap[AuthKeyType.encryptionPublicKey] =
+        encryptionKeyPair.publicKey.toString();
+    atKeysMap[AuthKeyType.encryptionPrivateKey] =
+        encryptionKeyPair.privateKey.toString();
+    atKeysMap[AuthKeyType.selfEncryptionKey] = selfEncryptionKey;
+    atKeysMap[_atSign] = selfEncryptionKey;
+
     return atKeysMap;
   }
 
