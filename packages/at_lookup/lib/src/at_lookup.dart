@@ -27,8 +27,8 @@ abstract class AtLookUp {
   Future<String?> executeVerb(VerbBuilder builder, {bool sync = false});
 
   /// performs a PKAM authentication using private key on the client side and public key on secondary server
-  /// Optionally pass the signing algorithm [SigningAlgoType] and hashing algorithm [HashingAlgoType]
-  Future<bool> pkamAuthenticate({SigningAlgoType signingAlgoType, HashingAlgoType hashingAlgoType});
+  /// Default signing algorithm for pkam signature is [SigningAlgoType.rsa2048] and default hashing algorithm is [HashingAlgoType.sha256]
+  Future<bool> pkamAuthenticate();
 
   /// set an instance of  [AtChops] for signing and verification operations.
   set atChops(AtChops? atChops);
