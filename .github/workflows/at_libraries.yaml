@@ -25,8 +25,6 @@ jobs:
         package:
           - at_contact
           - at_server_status
-          - at_onboarding_cli
-          - at_chops
     steps:
       - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3.4.0
 
@@ -82,7 +80,13 @@ jobs:
         with:
           sdk: stable
 
-      #Installation of dependencies and running dart analyzer already done in initial step
+      - name: Install dependencies in ${{ matrix.package }}
+        working-directory: packages/${{ matrix.package }}
+        run: dart pub get
+
+      - name: Analyze project source in ${{ matrix.package }}
+        working-directory: packages/${{ matrix.package }}
+        run: dart analyze
 
       - name: run tests
         working-directory: packages/${{ matrix.package }}
@@ -102,7 +106,13 @@ jobs:
         with:
           sdk: stable
 
-      #Installation of dependencies and running dart analyzer already done in initial step
+      - name: Install dependencies in ${{ matrix.package }}
+        working-directory: packages/${{ matrix.package }}
+        run: dart pub get
+
+      - name: Analyze project source in ${{ matrix.package }}
+        working-directory: packages/${{ matrix.package }}
+        run: dart analyze
 
       - name: run tests
         working-directory: packages/${{ matrix.package }}
