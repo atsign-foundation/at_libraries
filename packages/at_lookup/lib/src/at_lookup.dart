@@ -38,4 +38,14 @@ abstract class AtLookUp {
   set secondaryAddressFinder(SecondaryAddressFinder secondaryAddressFinder);
 
   SecondaryAddressFinder get secondaryAddressFinder;
+
+  /// Signing algorithm for pkam signature
+  set signingAlgoType(SigningAlgoType signingAlgoType);
+
+  SigningAlgoType get signingAlgoType;
+
+  /// Hashing algorithm for pkam signature
+  set hashingAlgoType(HashingAlgoType hashingAlgoType);
+
+  HashingAlgoType get hashingAlgoType;
 }
