@@ -63,16 +63,16 @@ void main() {
         'Test invalid default signing and verification - sign with sha256 and verify with sha512 hashing algo',
         () {
       var keyPair = AtChopsUtil.generateAtEncryptionKeyPair();
-      final defaultSigningAlgo_sha256 =
+      final defaultsigningalgoSha256 =
           DefaultSigningAlgo(keyPair, HashingAlgoType.sha256);
-      final defaultSigningAlgo_sha512 =
+      final defaultsigningalgoSha512 =
           DefaultSigningAlgo(keyPair, HashingAlgoType.sha512);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
-      final signatureInBytes = defaultSigningAlgo_sha256.sign(dataInBytes);
+      final signatureInBytes = defaultsigningalgoSha256.sign(dataInBytes);
       var verifyResult =
-          defaultSigningAlgo_sha512.verify(dataInBytes, signatureInBytes);
+          defaultsigningalgoSha512.verify(dataInBytes, signatureInBytes);
       expect(verifyResult, false);
     });
 
@@ -80,16 +80,16 @@ void main() {
         'Test invalid default signing and verification - sign with sha512 and verify with sha256 hashing algo',
         () {
       var keyPair = AtChopsUtil.generateAtEncryptionKeyPair();
-      final defaultSigningAlgo_sha256 =
+      final defaultsigningalgoSha256 =
           DefaultSigningAlgo(keyPair, HashingAlgoType.sha256);
-      final defaultSigningAlgo_sha512 =
+      final defaultsigningalgoSha512 =
           DefaultSigningAlgo(keyPair, HashingAlgoType.sha512);
       final dataToSign =
           '_a7028ce7-aaa8-4c52-9cf4-b94ca3bdf971@alice:c2834cd4-bb16-4801-8abc-efe79cdceb8f';
       final dataInBytes = Uint8List.fromList(dataToSign.codeUnits);
-      final signatureInBytes = defaultSigningAlgo_sha512.sign(dataInBytes);
+      final signatureInBytes = defaultsigningalgoSha512.sign(dataInBytes);
       var verifyResult =
-          defaultSigningAlgo_sha256.verify(dataInBytes, signatureInBytes);
+          defaultsigningalgoSha256.verify(dataInBytes, signatureInBytes);
       expect(verifyResult, false);
     });
     test(
