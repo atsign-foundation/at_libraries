@@ -423,9 +423,7 @@ class AtLookupImpl implements AtLookUp {
   }
 
   @override
-  Future<bool> pkamAuthenticate(
-      {SigningAlgoType? signingAlgoType,
-      HashingAlgoType? hashingAlgoType}) async {
+  Future<bool> pkamAuthenticate() async {
     await createConnection();
     try {
       await _pkamAuthenticationMutex.acquire();
@@ -441,8 +439,6 @@ class AtLookupImpl implements AtLookUp {
         }
         fromResponse = fromResponse.trim().replaceAll('data:', '');
         logger.finer('fromResponse $fromResponse');
-        signingAlgoType ??= SigningAlgoType.rsa2048;
-        hashingAlgoType ??= HashingAlgoType.sha256;
         logger.finer(
             'signingAlgoType: $signingAlgoType hashingAlgoType:$hashingAlgoType');
         final atSigningInput = AtSigningInput(fromResponse)
@@ -622,4 +618,11 @@ class AtLookupImpl implements AtLookUp {
 
   @override
   AtChops? get atChops => _atChops;
+
+  /// To use a specific signing algorithm other than default one for pkam auth, set the [SigningAlgoType] and [HashingAlgoType]
+  @override
+  HashingAlgoType hashingAlgoType = HashingAlgoType.sha256;
+
+  @override
+  SigningAlgoType signingAlgoType = SigningAlgoType.rsa2048;
 }

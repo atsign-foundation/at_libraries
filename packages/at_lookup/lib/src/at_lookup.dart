@@ -27,7 +27,7 @@ abstract class AtLookUp {
   Future<String?> executeVerb(VerbBuilder builder, {bool sync = false});
 
   /// performs a PKAM authentication using private key on the client side and public key on secondary server
-  Future<bool> pkamAuthenticate({SigningAlgoType signingAlgoType, HashingAlgoType hashingAlgoType});
+  Future<bool> pkamAuthenticate();
 
   /// set an instance of  [AtChops] for signing and verification operations.
   set atChops(AtChops? atChops);
@@ -37,4 +37,14 @@ abstract class AtLookUp {
   set secondaryAddressFinder(SecondaryAddressFinder secondaryAddressFinder);
 
   SecondaryAddressFinder get secondaryAddressFinder;
+
+  /// Signing algorithm for pkam signature
+  set signingAlgoType(SigningAlgoType signingAlgoType);
+
+  SigningAlgoType get signingAlgoType;
+
+  /// Hashing algorithm for pkam signature
+  set hashingAlgoType(HashingAlgoType hashingAlgoType);
+
+  HashingAlgoType get hashingAlgoType;
 }

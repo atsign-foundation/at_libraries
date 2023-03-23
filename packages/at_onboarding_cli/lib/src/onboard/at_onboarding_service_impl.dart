@@ -12,7 +12,6 @@ import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_server_status/at_server_status.dart';
-import 'package:at_utils/at_utils.dart';
 import 'package:crypton/crypton.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:image/image.dart';
@@ -45,6 +44,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         atChops: atChops, serviceFactory: serviceFactory);
     // ??= to support mocking
     _atLookUp ??= atClientManager.atClient.getRemoteSecondary()?.atLookUp;
+    _atLookUp?.signingAlgoType = atOnboardingPreference.signingAlgoType;
+    _atLookUp?.hashingAlgoType = atOnboardingPreference.hashingAlgoType;
     _atClient ??= atClientManager.atClient;
   }
 
@@ -122,9 +123,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
     //4. initialise atClient and atChops and attempt a pkam auth to server.
     await _init(atKeysMap);
-    _isPkamAuthenticated = (await _atLookUp?.pkamAuthenticate(
-        signingAlgoType: atOnboardingPreference.signingAlgoType,
-        hashingAlgoType: atOnboardingPreference.hashingAlgoType))!;
+    _isPkamAuthenticated = (await _atLookUp?.pkamAuthenticate())!;
 
     //5. If Pkam auth is success, update encryption public key to secondary and delete cram key from server
     if (_isPkamAuthenticated) {
@@ -293,9 +292,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
     await _init(atKeysFileDataMap);
     logger.finer('pkam auth');
-    _isPkamAuthenticated = (await _atLookUp?.pkamAuthenticate(
-        signingAlgoType: atOnboardingPreference.signingAlgoType,
-        hashingAlgoType: atOnboardingPreference.hashingAlgoType))!;
+    _isPkamAuthenticated = (await _atLookUp?.pkamAuthenticate())!;
     logger.finer('pkam auth result: $_isPkamAuthenticated');
 
     if (!_isAtsignOnboarded && atOnboardingPreference.atKeysFilePath != null) {
