@@ -27,20 +27,26 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   AtClient? _atClient;
   AtLookUp? _atLookUp;
 
-  AtOnboardingServiceImpl(atsign, this.atOnboardingPreference) {
+  /// The object which controls what types of AtClients, NotificationServices
+  /// and SyncServices get created when we call [AtClientManager.setCurrentAtSign].
+  /// If [atServiceFactory] is not set, AtClientManager.setCurrentAtSign will use
+  /// a [DefaultAtServiceFactory]
+  AtServiceFactory? atServiceFactory;
+
+  AtOnboardingServiceImpl(atsign, this.atOnboardingPreference,
+      {this.atServiceFactory}) {
     //performs atSign format checks on the atSign
     _atSign = AtUtils.fixAtSign(atsign);
   }
 
   Future<void> _initAtClient(AtChops atChops) async {
     AtClientManager atClientManager = AtClientManager.getInstance();
-    AtServiceFactory serviceFactory = DefaultAtServiceFactory();
     if (atOnboardingPreference.skipSync == true) {
-      serviceFactory = ServiceFactoryWithNoOpSyncService();
+      atServiceFactory = ServiceFactoryWithNoOpSyncService();
     }
     await atClientManager.setCurrentAtSign(
         _atSign, atOnboardingPreference.namespace, atOnboardingPreference,
-        atChops: atChops, serviceFactory: serviceFactory);
+        atChops: atChops, serviceFactory: atServiceFactory);
     // ??= to support mocking
     _atLookUp ??= atClientManager.atClient.getRemoteSecondary()?.atLookUp;
     _atLookUp?.signingAlgoType = atOnboardingPreference.signingAlgoType;

@@ -49,7 +49,8 @@ class PkamSigningAlgo implements AtSigningAlgorithm {
       case HashingAlgoType.sha512:
         return rsaPublicKey.verifySHA512Signature(signedData, signature);
       default:
-        throw AtSigningVerificationException('Invalid hashing algo $_hashingAlgoType provided');
+        throw AtSigningVerificationException(
+            'Invalid hashing algo $_hashingAlgoType provided');
     }
   }
 }

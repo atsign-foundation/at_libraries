@@ -116,7 +116,7 @@ at_activate -a your_atsign -q path_to_qrcode_for_this_atsign
 ```
 dart run lib/src/activate_cli/activate_cli.dart -a your_atsign -c your_cram_secret
 ```
-4) You can find your .atKeysFile in directory at_onboarding_cli/keys
+4) You can find your .atKeysFile in directory ~/.atsign/keys
 
 
 ### register_cli:
