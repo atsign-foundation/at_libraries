@@ -13,11 +13,11 @@ dependencies:
   crypton: ^2.0.1
   crypto: ^3.0.1
   at_utils: ^3.0.12
-  at_commons: ^3.0.39
+  at_commons: ^3.0.43
   mutex: ^3.0.0
   mocktail: ^0.3.0
   meta: ^1.8.0
-  at_chops: ^1.0.2
+  at_chops: ^1.0.3
 
 dev_dependencies:
   lints: ^1.0.1
