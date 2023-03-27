@@ -8,11 +8,24 @@ environment:
 
 
 dependencies:
-  at_onboarding_cli:
-    path: ../../packages/at_onboarding_cli
+  
   at_client: ^3.0.52
   at_lookup: ^3.0.29
   at_commons: ^3.0.24
+
+dependency_overrides:
+  at_onboarding_cli:
+    git:
+      url : https://github.com/atsign-foundation/at_libraries.git
+      path: packages/at_onboarding_cli
+      ref: integrate_pkam_secure_element
+  at_lookup:
+    git:
+      url: https://github.com/atsign-foundation/at_libraries.git
+      path: packages/at_lookup
+      ref: integrate_pkam_secure_element
+  # at_chops:
+  #   path: /home/shaikirfan/Desktop/onboarding_cli_trunk/at_libraries/packages/at_chops
 
 dev_dependencies:
   lints: ^1.0.0
