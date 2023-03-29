@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
+import 'package:at_utils/at_logger.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_client/at_client.dart';
@@ -14,6 +15,7 @@ void main() {
     reset(mockAtLookup);
   });
   group('A group of tests to verify at_chops creation in onboarding_cli', () {
+    AtSignLogger.root_level = 'FINER';
     test('A test to whether at_chops instance is set on authenticate',
         () async {
       final atSign = '@alice🛠';

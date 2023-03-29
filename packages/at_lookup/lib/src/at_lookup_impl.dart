@@ -423,9 +423,7 @@ class AtLookupImpl implements AtLookUp {
   }
 
   @override
-  Future<bool> pkamAuthenticate(
-      {SigningAlgoType? signingAlgoType,
-      HashingAlgoType? hashingAlgoType}) async {
+  Future<bool> pkamAuthenticate() async {
     await createConnection();
     try {
       await _pkamAuthenticationMutex.acquire();
@@ -441,8 +439,6 @@ class AtLookupImpl implements AtLookUp {
         }
         fromResponse = fromResponse.trim().replaceAll('data:', '');
         logger.finer('fromResponse $fromResponse');
-        signingAlgoType ??= SigningAlgoType.rsa2048;
-        hashingAlgoType ??= HashingAlgoType.sha256;
         logger.finer(
             'signingAlgoType: $signingAlgoType hashingAlgoType:$hashingAlgoType');
         final atSigningInput = AtSigningInput(fromResponse)
@@ -450,15 +446,11 @@ class AtLookupImpl implements AtLookUp {
           ..hashingAlgoType = hashingAlgoType
           ..signingMode = AtSigningMode.pkam;
         var signingResult = _atChops!.sign(atSigningInput);
-
-        var pkamCommand = 'pkam:${signingResult.result}\n';
-        if (signingAlgoType == SigningAlgoType.ecc_secp256r1 &&
-            hashingAlgoType == HashingAlgoType.sha256) {
-          pkamCommand =
-              'pkam:signingAlgo:ecc_secp256r1:hashingAlgo:sha256:${signingResult.result}\n';
-        }
-        logger.finer('pkamCommand:${pkamCommand}');
+        var pkamCommand =
+            'pkam:signingAlgo:${signingAlgoType.name}:hashingAlgo:${hashingAlgoType.name}:${signingResult.result}\n';
+        logger.finer('pkamCommand:$pkamCommand');
         await _sendCommand(pkamCommand);
+
         var pkamResponse = await messageListener.read();
         if (pkamResponse == 'data:success') {
           logger.info('auth success');
@@ -622,4 +614,11 @@ class AtLookupImpl implements AtLookUp {
 
   @override
   AtChops? get atChops => _atChops;
+
+  /// To use a specific signing algorithm other than default one for pkam auth, set the [SigningAlgoType] and [HashingAlgoType]
+  @override
+  HashingAlgoType hashingAlgoType = HashingAlgoType.sha256;
+
+  @override
+  SigningAlgoType signingAlgoType = SigningAlgoType.rsa2048;
 }
