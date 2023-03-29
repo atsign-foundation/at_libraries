@@ -433,4 +433,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   @override
   AtLookUp? get atLookUp => _atLookUp;
+
+  @override
+  AtChops? atChops;
+
+  @override
+  Future<bool> isOnboarded() {
+    // TODO: implement isOnboarded
+    throw UnimplementedError();
+  }
 }
