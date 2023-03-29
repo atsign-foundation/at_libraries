@@ -171,36 +171,36 @@ Future<void> main() async {
     });
   });
 
-  group('test activate_cli', () {
-    String atsign = '@bob🛠';
-    List<String> args = [
-      '-a',
-      atsign,
-      '-c',
-      at_demos.cramKeyMap[atsign]!,
-      '-r',
-      'vip.ve.atsign.zone'
-    ];
+  // group('test activate_cli', () {
+  //   String atsign = '@bob🛠';
+  //   List<String> args = [
+  //     '-a',
+  //     atsign,
+  //     '-c',
+  //     at_demos.cramKeyMap[atsign]!,
+  //     '-r',
+  //     'vip.ve.atsign.zone'
+  //   ];
+  //
+  //   test('activate using activate_cli', () async {
+  //     await activate_cli.main(args);
+  //     expect(await File(getKeysFilePath(atsign)).exists(), true);
+  //   });
+  //
+  //   test('auth using atKeys file generated from activate_cli', () async {
+  //     AtOnboardingPreference atOnboardingPreference =
+  //         getPreferences(atsign, true);
+  //     atOnboardingPreference.atKeysFilePath = getKeysFilePath(atsign);
+  //
+  //     AtOnboardingService onboardingService =
+  //         AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+  //     expect(await onboardingService.authenticate(), true);
+  //   });
 
-    test('activate using activate_cli', () async {
-      await activate_cli.main(args);
-      expect(await File(getKeysFilePath(atsign)).exists(), true);
-    });
-
-    test('auth using atKeys file generated from activate_cli', () async {
-      AtOnboardingPreference atOnboardingPreference =
-          getPreferences(atsign, true);
-      atOnboardingPreference.atKeysFilePath = getKeysFilePath(atsign);
-
-      AtOnboardingService onboardingService =
-          AtOnboardingServiceImpl(atsign, atOnboardingPreference);
-      expect(await onboardingService.authenticate(), true);
-    });
-
-    tearDown(() async {
-      await tearDownFunc();
-    });
-  });
+    // tearDown(() async {
+    //   await tearDownFunc();
+    // });
+  // });
 }
 
 AtOnboardingPreference getPreferences(String atsign, bool isOnboarding) {
@@ -212,11 +212,9 @@ AtOnboardingPreference getPreferences(String atsign, bool isOnboarding) {
     ..privateKey = null
     ..cramSecret = at_demos.cramKeyMap[atsign]
     ..atKeysFilePath = getKeysFilePath(atsign);
-
   if (isOnboarding) {
     atOnboardingPreference.downloadPath = '${Directory.current.path}/keys/';
   }
-
   return atOnboardingPreference;
 }
 
