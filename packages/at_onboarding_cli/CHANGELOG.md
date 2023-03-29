@@ -1,3 +1,5 @@
+## 1.2.6
+- feat: changes to integrate onboarding_cli with pkam secure element
 ## 1.2.5
 - feat: atkeys file now placed in standard location ~/.atsign/keys
 ## 1.2.4
