@@ -419,9 +419,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
     print('secondaryAddress ** $secondaryAddress');
     if (secondaryAddress == null) {
-      logger.severe(
-          'Could not find secondary address for $_atSign after $retryCount retries');
-      exit(1);
+      throw SecondaryNotFoundException('Could not find secondary address for '
+          '$_atSign after $retryCount retries');
     }
     //resetting retry counter to be used for different operation
     retryCount = 1;
