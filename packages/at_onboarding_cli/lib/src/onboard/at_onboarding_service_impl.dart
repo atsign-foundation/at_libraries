@@ -220,36 +220,31 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         atKeysMap[AuthKeyType.selfEncryptionKey]!);
 
     if (atOnboardingPreference.downloadPath != null) {
-      //create directory at provided path if one does not exist already
-      if (!(await Directory(atOnboardingPreference.downloadPath!).exists())) {
-        await Directory(atOnboardingPreference.downloadPath!).create();
-      }
       //construct download path to match standard atKeys file name convention
-      atOnboardingPreference.downloadPath = path.join(
-          atOnboardingPreference.downloadPath!, '${_atSign}_key.atKeys');
-    } else {
+      if(!(atOnboardingPreference.downloadPath!.endsWith('.atKeys'))) {
+        atOnboardingPreference.downloadPath = path.join(
+            atOnboardingPreference.downloadPath!, '${_atSign}_key.atKeys');
+      }
+    } else if(atOnboardingPreference.atKeysFilePath != null){
       //if atKeysFilePath points to a directory and not a file, create a file in the provided directory
-      if (await Directory(atOnboardingPreference.atKeysFilePath!).exists()) {
+      if (!(atOnboardingPreference.atKeysFilePath!.endsWith('.atKeys')))  {
         atOnboardingPreference.atKeysFilePath = path.join(
             atOnboardingPreference.atKeysFilePath!, '${_atSign}_key.atKeys');
-      }
-
-      //if provided file is not of format .atKeys, append .atKeys to filename
-      if (!atOnboardingPreference.atKeysFilePath!.endsWith('.atKeys')) {
-        throw AtClientException.message(
-            'atKeysFilePath provided should be of format .atKeys');
       }
     }
     //note: in case atKeysFilePath is provided instead of downloadPath;
     //file is created with whichever name provided as atKeysFilePath(even if filename does not match standard atKeys file name convention)
-    IOSink atKeysFile = File(atOnboardingPreference.downloadPath ??
-            atOnboardingPreference.atKeysFilePath!)
-        .openWrite();
+    File atKeysFile = File(atOnboardingPreference.downloadPath ??
+            atOnboardingPreference.atKeysFilePath!);
+    if(!atKeysFile.existsSync()){
+      atKeysFile.createSync(recursive: true);
+    }
+    IOSink fileWriter = atKeysFile.openWrite();
 
     //generating .atKeys file at path provided in onboardingConfig
-    atKeysFile.write(jsonEncode(atKeysMap));
-    await atKeysFile.flush();
-    await atKeysFile.close();
+    fileWriter.write(jsonEncode(atKeysMap));
+    await fileWriter.flush();
+    await fileWriter.close();
     logger.info(
         'atKeys file saved at ${atOnboardingPreference.downloadPath ?? atOnboardingPreference.atKeysFilePath}');
     stdout.writeln(
