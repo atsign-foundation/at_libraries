@@ -61,7 +61,6 @@ Future<void> main(List<String> arguments) async {
     stderr.writeln(
         '[Error] Activation failed. It looks like something went wrong on our side.\n'
         'Please try again or contact support@atsign.com\nCause: ${e.toString()}');
-    await onboardingService.close();
     exit(3);
   }
   await onboardingService.close();
