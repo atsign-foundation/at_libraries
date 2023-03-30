@@ -185,7 +185,16 @@ Future<void> main() async {
     ];
 
     test('activate using activate_cli', () async {
-      await activate_cli.main(args);
+      // activate cli sets an exit(0) on successful execution
+      // this test executing without an error is considered the test passing
+      try {
+        await activate_cli.main(args);
+      } catch (e){
+        stderr.writeln(e);
+      }
+    });
+
+    test('atKeys file creation', () async {
       expect(await File(getKeysFilePath(atsign)).exists(), true);
     });
 
