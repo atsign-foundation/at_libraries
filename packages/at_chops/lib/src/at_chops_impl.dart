@@ -214,7 +214,7 @@ class AtChopsImpl extends AtChops {
         signingAlgorithm: signingInput.signingAlgorithm);
   }
 
-  // change this method to public in the next major release and remove exisitng public method.
+  // change this method to public in the next major release and remove existing public method.
   AtSigningResult _signBytes(Uint8List data, AtSigningInput signingInput,
       {AtSigningAlgorithm? signingAlgorithm}) {
     signingAlgorithm ??= _getSigningAlgorithmV2(signingInput)!;
@@ -224,7 +224,7 @@ class AtChopsImpl extends AtChops {
       ..atSigningMetaData = atSigningMetadata
       ..atSigningResultType = AtSigningResultType.bytes;
     try {
-      atSigningResult.result = signingAlgorithm.sign(data);
+      atSigningResult.result = base64Encode(signingAlgorithm.sign(data));
     } on AtSigningException {
       rethrow;
     }
@@ -281,6 +281,7 @@ class AtChopsImpl extends AtChops {
         throw AtEncryptionException(
             'Cannot find encryption algorithm for encryption key type $encryptionKeyType');
     }
+    return null;
   }
 
   AtEncryptionKeyPair? _getEncryptionKeyPair(String? keyName) {
@@ -364,7 +365,7 @@ class AtChopsImpl extends AtChops {
 
   @override
   String readPublicKey(String publicKeyId) {
-    // This method is implemented only for extensions of AtChops that use secure element for private keys
+    // This method is implemented only for extensions of AtChops that use secure element or any other source for private keys other than the default source(.atKeys file)
     throw UnimplementedError();
   }
 }

@@ -27,22 +27,30 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   AtClient? _atClient;
   AtLookUp? _atLookUp;
 
-  AtOnboardingServiceImpl(atsign, this.atOnboardingPreference) {
+  /// The object which controls what types of AtClients, NotificationServices
+  /// and SyncServices get created when we call [AtClientManager.setCurrentAtSign].
+  /// If [atServiceFactory] is not set, AtClientManager.setCurrentAtSign will use
+  /// a [DefaultAtServiceFactory]
+  AtServiceFactory? atServiceFactory;
+
+  AtOnboardingServiceImpl(atsign, this.atOnboardingPreference,
+      {this.atServiceFactory}) {
     //performs atSign format checks on the atSign
     _atSign = AtUtils.fixAtSign(atsign);
   }
 
   Future<void> _initAtClient(AtChops atChops) async {
     AtClientManager atClientManager = AtClientManager.getInstance();
-    AtServiceFactory serviceFactory = DefaultAtServiceFactory();
     if (atOnboardingPreference.skipSync == true) {
-      serviceFactory = ServiceFactoryWithNoOpSyncService();
+      atServiceFactory = ServiceFactoryWithNoOpSyncService();
     }
     await atClientManager.setCurrentAtSign(
         _atSign, atOnboardingPreference.namespace, atOnboardingPreference,
-        atChops: atChops, serviceFactory: serviceFactory);
+        atChops: atChops, serviceFactory: atServiceFactory);
     // ??= to support mocking
     _atLookUp ??= atClientManager.atClient.getRemoteSecondary()?.atLookUp;
+    _atLookUp?.signingAlgoType = atOnboardingPreference.signingAlgoType;
+    _atLookUp?.hashingAlgoType = atOnboardingPreference.hashingAlgoType;
     _atClient ??= atClientManager.atClient;
   }
 
@@ -120,9 +128,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
     //4. initialise atClient and atChops and attempt a pkam auth to server.
     await _init(atKeysMap);
-    _isPkamAuthenticated = (await _atLookUp?.pkamAuthenticate(
-        signingAlgoType: atOnboardingPreference.signingAlgoType,
-        hashingAlgoType: atOnboardingPreference.hashingAlgoType))!;
+    _isPkamAuthenticated = (await _atLookUp?.pkamAuthenticate())!;
 
     //5. If Pkam auth is success, update encryption public key to secondary and delete cram key from server
     if (_isPkamAuthenticated) {
@@ -296,9 +302,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
     await _init(atKeysFileDataMap);
     logger.finer('pkam auth');
-    _isPkamAuthenticated = (await _atLookUp?.pkamAuthenticate(
-        signingAlgoType: atOnboardingPreference.signingAlgoType,
-        hashingAlgoType: atOnboardingPreference.hashingAlgoType))!;
+    _isPkamAuthenticated = (await _atLookUp?.pkamAuthenticate())!;
     logger.finer('pkam auth result: $_isPkamAuthenticated');
 
     if (!_isAtsignOnboarded && atOnboardingPreference.atKeysFilePath != null) {

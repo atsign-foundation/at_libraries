@@ -72,9 +72,8 @@ void main() {
           () => eccAlgo.verify(dataInBytes, signature),
           throwsA(predicate((e) =>
               e is AtException &&
-              e
-                  .toString()
-                  .contains('public key not set not ecc verification'))));
+              e.toString().contains(
+                  'Cannot verify signature - publicKey not provided or privateKey not available'))));
     });
   });
 }

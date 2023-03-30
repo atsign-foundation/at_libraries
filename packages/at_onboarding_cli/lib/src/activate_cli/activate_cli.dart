@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:at_utils/at_logger.dart';
 
+import '../home_directory/home_directory.dart';
+
 Future<void> main(List<String> arguments) async {
   //defaults
   String rootServer = 'root.atsign.org';
@@ -41,7 +43,10 @@ Future<void> main(List<String> arguments) async {
 
   stdout.writeln('[Information] Root server is ${argResults['rootServer']}');
 
-  var downloadPath = '${Directory.current.path}/keys';
+  // var downloadPath = '${Directory.current.path}/.atsign/keys';
+  var homeDirectory = getHomeDirectory();
+  var downloadPath = "$homeDirectory/.atsign/keys";
+
   //onboarding preference builder can be used to set onboardingService parameters
   AtOnboardingPreference atOnboardingPreference = AtOnboardingPreference()
     ..rootDomain = argResults['rootServer']

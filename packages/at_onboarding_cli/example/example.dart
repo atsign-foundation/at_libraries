@@ -16,7 +16,7 @@ Future<void> main() async {
   AtOnboardingService? onboardingService =
       AtOnboardingServiceImpl('your atsign here', atOnboardingPreference);
   await onboardingService.onboard();
-  AtLookUp? atLookup = onboardingService.getAtLookup();
+  AtLookUp? atLookup = onboardingService.atLookUp;
   print(await atLookup?.scan(regex: 'publickey'));
   await onboardingService.close();
   //free the object after it's used and no longer required
