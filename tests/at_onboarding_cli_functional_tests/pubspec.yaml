@@ -13,6 +13,7 @@ dependencies:
   at_client: ^3.0.52
   at_lookup: ^3.0.29
   at_commons: ^3.0.24
+  at_utils: ^3.0.12
 
 dependency_overrides:
   at_chops:
