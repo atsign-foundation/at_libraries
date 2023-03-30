@@ -9,6 +9,7 @@ import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart'
     as activate_cli;
 import 'package:at_server_status/at_server_status.dart';
 import 'package:at_utils/at_logger.dart';
+import 'package:at_utils/at_utils.dart';
 import 'package:test/test.dart';
 
 Future<void> main() async {
@@ -64,6 +65,7 @@ Future<void> main() async {
       await generateAtKeysFile(atsign, preference.atKeysFilePath!);
       AtOnboardingService onboardingService =
           AtOnboardingServiceImpl(atsign, preference);
+      await onboardingService.authenticate();
       AtClient? atClient = await onboardingService.getAtClient();
       await insertSelfEncKey(atClient, atsign);
       AtKey key = AtKey();
@@ -83,7 +85,7 @@ Future<void> main() async {
           () async => await service.authenticate(),
           throwsA(predicate(
               (e) => e.toString().contains('atKeys filePath is null or empty.'
-                  'atKeysFile needs to be provided'))));
+                  ' atKeysFile needs to be provided'))));
     });
 
     tearDown(() async {
@@ -204,6 +206,7 @@ Future<void> main() async {
 }
 
 AtOnboardingPreference getPreferences(String atsign, bool isOnboarding) {
+  atsign = AtUtils.fixAtSign(atsign);
   AtOnboardingPreference atOnboardingPreference = AtOnboardingPreference()
     ..rootDomain = 'vip.ve.atsign.zone'
     ..isLocalStoreRequired = true
@@ -212,19 +215,19 @@ AtOnboardingPreference getPreferences(String atsign, bool isOnboarding) {
     ..privateKey = null
     ..cramSecret = at_demos.cramKeyMap[atsign]
     ..atKeysFilePath = getKeysFilePath(atsign);
-
   if (isOnboarding) {
     atOnboardingPreference.downloadPath = '${Directory.current.path}/keys/';
   }
-
   return atOnboardingPreference;
 }
 
 String getKeysFilePath(String atsign) {
+  atsign = AtUtils.fixAtSign(atsign);
   return '${Directory.current.path}/keys/${atsign}_key.atKeys';
 }
 
 Future<void> generateAtKeysFile(String atsign, String filePath) async {
+  atsign = AtUtils.fixAtSign(atsign);
   Map<String, String?> atKeysMap = <String, String?>{
     AuthKeyType.pkamPublicKey: EncryptionUtil.encryptValue(
         at_demos.pkamPublicKeyMap[atsign]!, at_demos.aesKeyMap[atsign]!),
@@ -250,6 +253,7 @@ Future<void> generateAtKeysFile(String atsign, String filePath) async {
 }
 
 Future<void> insertSelfEncKey(AtClient? atClient, String atsign) async {
+  atsign = AtUtils.fixAtSign(atsign);
   await atClient
       ?.getLocalSecondary()
       ?.putValue(AT_ENCRYPTION_SELF_KEY, at_demos.aesKeyMap[atsign]!);
