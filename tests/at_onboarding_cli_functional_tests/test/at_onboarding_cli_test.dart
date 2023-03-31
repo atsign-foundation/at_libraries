@@ -14,6 +14,47 @@ import 'package:test/test.dart';
 
 void main() {
   AtSignLogger.root_level = 'finest';
+
+  group('test activate_cli', () {
+    String atsign = '@bob🛠';
+    List<String> args = [
+      '-a',
+      atsign,
+      '-c',
+      at_demos.cramKeyMap[atsign]!,
+      '-r',
+      'vip.ve.atsign.zone'
+    ];
+
+    test('activate using activate_cli', () async {
+      // activate cli sets an exit(0) on successful execution
+      // this test executing without an error is considered the test passing
+      try {
+        await activate_cli.main(args);
+      } catch (e) {
+        stderr.writeln(e);
+      }
+    });
+
+    test('atKeys file creation', () async {
+      expect(await File(getKeysFilePath(atsign)).exists(), true);
+    });
+
+    test('auth using atKeys file generated from activate_cli', () async {
+      AtOnboardingPreference atOnboardingPreference =
+      getPreferences(atsign, true);
+      atOnboardingPreference.atKeysFilePath = getKeysFilePath(atsign);
+
+      AtOnboardingService onboardingService =
+      AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+      expect(await onboardingService.authenticate(), true);
+    });
+
+    tearDown(() async {
+      await tearDownFunc();
+    });
+  });
+
   group('Tests to validate authenticate functionality', () {
     test('Test using atKeys File', () async {
       String atsign = 'alice🛠';
@@ -166,46 +207,6 @@ void main() {
           () async => await service.onboard(),
           throwsA(predicate((e) => e.toString().contains(
               'Either of cram secret or qr code containing cram secret not provided'))));
-    });
-
-    tearDown(() async {
-      await tearDownFunc();
-    });
-  });
-
-  group('test activate_cli', () {
-    String atsign = '@bob🛠';
-    List<String> args = [
-      '-a',
-      atsign,
-      '-c',
-      at_demos.cramKeyMap[atsign]!,
-      '-r',
-      'vip.ve.atsign.zone'
-    ];
-
-    test('activate using activate_cli', () async {
-      // activate cli sets an exit(0) on successful execution
-      // this test executing without an error is considered the test passing
-      try {
-        await activate_cli.main(args);
-      } catch (e) {
-        stderr.writeln(e);
-      }
-    });
-
-    test('atKeys file creation', () async {
-      expect(await File(getKeysFilePath(atsign)).exists(), true);
-    });
-
-    test('auth using atKeys file generated from activate_cli', () async {
-      AtOnboardingPreference atOnboardingPreference =
-          getPreferences(atsign, true);
-      atOnboardingPreference.atKeysFilePath = getKeysFilePath(atsign);
-
-      AtOnboardingService onboardingService =
-          AtOnboardingServiceImpl(atsign, atOnboardingPreference);
-      expect(await onboardingService.authenticate(), true);
     });
 
     tearDown(() async {
