@@ -10,7 +10,7 @@ import 'package:at_demo_data/at_demo_data.dart' as at_demos;
 import 'at_chops_secure_element_mock.dart';
 
 /// Usage: dart main.dart <cram_secret>
-Future<void> main() async {
+void main() {
   AtSignLogger.root_level = 'FINER';
   var logger = AtSignLogger('OnboardSecureElement');
 
@@ -57,18 +57,14 @@ Future<void> main() async {
 
 AtOnboardingPreference getPreferences(String atsign) {
   AtOnboardingPreference atOnboardingPreference = AtOnboardingPreference()
-    ..hiveStoragePath =
-        'storage/hive'
+    ..hiveStoragePath = 'storage/hive'
     ..namespace = 'wavi'
-    ..downloadPath =
-        'storage/files'
+    ..downloadPath = 'storage/files'
     ..isLocalStoreRequired = true
-    ..commitLogPath =
-        'storage/commitLog'
+    ..commitLogPath = 'storage/commitLog'
     ..rootDomain = 'vip.ve.atsign.zone'
     ..fetchOfflineNotifications = true
-    ..atKeysFilePath =
-        'storage/files/@bob🛠_key.atKeys'
+    ..atKeysFilePath = 'storage/files/@bob🛠_key.atKeys'
     ..useAtChops = true
     ..signingAlgoType = SigningAlgoType.ecc_secp256r1
     ..hashingAlgoType = HashingAlgoType.sha256
