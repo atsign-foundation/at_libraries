@@ -1,6 +1,6 @@
 name: at_onboarding_cli
 description: Dart tool to authenticate, onboard and perform complex operations on atSign seccondaries from command-line-interface.
-version: 1.2.5
+version: 1.2.6
 repository: https://github.com/atsign-foundation/at_libraries
 homepage: https://atsign.com
 documentation: https://docs.atsign.com/
@@ -14,35 +14,35 @@ executables:
 
 dependencies:
    at_utils: ^3.0.12
-   at_client: ^3.0.56
-   at_lookup: ^3.0.35
+   at_client: ^3.0.58
+   at_lookup: ^3.0.36
    zxing2: ^0.1.0
    image: ^3.1.1
    crypton: ^2.0.3
-   at_commons: ^3.0.39
+   at_commons: ^3.0.43
    encrypt: ^5.0.1
    at_server_status: ^1.0.3
    path: ^1.8.1
    args: ^2.3.1
    http: ^0.13.5
-   at_chops: ^1.0.1
+   at_chops: ^1.0.3
 
-dependency_overrides:
+#dependency_overrides:
 #  at_client:
 #    git:
 #      url: https://github.com/atsign-foundation/at_client_sdk.git
 #      path: packages/at_client
-#      ref: gkc-inject-atChops-into-RemoteSecondary
-  at_lookup:
-    git:
-      url: https://github.com/atsign-foundation/at_libraries.git
-      path: packages/at_lookup
-      ref: integrate_pkam_secure_element
-  at_chops:
-    git:
-      url: https://github.com/atsign-foundation/at_libraries.git
-      path: packages/at_chops
-      ref: integrate_pkam_secure_element
+##      ref: gkc-inject-atChops-into-RemoteSecondary
+#  at_lookup:
+#    git:
+#      url: https://github.com/atsign-foundation/at_libraries.git
+#      path: packages/at_lookup
+#      ref: integrate_pkam_secure_element
+#  at_chops:
+#    git:
+#      url: https://github.com/atsign-foundation/at_libraries.git
+#      path: packages/at_chops
+#      ref: integrate_pkam_secure_element
 #  at_commons:
 #    git:
 #      url: https://github.com/atsign-foundation/at_tools.git
