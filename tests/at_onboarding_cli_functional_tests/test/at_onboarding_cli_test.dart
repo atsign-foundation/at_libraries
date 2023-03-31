@@ -12,7 +12,7 @@ import 'package:at_utils/at_logger.dart';
 import 'package:at_utils/at_utils.dart';
 import 'package:test/test.dart';
 
-Future<void> main() async {
+void main() {
   AtSignLogger.root_level = 'finest';
   group('Tests to validate authenticate functionality', () {
     test('Test using atKeys File', () async {
@@ -189,7 +189,7 @@ Future<void> main() async {
       // this test executing without an error is considered the test passing
       try {
         await activate_cli.main(args);
-      } catch (e){
+      } catch (e) {
         stderr.writeln(e);
       }
     });

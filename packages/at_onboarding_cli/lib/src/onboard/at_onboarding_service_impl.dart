@@ -221,13 +221,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
     if (atOnboardingPreference.downloadPath != null) {
       //construct download path to match standard atKeys file name convention
-      if(!(atOnboardingPreference.downloadPath!.endsWith('.atKeys'))) {
+      if (!(atOnboardingPreference.downloadPath!.endsWith('.atKeys'))) {
         atOnboardingPreference.downloadPath = path.join(
             atOnboardingPreference.downloadPath!, '${_atSign}_key.atKeys');
       }
-    } else if(atOnboardingPreference.atKeysFilePath != null){
+    } else if (atOnboardingPreference.atKeysFilePath != null) {
       //if atKeysFilePath points to a directory and not a file, create a file in the provided directory
-      if (!(atOnboardingPreference.atKeysFilePath!.endsWith('.atKeys')))  {
+      if (!(atOnboardingPreference.atKeysFilePath!.endsWith('.atKeys'))) {
         atOnboardingPreference.atKeysFilePath = path.join(
             atOnboardingPreference.atKeysFilePath!, '${_atSign}_key.atKeys');
       }
@@ -235,8 +235,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     //note: in case atKeysFilePath is provided instead of downloadPath;
     //file is created with whichever name provided as atKeysFilePath(even if filename does not match standard atKeys file name convention)
     File atKeysFile = File(atOnboardingPreference.downloadPath ??
-            atOnboardingPreference.atKeysFilePath!);
-    if(!atKeysFile.existsSync()){
+        atOnboardingPreference.atKeysFilePath!);
+    if (!atKeysFile.existsSync()) {
       atKeysFile.createSync(recursive: true);
     }
     IOSink fileWriter = atKeysFile.openWrite();
@@ -391,7 +391,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       String secret = result.text.split(':')[1];
       return secret;
     } on Exception catch (e) {
-      print('exception while getting secret from QR code: $e');
+      stdout.writeln('exception while getting secret from QR code: $e');
       return null;
     }
   }
@@ -399,7 +399,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   ///Method to check if secondary belonging to [_atSign] exists
   ///If not, wait until secondary is created
   Future<void> _waitUntilSecondaryCreated(AtLookupImpl atLookupImpl) async {
-    final maxRetries = 5;
+    final maxRetries = 50;
     int retryCount = 1;
     SecondaryAddress? secondaryAddress;
     SecureSocket? secureSocket;
@@ -413,11 +413,10 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
             await atLookupImpl.secondaryAddressFinder.findSecondary(_atSign);
       } on Exception catch (e, trace) {
         logger.finer(e);
-        print(trace);
       }
       retryCount++;
     }
-    print('secondaryAddress ** $secondaryAddress');
+    logger.finer('secondaryAddress ** $secondaryAddress');
     if (secondaryAddress == null) {
       throw SecondaryNotFoundException('Could not find secondary address for '
           '$_atSign after $retryCount retries');
@@ -439,7 +438,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
             secureSocket.remotePort != null;
       } on Exception catch (e, trace) {
         logger.finer(e);
-        print(trace);
       }
       retryCount++;
     }
