@@ -26,24 +26,22 @@ Future<void> main(List<String> arguments) async {
 
   if (argResults.wasParsed('help')) {
     print(parser.usage);
-    exit(0);
+    return;
   }
 
   if (!argResults.wasParsed('atsign')) {
     stderr.writeln(
         '--atsign (or -a) is required. Run with --help (or -h) for more.');
-    exit(1);
+    return;
   }
 
   if (!argResults.wasParsed('cramkey') && !argResults.wasParsed('qr_path')) {
     stderr.writeln(
         'Either of --cramkey(-c) or --qr_path(-q) is required. Run with --help (or -h) for more.');
-    exit(2);
+    return;
   }
 
   stdout.writeln('[Information] Root server is ${argResults['rootServer']}');
-
-  // var downloadPath = '${Directory.current.path}/.atsign/keys';
   var homeDirectory = getHomeDirectory();
   var downloadPath = "$homeDirectory/.atsign/keys";
 
@@ -55,9 +53,8 @@ Future<void> main(List<String> arguments) async {
     ..downloadPath = downloadPath;
 
   //onboard the atSign
-  AtOnboardingService? onboardingService =
+  AtOnboardingService onboardingService =
       AtOnboardingServiceImpl(argResults['atsign'], atOnboardingPreference);
-
   stdout.writeln(
       '[Information] Activating your atSign. This may take up to 2 minutes.');
   try {
@@ -66,13 +63,11 @@ Future<void> main(List<String> arguments) async {
     stderr.writeln(
         '[Error] Activation failed. It looks like something went wrong on our side.\n'
         'Please try again or contact support@atsign.com\nCause: ${e.toString()}');
-    exit(3);
+  } finally {
+    await onboardingService.close();
   }
-  await onboardingService.close();
-  //free the object after it's used and no longer required
-  onboardingService = null;
   stdout.writeln(
       '[Information] Your .atKeys file has been saved to the following location:\n$downloadPath');
   stdout.writeln('-------atSign activation complete-------');
-  exit(0);
+  return;
 }
