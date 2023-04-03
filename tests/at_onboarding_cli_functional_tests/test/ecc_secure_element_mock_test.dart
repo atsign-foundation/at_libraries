@@ -14,7 +14,7 @@ void main() {
   AtSignLogger.root_level = 'FINER';
   var logger = AtSignLogger('OnboardSecureElement');
 
-  final atSign = '@bob🛠';
+  final atSign = '@egcreditbureau🛠'.trim();
   test('Test auth functionality', () async {
     AtOnboardingPreference preference = getPreferences(atSign);
     AtOnboardingService onboardingService =
@@ -24,18 +24,18 @@ void main() {
         AtChopsSecureElementMock(AtChopsKeys.create(null, null));
     onboardingService.atChops = atChopsImpl;
     atChopsImpl.init();
-    logger.info('calling onboard');
+    logger.info('Onboarding the atSign: $atSign');
     bool isOnboarded = await onboardingService.onboard();
     expect(isOnboarded, true);
-    logger.info('onboard done');
-    logger.info('calling auth');
+    logger.info('Onboarding completed successfully');
 
+    logger.info('Authenticating the atSign: $atSign');
     bool status = await onboardingService.authenticate();
-    logger.info('auth done');
     expect(status, true);
+    logger.info('Authentication completed successfully for atSign: $atSign');
 
     // update a key
-    AtClient? atClient = await onboardingService.getAtClient();
+    AtClient? atClient = await onboardingService.atClient;
     await insertSelfEncKey(atClient, atSign,
         selfEncryptionKey:
             await getSelfEncryptionKey(preference.atKeysFilePath!));
@@ -55,7 +55,7 @@ void main() {
   });
 }
 
-AtOnboardingPreference getPreferences(String atsign) {
+AtOnboardingPreference getPreferences(String atSign) {
   AtOnboardingPreference atOnboardingPreference = AtOnboardingPreference()
     ..hiveStoragePath = 'storage/hive'
     ..namespace = 'wavi'
@@ -64,13 +64,13 @@ AtOnboardingPreference getPreferences(String atsign) {
     ..commitLogPath = 'storage/commitLog'
     ..rootDomain = 'vip.ve.atsign.zone'
     ..fetchOfflineNotifications = true
-    ..atKeysFilePath = 'storage/files/@bob🛠_key.atKeys'
+    ..atKeysFilePath = 'storage/files/$atSign' + '_key.atKeys'
     ..useAtChops = true
     ..signingAlgoType = SigningAlgoType.ecc_secp256r1
     ..hashingAlgoType = HashingAlgoType.sha256
     ..authMode = PkamAuthMode.sim
     ..publicKeyId = '3023020'
-    ..cramSecret = at_demos.cramKeyMap[atsign]
+    ..cramSecret = at_demos.cramKeyMap[atSign]
     ..skipSync = true;
 
   return atOnboardingPreference;

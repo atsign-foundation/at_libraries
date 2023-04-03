@@ -450,7 +450,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
     _atClient = null;
     logger.info('Closing current instance of at_onboarding_cli');
-    exit(0);
   }
 
   @override
