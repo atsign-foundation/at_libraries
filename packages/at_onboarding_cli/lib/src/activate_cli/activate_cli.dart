@@ -1,3 +1,4 @@
+import 'package:at_commons/at_commons.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:args/args.dart';
 import 'dart:io';
@@ -32,13 +33,13 @@ Future<void> main(List<String> arguments) async {
   if (!argResults.wasParsed('atsign')) {
     stderr.writeln(
         '--atsign (or -a) is required. Run with --help (or -h) for more.');
-    return;
+    throw IllegalArgumentException('atSign is required');
   }
 
   if (!argResults.wasParsed('cramkey') && !argResults.wasParsed('qr_path')) {
     stderr.writeln(
         'Either of --cramkey(-c) or --qr_path(-q) is required. Run with --help (or -h) for more.');
-    return;
+    throw IllegalArgumentException('CRAM key is required');
   }
 
   stdout.writeln('[Information] Root server is ${argResults['rootServer']}');
