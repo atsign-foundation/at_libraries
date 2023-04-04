@@ -261,6 +261,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         ?.getLocalSecondary()
         ?.putValue(AT_PKAM_PUBLIC_KEY, atKeysMap[AuthKeyType.pkamPublicKey]!);
     logger.finer('PkamPublicKey persist to localSecondary: status $response');
+    // save pkam private key only when auth mode is keyFile. if auth mode is sim/any other secure element private key cannot be read and hence will not be part of keys file
     if (atOnboardingPreference.authMode == PkamAuthMode.keysFile) {
       response = await _atClient?.getLocalSecondary()?.putValue(
           AT_PKAM_PRIVATE_KEY, atKeysMap[AuthKeyType.pkamPrivateKey]!);
@@ -350,9 +351,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
           jsonData[AuthKeyType.encryptionPrivateKey]!, decryptionKey),
       AuthKeyType.selfEncryptionKey: decryptionKey,
     };
+    atKeysMap[AuthKeyType.pkamPublicKey] = EncryptionUtil.decryptValue(
+        jsonData[AuthKeyType.pkamPublicKey]!, decryptionKey);
+    // pkam private key will not be saved in keyfile if auth mode is sim/any other secure element.
+    // decrypt the private key only when auth mode is keysFile
     if (atOnboardingPreference.authMode == PkamAuthMode.keysFile) {
-      atKeysMap[AuthKeyType.pkamPublicKey] = EncryptionUtil.decryptValue(
-          jsonData[AuthKeyType.pkamPublicKey]!, decryptionKey);
       atKeysMap[AuthKeyType.pkamPrivateKey] = EncryptionUtil.decryptValue(
           jsonData[AuthKeyType.pkamPrivateKey]!, decryptionKey);
     }
@@ -413,6 +416,10 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
             await atLookupImpl.secondaryAddressFinder.findSecondary(_atSign);
       } on Exception catch (e, trace) {
         logger.finer(e);
+        logger.finer(trace);
+      } on Error catch (e, trace) {
+        logger.finer(e);
+        logger.finer(trace);
       }
       retryCount++;
     }
@@ -438,6 +445,10 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
             secureSocket.remotePort != null;
       } on Exception catch (e, trace) {
         logger.finer(e);
+        logger.finer(trace);
+      } on Error catch (e, trace) {
+        logger.finer(e);
+        logger.finer(trace);
       }
       retryCount++;
     }
@@ -480,6 +491,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   @override
   Future<bool> isOnboarded() async {
     // #TODO implement once AtClient offline access feature is complete.
+    // https://github.com/atsign-foundation/at_client_sdk/issues/915
     throw UnimplementedError();
   }
 }
