@@ -16,8 +16,8 @@ dependencies:
    at_utils: ^3.0.12
    at_client: ^3.0.58
    at_lookup: ^3.0.36
-   zxing2: ^0.2.0
-   image: ^4.0.15
+   zxing2: ^0.1.0
+   image: ^3.1.1
    crypton: ^2.0.3
    at_commons: ^3.0.44
    encrypt: ^5.0.1

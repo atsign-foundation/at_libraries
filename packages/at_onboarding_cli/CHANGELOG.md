@@ -3,7 +3,6 @@
 - fix: issue with atKeys file creation while onboarding if the downloadPath directory does not exist
 - fix: activate_cli throws exit(0) even though the process fails
 - fix: onboarding_cli throws exception now when secondary address not found. Previously exit(1)
-- build: upgrade zxing2 dependency to 0.2.0 and image dependency to 4.0.15
 ## 1.2.5
 - feat: atkeys file now placed in standard location ~/.atsign/keys
 ## 1.2.4
