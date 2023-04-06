@@ -8,11 +8,10 @@ void main() {
   group('A group of tests to validate keyType', () {
     test('Tests to validate public key type, namespace mandatory', () {
       var keyTypeList = [];
-      keyTypeList.add('public:@bob:phone.buzz@bob');
       keyTypeList.add('public:phone.buzz@bob');
-      keyTypeList.add('public:@bob:p.b@bob');
+      keyTypeList.add('public:p.b@bob');
       keyTypeList.add('public:pho_-ne.b@bob');
-      keyTypeList.add('public:@bob💙:phone😀.buzz@bob💙');
+      keyTypeList.add('public:phone😀.buzz@bob💙');
       keyTypeList.add('public:phone.me@bob');
 
       for (var key in keyTypeList) {
@@ -23,20 +22,20 @@ void main() {
 
     test('Tests to validate public key type, namespace not mandatory', () {
       var keyTypeList = [];
-      keyTypeList.add('public:@bob:phone.buzz@bob');
-      keyTypeList.add('public:@bob:phone@bob');
+      keyTypeList.add('public:phone.buzz@bob');
+      keyTypeList.add('public:phone@bob');
 
       keyTypeList.add('public:phone.buzz@bob');
       keyTypeList.add('public:phone@bob');
 
-      keyTypeList.add('public:@bob:p.b@bob');
-      keyTypeList.add('public:@bob:p@bob');
+      keyTypeList.add('public:p.b@bob');
+      keyTypeList.add('public:p@bob');
 
       keyTypeList.add('public:pho_-ne.b@bob');
       keyTypeList.add('public:pho_-ne@bob');
 
-      keyTypeList.add('public:@bob💙:phone😀.buzz@bob💙');
-      keyTypeList.add('public:@bob💙:phone😀@bob💙');
+      keyTypeList.add('public:phone😀.buzz@bob💙');
+      keyTypeList.add('public:phone😀@bob💙');
 
       keyTypeList.add('public:phone.me@bob');
       keyTypeList.add('public:phone@bob');
@@ -160,11 +159,10 @@ void main() {
 
     test('Tests to validate cached public keys, namespace mandatory', () {
       var keyTypeList = [];
-      keyTypeList.add("cached:public:@jagannadh:phone.buzz@jagannadh");
       keyTypeList.add("cached:public:phone.buzz@jagannadh");
       keyTypeList.add("cached:public:p.b@jagannadh");
       keyTypeList.add("cached:public:pho_-n________e.b@jagannadh");
-      keyTypeList.add("cached:public:@jagannadh💙:phone😀.buzz@jagannadh💙");
+      keyTypeList.add("cached:public:phone😀.buzz@jagannadh💙");
 
       for (var key in keyTypeList) {
         var type = RegexUtil.keyType(key, true);
@@ -174,9 +172,6 @@ void main() {
 
     test('Tests to validate cached public keys, namespace not mandatory', () {
       var keyTypeList = [];
-      keyTypeList.add("cached:public:@jagannadh:phone.buzz@jagannadh");
-      keyTypeList.add("cached:public:@jagannadh:phone@jagannadh");
-
       keyTypeList.add("cached:public:phone.buzz@jagannadh");
       keyTypeList.add("cached:public:phone@jagannadh");
 
@@ -186,8 +181,8 @@ void main() {
       keyTypeList.add("cached:public:pho_-n________e.b@jagannadh");
       keyTypeList.add("cached:public:pho_-n________e@jagannadh");
 
-      keyTypeList.add("cached:public:@jagannadh💙:phone😀.buzz@jagannadh💙");
-      keyTypeList.add("cached:public:@jagannadh💙:phone😀@jagannadh💙");
+      keyTypeList.add("cached:public:phone😀.buzz@jagannadh💙");
+      keyTypeList.add("cached:public:phone😀@jagannadh💙");
 
       for (var key in keyTypeList) {
         var type = RegexUtil.keyType(key, false);

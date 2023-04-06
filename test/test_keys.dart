@@ -59,34 +59,42 @@ class TestKeys {
   _initNonBobPublicKeys() {
     // public key with max of 55 characters for the @sign
     validPublicKeys.add(
-        "public:@bob0123456789012345678901234567890123456789012345:phone.buzz@bob0123456789012345678901234567890123456789012345");
+        "public:phone.buzz@bob0123456789012345678901234567890123456789012345");
     // public key with valid punctuations in the @sign
-    validPublicKeys.add("public:@jagann_a-d_h:phone.buzz@jagann_a-d_h");
+    validPublicKeys.add("public:phone.buzz@jagann_a-d_h");
     // public key with emoji's in @sign
-    validPublicKeys.add("public:@bob💙:phone.buzz@bob💙");
+    validPublicKeys.add("public:phone.buzz@bob💙");
     // Emojis in both @sign and entity
-    validPublicKeys.add("public:@bob💙:phone😀.buzz@bob💙");
+    validPublicKeys.add("public:phone😀.buzz@bob💙");
 
     // More than 55 characters for the @sign
     List<String> temp = [];
     temp.add(
-        "public:@bob0123456789012345678901234567890123456789012345extrachars:phone.buzz@bob0123456789012345678901234567890123456789012345extrachars");
+        "public:phone.buzz@bob0123456789012345678901234567890123456789012345extrachars");
     //  Invalid punctuations in the @sign
-    temp.add("public:@bo#b:phone.buzz@bo#b");
+    temp.add("public:phone.buzz@bo#b");
     //  Invalid and valid punctuations in the @sign
-    temp.add("public:@jagan_____na#dh💙:phone.buzz@bob💙");
+    temp.add("public:phone.buzz@jagan_____na#dh💙");
+    //  sharedWith as well as public (must be one or the other, can't be both)
+    temp.add("public:@bob:phone.buzz@jagan_____na#dh💙");
+    //  more than one colon after 'public'
+    temp.add("public::phone.buzz@jagan_____na#dh💙");
+    //  colon in the entity fragment
+    temp.add("public::foo.b:ar.buzz@jagan_____na#dh💙");
+    //  colon before sharedBy
+    temp.add("public:phone.buzz:@jagan_____na#dh💙");
+    //  colon in sharedBy
+    temp.add("public:phone.buzz@jag:an_____na#dh💙");
+    //  colon at end of sharedBy
+    temp.add("public:phone.buzz@jagan_____na#dh💙:");
 
     invalidPublicKeysNamespaceMandatory.addAll(temp);
     invalidPublicKeysNamespaceOptional.addAll(temp);
   }
 
   _initValidPublicKeys() {
-    // public key with sharedWith specified
-    validPublicKeys.add("public:@bob:phone.buzz@bob");
-    //  public key with sharedWith not being specified
+    //  simple public key
     validPublicKeys.add("public:phone.buzz@bob");
-    //  public key with sharedWith specified and single character entity and namespace
-    validPublicKeys.add("public:@bob:p.b@bob");
     //  public key with single character entity and namespace
     validPublicKeys.add("public:p.b@bob");
     //  public key with punctuations in the entity name
@@ -98,13 +106,15 @@ class TestKeys {
     // public key with many punctuations in the entity name
     validPublicKeys.add("public:pho_-n________e.b@bob");
     //  public key with emoji's in entity
-    validPublicKeys.add("public:@bob:phone😀.buzz@bob");
+    validPublicKeys.add("public:phone😀.buzz@bob");
   }
 
   _initInvalidPublicKeys() {
     List<String> temp = [];
     // Misspelt public
-    temp.add("publicc:@bob:phone.buzz@bob");
+    temp.add("publicc:phone.buzz@bob");
+    //  sharedWith as well as public (must be one or the other, can't be both)
+    temp.add("public:@bob:phone.buzz@bob");
     //  No public
     temp.add("phone.buzz@bob");
     //  No public and start with a :
@@ -115,14 +125,24 @@ class TestKeys {
     temp.add("public:pho#n____-____e.b@bob");
     // Key with no atsign
     temp.add("public:pho#n____-____e.b");
+    // key without entity or owner
+    temp.add("public:");
+    // key without owner
+    temp.add("public:foo.bar");
+    // key without owner
+    temp.add("public:foo.bar@");
     // key without entity
     temp.add("public:@bob");
+    // multiple colons
+    temp.add("public::@bob");
+    // colon prefixed
+    temp.add(":public:foo.bar@bob");
 
     invalidPublicKeysNamespaceMandatory.addAll(temp);
     invalidPublicKeysNamespaceOptional.addAll(temp);
 
     //  No namespace
-    invalidPublicKeysNamespaceMandatory.add("public:@bob:phone@bob");
+    invalidPublicKeysNamespaceMandatory.add("public:phone@bob");
   }
 
   _initNonBobPrivateKeys() {
@@ -189,29 +209,28 @@ class TestKeys {
   _initNonBobCachedPublicKeys() {
     // cached public key with max of 55 characters for the @sign
     validCachedPublicKeys.add(
-        "cached:public:@bob0123456789012345678901234567890123456789012345:phone.buzz@bob0123456789012345678901234567890123456789012345");
+        "cached:public:phone.buzz@bob0123456789012345678901234567890123456789012345");
     //  cached public key with valid punctuations in the @sign
     validCachedPublicKeys
-        .add("cached:public:@jagann_a-d_h:phone.buzz@jagann_a-d_h");
+        .add("cached:public:phone.buzz@jagann_a-d_h");
     //  cached public key with emoji's in @sign
-    validCachedPublicKeys.add("cached:public:@bob💙:phone.buzz@bob💙");
+    validCachedPublicKeys.add("cached:public:phone.buzz@bob💙");
     // cached public public in both @sign and entity
-    validCachedPublicKeys.add("cached:public:@bob💙:phone😀.buzz@bob💙");
+    validCachedPublicKeys.add("cached:public:phone😀.buzz@bob💙");
+
     List<String> temp = [];
     //  Invalid and valid punctuations in the @sign
-    temp.add("cached:public:@jagan_____na#dh💙:phone.buzz@bob💙");
+    temp.add("cached:public:phone.buzz@jagan_____na#dh💙");
 
     invalidCachedPublicKeysNamespaceMandatory.addAll(temp);
     invalidCachedPublicKeysNamespaceOptional.addAll(temp);
   }
 
   _initValidCachedPublicKeys() {
-    // cached public key with sharedWith specified
-    validCachedPublicKeys.add("cached:public:@bob:phone.buzz@bob");
-    //  cached public key with sharedWith not being specified
+    // simple cached public key
     validCachedPublicKeys.add("cached:public:phone.buzz@bob");
-    //  cached public key with sharedWith specified and single character entity and namespace
-    validCachedPublicKeys.add("cached:public:@bob:p.b@bob");
+    //  cached public key with single character entity and namespace
+    validCachedPublicKeys.add("cached:public:p.b@bob");
     //  cached public key with single character entity and namespace
     validCachedPublicKeys.add("cached:public:p.b@bob");
     //  cached public key with punctuations in the entity name
@@ -219,13 +238,15 @@ class TestKeys {
     // cached public key with many punctuations in the entity name
     validCachedPublicKeys.add("cached:public:pho_-n________e.b@bob");
     //  cached public key with emoji's in entity
-    validCachedPublicKeys.add("cached:public:@bob:phone😀.buzz@bob");
+    validCachedPublicKeys.add("cached:public:phone😀.buzz@bob");
   }
 
   _initInvalidCachedPublicKeys() {
     List<String> temp = [];
     // Mis-spelt public
-    temp.add("cached:publicc:@bob:phone.buzz@bob");
+    temp.add("cached:publicc:phone.buzz@bob");
+    //  sharedWith as well as public (must be one or the other, can't be both)
+    temp.add("cached:public:@bob:phone.buzz@bob");
     //  No cached public
     temp.add("phone.buzz@bob");
     //  No cached public and start with a :
@@ -236,16 +257,16 @@ class TestKeys {
     temp.add("cached:public:pho#n____-____e.b@bob");
     // More than 55 characters for the @sign
     temp.add(
-        "cached:public:@bob0123456789012345678901234567890123456789012345extracharshere:phone.buzz@bob");
+        "cached:public:phone.buzz@bob0123456789012345678901234567890123456789012345extracharshere");
     //  Invalid punctuations in the @sign
-    temp.add("cached:public:@jaganna#dh:phone.buzz@bob");
+    temp.add("cached:public:phone.buzz@@jaganna#dh");
 
     invalidCachedPublicKeysNamespaceMandatory.addAll(temp);
     invalidCachedPublicKeysNamespaceOptional.addAll(temp);
 
     //  No namespace
     invalidCachedPublicKeysNamespaceMandatory
-        .add("cached:public:@bob:phone@bob");
+        .add("cached:public:phone@bob");
   }
 
   _initNonBobSelfKeys() {

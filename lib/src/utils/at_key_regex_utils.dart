@@ -9,29 +9,35 @@ abstract class Regexes {
   static const allowedEmoji =
       r'''((\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]))''';
   static const _charsInReservedKey =
-      r'(shared_key|publickey|privatekey|self_encryption_key|commitLogCompactionStats|accessLogCompactionStats|notificationCompactionStats|signing_privatekey|signing_publickey|signing_keypair_generated|at_pkam_privatekey|at_pkam_publickey|at_secret_deleted|at_secret|_[\w-]+|)';
+      r'(shared_key|publickey|privatekey|self_encryption_key'
+      r'|commitLogCompactionStats|accessLogCompactionStats'
+      r'|notificationCompactionStats|signing_privatekey|signing_publickey'
+      r'|signing_keypair_generated|at_pkam_privatekey|at_pkam_publickey'
+      r'|at_secret_deleted|at_secret'
+      r'|configkey'
+      r'|_[\w-]+|)';
 
   static const String namespaceFragment =
       '''\\.(?<namespace>$charsInNamespace)''';
   static const String ownershipFragment =
       '''@(?<owner>($charsInAtSign|$allowedEmoji){1,55})''';
   static const String sharedWithFragment =
-      '''(?<sharedWith>($charsInAtSign|$allowedEmoji){1,55}):)''';
+      '''((?<sharedWith>($charsInAtSign|$allowedEmoji){1,55}):)''';
   static const String entityFragment =
       '''(?<entity>($charsInEntity|$allowedEmoji)+)''';
 
   static const String publicKeyStartFragment =
-      '''(?<visibility>(public:){1})((@$sharedWithFragment)?$entityFragment''';
+      '''(?<visibility>(public:){1})$entityFragment''';
   static const String privateKeyStartFragment =
-      '''(?<visibility>(private:){1})((@$sharedWithFragment)?$entityFragment''';
+      '''(?<visibility>(private:){1})(@$sharedWithFragment)?$entityFragment''';
   static const String selfKeyStartFragment =
-      '''((@$sharedWithFragment)?(_*$entityFragment)''';
+      '''(@$sharedWithFragment)?(_*$entityFragment)''';
   static const String sharedKeyStartFragment =
-      '''((@$sharedWithFragment)(_*$entityFragment)''';
+      '''(@$sharedWithFragment)(_*$entityFragment)''';
   static const String cachedSharedKeyStartFragment =
-      '''((cached:)(@$sharedWithFragment)(_*$entityFragment)''';
+      '''(cached:)(@$sharedWithFragment)(_*$entityFragment)''';
   static const String cachedPublicKeyStartFragment =
-      '''(?<visibility>(cached:public:){1})((@$sharedWithFragment)?$entityFragment''';
+      '''(?<visibility>(cached:public:){1})$entityFragment''';
   static const String reservedKeyFragment =
       '''(((@(?<sharedWith>($charsInAtSign|$allowedEmoji){1,55}))|public|privatekey):)?(?<atKey>$_charsInReservedKey)(@(?<owner>($charsInAtSign|$allowedEmoji){1,55}))?''';
   static const String localKeyFragment =
@@ -116,7 +122,7 @@ class RegexesNonMandatoryNamespace implements Regexes {
       '''${Regexes.cachedSharedKeyStartFragment}${Regexes.ownershipFragment}''';
   static const String _cachedPublicKey =
       '''${Regexes.cachedPublicKeyStartFragment}${Regexes.ownershipFragment}''';
-  static const String _localkey =
+  static const String _localKey =
       '''${Regexes.localKeyFragment}${Regexes.ownershipFragment}''';
 
   @override
@@ -141,7 +147,7 @@ class RegexesNonMandatoryNamespace implements Regexes {
   String get reservedKey => Regexes.reservedKeyFragment;
 
   @override
-  String get localKey => _localkey;
+  String get localKey => _localKey;
 }
 
 class RegexUtil {

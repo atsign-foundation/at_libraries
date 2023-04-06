@@ -12,18 +12,20 @@ void main() {
         ..value = 'alice@gmail.com'
         ..isPublic = true
         ..atKey = 'email'
-        ..sharedBy = 'alice';
+        ..sharedBy = 'alice'
+        ..ttln = 100;
       var command = notifyVerbBuilder.buildCommand();
       expect(command,
-          'notify:id:123:notifier:SYSTEM:public:email@alice:alice@gmail.com\n');
+          'notify:id:123:notifier:SYSTEM:ttln:100:public:email@alice:alice@gmail.com\n');
       var params = VerbUtil.getVerbParam(VerbSyntax.notify, command.trim())!;
-      expect(params.length, 6);
+      expect(params.length, 7);
       expect(params[ID], '123');
       expect(params[VALUE], 'alice@gmail.com');
       expect(params[PUBLIC_SCOPE_PARAM], 'public');
       expect(params[AT_KEY], 'email');
       expect(params[AT_SIGN], 'alice');
       expect(params[NOTIFIER], 'SYSTEM');
+      expect(params[AT_TTL_NOTIFICATION], '100');
     });
 
     test('notify public key with ttl', () {
@@ -56,12 +58,13 @@ void main() {
         ..sharedBy = 'alice'
         ..sharedWith = 'bob'
         ..pubKeyChecksum = '123'
-        ..sharedKeyEncrypted = 'abc';
+        ..sharedKeyEncrypted = 'abc'
+        ..ttln = 100;
       var command = notifyVerbBuilder.buildCommand();
       expect(command,
-          'notify:id:123:notifier:SYSTEM:sharedKeyEnc:abc:pubKeyCS:123:@bob:email@alice:alice@atsign.com\n');
+          'notify:id:123:notifier:SYSTEM:ttln:100:sharedKeyEnc:abc:pubKeyCS:123:@bob:email@alice:alice@atsign.com\n');
       var params = VerbUtil.getVerbParam(VerbSyntax.notify, command.trim())!;
-      expect(params.length, 8);
+      expect(params.length, 9);
       expect(params[ID], '123');
       expect(params[VALUE], 'alice@atsign.com');
       expect(params[AT_KEY], 'email');

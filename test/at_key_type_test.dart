@@ -64,12 +64,24 @@ void main() {
       var keyType = AtKey.getKeyType('phone@bob', enforceNameSpace: true);
       expect(keyType, equals(KeyType.invalidKey));
     });
+
     test('Test self key type with atsign and without namespace', () {
       var keyType = AtKey.getKeyType('@bob:phone@bob', enforceNameSpace: true);
       expect(keyType, equals(KeyType.invalidKey));
     });
+
     test('Test local key type with atsign and without namespace', () {
       var keyType = AtKey.getKeyType('local:phone@bob', enforceNameSpace: true);
+      expect(keyType, equals(KeyType.invalidKey));
+    });
+
+    test('Test malformed key cached:public:cached:public:privateaccount.wavi@dying36dragonfly', () {
+      var keyType = AtKey.getKeyType('cached:public:cached:public:privateaccount.wavi@dying36dragonfly', enforceNameSpace: false);
+      expect(keyType, equals(KeyType.invalidKey));
+    });
+
+    test('Test malformed key public:@public:image.wavi@colin', () {
+      var keyType = AtKey.getKeyType('public:@public:image.wavi@colin', enforceNameSpace: false);
       expect(keyType, equals(KeyType.invalidKey));
     });
   });
@@ -128,6 +140,11 @@ void main() {
 
     test('Test reserved key type for cram secret', () {
       var keyType = AtKey.getKeyType('privatekey:at_secret');
+      expect(keyType, equals(KeyType.reservedKey));
+    });
+
+    test('Test reserved key type for config key (blocklist/allowlist)', () {
+      var keyType = AtKey.getKeyType('configkey');
       expect(keyType, equals(KeyType.reservedKey));
     });
   });
