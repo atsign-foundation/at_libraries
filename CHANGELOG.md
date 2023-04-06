@@ -1,3 +1,5 @@
+## 3.0.40
+- feat: introduce enum for pkam authentication mode
 ## 3.0.39
 - feat: add new exceptions for at_chops operations.
 ## 3.0.38
