@@ -166,7 +166,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         '[Information] Generating your encryption keys and .atKeys file\n');
     //mapping encryption keys pairs to their names
     Map<String, String> atKeysMap = <String, String>{};
-    var pkamPublicKey;
+    String pkamPublicKey;
     //generating pkamKeyPair only if authMode is keysFile
     if (atOnboardingPreference.authMode == PkamAuthMode.keysFile) {
       logger.info('Generating pkam keypair');
