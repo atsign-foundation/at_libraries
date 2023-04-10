@@ -72,9 +72,8 @@ void main() {
       AtOnboardingService service = AtOnboardingServiceImpl(atSign, preference);
       expect(
           () async => await service.authenticate(),
-          throwsA(predicate(
-              (e) => e.toString().contains('atKeys filePath is null or empty.'
-                  ' atKeysFile needs to be provided'))));
+          throwsA(predicate((e) => e.toString().contains(
+              'atKeys filePath is empty. atKeysFile is required to authenticate'))));
     });
 
     tearDown(() async {
