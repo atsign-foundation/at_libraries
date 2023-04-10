@@ -7,8 +7,12 @@ import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart'
 Future<void> main(List<String> args) async {
   try {
     await activate_cli.main(args);
-  } on IllegalArgumentException {
+  } on IllegalArgumentException catch(e){
+    stderr.writeln('Aborting process with exit code:1 \nCause:$e');
     exit(1);
+  } catch(e){
+    stderr.writeln('Aborting process with exit code:2 \nCause:$e');
+    exit(2);
   }
   // The onboarding_service_impl creates an AtClient instance which will start
   // the following services: SyncService, AtClientCommitLogCompaction,

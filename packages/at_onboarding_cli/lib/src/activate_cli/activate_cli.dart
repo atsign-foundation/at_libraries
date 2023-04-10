@@ -64,11 +64,11 @@ Future<void> main(List<String> arguments) async {
     stderr.writeln(
         '[Error] Activation failed. It looks like something went wrong on our side.\n'
         'Please try again or contact support@atsign.com\nCause: ${e.toString()}');
-  } finally {
     await onboardingService.close();
+    return;
   }
   stdout.writeln(
-      '[Information] Your .atKeys file has been saved to the following location:\n$downloadPath');
+      '[Information] Your .atKeys file has been saved to the following location:\n>$downloadPath');
   stdout.writeln('-------atSign activation complete-------');
   return;
 }

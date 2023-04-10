@@ -70,7 +70,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   @override
   Future<bool> onboard() async {
-    // #TODO uncomment this code after isOnboarded is implemented
+    // TODO: uncomment this code after isOnboarded is implemented
     // if(isOnboarded()) {
     //   return true;
     // }
@@ -85,7 +85,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
     if (atOnboardingPreference.downloadPath == null &&
         atOnboardingPreference.atKeysFilePath == null) {
-      throw AtClientException.message('Download path not provided',
+      throw AtClientException.message('Download path not provided. Please provide'
+          ' downloadPath through AtOnboardingPreferences.\n DownloadPath is where the atKeys file will be saved.',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
     // cram auth doesn't use at_chops.So create at_lookup here.
@@ -98,11 +99,16 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       _isAtsignOnboarded = (await atLookUpImpl
           .authenticate_cram(atOnboardingPreference.cramSecret));
 
-      logger.info('Cram authentication status: $_isAtsignOnboarded');
-
       if (_isAtsignOnboarded) {
+        logger.info('Cram authentication successful');
         await _activateAtsign(atLookUpImpl);
+      } else {
+        logger.severe('Cram authentication failed. Please check the cram key'
+            'and try again \n(or) contact support@atsign.com');
       }
+    } on UnAuthenticatedException {
+      throw UnAuthenticatedException(
+          "Unable to authenticate. Please check your cram secret");
     } finally {
       await atLookUpImpl.close();
     }
@@ -150,7 +156,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       logger.finer(await getServerStatus());
       logger.info('----------atSign activated---------');
     } else {
-      throw AtClientException.message('Pkam Authentication Failed');
+      throw UnAuthenticatedException('Unable to authenticate.'
+          ' Please provide a valid keys file');
     }
   }
 
@@ -232,8 +239,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
             atOnboardingPreference.atKeysFilePath!, '${_atSign}_key.atKeys');
       }
     }
-    //note: in case atKeysFilePath is provided instead of downloadPath;
-    //file is created with whichever name provided as atKeysFilePath(even if filename does not match standard atKeys file name convention)
+
     File atKeysFile = File(atOnboardingPreference.downloadPath ??
         atOnboardingPreference.atKeysFilePath!);
     if (!atKeysFile.existsSync()) {
@@ -245,8 +251,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     fileWriter.write(jsonEncode(atKeysMap));
     await fileWriter.flush();
     await fileWriter.close();
-    logger.info(
-        'atKeys file saved at ${atOnboardingPreference.downloadPath ?? atOnboardingPreference.atKeysFilePath}');
     stdout.writeln(
         '[Success] Your .atKeys file saved at ${atOnboardingPreference.downloadPath ?? atOnboardingPreference.atKeysFilePath}\n');
   }
@@ -280,8 +284,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         'EncryptionPrivateKey persist to localSecondary: status $response');
     response = await _atClient?.getLocalSecondary()?.putValue(
         AT_ENCRYPTION_SELF_KEY, atKeysMap[AuthKeyType.selfEncryptionKey]!);
-    logger.finer(
-        'Self encryption key persist to localSecondary: status $response');
+    logger
+        .finer('SelfEncryptionKey persist to localSecondary: status $response');
   }
 
   @override
@@ -293,13 +297,15 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     if (atOnboardingPreference.authMode == PkamAuthMode.keysFile &&
         pkamPrivateKey == null) {
       throw AtPrivateKeyNotFoundException(
-          'Unable to read pkam private key from provided .atKeys path: ${atOnboardingPreference.atKeysFilePath}',
+          'Unable to read PkamPrivateKey from provided atKeys file at path: '
+          '${atOnboardingPreference.atKeysFilePath}. Please provide a valid atKeys file',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
     await _init(atKeysFileDataMap);
-    logger.finer('pkam auth');
+    logger.finer('Authenticating using PKAM');
     _isPkamAuthenticated = (await _atLookUp?.pkamAuthenticate())!;
-    logger.finer('pkam auth result: $_isPkamAuthenticated');
+    logger.finer(
+        'PKAM auth result: ${_isPkamAuthenticated ? 'success' : 'failed'}');
 
     if (!_isAtsignOnboarded && atOnboardingPreference.atKeysFilePath != null) {
       await _persistKeysLocalSecondary();
@@ -323,7 +329,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   Future<Map<String, String>> _readAtKeysFile(String? atKeysFilePath) async {
     if (atKeysFilePath == null || atKeysFilePath.isEmpty) {
       throw AtClientException.message(
-          'atKeys filePath is null or empty. atKeysFile needs to be provided');
+          'atKeys filePath is empty. atKeysFile is required to authenticate');
     }
     String atAuthData = await File(atKeysFilePath).readAsString();
     Map<String, String> jsonData = <String, String>{};
@@ -409,7 +415,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     bool connectionFlag = false;
 
     while (retryCount <= maxRetries && secondaryAddress == null) {
-      await Future.delayed(Duration(seconds: 3));
+      await Future.delayed(Duration(seconds: 2));
       logger.finer('retrying find secondary.......$retryCount/$maxRetries');
       try {
         secondaryAddress =
@@ -423,17 +429,16 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       }
       retryCount++;
     }
-    logger.finer('secondaryAddress ** $secondaryAddress');
+    stdout.writeln('SecondaryAddress **> $secondaryAddress');
     if (secondaryAddress == null) {
       throw SecondaryNotFoundException('Could not find secondary address for '
-          '$_atSign after $retryCount retries');
+          '$_atSign after $retryCount retries. Please retry the process');
     }
     //resetting retry counter to be used for different operation
     retryCount = 1;
 
     while (!connectionFlag && retryCount <= maxRetries) {
-      await Future.delayed(Duration(seconds: 3));
-      logger.finer('retrying connect secondary.......$retryCount/$maxRetries');
+      await Future.delayed(Duration(seconds: 2));
       stdout.writeln('Connecting to secondary ...$retryCount/$maxRetries');
       try {
         secureSocket = await SecureSocket.connect(
