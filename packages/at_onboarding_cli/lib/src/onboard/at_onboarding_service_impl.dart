@@ -464,6 +464,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     if (_atLookUp != null) {
       await (_atLookUp as AtLookupImpl).close();
     }
+    _atLookUp = null;
     _atClient = null;
     logger.info('Closing current instance of at_onboarding_cli');
   }

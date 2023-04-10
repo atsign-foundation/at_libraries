@@ -38,7 +38,7 @@ Future<void> main(List<String> arguments) async {
 
   if (!argResults.wasParsed('cramkey') && !argResults.wasParsed('qr_path')) {
     stderr.writeln(
-        'Either of --cramkey(-c) or --qr_path(-q) is required. Run with --help (or -h) for more.');
+        'Either of --cram key(-c) or --qr_path(-q) is required. Run with --help (or -h) for more.');
     throw IllegalArgumentException('CRAM key is required');
   }
 
@@ -64,8 +64,9 @@ Future<void> main(List<String> arguments) async {
     stderr.writeln(
         '[Error] Activation failed. It looks like something went wrong on our side.\n'
         'Please try again or contact support@atsign.com\nCause: ${e.toString()}');
-    await onboardingService.close();
     return;
+  } finally{
+    await onboardingService.close();
   }
   stdout.writeln(
       '[Information] Your .atKeys file has been saved to the following location:\n>$downloadPath');
