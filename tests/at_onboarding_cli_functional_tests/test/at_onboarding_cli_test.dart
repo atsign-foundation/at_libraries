@@ -69,6 +69,7 @@ void main() {
       String atSign = '@eve🛠';
       AtOnboardingPreference preference = getPreferences(atSign);
       preference.atKeysFilePath = null;
+      AtOnboardingServiceImpl(atSign, preference);
       expect(preference.atKeysFilePath, '$atKeysFilePath/${atSign}_key.atKeys');
     });
     tearDown(() async {
