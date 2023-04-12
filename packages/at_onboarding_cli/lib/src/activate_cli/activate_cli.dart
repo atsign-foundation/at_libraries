@@ -43,15 +43,12 @@ Future<void> main(List<String> arguments) async {
   }
 
   stdout.writeln('[Information] Root server is ${argResults['rootServer']}');
-  var homeDirectory = getHomeDirectory();
-  var downloadPath = "$homeDirectory/.atsign/keys";
 
   //onboarding preference builder can be used to set onboardingService parameters
   AtOnboardingPreference atOnboardingPreference = AtOnboardingPreference()
     ..rootDomain = argResults['rootServer']
     ..cramSecret = argResults['cramkey'] ??
-        AtOnboardingServiceImpl.getSecretFromQr(argResults['qr_path'])
-    ..downloadPath = downloadPath;
+        AtOnboardingServiceImpl.getSecretFromQr(argResults['qr_path']);
 
   //onboard the atSign
   AtOnboardingService onboardingService =
@@ -67,8 +64,6 @@ Future<void> main(List<String> arguments) async {
   } finally {
     await onboardingService.close();
   }
-  stdout.writeln(
-      '[Information] Your .atKeys file has been saved to the following location:\n$downloadPath');
   stdout.writeln('-------atSign activation complete-------');
   return;
 }
