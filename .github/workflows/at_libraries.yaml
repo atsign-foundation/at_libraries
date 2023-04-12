@@ -156,9 +156,6 @@ jobs:
         working-directory: tests/${{ matrix.package }}
         run: dart run check_test_env.dart
         
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v2
-        
       - name: run tests
         working-directory: tests/${{ matrix.package }}
         run: dart test --concurrency=1
