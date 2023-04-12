@@ -64,13 +64,12 @@ void main() {
       expect('value3', response?.value);
     });
 
-    test('A test to verify exception is thrown when .atKeys file not provided',
+    test('A test to verify atKeysFilePath is set when null is provided',
         () async {
       String atSign = '@eve🛠';
       AtOnboardingPreference preference = getPreferences(atSign);
       preference.atKeysFilePath = null;
-      AtOnboardingService service = AtOnboardingServiceImpl(atSign, preference);
-      expect(preference.atKeysFilePath, isNotNull);
+      expect(preference.atKeysFilePath, '$atKeysFilePath/${atSign}_key.atKeys');
     });
     tearDown(() async {
       await tearDownFunc();

@@ -25,7 +25,7 @@ class ConfigUtil {
      if(homeDir == null){
        throw AtClientException.message('Could not find home directory');
      }
-     return path.join(homeDir!, '.atsign', 'at_onboarding_cli', 'keys', '${atsign}_key.atKeys');
+     return path.join(homeDir!, '.atsign', 'keys', '${atsign}_key.atKeys');
   }
 
   static String getStorageDirectory(String atsign){

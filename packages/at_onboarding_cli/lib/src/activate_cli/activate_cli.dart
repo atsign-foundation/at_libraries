@@ -64,6 +64,5 @@ Future<void> main(List<String> arguments) async {
   } finally {
     await onboardingService.close();
   }
-  stdout.writeln('-------atSign activation complete-------');
   return;
 }

@@ -192,7 +192,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       atChops!.atChopsKeys.symmetricKey = AESKey(selfEncryptionKey);
     }
     //Standard order of an atKeys file is ->
-    // pkam keypair -> encryption keypair -> selfEncryption key -> @sign: selfEncryptionKey[self encryption key again]
+    // pkam keypair -> encryption keypair -> selfEncryption key ->
+    // @sign: selfEncryptionKey[self encryption key again]
+    // note: "->" stands for "followed by"
     atKeysMap[AuthKeyType.encryptionPublicKey] =
         encryptionKeyPair.publicKey.toString();
     atKeysMap[AuthKeyType.encryptionPrivateKey] =

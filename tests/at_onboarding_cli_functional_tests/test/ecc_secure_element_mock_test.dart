@@ -36,9 +36,6 @@ void main() {
 
     // update a key
     AtClient? atClient = await onboardingService.atClient;
-    await insertSelfEncKey(atClient, atSign,
-        selfEncryptionKey:
-            await getSelfEncryptionKey(preference.atKeysFilePath!));
     AtKey key = AtKey();
     key.key = 'securedKey';
     key.namespace = 'wavi';
@@ -77,22 +74,6 @@ AtOnboardingPreference getPreferences(String atSign) {
     ..skipSync = true;
 
   return atOnboardingPreference;
-}
-
-Future<String?> getSelfEncryptionKey(String atKeysFilePath) async {
-  String atAuthData = await File(atKeysFilePath).readAsString();
-  Map<String, String> jsonData = <String, String>{};
-  json.decode(atAuthData).forEach((String key, dynamic value) {
-    jsonData[key] = value.toString();
-  });
-  return jsonData[AT_ENCRYPTION_SELF_KEY];
-}
-
-Future<void> insertSelfEncKey(AtClient? atClient, String atsign,
-    {String? selfEncryptionKey}) async {
-  await atClient?.getLocalSecondary()?.putValue(
-      AT_ENCRYPTION_SELF_KEY, selfEncryptionKey ?? at_demos.aesKeyMap[atsign]!);
-  return;
 }
 
 Future<void> tearDownFunc() async {
