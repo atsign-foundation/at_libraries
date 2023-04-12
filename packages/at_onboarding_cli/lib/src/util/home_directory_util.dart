@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:at_client/at_client.dart';
 import 'package:path/path.dart' as path;
 
-class ConfigUtil {
+class HomeDirectoryUtil {
 
   static final homeDir = getHomeDirectory();
 
@@ -40,6 +40,6 @@ class ConfigUtil {
   }
 
   static String getHiveStoragePath(String atsign){
-    return path.join(ConfigUtil.getStorageDirectory(atsign),'hive');
+    return path.join(HomeDirectoryUtil.getStorageDirectory(atsign),'hive');
   }
 }

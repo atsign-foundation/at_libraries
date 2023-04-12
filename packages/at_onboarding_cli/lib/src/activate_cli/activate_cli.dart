@@ -2,10 +2,7 @@ import 'package:at_commons/at_commons.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:args/args.dart';
 import 'dart:io';
-
 import 'package:at_utils/at_logger.dart';
-
-import '../home_directory/home_directory.dart';
 
 Future<void> main(List<String> arguments) async {
   //defaults

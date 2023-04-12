@@ -39,11 +39,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     _atSign = AtUtils.fixAtSign(atsign);
 
     // set default LocalStorage paths for this instance
-    onboardingPreference.commitLogPath ??= ConfigUtil.getCommitLogPath(_atSign);
+    onboardingPreference.commitLogPath ??= HomeDirectoryUtil.getCommitLogPath(_atSign);
     onboardingPreference.hiveStoragePath ??=
-        ConfigUtil.getHiveStoragePath(_atSign);
+        HomeDirectoryUtil.getHiveStoragePath(_atSign);
     onboardingPreference.isLocalStoreRequired = true;
-    onboardingPreference.atKeysFilePath ??= ConfigUtil.getAtKeysPath(_atSign);
+    onboardingPreference.atKeysFilePath ??= HomeDirectoryUtil.getAtKeysPath(_atSign);
   }
 
   Future<void> _initAtClient(AtChops atChops) async {
