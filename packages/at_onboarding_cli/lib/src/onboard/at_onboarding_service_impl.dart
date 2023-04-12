@@ -26,7 +26,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   bool _isPkamAuthenticated = false;
   bool _isAtsignOnboarded = false;
   AtSignLogger logger = AtSignLogger('OnboardingCli');
-  AtOnboardingPreference atOnboardingPreference;
+  AtOnboardingPreference onboardingPreference;
   AtClient? _atClient;
   AtLookUp? _atLookUp;
 
@@ -36,29 +36,30 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   /// a [DefaultAtServiceFactory]
   AtServiceFactory? atServiceFactory;
 
-  AtOnboardingServiceImpl(atsign, this.atOnboardingPreference,
+  AtOnboardingServiceImpl(atsign, this.onboardingPreference,
       {this.atServiceFactory}) {
     //performs atSign format checks on the atSign
     _atSign = AtUtils.fixAtSign(atsign);
-    _preference.commitLogPath ??= ConfigUtil.getCommitLogPath(_atsign);
-    _preference.hiveStoragePath ??= ConfigUtil.getHiveStoragePath(_atsign);
-    _preference.isLocalStoreRequired = true;
-    _preference.atKeysFilePath ??= ConfigUtil.getAtKeysPath(_atsign);
+    // set default LocalStorage paths for this instance
+    onboardingPreference.commitLogPath ??= ConfigUtil.getCommitLogPath(_atSign);
+    onboardingPreference.hiveStoragePath ??= ConfigUtil.getHiveStoragePath(_atSign);
+    onboardingPreference.isLocalStoreRequired = true;
+    onboardingPreference.atKeysFilePath ??= ConfigUtil.getAtKeysPath(_atSign);
 
   }
 
   Future<void> _initAtClient(AtChops atChops) async {
     AtClientManager atClientManager = AtClientManager.getInstance();
-    if (atOnboardingPreference.skipSync == true) {
+    if (onboardingPreference.skipSync == true) {
       atServiceFactory = ServiceFactoryWithNoOpSyncService();
     }
     await atClientManager.setCurrentAtSign(
-        _atSign, atOnboardingPreference.namespace, atOnboardingPreference,
+        _atSign, onboardingPreference.namespace, onboardingPreference,
         atChops: atChops, serviceFactory: atServiceFactory);
     // ??= to support mocking
     _atLookUp ??= atClientManager.atClient.getRemoteSecondary()?.atLookUp;
-    _atLookUp?.signingAlgoType = atOnboardingPreference.signingAlgoType;
-    _atLookUp?.hashingAlgoType = atOnboardingPreference.hashingAlgoType;
+    _atLookUp?.signingAlgoType = onboardingPreference.signingAlgoType;
+    _atLookUp?.hashingAlgoType = onboardingPreference.hashingAlgoType;
     _atClient ??= atClientManager.atClient;
   }
 
@@ -83,28 +84,28 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     //   return true;
     // }
     //get cram_secret from either from AtOnboardingConfig or decode it from qr code whichever available
-    atOnboardingPreference.cramSecret ??=
-        getSecretFromQr(atOnboardingPreference.qrCodePath);
+    onboardingPreference.cramSecret ??=
+        getSecretFromQr(onboardingPreference.qrCodePath);
 
-    if (atOnboardingPreference.cramSecret == null) {
+    if (onboardingPreference.cramSecret == null) {
       throw AtClientException.message(
           'Either of cram secret or qr code containing cram secret not provided',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
-    if (atOnboardingPreference.downloadPath == null &&
-        atOnboardingPreference.atKeysFilePath == null) {
+    if (onboardingPreference.downloadPath == null &&
+        onboardingPreference.atKeysFilePath == null) {
       throw AtClientException.message('Download path not provided',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
     // cram auth doesn't use at_chops.So create at_lookup here.
     AtLookupImpl atLookUpImpl = AtLookupImpl(_atSign,
-        atOnboardingPreference.rootDomain, atOnboardingPreference.rootPort);
+        onboardingPreference.rootDomain, onboardingPreference.rootPort);
     try {
       //check and wait till secondary exists
       await _waitUntilSecondaryCreated(atLookUpImpl);
       //authenticate into secondary using cram secret
       _isAtsignOnboarded = (await atLookUpImpl
-          .authenticate_cram(atOnboardingPreference.cramSecret));
+          .authenticate_cram(onboardingPreference.cramSecret));
 
       logger.info('Cram authentication status: $_isAtsignOnboarded');
 
@@ -176,7 +177,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     Map<String, String> atKeysMap = <String, String>{};
     String pkamPublicKey;
     //generating pkamKeyPair only if authMode is keysFile
-    if (atOnboardingPreference.authMode == PkamAuthMode.keysFile) {
+    if (onboardingPreference.authMode == PkamAuthMode.keysFile) {
       logger.info('Generating pkam keypair');
       var pkamRsaKeypair = generateRsaKeypair();
       atKeysMap[AuthKeyType.pkamPublicKey] =
@@ -184,10 +185,10 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       atKeysMap[AuthKeyType.pkamPrivateKey] =
           pkamRsaKeypair.privateKey.toString();
       pkamPublicKey = pkamRsaKeypair.publicKey.toString();
-    } else if (atOnboardingPreference.authMode == PkamAuthMode.sim) {
+    } else if (onboardingPreference.authMode == PkamAuthMode.sim) {
       // get the public key from secure element
       pkamPublicKey =
-          atChops!.readPublicKey(atOnboardingPreference.publicKeyId!);
+          atChops!.readPublicKey(onboardingPreference.publicKeyId!);
       logger.info('pkam  public key from sim: $pkamPublicKey');
       atKeysMap[AuthKeyType.pkamPublicKey] = pkamPublicKey;
       // encryption key pair and self encryption symmetric key
@@ -212,7 +213,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   ///write newly created encryption keypairs into atKeys file
   Future<void> _generateAtKeysFile(Map<String, String> atKeysMap) async {
     //encrypting all keys with self encryption key
-    if (atOnboardingPreference.authMode == PkamAuthMode.keysFile) {
+    if (onboardingPreference.authMode == PkamAuthMode.keysFile) {
       atKeysMap[AuthKeyType.pkamPrivateKey] = EncryptionUtil.encryptValue(
           atKeysMap[AuthKeyType.pkamPrivateKey]!,
           atKeysMap[AuthKeyType.selfEncryptionKey]!);
@@ -228,8 +229,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         atKeysMap[AuthKeyType.selfEncryptionKey]!);
 
     //file is created with whichever name provided as atKeysFilePath(even if filename does not match standard atKeys file name convention)
-    File atKeysFile = File(atOnboardingPreference.downloadPath ??
-        atOnboardingPreference.atKeysFilePath!);
+    File atKeysFile = File(onboardingPreference.downloadPath ??
+        onboardingPreference.atKeysFilePath!);
     if (!atKeysFile.existsSync()) {
       atKeysFile.createSync(recursive: true);
     }
@@ -240,23 +241,23 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     await fileWriter.flush();
     await fileWriter.close();
     logger.info(
-        'atKeys file saved at ${atOnboardingPreference.downloadPath ?? atOnboardingPreference.atKeysFilePath}');
+        'atKeys file saved at ${onboardingPreference.downloadPath ?? onboardingPreference.atKeysFilePath}');
     stdout.writeln(
-        '[Success] Your .atKeys file saved at ${atOnboardingPreference.downloadPath ?? atOnboardingPreference.atKeysFilePath}\n');
+        '[Success] Your .atKeys file saved at ${onboardingPreference.downloadPath ?? onboardingPreference.atKeysFilePath}\n');
   }
 
   ///back-up encryption keys to local secondary
   Future<void> _persistKeysLocalSecondary() async {
     //when authenticating keys need to be fetched from atKeys file
     Map<String, String> atKeysMap = await _decryptAtKeysFile(
-        (await _readAtKeysFile(atOnboardingPreference.atKeysFilePath)));
+        (await _readAtKeysFile(onboardingPreference.atKeysFilePath)));
     //backup keys into local secondary
     bool? response = await _atClient
         ?.getLocalSecondary()
         ?.putValue(AT_PKAM_PUBLIC_KEY, atKeysMap[AuthKeyType.pkamPublicKey]!);
     logger.finer('PkamPublicKey persist to localSecondary: status $response');
     // save pkam private key only when auth mode is keyFile. if auth mode is sim/any other secure element private key cannot be read and hence will not be part of keys file
-    if (atOnboardingPreference.authMode == PkamAuthMode.keysFile) {
+    if (onboardingPreference.authMode == PkamAuthMode.keysFile) {
       response = await _atClient?.getLocalSecondary()?.putValue(
           AT_PKAM_PRIVATE_KEY, atKeysMap[AuthKeyType.pkamPrivateKey]!);
       logger
@@ -281,13 +282,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   @override
   Future<bool> authenticate() async {
     var atKeysFileDataMap = await _decryptAtKeysFile(
-        await _readAtKeysFile(atOnboardingPreference.atKeysFilePath));
+        await _readAtKeysFile(onboardingPreference.atKeysFilePath));
     var pkamPrivateKey = atKeysFileDataMap[AuthKeyType.pkamPrivateKey];
 
-    if (atOnboardingPreference.authMode == PkamAuthMode.keysFile &&
+    if (onboardingPreference.authMode == PkamAuthMode.keysFile &&
         pkamPrivateKey == null) {
       throw AtPrivateKeyNotFoundException(
-          'Unable to read pkam private key from provided .atKeys path: ${atOnboardingPreference.atKeysFilePath}',
+          'Unable to read pkam private key from provided .atKeys path: ${onboardingPreference.atKeysFilePath}',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
     await _init(atKeysFileDataMap);
@@ -295,7 +296,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     _isPkamAuthenticated = (await _atLookUp?.pkamAuthenticate())!;
     logger.finer('pkam auth result: $_isPkamAuthenticated');
 
-    if (!_isAtsignOnboarded && atOnboardingPreference.atKeysFilePath != null) {
+    if (!_isAtsignOnboarded && onboardingPreference.atKeysFilePath != null) {
       await _persistKeysLocalSecondary();
     }
     return _isPkamAuthenticated;
@@ -349,7 +350,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         jsonData[AuthKeyType.pkamPublicKey]!, decryptionKey);
     // pkam private key will not be saved in keyfile if auth mode is sim/any other secure element.
     // decrypt the private key only when auth mode is keysFile
-    if (atOnboardingPreference.authMode == PkamAuthMode.keysFile) {
+    if (onboardingPreference.authMode == PkamAuthMode.keysFile) {
       atKeysMap[AuthKeyType.pkamPrivateKey] = EncryptionUtil.decryptValue(
           jsonData[AuthKeyType.pkamPrivateKey]!, decryptionKey);
     }
@@ -369,8 +370,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   ///returns secondary server status
   Future<AtStatus> getServerStatus() {
     AtServerStatus atServerStatus = AtStatusImpl(
-        rootUrl: atOnboardingPreference.rootDomain,
-        rootPort: atOnboardingPreference.rootPort);
+        rootUrl: onboardingPreference.rootDomain,
+        rootPort: onboardingPreference.rootPort);
     return atServerStatus.get(_atSign);
   }
 
