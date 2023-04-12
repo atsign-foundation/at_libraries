@@ -3,6 +3,9 @@ import 'package:at_client/at_client.dart';
 import 'package:path/path.dart' as path;
 
 class ConfigUtil {
+
+  static final homeDir = getHomeDirectory();
+
   static String? getHomeDirectory() {
     switch (Platform.operatingSystem) {
       case 'linux':
@@ -19,19 +22,17 @@ class ConfigUtil {
   }
 
   static String getAtKeysPath(String atsign) {
-    final homeDir = getHomeDirectory();
      if(homeDir == null){
        throw AtClientException.message('Could not find home directory');
      }
-     return path.join(homeDir, '.atsign', 'at_onboarding_cli', 'keys', '${atsign}_key.atKeys');
+     return path.join(homeDir!, '.atsign', 'at_onboarding_cli', 'keys', '${atsign}_key.atKeys');
   }
 
   static String getStorageDirectory(String atsign){
-    final homeDir = getHomeDirectory();
     if(homeDir == null){
       throw AtClientException.message('Could not find home directory');
     }
-    return path.join(homeDir, '.atsign', 'at_onboarding_cli', 'storage', atsign);
+    return path.join(homeDir!, '.atsign', 'at_onboarding_cli', 'storage', atsign);
   }
 
   static String getCommitLogPath(String atsign){
