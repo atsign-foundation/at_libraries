@@ -37,6 +37,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       {this.atServiceFactory}) {
     //performs atSign format checks on the atSign
     _atSign = AtUtils.fixAtSign(atsign);
+
     // set default LocalStorage paths for this instance
     onboardingPreference.commitLogPath ??= ConfigUtil.getCommitLogPath(_atSign);
     onboardingPreference.hiveStoragePath ??=
@@ -150,7 +151,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       logger.info('Cram secret delete response : $deleteResponse');
       //displays status of the atsign
       logger.finer(await getServerStatus());
-      logger.info('----------atSign activated---------');
+      stdout.writeln('[Success]----------atSign activated---------');
     } else {
       throw AtClientException.message('Pkam Authentication Failed');
     }

@@ -43,10 +43,13 @@ void main() {
     key.key = 'securedKey';
     key.namespace = 'wavi';
     var putResult = await atClient?.put(key, 'securedvalue');
+    stdout.writeln('[Test] Got AtClient.put() Response: $putResult');
     expect(putResult, true);
     AtValue? response = await atClient?.get(key);
+    stdout.writeln('[Test] Got Response: $response');
     expect('securedvalue', response?.value);
     var deleteResponse = await atClient?.delete(key);
+    stdout.writeln('[Test] Got Delete Response: $deleteResponse');
     expect(deleteResponse, true);
   });
 
