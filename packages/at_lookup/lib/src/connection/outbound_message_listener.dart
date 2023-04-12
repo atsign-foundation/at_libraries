@@ -5,6 +5,7 @@ import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_lookup/src/connection/at_connection.dart';
 import 'package:at_utils/at_logger.dart';
+import 'package:meta/meta.dart';
 
 ///Listener class for messages received by [RemoteSecondary]
 class OutboundMessageListener {
@@ -123,7 +124,7 @@ class OutboundMessageListener {
       if (DateTime.now().difference(startTime).inMilliseconds >
           maxWaitMilliSeconds) {
         _buffer.clear();
-        _closeConnection();
+        await _closeConnection();
         throw AtTimeoutException(
             'Full response not received after $maxWaitMilliSeconds millis from remote secondary');
       }
@@ -132,7 +133,7 @@ class OutboundMessageListener {
       if (DateTime.now().difference(_lastReceivedTime).inMilliseconds >
           transientWaitTimeMillis) {
         _buffer.clear();
-        _closeConnection();
+        await _closeConnection();
         throw AtTimeoutException(
             'Waited for $transientWaitTimeMillis millis. No response after $_lastReceivedTime ');
       }
@@ -159,8 +160,14 @@ class OutboundMessageListener {
     await _closeConnection();
   }
 
+  @visibleForTesting
+  Duration? delayBeforeClose;
+
   Future<void> _closeConnection() async {
     if (!_connection.isInValid()) {
+      if (delayBeforeClose != null) {
+        await Future.delayed(delayBeforeClose!);
+      }
       await _connection.close();
     }
   }

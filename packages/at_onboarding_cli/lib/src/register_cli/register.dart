@@ -12,69 +12,64 @@ import 'package:at_onboarding_cli/src/util/register_api_result.dart';
 import 'package:at_onboarding_cli/src/util/register_api_task.dart';
 import 'package:at_utils/at_logger.dart';
 
-///Class containing logic to register a free atsign to email provided through [args] by utilizing methods defined in [RegisterUtil]
+///Class containing logic to register a free atsign to email provided
+///through [args] by utilizing methods defined in [RegisterUtil]
 ///Requires List<String> args containing the following arguments: email
-///User can optionally choose the staging environment by adding "-n staging" to the args [for testing only]
 class Register {
-  static AtSignLogger logger = AtSignLogger('Register Cli');
   Future<void> main(List<String> args) async {
     Map<String, String> params = HashMap<String, String>();
+    RegisterUtil registerUtil = RegisterUtil();
 
     final argParser = ArgParser()
-      ..addOption('email', abbr: 'e', help: 'email to register atsign with')
-      ..addOption('environment',
-          abbr: 'n',
-          defaultsTo: 'production',
-          help: 'use production/staging env')
+      ..addOption('email',
+          abbr: 'e',
+          help: 'The email address you would like to assign your atSign to')
       ..addFlag('help',
           abbr: 'h', help: 'Usage instructions', negatable: false);
 
     ArgResults argResults = argParser.parse(args);
 
     if (argResults.wasParsed('help')) {
-      logger.severe(argParser.usage);
+      stderr.writeln(
+          '[Usage] dart run register.dart -e email@email.com\n[Options]\n${argParser.usage}');
       exit(0);
     }
 
     if (!argResults.wasParsed('email')) {
-      logger.severe('-e (or) --email is required.');
-      exit(1);
-    } else {
+      stderr.writeln(
+          '[Unable to run Register CLI] Please enter your email address'
+          '\n[Usage] dart run register.dart -e email@email.com\n[Options]\n${argParser.usage}');
+      exit(6);
+    }
+
+    if (registerUtil.validateEmail(argResults['email'])) {
       params['email'] = argResults['email'];
-    }
-
-    if (argResults.wasParsed('environment')) {
-      params['authority'] = argResults['environment'] == 'staging'
-          ? RegisterApiConstants.apiHostStaging
-          : RegisterApiConstants.apiHostProd;
     } else {
-      params['authority'] = RegisterApiConstants.apiHostProd;
+      stderr.writeln(
+          '[Unable to run Register CLI] You have entered an invalid email address. Check your email address and try again.');
+      exit(7);
     }
 
-    //create stream of tasks each of type [RegisterApiTask] and then call start on the stream of tasks
-    await RegistrationFlow(params, RegisterUtil())
+    //set the following parameter to RegisterApiConstants.apiHostStaging
+    //to use the staging environment
+    params['authority'] = RegisterApiConstants.apiHostProd;
+
+    //create stream of tasks each of type [RegisterApiTask] and then
+    // call start on the stream of tasks
+    await RegistrationFlow(params, registerUtil)
         .add(GetFreeAtsign())
         .add(RegisterAtsign())
         .add(ValidateOtp())
         .start();
 
-    //call activate_cli with the cramkey acquired from registration process
-    logger.info('Activating you atsign: ${params['atsign']}');
-    activate_cli.main([
-      '-a',
-      params['atsign']!,
-      '-c',
-      params['cramkey']!,
-      '-r',
-      argResults['environment'] == 'staging' ? 'root.atsign.wtf' : 'root.atsign.org'
-    ]);
+    activate_cli.main(['-a', params['atsign']!, '-c', params['cramkey']!]);
   }
 }
 
 ///class that handles multiple tasks of type [RegisterApiTask]
 ///Initialized with a params map that needs to be populated with - email and api host address
 ///[add] method can be used to add tasks[RegisterApiTask] to the [processFlow]
-///[start] needs to becalled after all required tasks are added to the [processFlow]
+///[start] needs to be called after all required tasks are added to the [processFlow]
 class RegistrationFlow {
   List<RegisterApiTask> processFlow = [];
   RegisterApiResult result = RegisterApiResult();
@@ -109,16 +104,18 @@ class RegistrationFlow {
 }
 
 ///This is a [RegisterApiTask] that fetches a free atsign
-///throws [AtException] with concerned message which was encountered in the HTTP GET/POST request
+///throws [AtException] with concerned message which was encountered in the
+///HTTP GET/POST request
 class GetFreeAtsign extends RegisterApiTask {
   @override
   Future<RegisterApiResult> run() async {
-    Register.logger.info('Gettting free atsign ...');
+    stdout
+        .writeln('[Information] Getting your randomly generated free atSign…');
     try {
       List<String> atsignList =
           await registerUtil.getFreeAtSigns(authority: params['authority']!);
       result.data['atsign'] = atsignList[0];
-      Register.logger.info('Got atsign: ${atsignList[0]}');
+      stdout.writeln('[Information] Your new atSign is **@${atsignList[0]}**');
       result.apiCallStatus = ApiCallStatus.success;
     } on Exception catch (e) {
       result.exceptionMessage = e.toString();
@@ -130,17 +127,22 @@ class GetFreeAtsign extends RegisterApiTask {
   }
 }
 
-///This is a [RegisterApiTask] that registers a free atsign fetched in [GetFreeAtsign] to the email provided as args
-///throws [AtException] with concerned message which was encountered in the HTTP GET/POST request
+///This is a [RegisterApiTask] that registers a free atsign fetched in
+///[GetFreeAtsign] to the email provided as args
+///throws [AtException] with concerned message which was encountered in the
+///HTTP GET/POST request
 class RegisterAtsign extends RegisterApiTask {
   @override
   Future<RegisterApiResult> run() async {
-    Register.logger.info('Sending otp to: ${params['email']}');
+    stdout.writeln(
+        '[Information] Sending verification code to: ${params['email']}');
     try {
       result.data['otpSent'] = (await registerUtil.registerAtSign(
               params['atsign']!, params['email']!,
               authority: params['authority']!))
           .toString();
+      stdout.writeln(
+          '[Information] Verification code sent to: ${params['email']}');
       result.apiCallStatus = ApiCallStatus.success;
     } on Exception catch (e) {
       result.exceptionMessage = e.toString();
@@ -151,8 +153,10 @@ class RegisterAtsign extends RegisterApiTask {
   }
 }
 
-///This is a [RegisterApiTask] that validates the otp which was sent as a part of [RegisterAtsign] to email provided in args
-///throws [AtException] with concerned message which was encountered in the HTTP GET/POST request
+///This is a [RegisterApiTask] that validates the otp which was sent as a part
+///of [RegisterAtsign] to email provided in args
+///throws [AtException] with concerned message which was encountered in the
+///HTTP GET/POST request
 class ValidateOtp extends RegisterApiTask {
   @override
   void init(Map<String, String> params, RegisterUtil registerUtil) {
@@ -165,18 +169,19 @@ class ValidateOtp extends RegisterApiTask {
   @override
   Future<RegisterApiResult> run() async {
     if (params['otp'] == null) {
-      Register.logger.shout('Enter otp received on: ${params['email']}');
-      params['otp'] = stdin.readLineSync()!;
+      params['otp'] = registerUtil.getVerificationCodeFromUser();
     }
-    Register.logger.info('Validating otp ...');
+    stdout.writeln('[Information] Validating your verification code...');
     try {
       String apiResponse = await registerUtil.validateOtp(
           params['atsign']!, params['email']!, params['otp']!,
           confirmation: params['confirmation']!,
           authority: params['authority']!);
       if (apiResponse == 'retry') {
-        stderr.writeln("Incorrect OTP!!! Please re-enter your OTP");
-        params['otp'] = stdin.readLineSync()!;
+        stderr.writeln(
+            '[Unable to proceed] The verification code you entered is either invalid or expired.\n'
+            ' Check your verification code and try again.');
+        params['otp'] = registerUtil.getVerificationCodeFromUser();
         result.apiCallStatus = ApiCallStatus.retry;
         result.exceptionMessage =
             'Incorrect otp entered 3 times. Max retries reached.';
@@ -186,8 +191,10 @@ class ValidateOtp extends RegisterApiTask {
         result.apiCallStatus = ApiCallStatus.retry;
       } else if (apiResponse.startsWith("@")) {
         result.data['cramkey'] = apiResponse.split(":")[1];
-        Register.logger.shout('Your cram secret: ' + result.data['cramkey']);
-        Register.logger.info("Registration complete.");
+        stdout.writeln(
+            '[Information] Your cram secret: ${result.data['cramkey']}');
+        stdout.writeln('[Success] Your atSign **@${params['atsign']}** has been'
+            ' successfully registered to ${params['email']}');
         result.apiCallStatus = ApiCallStatus.success;
       }
     } on Exception catch (e) {
@@ -201,5 +208,45 @@ class ValidateOtp extends RegisterApiTask {
 
 Future<void> main(List<String> args) async {
   Register register = Register();
-  await register.main(args);
+  AtSignLogger.root_level = 'severe';
+  try {
+    await register.main(args);
+  } on FormatException catch (e) {
+    if (e.toString().contains('Missing argument')) {
+      stderr.writeln(
+          '[Unable to run Register CLI] Please re-run with your email address');
+      stderr
+          .writeln('Usage: \'dart run register_cli.dart -e email@email.com\'');
+      exit(1);
+    } else if (e.toString().contains('Could not find an option or flag')) {
+      stderr
+          .writeln('[Unable to run Register CLI] The option entered is invalid.'
+              ' Please use the \'-e\' flag to input your email');
+      stderr
+          .writeln('Usage: \'dart run register_cli.dart -e email@email.com\'');
+      exit(2);
+    } else {
+      stderr.writeln(
+          '[Error] Failed getting an atsign. It looks like something went wrong on our side.\n'
+          'Please try again or contact support@atsign.com, quoting the text displayed below.');
+      stderr.writeln('Cause: ${e.toString()}');
+      exit(3);
+    }
+  } on Exception catch (e) {
+    if (e
+        .toString()
+        .contains('Incorrect otp entered 3 times. Max retries reached.')) {
+      stderr.writeln(
+          '[Unable to proceed] Registration has been terminated as you have'
+          ' reached the maximum number of verification attempts.\n'
+          'Please start again or contact support@atsign.com');
+      exit(4);
+    } else {
+      stderr.writeln(
+          '[Error] Failed getting an atsign. It looks like something went wrong on our side.\n'
+          'Please try again or contact support@atsign.com, quoting the text displayed below.');
+      stderr.writeln('Cause: ${e.toString()}');
+      exit(5);
+    }
+  }
 }

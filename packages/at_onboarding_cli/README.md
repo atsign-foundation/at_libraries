@@ -1,5 +1,7 @@
 <img width=250px src="https://atsign.dev/assets/img/atPlatform_logo_gray.svg?sanitize=true">
 
+[![pub package](https://img.shields.io/pub/v/at_onboarding_cli)](https://pub.dev/packages/at_onboarding_cli) [![pub points](https://img.shields.io/pub/points/at_onboarding_cli?logo=dart)](https://pub.dev/packages/at_onboarding_cli/score) [![gitHub license](https://img.shields.io/badge/license-BSD3-blue.svg)](./LICENSE)
+
 # at_onboarding_cli
 
 ## Introduction
@@ -11,7 +13,7 @@ To add this package as the dependency in your pubspec.yaml
 
 ```dart  
 dependencies:
-  at_onboarding_cli: ^1.1.2
+  at_onboarding_cli: ^1.2.2
 ```
 Getting Dependencies
 
@@ -86,11 +88,27 @@ AtOnboardingService atOnboardingService = AtOnboardingServiceImpl('@alice', atOn
 atOnboardingService.onboard();
 AtLookup? atLookup = atOnboardingService.getAtLookup();
 ```
+Please refer to [example](https://pub.dev/packages/at_onboarding_cli/example) to better understand the usage.
 
 ### activate_cli:
 A simple tool to onboard(activate) an atSign through command-line arguments
 
-#### Usage:
+#### Usage 1:
+Run the following commands in your command-line tool (Terminal, CMD, PowerShell, etc)
+
+##### To activate using your cram secret
+```
+dart pub global activate at_onboarding_cli
+at_activate -a your_atsign -c your_cram_secret
+```
+
+##### To activate using a qr_code
+```
+dart pub global activate at_onboarding_cli
+at_activate -a your_atsign -q path_to_qrcode_for_this_atsign
+```
+
+#### Usage 2:
    1) Clone code from https://github.com/atsign-foundation/at_libraries
    2) Change directory to at_libraries/at_onboarding_cli in the cloned repository
    3) Run `dart pub get`
@@ -98,13 +116,20 @@ A simple tool to onboard(activate) an atSign through command-line arguments
 ```
 dart run lib/src/activate_cli/activate_cli.dart -a your_atsign -c your_cram_secret
 ```
-4) You can find your .atKeysFile in directory at_onboarding_cli/keys
+4) You can find your .atKeysFile in directory ~/.atsign/keys
 
 
 ### register_cli:
 A command-line tool to get yourself a free atsign. This tool fetches a free atsign and registers it to the email provided as arguments.
 
-#### Usage:
+#### Usage 1:
+Run the following commands in you command-line tool (Terminal, CMD, PowerShell, etc)
+```
+dart pub global activate at_onboarding_cli
+at_register -e your_email
+```
+
+#### Usage 2:
    1) Clone code from https://github.com/atsign-foundation/at_libraries
    2) Change directory to at_libraries/at_onboarding_cli in the cloned repository
    3) Run `dart pub get`
@@ -112,11 +137,10 @@ A command-line tool to get yourself a free atsign. This tool fetches a free atsi
 ```
 dart run lib/src/register_cli/register.dart -e email@email.com -n staging (or) production [-n is optional]
 ```
-   4) Enter otp sent to the provided email when prompted
+   4) Enter verification code sent to the provided email when prompted
    5) register_cli fetches the cramkey and the automatically calls activate_cli to activate the fetched atsign
    6) You can find your .atKeysFile in directory at_onboarding_cli/keys
 
-Please refer to [example](https://pub.dev/packages/at_onboarding_cli/example) to better understand the usage.
 ## Open source usage and contributions
 
 This is freely licensed open source code, so feel free to use it as is, suggest changes or enhancements or create your

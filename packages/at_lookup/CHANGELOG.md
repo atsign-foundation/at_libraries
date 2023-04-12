@@ -1,3 +1,13 @@
+## 3.0.36
+- feat: changes to call at_chops.sign() method which supports different signing algorithms.
+- chore: upgrade at_commons to 3.0.43, at_utils to 3.0.12 and at_chops to 1.0.3
+## 3.0.35
+- fix: fallback code for backward compatibility if at_chops instance is not set
+## 3.0.34
+- feat: added new method pkamAuthenticate in at_lookup_impl which uses at_chops for pkam signing.
+## 3.0.33
+- fix: Removed race condition (related to management of outbound connection state after timeouts) which
+could in very rare circumstances cause unnecessary long delays
 ## 3.0.32
 - feat: Upgrade at_commons for notifyFetch verb
 ## 3.0.31

@@ -1,6 +1,28 @@
-## 1.1.3
+## 1.2.6
+- feat: changes to integrate onboarding_cli with pkam secure element
+- fix: issue with atKeys file creation while onboarding if the downloadPath directory does not exist
+- fix: activate_cli throws exit(0) even though the process fails
+- fix: onboarding_cli throws exception now when secondary address not found. Previously exit(1)
+## 1.2.5
+- feat: atkeys file now placed in standard location ~/.atsign/keys
+## 1.2.4
+- fix: Onboarding_cli throws exception when atsign does not start with '@'
+- build: upgrade dependency at_utils to v3.0.12
+- feat: Add atServiceFactory to AtOnboardingServiceImpl so that it can later be passed to AtClientManager.setCurrentAtSign 
+## 1.2.3
+- Enable use of AtChops
+## 1.2.2
+- Minor reformatting of user logs and minor bugfixes
+- Fixed issue with using executables
+- activate_cli can now be used with a qr_code instead of cram secret
+- Removed option to use staging env in register_cli
+- Upgrade dependency at_client to latest version v3.0.49
+- Upgrade dependency at_lookup to latest version v3.0.33
+- Upgrade dependency at_commons to latest version v3.0.32
+## 1.2.1
 - Introducing register_cli that fetches a free atsign and registers it to provided email
-- Introduced a check to ensure secondary is created before trying to activate it
+- fix: check to ensure secondary is created before trying to activate it
+- Introducing binaries from register_cli and activate_cli
 ## 1.1.2
 - Introducing activate_cli, a simple tool to activate atSigns from command-line
 - Introducing a close() method to safely close the OnboardingService object

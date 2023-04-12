@@ -1,8 +1,8 @@
 name: at_server_status
 description: A Dart library that provides a means to check on the status of the @‎root server as well as the secondary server for any particular @‎sign.
-documentation: https://atsign.dev/apidocs
 repository: https://github.com/atsign-foundation/at_libraries
-homepage: https://atsign.dev
+homepage: https://atsign.com
+documentation: https://docs.atsign.com/
 version: 1.0.3
 
 environment:
