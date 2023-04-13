@@ -5,17 +5,17 @@ import 'dart:io';
 
 import 'package:at_chops/at_chops.dart';
 import 'package:at_client/at_client.dart';
+import 'package:at_utils/at_utils.dart';
 import 'package:at_commons/at_builders.dart';
 import 'package:at_onboarding_cli/src/factory/service_factories.dart';
-import 'package:at_utils/at_utils.dart';
 import 'package:at_lookup/at_lookup.dart';
-import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_server_status/at_server_status.dart';
+import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:crypton/crypton.dart';
 import 'package:encrypt/encrypt.dart';
+import 'package:zxing2/qrcode.dart';
 import 'package:image/image.dart';
 import 'package:path/path.dart' as path;
-import 'package:zxing2/qrcode.dart';
 
 ///class containing service that can onboard/activate/authenticate @signs
 class AtOnboardingServiceImpl implements AtOnboardingService {
@@ -37,6 +37,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       {this.atServiceFactory}) {
     //performs atSign format checks on the atSign
     _atSign = AtUtils.fixAtSign(atsign);
+
+    // set default LocalStorage paths for this instance
+    atOnboardingPreference.commitLogPath ??= HomeDirectoryUtil.getCommitLogPath(_atSign);
+    atOnboardingPreference.hiveStoragePath ??=
+        HomeDirectoryUtil.getHiveStoragePath(_atSign);
+    atOnboardingPreference.isLocalStoreRequired = true;
+    atOnboardingPreference.atKeysFilePath ??= HomeDirectoryUtil.getAtKeysPath(_atSign);
   }
 
   Future<void> _initAtClient(AtChops atChops) async {
@@ -70,7 +77,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   @override
   Future<bool> onboard() async {
-    // #TODO uncomment this code after isOnboarded is implemented
+    // TODO uncomment this code after isOnboarded is implemented
     // if(isOnboarded()) {
     //   return true;
     // }
@@ -83,11 +90,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
           'Either of cram secret or qr code containing cram secret not provided',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
-    if (atOnboardingPreference.downloadPath == null &&
-        atOnboardingPreference.atKeysFilePath == null) {
-      throw AtClientException.message('Download path not provided',
-          exceptionScenario: ExceptionScenario.invalidValueProvided);
-    }
+
     // cram auth doesn't use at_chops.So create at_lookup here.
     AtLookupImpl atLookUpImpl = AtLookupImpl(_atSign,
         atOnboardingPreference.rootDomain, atOnboardingPreference.rootPort);
@@ -106,7 +109,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     } finally {
       await atLookUpImpl.close();
     }
-
     return _isAtsignOnboarded;
   }
 
@@ -142,13 +144,14 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
           await atLookUpImpl.executeVerb(updateBuilder);
       logger
           .info('Encryption public key update result $encryptKeyUpdateResult');
+      //deleting cram secret from the keystore as cram auth is complete
       DeleteVerbBuilder deleteBuilder = DeleteVerbBuilder()
         ..atKey = AT_CRAM_SECRET;
       String? deleteResponse = await atLookUpImpl.executeVerb(deleteBuilder);
       logger.info('Cram secret delete response : $deleteResponse');
       //displays status of the atsign
       logger.finer(await getServerStatus());
-      logger.info('----------atSign activated---------');
+      stdout.writeln('[Success]----------atSign activated---------');
     } else {
       throw AtClientException.message('Pkam Authentication Failed');
     }
@@ -178,8 +181,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       pkamPublicKey = pkamRsaKeypair.publicKey.toString();
     } else if (atOnboardingPreference.authMode == PkamAuthMode.sim) {
       // get the public key from secure element
-      pkamPublicKey =
-          atChops!.readPublicKey(atOnboardingPreference.publicKeyId!);
+      pkamPublicKey = atChops!.readPublicKey(atOnboardingPreference.publicKeyId!);
       logger.info('pkam  public key from sim: $pkamPublicKey');
       atKeysMap[AuthKeyType.pkamPublicKey] = pkamPublicKey;
       // encryption key pair and self encryption symmetric key
@@ -190,7 +192,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       atChops!.atChopsKeys.symmetricKey = AESKey(selfEncryptionKey);
     }
     //Standard order of an atKeys file is ->
-    // pkam keypair -> encryption keypair -> selfEncryption key -> @sign: selfEncryptionKey[self encryption key again]
+    // pkam keypair -> encryption keypair -> selfEncryption key ->
+    // @sign: selfEncryptionKey[self encryption key again]
+    // note: "->" stands for "followed by"
     atKeysMap[AuthKeyType.encryptionPublicKey] =
         encryptionKeyPair.publicKey.toString();
     atKeysMap[AuthKeyType.encryptionPrivateKey] =
@@ -219,23 +223,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         atKeysMap[AuthKeyType.encryptionPrivateKey]!,
         atKeysMap[AuthKeyType.selfEncryptionKey]!);
 
-    if (atOnboardingPreference.downloadPath != null) {
-      //construct download path to match standard atKeys file name convention
-      if (!(atOnboardingPreference.downloadPath!.endsWith('.atKeys'))) {
-        atOnboardingPreference.downloadPath = path.join(
-            atOnboardingPreference.downloadPath!, '${_atSign}_key.atKeys');
-      }
-    } else if (atOnboardingPreference.atKeysFilePath != null) {
-      //if atKeysFilePath points to a directory and not a file, create a file in the provided directory
-      if (!(atOnboardingPreference.atKeysFilePath!.endsWith('.atKeys'))) {
-        atOnboardingPreference.atKeysFilePath = path.join(
-            atOnboardingPreference.atKeysFilePath!, '${_atSign}_key.atKeys');
-      }
+    if (!atOnboardingPreference.atKeysFilePath!.endsWith('.atKeys')) {
+      atOnboardingPreference.atKeysFilePath =
+          path.join(atOnboardingPreference.atKeysFilePath!, '.atKeys');
     }
-    //note: in case atKeysFilePath is provided instead of downloadPath;
-    //file is created with whichever name provided as atKeysFilePath(even if filename does not match standard atKeys file name convention)
-    File atKeysFile = File(atOnboardingPreference.downloadPath ??
-        atOnboardingPreference.atKeysFilePath!);
+
+    File atKeysFile = File(atOnboardingPreference.atKeysFilePath!);
+
     if (!atKeysFile.existsSync()) {
       atKeysFile.createSync(recursive: true);
     }
@@ -245,10 +239,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     fileWriter.write(jsonEncode(atKeysMap));
     await fileWriter.flush();
     await fileWriter.close();
-    logger.info(
-        'atKeys file saved at ${atOnboardingPreference.downloadPath ?? atOnboardingPreference.atKeysFilePath}');
     stdout.writeln(
-        '[Success] Your .atKeys file saved at ${atOnboardingPreference.downloadPath ?? atOnboardingPreference.atKeysFilePath}\n');
+        '[Success] Your .atKeys file saved at ${atOnboardingPreference.atKeysFilePath}\n');
   }
 
   ///back-up encryption keys to local secondary

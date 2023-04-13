@@ -6,13 +6,12 @@ publish_to: none
 environment:
   sdk: '>=2.14.4 <3.0.0'
 
-
 dependencies:
   at_onboarding_cli:
     path: ../../packages/at_onboarding_cli
-  at_client: ^3.0.56
+  at_client: ^3.0.58
   at_lookup: ^3.0.36
-  at_commons: ^3.0.43
+  at_commons: ^3.0.44
   at_utils: ^3.0.12
 
 #dependency_overrides:
@@ -21,11 +20,7 @@ dependencies:
 #      url: https://github.com/atsign-foundation/at_libraries.git
 #      path: packages/at_chops
 #      ref: integrate_pkam_secure_element
-#  at_lookup:
-#    git:
-#      url: https://github.com/atsign-foundation/at_libraries.git
-#      path: packages/at_lookup
-#      ref: integrate_pkam_secure_element
+
 
 dev_dependencies:
   lints: ^1.0.0
