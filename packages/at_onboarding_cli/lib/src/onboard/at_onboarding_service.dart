@@ -9,7 +9,7 @@ abstract class AtOnboardingService {
 
   ///authenticate into secondary server using privateKey
   ///returns true if authenticated
-  Future<bool> authenticate();
+  Future<void> authenticate();
 
   ///returns an authenticated instance of AtClient
   @Deprecated('use getter')

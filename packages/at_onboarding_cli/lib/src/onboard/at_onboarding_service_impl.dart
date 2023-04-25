@@ -288,7 +288,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }
 
   @override
-  Future<bool> authenticate() async {
+  Future<void> authenticate() async {
     var atKeysFileDataMap = await _decryptAtKeysFile(
         await _readAtKeysFile(atOnboardingPreference.atKeysFilePath));
     var pkamPrivateKey = atKeysFileDataMap[AuthKeyType.pkamPrivateKey];
@@ -309,7 +309,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     if (!_isAtsignOnboarded && atOnboardingPreference.atKeysFilePath != null) {
       await _persistKeysLocalSecondary();
     }
-    return _isPkamAuthenticated;
+    if(!_isPkamAuthenticated){
+      throw UnAuthenticatedException('Unable to authenticate.'
+          ' Please provide a valid keys file');
+    }
+    return ;
   }
 
   AtChops _createAtChops(Map<String, String> atKeysDataMap) {
