@@ -1,3 +1,5 @@
+## 3.0.45
+- fix: Add constants for AtClientParticulars
 ## 3.0.44
 - feat: introduce enum for pkam authentication mode
 ## 3.0.43

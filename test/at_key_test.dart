@@ -632,8 +632,7 @@ void main() {
   group('A group of tests to validate the cached public keys', () {
     test('validate a cached public key with namespace', () {
       var validationResult = AtKeyValidators.get().validate(
-          'cached:public:phone.me@alice',
-          ValidationContext()..atSign = '@bob');
+          'cached:public:phone.me@alice', ValidationContext()..atSign = '@bob');
       expect(validationResult.isValid, true);
     });
 
