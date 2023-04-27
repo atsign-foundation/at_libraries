@@ -62,6 +62,7 @@ Future<void> main(List<String> args) async {
   var keyPair = externalSigner.generateKeyPair(results['privateKeyId']);
   if (keyPair == null) {
     logger.severe('Generate key pair returned null. Exiting');
+    externalSigner.clear();
     exit(1);
   }
   atOnboardingConfig.publicKeyId = keyPair.publicKeyId;
@@ -69,12 +70,18 @@ Future<void> main(List<String> args) async {
       AtOnboardingServiceImpl(atSign, atOnboardingConfig);
   // create empty keys in atchops. Encryption key pair will be set later on after generation
   onboardingService.atChops =
-      AtChopsSecureElement(AtChopsKeys.create(null, null));
-
-  logger.info('calling onboard');
-  await onboardingService.onboard();
-  logger.info('onboard done');
-  logger.info('calling auth');
-  await onboardingService.authenticate();
-  logger.info('auth done');
+      AtChopsSecureElement(AtChopsKeys.create(null, null))
+        ..externalSigner = externalSigner;
+  try {
+    logger.info('calling onboard');
+    await onboardingService.onboard();
+    logger.info('onboard done');
+    logger.info('calling auth');
+    await onboardingService.authenticate();
+    logger.info('auth done');
+  } on Exception catch (e, trace) {
+    logger.severe('exception in onboard secure element $e $trace');
+  } finally {
+    externalSigner.clear();
+  }
 }

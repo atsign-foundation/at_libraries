@@ -39,8 +39,7 @@ class ExternalSigner {
         _logger.finest('closing channel $channelNumber');
         _closeChannel(_serialPort, channelNumber);
       }
-      _serialPort.setVMIN(0);
-      _serialPort.dispose();
+
     }
   }
 
@@ -73,8 +72,6 @@ class ExternalSigner {
         _logger.finest('closing channel $channelNumber');
         _closeChannel(_serialPort, channelNumber);
       }
-      _serialPort.setVMIN(0);
-      _serialPort.dispose();
     }
     return null;
   }
@@ -117,14 +114,15 @@ class ExternalSigner {
       _privateKeyId = newPrivateKeyId;
 
       return AsymmetricKeyPair(newPrivateKeyId, newPublicKeyId);
+    } on Exception catch (e, trace) {
+      _logger.severe('exception during generate key pair ${e.toString()}');
+      _logger.severe(trace);
     } finally {
       if (channelNumber != null &&
           channelNumber.startsWith(RegExp(r'01|02|03'))) {
         _logger.finest('closing channel $channelNumber');
         _closeChannel(_serialPort, channelNumber);
       }
-      _serialPort.setVMIN(0);
-      _serialPort.dispose();
     }
     return null;
   }
@@ -203,7 +201,7 @@ class ExternalSigner {
   bool _generateKeyPair(String privateKeyId, String channelNumber) {
     _serialPort.writeString(
         "AT+CSIM=20,\"8${channelNumber.substring(1)}B90000058403$privateKeyId\"\r\n");
-    var generateKeyPairResult;
+    var generateKeyPairResult='';
     while(true) {
       final readEvent = _serialPort.read(512, 1000);
       generateKeyPairResult += readEvent.toString();
@@ -216,7 +214,7 @@ class ExternalSigner {
     }
     _logger.info('generateKeyPair result :${generateKeyPairResult.toString()}');
     bool isGenerateKeyPairSuccess =
-        _parseResult(generateKeyPair.toString(), ATCommand.generateKeyPair);
+        _parseResult(generateKeyPairResult.toString(), ATCommand.generateKeyPair);
     return isGenerateKeyPairSuccess;
   }
 
@@ -376,6 +374,11 @@ class ExternalSigner {
     port.writeString(channelCloseCommand);
     final result = port.read(256, 1000);
     _logger.finest('close channel result: ${result.toString()}');
+  }
+
+  void clear() {
+    _serialPort.setVMIN(0);
+    _serialPort.dispose();
   }
 }
 
