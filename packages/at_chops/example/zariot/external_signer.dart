@@ -115,7 +115,7 @@ class ExternalSigner {
       }
       _privateKeyId = newPrivateKeyId;
 
-      return AsymmetricKeyPair(newPrivateKeyId, newPrivateKeyId);
+      return AsymmetricKeyPair(newPrivateKeyId, newPublicKeyId);
     } finally {
       if (channelNumber != null &&
           channelNumber.startsWith(RegExp(r'01|02|03'))) {
