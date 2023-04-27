@@ -203,11 +203,21 @@ class ExternalSigner {
   bool _generateKeyPair(String privateKeyId, String channelNumber) {
     _serialPort.writeString(
         "AT+CSIM=20,\"8${channelNumber.substring(1)}B90000058403$privateKeyId\"\r\n");
-    var generateKeyPair = _serialPort.read(256, 1000);
-    _logger.finest('generateKeyPair result :${generateKeyPair.toString()}');
-    bool generateKeyPairResult =
+    var generateKeyPairResult;
+    while(true) {
+      final readEvent = _serialPort.read(512, 1000);
+      generateKeyPairResult += readEvent.toString();
+      if(!readEvent.toString().contains('OK')) {
+        _logger.finest('Got result: $generateKeyPairResult');
+        sleep(Duration(seconds: 2));
+        continue;
+      }
+      break;
+    }
+    _logger.info('generateKeyPair result :${generateKeyPairResult.toString()}');
+    bool isGenerateKeyPairSuccess =
         _parseResult(generateKeyPair.toString(), ATCommand.generateKeyPair);
-    return generateKeyPairResult;
+    return isGenerateKeyPairSuccess;
   }
 
   void _computeSignatureInit(String channelNumber) {
