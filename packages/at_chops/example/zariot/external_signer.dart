@@ -91,6 +91,7 @@ class ExternalSigner {
       _logger.info('selected IOTSafe application');
 
       // Step 3. Generate key pair
+      _logger.info('generating key pair - private key id: $privateKeyId');
       bool isGenerateKeyPairSuccess =
           _generateKeyPair(privateKeyId, channelNumber);
 
@@ -203,7 +204,7 @@ class ExternalSigner {
     _serialPort.writeString(
         "AT+CSIM=20,\"8${channelNumber.substring(1)}B90000058403$privateKeyId\"\r\n");
     var generateKeyPair = _serialPort.read(256, 1000);
-    _logger.finest('selectApplicationResult :$generateKeyPair');
+    _logger.finest('generateKeyPair result :${generateKeyPair.toString()}');
     bool generateKeyPairResult =
         _parseResult(generateKeyPair.toString(), ATCommand.generateKeyPair);
     return generateKeyPairResult;

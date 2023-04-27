@@ -30,7 +30,7 @@ Future<void> main(List<String> args) async {
   var logger = AtSignLogger('OnboardSecureElement');
   var parser = ArgParser();
   parser.addOption('privateKeyId',
-      abbr: 'pr',
+      abbr: 'p',
       mandatory: true,
       help: 'Private key id from sim card used to sign pkam challenge');
   parser.addOption('serialPort',
