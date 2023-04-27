@@ -29,7 +29,7 @@ void main() {
     }
     // Step 2. Select IOTsafe by application id
     serialPort.writeString(
-        "AT+CSIM=24, \"${channelNumber}A4040007${applicationId}\"\r\n");
+        "AT+CSIM=24, \"${channelNumber}A4040007$applicationId\"\r\n");
     var selectApplicationResult = serialPort.read(256, 1000);
     print('selectApplicationResult :$selectApplicationResult');
     bool isValidApplication =
@@ -161,7 +161,7 @@ void main() {
     print('verifySignatureInitResult $verifySignatureInitResult');
     bool isVerifyInitSuccess =
         _parseVerifyResult(verifySignatureInitResult.toString());
-    print('isVerifyInitSuccess ${isVerifyInitSuccess}');
+    print('isVerifyInitSuccess $isVerifyInitSuccess');
 
     // Step 9. Verify signature update
     // 2D - tag for signature update
@@ -171,7 +171,7 @@ void main() {
     // 33 - tag for signature
     // 0040 - length of signature
     serialPort.writeString(
-        "AT+CSIM=212,\"8${channelNumber.substring(1)}2D8002659E20${dataHash}330040${signatureStr}\"\r\n");
+        "AT+CSIM=212,\"8${channelNumber.substring(1)}2D8002659E20${dataHash}330040$signatureStr\"\r\n");
     var verifySignatureResult = serialPort.read(256, 1000);
     print('verifySignatureResult $verifySignatureResult');
     var verifyResult = '';
@@ -188,7 +188,7 @@ void main() {
     }
     print('verifyResult: $verifyResult');
     bool isVerifyUpdateSuccess = _parseVerifyResult(verifyResult);
-    print('isVerifyUpdateSuccess ${isVerifyUpdateSuccess}');
+    print('isVerifyUpdateSuccess $isVerifyUpdateSuccess');
   } finally {
     if (channelNumber != null &&
         channelNumber.startsWith(RegExp(r'01|02|03'))) {
@@ -268,19 +268,6 @@ AtCsimResult _parseGetFileDataResult(String getFileDataResult) {
   return atCsimResult;
 }
 
-bool _parseQueryFileResult(String queryFileResult) {
-  final atCsimResult = _parseAtCsimResult(queryFileResult);
-  if (atCsimResult.result == null ||
-      atCsimResult.result!.isEmpty ||
-      atCsimResult.success == false) {
-    return false;
-  }
-  if (atCsimResult.result!.startsWith('61')) {
-    return true;
-  }
-  return false;
-}
-
 bool _parseGenerateChallengeResult(String generateChallengeResult) {
   final atCsimResult = _parseAtCsimResult(generateChallengeResult);
   if (atCsimResult.result == null ||
@@ -313,7 +300,7 @@ bool _parseSelectApplicationResult(String selectApplicationResult) {
 
 String _openChannel(Serial serialPort) {
   print('Opening a non-default logical channel');
-  serialPort.writeString('AT+CSIM=10, \"0070000000\"\r\n');
+  serialPort.writeString('AT+CSIM=10, "0070000000"\r\n');
   var event = serialPort.read(256, 1000);
   final result = event.toString();
   print('openChannelResult: $result');
@@ -324,7 +311,7 @@ void _closeSession(
     Serial port, String channelNumber, String tag, String sessionNumber) {
   print('closing session');
   final sessionCloseCommand =
-      'AT+CSIM=10, \"8${channelNumber}${tag}01${sessionNumber}00\"\r\n';
+      'AT+CSIM=10, "8$channelNumber${tag}01${sessionNumber}00"\r\n';
   print('close session command: $sessionCloseCommand');
   port.writeString(sessionCloseCommand);
   final result = port.read(256, 1000);
@@ -333,7 +320,7 @@ void _closeSession(
 
 void _closeChannel(Serial port, String channelNumber) {
   print('closing channel : $channelNumber');
-  final channelCloseCommand = 'AT+CSIM=10, \"007080${channelNumber}00\"\r\n';
+  final channelCloseCommand = 'AT+CSIM=10, "007080${channelNumber}00"\r\n';
   print('channelCloseCommand: $channelCloseCommand');
   port.writeString(channelCloseCommand);
   final result = port.read(256, 1000);
@@ -373,7 +360,7 @@ AtCsimResult _parseAtCsimResult(String result) {
   }
   int startIndex = result.indexOf(AtCsimResult.pattern);
   int bytesStartIndex = startIndex + AtCsimResult.pattern.length;
-  int bytesEndindex = startIndex + result.substring(startIndex).indexOf(',\"');
+  int bytesEndindex = startIndex + result.substring(startIndex).indexOf(',"');
   String bytesToRead = result.substring(bytesStartIndex, bytesEndindex);
   atCsimResult.bytesToRead = int.parse(bytesToRead);
   atCsimResult.result = result.substring(

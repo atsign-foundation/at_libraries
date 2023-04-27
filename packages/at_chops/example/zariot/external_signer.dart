@@ -22,7 +22,7 @@ class ExternalSigner {
   }
 
   String getPublicKey(String publicKeyId) {
-    var channelNumber;
+    String? channelNumber;
     try {
       // Step 1. Open a logical channel. This should return a logical port  number [01|02|03] followed by [9000]. 9000 is success code.
       channelNumber = _openLogicalChannel();
@@ -32,7 +32,7 @@ class ExternalSigner {
     } on Exception catch (e, trace) {
       _logger.severe('exception during signing ${e.toString()}');
       _logger.severe(trace);
-      throw e;
+      rethrow;
     } finally {
       if (channelNumber != null &&
           channelNumber.startsWith(RegExp(r'01|02|03'))) {
@@ -44,7 +44,7 @@ class ExternalSigner {
   }
 
   String? sign(String dataHash) {
-    var channelNumber;
+    String? channelNumber;
     try {
       // Step 1. Open a logical channel. This should return a logical port  number [01|02|03] followed by [9000]. 9000 is success code.
       channelNumber = _openLogicalChannel();
@@ -77,7 +77,7 @@ class ExternalSigner {
   }
 
   AsymmetricKeyPair? generateKeyPair(String privateKeyId) {
-    var channelNumber;
+    String? channelNumber;
     try {
       // Step 1. Open a logical channel. This should return a logical port  number [01|02|03] followed by [9000]. 9000 is success code.
       channelNumber = _openLogicalChannel();
@@ -101,8 +101,8 @@ class ExternalSigner {
           "AT+CSIM=10,\"8${channelNumber.substring(1)}C0000051\"\r\n");
       var generateKeyPairResult = _serialPort.read(256, 1000);
       var csimResult = _parseAtCsimResult(generateKeyPairResult.toString());
-      String? newPrivateKeyId = csimResult.result!.substring(4, 10);
-      String? newPublicKeyId = csimResult.result!.substring(14, 20);
+      String? newPrivateKeyId = csimResult.result?.substring(4, 10);
+      String? newPublicKeyId = csimResult.result?.substring(14, 20);
 
       // These IDs may or  may not change. As per spec - "Note: This operation(generate key pair) may modify the key ID."
       _logger.finest('privateKeyId :$newPrivateKeyId');
@@ -136,7 +136,7 @@ class ExternalSigner {
     // 85 - public key id
     // 03 - data length
     _serialPort.writeString(
-        "AT+CSIM=20, \"8${channelNumber.substring(1)}CD0000058503${publicKeyId}\"\r\n");
+        "AT+CSIM=20, \"8${channelNumber.substring(1)}CD0000058503$publicKeyId\"\r\n");
     var readPublicKeyResult = _serialPort.read(256, 1000);
     _logger.finest('readPublicKeyResult :$readPublicKeyResult');
     bool isReadPublicKeyResultSuccess =
@@ -181,7 +181,7 @@ class ExternalSigner {
 
   String _openChannel(Serial serialPort) {
     _logger.finest('Opening a non-default logical channel');
-    serialPort.writeString('AT+CSIM=10, \"0070000000\"\r\n');
+    serialPort.writeString('AT+CSIM=10, "0070000000"\r\n');
     var event = serialPort.read(256, 1000);
     final result = event.toString();
     _logger.finest('openChannelResult: $result');
@@ -190,7 +190,7 @@ class ExternalSigner {
 
   void _selectIOTSafeApplication(String channelNumber) {
     _serialPort.writeString(
-        "AT+CSIM=24, \"${channelNumber}A4040007${_applicationId}\"\r\n");
+        "AT+CSIM=24, \"${channelNumber}A4040007$_applicationId}\"\r\n");
     var selectApplicationResult = _serialPort.read(256, 1000);
     _logger.finest('selectApplicationResult :$selectApplicationResult');
     bool isValidApplication =
@@ -357,7 +357,7 @@ class ExternalSigner {
     int startIndex = result.indexOf(AtCsimResult.pattern);
     int bytesStartIndex = startIndex + AtCsimResult.pattern.length;
     int bytesEndindex =
-        startIndex + result.substring(startIndex).indexOf(',\"');
+        startIndex + result.substring(startIndex).indexOf(',"');
     String bytesToRead = result.substring(bytesStartIndex, bytesEndindex);
     atCsimResult.bytesToRead = int.parse(bytesToRead);
     atCsimResult.result = result.substring(
@@ -369,7 +369,7 @@ class ExternalSigner {
 
   void _closeChannel(Serial port, String channelNumber) {
     _logger.finest('closing channel : $channelNumber');
-    final channelCloseCommand = 'AT+CSIM=10, \"007080${channelNumber}00\"\r\n';
+    final channelCloseCommand = 'AT+CSIM=10, "007080${channelNumber}00"\r\n';
     _logger.finest('channelCloseCommand: $channelCloseCommand');
     port.writeString(channelCloseCommand);
     final result = port.read(256, 1000);
