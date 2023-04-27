@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dart_periphery/dart_periphery.dart';
 
+// Sample code for checking signing and verify commands on the sim card for a precomputed hash
 void main() {
   setCustomLibrary('/usr/lib/arm-linux-gnueabihf/libperiphery_arm.so');
   print('Connecting to serial port');
