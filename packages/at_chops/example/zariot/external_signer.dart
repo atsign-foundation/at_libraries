@@ -159,9 +159,9 @@ class ExternalSigner {
     var computePRFResult = _serialPort.read(256, 1000);
     _logger.finest('computePRFResult :$computePRFResult');
     bool isComputePRFSuccess =
-    _parseResult(computePRFResult.toString(), ATCommand.selectApp);
+    _parseResult(computePRFResult.toString(), ATCommand.computePRF);
     _logger.finest('isComputePRFSuccess $isComputePRFSuccess');
-    _serialPort.writeString("AT+CSIM=10, \"8${channelNumber.substring(1)}C0000010\"");
+    _serialPort.writeString("AT+CSIM=10, \"8${channelNumber.substring(1)}C0000010\"\r\n");
     var  prfResult = _serialPort.read(256, 1000);
     _logger.finest('prfResult :$prfResult');
     return prfResult.toString();
@@ -366,7 +366,7 @@ class ExternalSigner {
     } else if (atCommand == ATCommand.generateKeyPair &&
         atCsimResult.result == '6151') {
       return true;
-    } else if (atCommand == ATCommand.computePRF && atCsimResult.result == '6150'){
+    } else if (atCommand == ATCommand.computePRF && atCsimResult.result == '6110'){
       return true;
     }
       else {
