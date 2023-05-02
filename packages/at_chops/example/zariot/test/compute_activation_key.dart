@@ -4,8 +4,11 @@ import 'package:args/args.dart';
 
 import '../external_signer.dart';
 
+import 'package:at_utils/at_logger.dart';
+
 
 Future<void> main(List<String> args) async {
+  AtSignLogger.root_level = 'FINEST';
   var parser = ArgParser();
   parser.addOption('privateKeyId',
       abbr: 'p',
@@ -22,8 +25,8 @@ Future<void> main(List<String> args) async {
       defaultsTo: '/usr/lib/arm-linux-gnueabihf/libperiphery_arm.so',
       help: 'location of native library libperiphery_arm.so');
   parser.addOption('keyId', abbr:'k', mandatory: true, help: 'key id from sim used to compute PRF');
-  parser.addOption('simSecret', abbr:'s', mandatory: true, help: 'secret from sim');
-  parser.addOption('labelId', abbr:'l', mandatory: true, help: 'label id from sim');
+  parser.addOption('simSecret', abbr:'t', mandatory: true, help: 'secret from sim');
+  parser.addOption('labelId', abbr:'i', mandatory: true, help: 'label id from sim');
   dynamic results;
   try {
     results = parser.parse(args);
