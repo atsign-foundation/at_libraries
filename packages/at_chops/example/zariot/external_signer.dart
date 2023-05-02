@@ -39,7 +39,6 @@ class ExternalSigner {
         _logger.finest('closing channel $channelNumber');
         _closeChannel(_serialPort, channelNumber);
       }
-
     }
   }
 
@@ -151,7 +150,8 @@ class ExternalSigner {
     return null;
   }
 
-  String _computePRF(String channelNumber, String keyId, String simSecret, String labelId) {
+  String _computePRF(
+      String channelNumber, String keyId, String simSecret, String labelId) {
     // 48 - tag for compute PRF
     // 10 - activation key length
     _serialPort.writeString(
@@ -159,10 +159,11 @@ class ExternalSigner {
     var computePRFResult = _serialPort.read(256, 1000);
     _logger.finest('computePRFResult :$computePRFResult');
     bool isComputePRFSuccess =
-    _parseResult(computePRFResult.toString(), ATCommand.computePRF);
+        _parseResult(computePRFResult.toString(), ATCommand.computePRF);
     _logger.finest('isComputePRFSuccess $isComputePRFSuccess');
-    _serialPort.writeString("AT+CSIM=10, \"8${channelNumber.substring(1)}C0000010\"\r\n");
-    var  prfResult = _serialPort.read(256, 1000);
+    _serialPort.writeString(
+        "AT+CSIM=10, \"8${channelNumber.substring(1)}C0000010\"\r\n");
+    var prfResult = _serialPort.read(256, 1000);
     _logger.finest('prfResult :$prfResult');
     return prfResult.toString();
   }
@@ -241,11 +242,11 @@ class ExternalSigner {
   bool _generateKeyPair(String privateKeyId, String channelNumber) {
     _serialPort.writeString(
         "AT+CSIM=20,\"8${channelNumber.substring(1)}B90000058403$privateKeyId\"\r\n");
-    var generateKeyPairResult='';
-    while(true) {
+    var generateKeyPairResult = '';
+    while (true) {
       final readEvent = _serialPort.read(512, 1000);
       generateKeyPairResult += readEvent.toString();
-      if(!readEvent.toString().contains('OK')) {
+      if (!readEvent.toString().contains('OK')) {
         _logger.finest('Got result: $generateKeyPairResult');
         sleep(Duration(seconds: 2));
         continue;
@@ -253,8 +254,8 @@ class ExternalSigner {
       break;
     }
     _logger.info('generateKeyPair result :${generateKeyPairResult.toString()}');
-    bool isGenerateKeyPairSuccess =
-        _parseResult(generateKeyPairResult.toString(), ATCommand.generateKeyPair);
+    bool isGenerateKeyPairSuccess = _parseResult(
+        generateKeyPairResult.toString(), ATCommand.generateKeyPair);
     return isGenerateKeyPairSuccess;
   }
 
@@ -366,10 +367,10 @@ class ExternalSigner {
     } else if (atCommand == ATCommand.generateKeyPair &&
         atCsimResult.result == '6151') {
       return true;
-    } else if (atCommand == ATCommand.computePRF && atCsimResult.result == '6110'){
+    } else if (atCommand == ATCommand.computePRF &&
+        atCsimResult.result == '6110') {
       return true;
-    }
-      else {
+    } else {
       _logger.finest(
           'failure code in ${atCommand.toString()} ${atCsimResult.result}');
     }
@@ -399,8 +400,7 @@ class ExternalSigner {
     }
     int startIndex = result.indexOf(AtCsimResult.pattern);
     int bytesStartIndex = startIndex + AtCsimResult.pattern.length;
-    int bytesEndindex =
-        startIndex + result.substring(startIndex).indexOf(',"');
+    int bytesEndindex = startIndex + result.substring(startIndex).indexOf(',"');
     String bytesToRead = result.substring(bytesStartIndex, bytesEndindex);
     atCsimResult.bytesToRead = int.parse(bytesToRead);
     atCsimResult.result = result.substring(
