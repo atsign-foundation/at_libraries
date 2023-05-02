@@ -230,7 +230,7 @@ class ExternalSigner {
 
   void _selectIOTSafeApplication(String channelNumber) {
     _serialPort.writeString(
-        "AT+CSIM=24, \"${channelNumber}A4040007$_applicationId}\"\r\n");
+        "AT+CSIM=24, \"${channelNumber}A4040007$_applicationId\"\r\n");
     var selectApplicationResult = _serialPort.read(256, 1000);
     _logger.finest('selectApplicationResult :$selectApplicationResult');
     bool isValidApplication =
