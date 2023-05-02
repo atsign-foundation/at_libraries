@@ -127,6 +127,46 @@ class ExternalSigner {
     return null;
   }
 
+  String? computeActivationKey(String keyId, String simSecret, String labelId) {
+    String? channelNumber;
+    try {
+      // Step 1. Open a logical channel. This should return a logical port  number [01|02|03] followed by [9000]. 9000 is success code.
+      channelNumber = _openLogicalChannel();
+      _logger.info('opened logical channel #:$channelNumber');
+      // Step 2. Select IOTsafe by application id
+      _selectIOTSafeApplication(channelNumber!);
+
+      _logger.info('selected IOTSafe application');
+      _computePRF(channelNumber, keyId, simSecret, labelId);
+    } on Exception catch (e, trace) {
+      _logger.severe('exception during generate key pair ${e.toString()}');
+      _logger.severe(trace);
+    } finally {
+      if (channelNumber != null &&
+          channelNumber.startsWith(RegExp(r'01|02|03'))) {
+        _logger.finest('closing channel $channelNumber');
+        _closeChannel(_serialPort, channelNumber);
+      }
+    }
+    return null;
+  }
+
+  String _computePRF(String channelNumber, String keyId, String simSecret, String labelId) {
+    // 48 - tag for compute PRF
+    // 10 - activation key length
+    _serialPort.writeString(
+        "AT+CSIM=110, \"8${channelNumber.substring(1)}48000032$keyId$simSecret$labelId}D30110\"\r\n");
+    var computePRFResult = _serialPort.read(256, 1000);
+    _logger.finest('computePRFResult :$computePRFResult');
+    bool isComputePRFSuccess =
+    _parseResult(computePRFResult.toString(), ATCommand.selectApp);
+    _logger.finest('isComputePRFSuccess $isComputePRFSuccess');
+    _serialPort.writeString("AT+CSIM=10, \"8${channelNumber.substring(1)}C0000010\"");
+    var  prfResult = _serialPort.read(256, 1000);
+    _logger.finest('prfResult :$prfResult');
+    return prfResult.toString();
+  }
+
   String _readPublicKey(
       Serial serialPort, String channelNumber, String publicKeyId) {
     // INS - CD -read public key
@@ -326,7 +366,10 @@ class ExternalSigner {
     } else if (atCommand == ATCommand.generateKeyPair &&
         atCsimResult.result == '6151') {
       return true;
-    } else {
+    } else if (atCommand == ATCommand.computePRF && atCsimResult.result == '6150'){
+      return true;
+    }
+      else {
       _logger.finest(
           'failure code in ${atCommand.toString()} ${atCsimResult.result}');
     }
@@ -407,7 +450,8 @@ enum ATCommand {
   computeSignatureInit,
   computeSignatureUpdate,
   readPublicKey,
-  generateKeyPair
+  generateKeyPair,
+  computePRF
 }
 
 class AsymmetricKeyPair {
