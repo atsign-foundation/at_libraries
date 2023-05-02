@@ -155,7 +155,7 @@ class ExternalSigner {
     // 48 - tag for compute PRF
     // 10 - activation key length
     _serialPort.writeString(
-        "AT+CSIM=110, \"8${channelNumber.substring(1)}48000032$keyId$simSecret$labelId}D30110\"\r\n");
+        "AT+CSIM=110, \"8${channelNumber.substring(1)}48000032$keyId$simSecret${labelId}D30110\"\r\n");
     var computePRFResult = _serialPort.read(256, 1000);
     _logger.finest('computePRFResult :$computePRFResult');
     bool isComputePRFSuccess =
