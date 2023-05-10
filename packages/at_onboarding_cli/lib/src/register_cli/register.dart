@@ -12,13 +12,15 @@ import 'package:at_onboarding_cli/src/util/register_api_result.dart';
 import 'package:at_onboarding_cli/src/util/register_api_task.dart';
 import 'package:at_utils/at_logger.dart';
 
+import '../util/onboarding_util.dart';
+
 ///Class containing logic to register a free atsign to email provided
 ///through [args] by utilizing methods defined in [RegisterUtil]
 ///Requires List<String> args containing the following arguments: email
 class Register {
   Future<void> main(List<String> args) async {
     Map<String, String> params = HashMap<String, String>();
-    RegisterUtil registerUtil = RegisterUtil();
+    OnboardingUtil registerUtil = OnboardingUtil();
 
     final argParser = ArgParser()
       ..addOption('email',
@@ -52,7 +54,7 @@ class Register {
 
     //set the following parameter to RegisterApiConstants.apiHostStaging
     //to use the staging environment
-    params['authority'] = RegisterApiConstants.apiHostProd;
+    params['authority'] = RegisterApiConstants.apiHostStaging;
 
     //create stream of tasks each of type [RegisterApiTask] and then
     // call start on the stream of tasks
@@ -73,7 +75,7 @@ class Register {
 class RegistrationFlow {
   List<RegisterApiTask> processFlow = [];
   RegisterApiResult result = RegisterApiResult();
-  late RegisterUtil registerUtil;
+  late OnboardingUtil registerUtil;
   Map<String, String> params;
 
   RegistrationFlow(this.params, this.registerUtil);
@@ -86,6 +88,9 @@ class RegistrationFlow {
   Future<void> start() async {
     for (RegisterApiTask task in processFlow) {
       task.init(params, registerUtil);
+      if(RegisterApiConstants.isDebugMode) {
+        print('Current Task: $task  [params=$params]\n');
+      }
       result = await task.run();
       if (result.apiCallStatus == ApiCallStatus.retry) {
         while (
@@ -159,7 +164,7 @@ class RegisterAtsign extends RegisterApiTask {
 ///HTTP GET/POST request
 class ValidateOtp extends RegisterApiTask {
   @override
-  void init(Map<String, String> params, RegisterUtil registerUtil) {
+  void init(Map<String, String> params, OnboardingUtil registerUtil) {
     params['confirmation'] = 'false';
     this.params = params;
     this.registerUtil = registerUtil;
@@ -229,9 +234,15 @@ Future<void> main(List<String> args) async {
       stderr.writeln(
           '[Error] Failed getting an atsign. It looks like something went wrong on our side.\n'
           'Please try again or contact support@atsign.com, quoting the text displayed below.');
-      stderr.writeln('Cause: ${e.toString()}');
+      stderr.writeln('Cause: ${e}');
       exit(3);
     }
+  } on AtClientException catch (e) {
+    stderr.writeln(
+        '[Error] Failed getting an atsign. It looks like something went wrong on our side.\n'
+            'Please try again or contact support@atsign.com, quoting the text displayed below.');
+    stderr.writeln('Cause: ${e}  ExceptionType:${e.runtimeType}');
+    exit(4);
   } on Exception catch (e) {
     if (e
         .toString()
@@ -240,13 +251,13 @@ Future<void> main(List<String> args) async {
           '[Unable to proceed] Registration has been terminated as you have'
           ' reached the maximum number of verification attempts.\n'
           'Please start again or contact support@atsign.com');
-      exit(4);
+      exit(5);
     } else {
       stderr.writeln(
           '[Error] Failed getting an atsign. It looks like something went wrong on our side.\n'
           'Please try again or contact support@atsign.com, quoting the text displayed below.');
       stderr.writeln('Cause: ${e.toString()}');
-      exit(5);
+      exit(6);
     }
   }
 }
