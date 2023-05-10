@@ -35,7 +35,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   AtOnboardingServiceImpl(atsign, this.atOnboardingPreference,
       {this.atServiceFactory}) {
-    //performs atSign format checks on the atSign
+    // performs atSign format checks on the atSign
     _atSign = AtUtils.fixAtSign(atsign);
 
     // set default LocalStorage paths for this instance
@@ -83,15 +83,14 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     // }
     //get cram_secret from either from AtOnboardingConfig or decode it from qr code whichever available
     atOnboardingPreference.cramSecret ??=
-        getSecretFromQr(atOnboardingPreference.qrCodePath);
+        await OnboardingUtil().getCramUsingOtp(_atSign, atOnboardingPreference.registrarUrl);
 
     if (atOnboardingPreference.cramSecret == null) {
       throw AtClientException.message(
-          'Either of cram secret or qr code containing cram secret not provided',
-          exceptionScenario: ExceptionScenario.invalidValueProvided);
+          'Could not fetch cram secret from ${atOnboardingPreference.registrarUrl}');
     }
 
-    // cram auth doesn't use at_chops.So create at_lookup here.
+    // cram auth doesn't use at_chops. So create at_lookup here.
     AtLookupImpl atLookUpImpl = AtLookupImpl(_atSign,
         atOnboardingPreference.rootDomain, atOnboardingPreference.rootPort);
     try {
@@ -373,6 +372,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }
 
   ///extracts cram secret from qrCode
+  @Deprecated('qr_code based cram authentication not supported anymore')
   static String? getSecretFromQr(String? path) {
     if (path == null) {
       return null;
