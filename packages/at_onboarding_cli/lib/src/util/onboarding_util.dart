@@ -8,7 +8,7 @@ import 'package:http/http.dart';
 import 'package:http/io_client.dart';
 
 ///class containing utilities to perform registration of a free atsign
-class RegisterUtil {
+class OnboardingUtil {
   IOClient? _ioClient;
 
   void _createClient() {
@@ -27,7 +27,7 @@ class RegisterUtil {
     for (int i = 0; i < amount; i++) {
       // get request at my.atsign.com/api/app/v3/get-free-atsign/
       response =
-          await _getRequest(authority, RegisterApiConstants.pathGetFreeAtSign);
+          await getRequest(authority, RegisterApiConstants.pathGetFreeAtSign);
       if (response.statusCode == 200) {
         String atSign = jsonDecode(response.body)['data']['atsign'];
         atSigns.add(atSign);
@@ -47,7 +47,7 @@ class RegisterUtil {
   Future<bool> registerAtSign(String atSign, String email,
       {oldEmail, String authority = RegisterApiConstants.apiHostProd}) async {
     Response response =
-        await _postRequest(authority, RegisterApiConstants.pathRegisterAtSign, {
+        await postRequest(authority, RegisterApiConstants.pathRegisterAtSign, {
       'atsign': atSign,
       'email': email,
       'oldEmail': oldEmail,
@@ -83,7 +83,7 @@ class RegisterUtil {
       {String confirmation = 'true',
       String authority = RegisterApiConstants.apiHostProd}) async {
     Response response =
-        await _postRequest(authority, RegisterApiConstants.pathValidateOtp, {
+        await postRequest(authority, RegisterApiConstants.pathValidateOtp, {
       'atsign': atSign,
       'email': email,
       'otp': otp,
@@ -127,8 +127,57 @@ class RegisterUtil {
     }
   }
 
+  Future<void> requestAuthenticationOtp(String atsign,
+      {String authority = RegisterApiConstants.apiHostProd}) async {
+    Response response = await postRequest(authority,
+        RegisterApiConstants.requestAuthenticationOtpPath, {'atsign': atsign});
+    stderr.writeln('[Information] Sending verification code to email registered to $atsign');
+    String apiResponseMessage = jsonDecode(response.body)['message'];
+    if (response.statusCode == 200) {
+      if (apiResponseMessage.contains('Sent Successfully')) {
+        stdout.writeln(
+            'Successfully sent verification code to your registered e-mail');
+        return;
+      }
+      throw at_client.InternalServerError(
+          'Unable to send verification code for authentication.\nCause: $apiResponseMessage');
+    }
+    throw at_client.InvalidRequestException(apiResponseMessage);
+  }
+
+  Future<String> getAtsignCramKey(String atsign, String otp,
+      {String authority = RegisterApiConstants.apiHostProd}) async {
+    Response response = await postRequest(
+        authority,
+        RegisterApiConstants.getCramKeyWithOtpPath,
+        {'atsign': atsign, 'otp': otp});
+    Map<String, dynamic> jsonDecodedBody = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      if (jsonDecodedBody['message'] == 'Verified') {
+        String cram = jsonDecodedBody['cramkey'];
+        cram = cram.split(':')[1];
+        stdout.writeln('[Information] CRAM Key fetched successfully');
+        return cram;
+      } else if (jsonDecodedBody['message'].contains(
+          'Please enter the 4-character verification code that was sent to your email address')) {
+        throw at_client.InvalidDataException(
+            'Invalid verification code. Please enter a valid verification code');
+      }
+    }
+    throw at_client.InvalidDataException(jsonDecodedBody['message']);
+  }
+
+  /// calls utility methods from [OnboardingUtil] that
+  /// 1) send verification code to the registered email
+  /// 2) fetch the CRAM key from registrar using the verification code
+  Future<String> getCramUsingOtp(String atsign, String registrarUrl) async {
+    await requestAuthenticationOtp(atsign, authority: registrarUrl);
+    return await getAtsignCramKey(atsign, getVerificationCodeFromUser(),
+        authority: registrarUrl);
+  }
+
   /// generic GET request
-  Future<Response> _getRequest(String authority, String path) async {
+  Future<Response> getRequest(String authority, String path) async {
     if (_ioClient == null) _createClient();
     Uri uri = Uri.https(authority, path);
     Response response = await _ioClient!.get(uri, headers: <String, String>{
@@ -139,7 +188,7 @@ class RegisterUtil {
   }
 
   /// generic POST request
-  Future<Response> _postRequest(
+  Future<Response> postRequest(
       String authority, String path, Map<String, String?> data) async {
     if (_ioClient == null) _createClient();
 
@@ -154,6 +203,9 @@ class RegisterUtil {
         'Content-Type': RegisterApiConstants.contentType,
       },
     );
+    if (RegisterApiConstants.isDebugMode) {
+      print('Got Response: ${response.body}');
+    }
     return response;
   }
 
