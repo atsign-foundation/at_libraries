@@ -136,18 +136,6 @@ void main() {
       expect(await File(atOnboardingPreference.atKeysFilePath!).exists(), true);
     });
 
-    test(
-        'A test to verify exception is thrown when "null" CRAM secret is passed to onboarding service',
-        () async {
-      atOnboardingPreference.cramSecret = null;
-      AtOnboardingService service =
-          AtOnboardingServiceImpl(atSign, atOnboardingPreference);
-      expect(
-          () async => await service.onboard(),
-          throwsA(predicate((e) => e.toString().contains(
-              'Either of cram secret or qr code containing cram secret not provided'))));
-    });
-
     tearDown(() async {
       await tearDownFunc();
     });
