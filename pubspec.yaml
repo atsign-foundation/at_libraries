@@ -7,7 +7,7 @@ documentation: https://docs.atsign.com/
 
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.12.0 <4.0.0'
 
 dependencies:
   logging: ^1.0.1
@@ -15,6 +15,13 @@ dependencies:
   crypto: ^3.0.1
   at_commons: ^3.0.42
   collection: ^1.15.0
+
+dependency_overrides:
+  at_commons:
+    git:
+      url: https://github.com/atsign-foundation/at_tools.git
+      path: packages/at_commons
+      ref: dart-3
 
 dev_dependencies:
   lints: ^1.0.1
