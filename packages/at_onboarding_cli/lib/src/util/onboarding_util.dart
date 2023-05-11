@@ -126,7 +126,11 @@ class OnboardingUtil {
           '${response.statusCode} ${response.reasonPhrase}');
     }
   }
-
+  /// Accepts a registered [atsign] as a parameter and sends a one-time verification code
+  /// to the email that the atsign is registered with
+  /// Throws an exception in the following cases:
+  /// 1) HTTP 400 BAD_REQUEST
+  /// 2) Invalid atsign
   Future<void> requestAuthenticationOtp(String atsign,
       {String authority = RegisterApiConstants.apiHostProd}) async {
     Response response = await postRequest(authority,
@@ -144,13 +148,18 @@ class OnboardingUtil {
     }
     throw at_client.InvalidRequestException(apiResponseMessage);
   }
-
-  Future<String> getAtsignCramKey(String atsign, String otp,
+  
+  /// Returns the cram key for an atsign by fetching it from the registrar API
+  /// Accepts a registered [atsign], the verification code that was sent to 
+  /// the registered email
+  /// Throws exception in the following cases:
+  /// 1) HTTP 400 BAD_REQUEST
+  Future<String> getAtsignCramKey(String atsign, String verificationCode,
       {String authority = RegisterApiConstants.apiHostProd}) async {
     Response response = await postRequest(
         authority,
         RegisterApiConstants.getCramKeyWithOtpPath,
-        {'atsign': atsign, 'otp': otp});
+        {'atsign': atsign, 'otpp': verificationCode});
     Map<String, dynamic> jsonDecodedBody = jsonDecode(response.body);
     if (response.statusCode == 200) {
       if (jsonDecodedBody['message'] == 'Verified') {
