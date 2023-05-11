@@ -1,6 +1,6 @@
 name: base2e15
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.12.0 <4.0.0'
 description: >
   binary-to-text encoding schemes that represent binary data in an unicode string format, each unicode character represent 15 bits of binary data.
 version: 0.3.0-null-safety

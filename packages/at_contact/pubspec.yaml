@@ -6,7 +6,7 @@ version: 3.0.7
 repository: https://github.com/atsign-foundation/at_libraries
 homepage: https://atsign.com
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.12.0 <4.0.0'
 
 dependencies:
   intl: ^0.17.0
@@ -15,17 +15,22 @@ dependencies:
   at_utils: ^3.0.10
   uuid: ^3.0.4
 
-#dependency_overrides:
-#  at_commons:
-#    git:
-#      url: https://github.com/atsign-foundation/at_tools.git
-#      path: at_commons
-#      ref: trunk
-#  at_utils:
-#    git:
-#      url: https://github.com/atsign-foundation/at_tools.git
-#      path: at_utils
-#      ref: trunk
+dependency_overrides:
+  at_client:
+    git:
+      url: https://github.com/atsign-foundation/at_client_sdk.git
+      path: packages/at_client
+      ref: dart-3
+  at_commons:
+    git:
+      url: https://github.com/atsign-foundation/at_tools.git
+      path: packages/at_commons
+      ref: dart-3
+  at_utils:
+    git:
+      url: https://github.com/atsign-foundation/at_tools.git
+      path: packages/at_commons
+      ref: dart-3
 
 dev_dependencies:
   lints: ^1.0.1

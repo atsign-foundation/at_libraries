@@ -6,13 +6,30 @@ documentation: https://docs.atsign.com/
 version: 1.0.3
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.12.0 <4.0.0'
 
 dependencies:
-  at_lookup: ^3.0.2
-  at_utils: ^3.0.0
   at_commons: ^3.0.0
+  at_utils: ^3.0.0
+  at_lookup: ^3.0.2
   uuid: ^3.0.4
+
+dependency_overrides:
+  at_commons:
+    git:
+      url: https://github.com/atsign-foundation/at_tools.git
+      path: packages/at_commons
+      ref: dart-3
+  at_utils:
+    git:
+      url: https://github.com/atsign-foundation/at_tools.git
+      path: packages/at_commons
+      ref: dart-3
+  at_lookup:
+    git:
+      url: https://github.com/atsign-foundation/at_libraries.git
+      path: packages/at_lookup
+      ref: dart-3
 
 dev_dependencies:
   lints: ^1.0.1

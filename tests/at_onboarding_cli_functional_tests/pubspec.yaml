@@ -4,22 +4,37 @@ version: 1.0.0
 publish_to: none
 
 environment:
-  sdk: '>=2.14.4 <3.0.0'
+  sdk: '>=2.14.4 <4.0.0'
 
 dependencies:
   at_onboarding_cli:
     path: ../../packages/at_onboarding_cli
-  at_client: ^3.0.58
-  at_lookup: ^3.0.36
   at_commons: ^3.0.44
   at_utils: ^3.0.12
+  at_lookup: ^3.0.36
+  at_client: ^3.0.58
 
-#dependency_overrides:
-#  at_chops:
-#    git:
-#      url: https://github.com/atsign-foundation/at_libraries.git
-#      path: packages/at_chops
-#      ref: integrate_pkam_secure_element
+dependency_overrides:
+  at_commons:
+    git:
+      url: https://github.com/atsign-foundation/at_tools.git
+      path: packages/at_commons
+      ref: dart-3
+  at_utils:
+    git:
+      url: https://github.com/atsign-foundation/at_tools.git
+      path: packages/at_commons
+      ref: dart-3
+  at_lookup:
+    git:
+      url: https://github.com/atsign-foundation/at_libraries.git
+      path: packages/at_lookup
+      ref: dart-3
+  at_client:
+    git:
+      url: https://github.com/atsign-foundation/at_client_sdk.git
+      path: packages/at_client
+      ref: dart-3
 
 
 dev_dependencies:

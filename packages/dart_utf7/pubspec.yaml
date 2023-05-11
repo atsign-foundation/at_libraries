@@ -5,7 +5,7 @@ homepage: https://github.com/michaelspiss/dart-utf7
 author: Michael Spiss <michaelspiss.dev@mailbox.org>
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.12.0 <4.0.0'
 
 #dependencies:
 #  path: ^1.6.0
