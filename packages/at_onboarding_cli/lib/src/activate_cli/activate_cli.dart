@@ -38,6 +38,13 @@ Future<void> main(List<String> arguments) async {
     throw IllegalArgumentException('atSign is required');
   }
 
+  activate(argResults);
+
+  exit(1);
+}
+
+Future<void> activate(ArgResults argResults,
+    {AtOnboardingService? atOnboardingService}) async {
   stdout.writeln('[Information] Root server is ${argResults['rootServer']}');
   stdout.writeln(
       '[Information] Registrar url provided is ${argResults['registrarUrl']}');
@@ -47,12 +54,12 @@ Future<void> main(List<String> arguments) async {
     ..cramSecret =
         argResults.wasParsed('cramkey') ? argResults['cramkey'] : null;
   //onboard the atSign
-  AtOnboardingService onboardingService =
+  atOnboardingService ??=
       AtOnboardingServiceImpl(argResults['atsign'], atOnboardingPreference);
   stdout.writeln(
       '[Information] Activating your atSign. This may take up to 2 minutes.');
   try {
-    await onboardingService.onboard();
+    await atOnboardingService.onboard();
   } on InvalidDataException catch (e) {
     stderr.writeln(
         '[Error] Activation failed. Invalid data provided by user. Please try again\nCause: ${e.message}');
@@ -64,7 +71,6 @@ Future<void> main(List<String> arguments) async {
         '[Error] Activation failed. It looks like something went wrong on our side.\n'
         'Please try again or contact support@atsign.com\nCause: $e');
   } finally {
-    await onboardingService.close();
+    await atOnboardingService.close();
   }
-  exit(1);
 }
