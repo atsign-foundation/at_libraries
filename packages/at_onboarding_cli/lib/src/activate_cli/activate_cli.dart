@@ -28,7 +28,7 @@ Future<void> main(List<String> arguments) async {
   ArgResults argResults = parser.parse(arguments);
 
   if (argResults.wasParsed('help')) {
-    print(parser.usage);
+    stdout.writeln(parser.usage);
     return;
   }
 
@@ -38,9 +38,9 @@ Future<void> main(List<String> arguments) async {
     throw IllegalArgumentException('atSign is required');
   }
 
-  activate(argResults);
+  await activate(argResults);
 
-  exit(1);
+  exit(0);
 }
 
 Future<void> activate(ArgResults argResults,

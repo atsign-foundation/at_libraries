@@ -126,6 +126,7 @@ class OnboardingUtil {
           '${response.statusCode} ${response.reasonPhrase}');
     }
   }
+
   /// Accepts a registered [atsign] as a parameter and sends a one-time verification code
   /// to the email that the atsign is registered with
   /// Throws an exception in the following cases:
@@ -135,7 +136,6 @@ class OnboardingUtil {
       {String authority = RegisterApiConstants.apiHostProd}) async {
     Response response = await postRequest(authority,
         RegisterApiConstants.requestAuthenticationOtpPath, {'atsign': atsign});
-    stderr.writeln('[Information] Sending verification code to email registered to $atsign');
     String apiResponseMessage = jsonDecode(response.body)['message'];
     if (response.statusCode == 200) {
       if (apiResponseMessage.contains('Sent Successfully')) {
@@ -148,9 +148,9 @@ class OnboardingUtil {
     }
     throw at_client.InvalidRequestException(apiResponseMessage);
   }
-  
+
   /// Returns the cram key for an atsign by fetching it from the registrar API
-  /// Accepts a registered [atsign], the verification code that was sent to 
+  /// Accepts a registered [atsign], the verification code that was sent to
   /// the registered email
   /// Throws exception in the following cases:
   /// 1) HTTP 400 BAD_REQUEST

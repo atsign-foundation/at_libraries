@@ -39,11 +39,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     _atSign = AtUtils.fixAtSign(atsign);
 
     // set default LocalStorage paths for this instance
-    atOnboardingPreference.commitLogPath ??= HomeDirectoryUtil.getCommitLogPath(_atSign);
+    atOnboardingPreference.commitLogPath ??=
+        HomeDirectoryUtil.getCommitLogPath(_atSign);
     atOnboardingPreference.hiveStoragePath ??=
         HomeDirectoryUtil.getHiveStoragePath(_atSign);
     atOnboardingPreference.isLocalStoreRequired = true;
-    atOnboardingPreference.atKeysFilePath ??= HomeDirectoryUtil.getAtKeysPath(_atSign);
+    atOnboardingPreference.atKeysFilePath ??=
+        HomeDirectoryUtil.getAtKeysPath(_atSign);
   }
 
   Future<void> _initAtClient(AtChops atChops) async {
@@ -81,13 +83,18 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     // if(isOnboarded()) {
     //   return true;
     // }
-    //get cram_secret from either from AtOnboardingConfig or decode it from qr code whichever available
-    atOnboardingPreference.cramSecret ??=
-        await OnboardingUtil().getCramUsingOtp(_atSign, atOnboardingPreference.registrarUrl);
+
+    // get cram_secret from either from AtOnboardingPreference
+    // or fetch from the registrar using verification code sent to email
+    atOnboardingPreference.cramSecret ??= await OnboardingUtil()
+        .getCramUsingOtp(_atSign, atOnboardingPreference.registrarUrl);
 
     if (atOnboardingPreference.cramSecret == null) {
+      logger.info('Root Server address is ${atOnboardingPreference.rootDomain}:'
+          '${atOnboardingPreference.rootPort}');
       throw AtClientException.message(
-          'Could not fetch cram secret from ${atOnboardingPreference.registrarUrl}');
+          'Could not fetch cram secret for \'$_atSign\' from '
+          '\'${atOnboardingPreference.registrarUrl}\'');
     }
 
     // cram auth doesn't use at_chops. So create at_lookup here.
@@ -180,7 +187,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       pkamPublicKey = pkamRsaKeypair.publicKey.toString();
     } else if (atOnboardingPreference.authMode == PkamAuthMode.sim) {
       // get the public key from secure element
-      pkamPublicKey = atChops!.readPublicKey(atOnboardingPreference.publicKeyId!);
+      pkamPublicKey =
+          atChops!.readPublicKey(atOnboardingPreference.publicKeyId!);
       logger.info('pkam  public key from sim: $pkamPublicKey');
       atKeysMap[AuthKeyType.pkamPublicKey] = pkamPublicKey;
       // encryption key pair and self encryption symmetric key

@@ -88,7 +88,7 @@ class RegistrationFlow {
   Future<void> start() async {
     for (RegisterApiTask task in processFlow) {
       task.init(params, registerUtil);
-      if(RegisterApiConstants.isDebugMode) {
+      if (RegisterApiConstants.isDebugMode) {
         print('Current Task: $task  [params=$params]\n');
       }
       result = await task.run();
@@ -240,7 +240,7 @@ Future<void> main(List<String> args) async {
   } on AtClientException catch (e) {
     stderr.writeln(
         '[Error] Failed getting an atsign. It looks like something went wrong on our side.\n'
-            'Please try again or contact support@atsign.com, quoting the text displayed below.');
+        'Please try again or contact support@atsign.com, quoting the text displayed below.');
     stderr.writeln('Cause: ${e}  ExceptionType:${e.runtimeType}');
     exit(4);
   } on Exception catch (e) {

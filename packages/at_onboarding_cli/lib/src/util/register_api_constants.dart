@@ -16,7 +16,7 @@ class RegisterApiConstants {
   static const String contentType = 'application/json';
   static const String authorization = '477b-876u-bcez-c42z-6a3d';
 
-  ///DebugMode: setting it to true will print more logs to aid understanding
-  ///the inner working of Register_cli
+  /// DebugMode: setting it to true will print more logs to aid understanding
+  /// the inner working of Register_cli
   static const bool isDebugMode = false;
 }
