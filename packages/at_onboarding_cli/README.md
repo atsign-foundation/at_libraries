@@ -11,9 +11,9 @@ at_onboarding_cli is a library to authenticate and onboard atSigns.
 
 To add this package as the dependency in your pubspec.yaml
 
-```dart  
+```yaml 
 dependencies:
-  at_onboarding_cli: ^1.2.2
+  at_onboarding_cli: ^1.3.1
 ```
 Getting Dependencies
 
@@ -33,13 +33,6 @@ Use cases for at_onboarding_cli:\
     2) Onboarding (Activation)\
     3) activate_cli\
     4) register_cli
-    
-### Setting valid preferences:
-   1) isLocalStorageRequired needs to be set to true as AtClient now needs a local secondary in order to work(for authentication only).
-   2) As a result of Step 1, one also needs to provide commitLogPath and hiveStoragePath(for authentication only).
-   3) One must set the namespace variable to match the name of their app.
-   4) atKeysFile path should contain the file name.
-   5) downloadPath should only contain name of the directory where the .atKeysFile is expected to be generated.
 
 - Set `AtOnboardingPreference` to your preferred settings. These preferences will be used to configure the `AtOnboardingService`. 
     
@@ -69,8 +62,8 @@ Proving that one actually owns the atSign. User needs to authenticate before per
 ```
 AtOnboardingService atOnboardingService = AtOnboardingServiceImpl('@alice', atOnboardingPreference);
 atOnboardingService.authenticate();
-AtClient? atClient = await atOnboardingService.getAtClient();
-AtLookup? atLookup = atOnboardingService.getAtLookup();
+AtClient? atClient = await atOnboardingService.atClient();
+AtLookup? atLookup = atOnboardingService.atLookUp();
 ```
 
 ### Onboarding: 
@@ -78,15 +71,16 @@ Performing initial one-time authentication using cram secret encoded in the qr_c
 
 #### Steps to onboard:
    1) Import at_cli_onboarding.
-   2) Set preferences using AtOnboardingPreference. Either of cram_secret or path to qr_code containing cram_secret need to be provided in order to activate the atSign.
-   3) Setting the download path is mandatory in AtOnboardingPreference in order to save the .atKeysFile which contains necessary keys to authenticate.
+   2) Set preferences using AtOnboardingPreference. Provide the cram secret for the atsign if you have one.
+   3) If you do not have a cram secret you can just leave it blank. In this case a verification code will be sent to your registered email which you can provide to activate your already registered atsign.
    4) Instantiate AtOnboardingServiceImpl using the required atSign and a valid instance of AtOnboardingPreference.
-   5) Call the onboard on AtOnboardingServiceImpl.
-   6) Use getAtLookup to get authenticated instance of AtLookup (only) which can be used to perform more complex operations on the atSign.
+   5) Call the onboard() in AtOnboardingServiceImpl.
+   6) Use authenticated instances of atClient/atLookup now available in AtOnboardingServiceImpl's instance to perform complex operations on the atSign.
  ```
 AtOnboardingService atOnboardingService = AtOnboardingServiceImpl('@alice', atOnboardingPreference);
 atOnboardingService.onboard();
-AtLookup? atLookup = atOnboardingService.getAtLookup();
+AtClient? atClient = await atOnboardingService.atClient();
+AtLookup? atLookup = atOnboardingService.atLookUp();
 ```
 Please refer to [example](https://pub.dev/packages/at_onboarding_cli/example) to better understand the usage.
 
@@ -102,21 +96,28 @@ dart pub global activate at_onboarding_cli
 at_activate -a your_atsign -c your_cram_secret
 ```
 
-##### To activate using a qr_code
+##### To activate using a verification code
 ```
 dart pub global activate at_onboarding_cli
-at_activate -a your_atsign -q path_to_qrcode_for_this_atsign
+at_activate -a your_atsign
+> Successfully sent verification code to your registered e-mail
+> [Action Required] Enter your verification code:
+<your 4 charcter code here>
 ```
 
 #### Usage 2:
    1) Clone code from https://github.com/atsign-foundation/at_libraries
    2) Change directory to at_libraries/at_onboarding_cli in the cloned repository
    3) Run `dart pub get`
-   3) Run the following command
+   4) Run the following command
 ```
-dart run lib/src/activate_cli/activate_cli.dart -a your_atsign -c your_cram_secret
+dart run bin/activate_cli.dart -a your_atsign -c your_cram_secret
+
+(or)
+
+dart run bin/activate_cli.dart -a your_atsign (to activate using verification code)
 ```
-4) You can find your .atKeysFile in directory ~/.atsign/keys
+[IMPORTANT] You can find your .atKeysFile in directory ~/.atsign/keys after successful activation
 
 
 ### register_cli:
@@ -133,13 +134,13 @@ at_register -e your_email
    1) Clone code from https://github.com/atsign-foundation/at_libraries
    2) Change directory to at_libraries/at_onboarding_cli in the cloned repository
    3) Run `dart pub get`
-   3) Run the following command
+   4) Run the following command
 ```
-dart run lib/src/register_cli/register.dart -e email@email.com -n staging (or) production [-n is optional]
+dart run bin/register.dart -e email@email.com -n staging/production [-n is optional]
 ```
-   4) Enter verification code sent to the provided email when prompted
-   5) register_cli fetches the cramkey and the automatically calls activate_cli to activate the fetched atsign
-   6) You can find your .atKeysFile in directory at_onboarding_cli/keys
+   5) Enter verification code sent to the provided email when prompted
+   6) register_cli fetches the cramkey and the automatically calls activate_cli to activate the fetched atsign
+   7) You can find your .atKeysFile in directory at_onboarding_cli/keys after successful activation
 
 ## Open source usage and contributions
 
