@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:at_client/at_client.dart' as at_client;
-import 'package:at_onboarding_cli/src/util/register_api_constants.dart';
+import 'package:at_onboarding_cli/src/util/registrar_api_constants.dart';
 import 'package:http/http.dart';
 import 'package:http/io_client.dart';
 
@@ -21,13 +21,13 @@ class OnboardingUtil {
   /// Returns a Future<List<String>> containing free available atSigns of count provided as input.
   Future<List<String>> getFreeAtSigns(
       {int amount = 1,
-      String authority = RegisterApiConstants.apiHostProd}) async {
+      String authority = RegistrarApiConstants.apiHostProd}) async {
     List<String> atSigns = <String>[];
     Response response;
     for (int i = 0; i < amount; i++) {
       // get request at my.atsign.com/api/app/v3/get-free-atsign/
       response =
-          await getRequest(authority, RegisterApiConstants.pathGetFreeAtSign);
+          await getRequest(authority, RegistrarApiConstants.pathGetFreeAtSign);
       if (response.statusCode == 200) {
         String atSign = jsonDecode(response.body)['data']['atsign'];
         atSigns.add(atSign);
@@ -45,9 +45,9 @@ class OnboardingUtil {
   /// Sends an OTP to the `email` provided.
   /// Throws [AtException] if [atSign] is invalid
   Future<bool> registerAtSign(String atSign, String email,
-      {oldEmail, String authority = RegisterApiConstants.apiHostProd}) async {
+      {oldEmail, String authority = RegistrarApiConstants.apiHostProd}) async {
     Response response =
-        await postRequest(authority, RegisterApiConstants.pathRegisterAtSign, {
+        await postRequest(authority, RegistrarApiConstants.pathRegisterAtSign, {
       'atsign': atSign,
       'email': email,
       'oldEmail': oldEmail,
@@ -81,9 +81,9 @@ class OnboardingUtil {
   /// Throws [AtException] if [atSign] or [otp] is invalid
   Future<String> validateOtp(String atSign, String email, String otp,
       {String confirmation = 'true',
-      String authority = RegisterApiConstants.apiHostProd}) async {
+      String authority = RegistrarApiConstants.apiHostProd}) async {
     Response response =
-        await postRequest(authority, RegisterApiConstants.pathValidateOtp, {
+        await postRequest(authority, RegistrarApiConstants.pathValidateOtp, {
       'atsign': atSign,
       'email': email,
       'otp': otp,
@@ -133,9 +133,9 @@ class OnboardingUtil {
   /// 1) HTTP 400 BAD_REQUEST
   /// 2) Invalid atsign
   Future<void> requestAuthenticationOtp(String atsign,
-      {String authority = RegisterApiConstants.apiHostProd}) async {
+      {String authority = RegistrarApiConstants.apiHostProd}) async {
     Response response = await postRequest(authority,
-        RegisterApiConstants.requestAuthenticationOtpPath, {'atsign': atsign});
+        RegistrarApiConstants.requestAuthenticationOtpPath, {'atsign': atsign});
     String apiResponseMessage = jsonDecode(response.body)['message'];
     if (response.statusCode == 200) {
       if (apiResponseMessage.contains('Sent Successfully')) {
@@ -155,11 +155,11 @@ class OnboardingUtil {
   /// Throws exception in the following cases:
   /// 1) HTTP 400 BAD_REQUEST
   Future<String> getAtsignCramKey(String atsign, String verificationCode,
-      {String authority = RegisterApiConstants.apiHostProd}) async {
+      {String authority = RegistrarApiConstants.apiHostProd}) async {
     Response response = await postRequest(
         authority,
-        RegisterApiConstants.getCramKeyWithOtpPath,
-        {'atsign': atsign, 'otpp': verificationCode});
+        RegistrarApiConstants.getCramKeyWithOtpPath,
+        {'atsign': atsign, 'otp': verificationCode});
     Map<String, dynamic> jsonDecodedBody = jsonDecode(response.body);
     if (response.statusCode == 200) {
       if (jsonDecodedBody['message'] == 'Verified') {
@@ -190,8 +190,8 @@ class OnboardingUtil {
     if (_ioClient == null) _createClient();
     Uri uri = Uri.https(authority, path);
     Response response = await _ioClient!.get(uri, headers: <String, String>{
-      'Authorization': RegisterApiConstants.authorization,
-      'Content-Type': RegisterApiConstants.contentType,
+      'Authorization': RegistrarApiConstants.authorization,
+      'Content-Type': RegistrarApiConstants.contentType,
     });
     return response;
   }
@@ -204,15 +204,18 @@ class OnboardingUtil {
     Uri uri = Uri.https(authority, path);
 
     String body = json.encode(data);
+    if(RegistrarApiConstants.isDebugMode){
+      stdout.writeln('Sending request to url: $uri\nRequest Body: $body');
+    }
     Response response = await _ioClient!.post(
       uri,
       body: body,
       headers: <String, String>{
-        'Authorization': RegisterApiConstants.authorization,
-        'Content-Type': RegisterApiConstants.contentType,
+        'Authorization': RegistrarApiConstants.authorization,
+        'Content-Type': RegistrarApiConstants.contentType,
       },
     );
-    if (RegisterApiConstants.isDebugMode) {
+    if (RegistrarApiConstants.isDebugMode) {
       print('Got Response: ${response.body}');
     }
     return response;
@@ -236,7 +239,7 @@ class OnboardingUtil {
   /// Returns only when the user has provided a 4-length String only containing numbers and alphabets
   String getVerificationCodeFromUser() {
     String? otp;
-    stdout.writeln('[Action Required] Enter your verification code:');
+    stdout.writeln('[Action Required] Enter your verification code: (verification code is not case-sensitive)');
     otp = stdin.readLineSync()!.toUpperCase();
     while (!validateVerificationCode(otp!)) {
       stderr.writeln(
