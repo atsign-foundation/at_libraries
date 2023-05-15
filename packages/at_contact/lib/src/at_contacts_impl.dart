@@ -416,7 +416,7 @@ class AtContactsImpl implements AtContactsLibrary {
     }
     var atKey = _formKey(KeyType.group, key: atGroup.groupId!);
     // Add all contacts in atContacts from atGroup
-    for (var contact in atContacts) {
+    for (final contact in atContacts) {
       if (!isMember(contact, atGroup)) {
         atGroup.members!.add(contact);
       }
