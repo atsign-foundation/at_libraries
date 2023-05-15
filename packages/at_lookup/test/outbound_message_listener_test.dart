@@ -247,7 +247,7 @@ void main() {
       unawaited(outboundMessageListener
           .read(transientWaitTimeMillis: 50)
           .whenComplete(() => {})
-          .then((value) => {response = value}));
+          .then((value) => response = value));
       await outboundMessageListener.messageHandler('data:'.codeUnits);
       await Future.delayed(Duration(milliseconds: 25));
       await outboundMessageListener.messageHandler('12'.codeUnits);

@@ -6,12 +6,12 @@ documentation: https://docs.atsign.com/
 version: 1.0.3
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.12.0 <4.0.0'
 
 dependencies:
-  at_lookup: ^3.0.2
-  at_utils: ^3.0.0
   at_commons: ^3.0.0
+  at_utils: ^3.0.0
+  at_lookup: ^3.0.2
   uuid: ^3.0.4
 
 dev_dependencies:

@@ -31,3 +31,4 @@
 
 # Exceptions to above rules.
 pubspec.lock
+pubspec_overrides.yaml

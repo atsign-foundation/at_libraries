@@ -6,7 +6,7 @@ homepage: https://atsign.com
 documentation: https://docs.atsign.com/
 
 environment:
-  sdk: '>=2.15.1 <3.0.0'
+  sdk: '>=2.15.1 <4.0.0'
 
 executables:
   at_register: register_cli

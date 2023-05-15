@@ -6,7 +6,7 @@ homepage: https://atsign.com
 documentation: https://docs.atsign.com/
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.15.0 <4.0.0'
 
 dependencies:
   path: ^1.8.0
