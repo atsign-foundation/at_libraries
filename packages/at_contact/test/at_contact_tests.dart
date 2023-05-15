@@ -1,6 +1,5 @@
 import 'package:at_client/at_client.dart';
 import 'package:at_contact/at_contact.dart';
-import 'package:at_contact/src/model/at_contact.dart';
 import 'package:test/test.dart';
 
 import 'test_util.dart';

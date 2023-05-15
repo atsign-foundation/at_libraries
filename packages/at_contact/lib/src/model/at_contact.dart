@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:at_contact/src/service/util_service.dart';
 
 class AtContact {

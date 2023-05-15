@@ -14,7 +14,7 @@ Future<void> main() async {
   try {
     var atClientManager = await AtClientManager.getInstance()
         .setCurrentAtSign(atSign, 'me', preference);
-    atClientManager.syncService.sync();
+    atClientManager.atClient.syncService.sync();
     atContactsImpl = await AtContactsImpl.getInstance(atSign);
     // set contact details
     atGroup = AtGroup(atSign, description: 'test', displayName: 'test1');
