@@ -24,7 +24,7 @@ class AtContactsImpl implements AtContactsLibrary {
   static Future<AtContactsImpl> getInstance(String atSign,
       {RegexType? regexType}) async {
     try {
-      atSign = AtUtils.fixAtSign(AtUtils.formatAtSign(atSign)!);
+      atSign = AtUtils.fixAtSign(atSign);
     } on Exception {
       rethrow;
     }
@@ -462,7 +462,7 @@ class AtContactsImpl implements AtContactsLibrary {
 
     if (key != null) {
       try {
-        key = AtUtils.fixAtSign(AtUtils.formatAtSign(key)!);
+        key = AtUtils.fixAtSign(key);
       } on Exception {
         rethrow;
       }
@@ -525,8 +525,7 @@ class AtContactsImpl implements AtContactsLibrary {
 
   /// Created group key from the group name provided
   String formGroupKey(String groupName) {
-    var key = AtUtils.formatAtSign(groupName)!;
-    key = AtUtils.fixAtSign(key);
+    var key = AtUtils.fixAtSign(groupName);
     key = key.replaceFirst('@', '');
     var modifiedKey =
         '${AppConstants.CONTACT_KEY_PREFIX}.${AppConstants.GROUP_KEY_PREFIX}.$key.${atSign.replaceFirst('@', '')}';
