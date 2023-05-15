@@ -16,19 +16,19 @@ dependencies:
    at_utils: ^3.0.12
    at_client: ^3.0.59
    at_lookup: ^3.0.36
-   zxing2: ^0.1.0
-   image: ^3.1.1
+   zxing2: ^0.2.0
+   image: ^4.0.17
    crypton: ^2.0.3
-   at_commons: ^3.0.44
+   at_commons: ^3.0.45
    encrypt: ^5.0.1
    at_server_status: ^1.0.3
    path: ^1.8.1
-   args: ^2.3.1
-   http: ^0.13.5
+   args: ^2.4.1
+   http: ^0.13.6
    at_chops: ^1.0.3
 
 dev_dependencies:
-  lints: ^2.0.1
-  test: ^1.22.1
+  lints: ^2.1.0
+  test: ^1.24.2
   at_demo_data: ^1.0.0
   mocktail: ^0.3.0
