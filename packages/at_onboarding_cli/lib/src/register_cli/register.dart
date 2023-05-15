@@ -7,12 +7,12 @@ import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart'
     as activate_cli;
 import 'package:at_onboarding_cli/src/util/api_call_status.dart';
-import 'package:at_onboarding_cli/src/util/register_api_constants.dart';
 import 'package:at_onboarding_cli/src/util/register_api_result.dart';
 import 'package:at_onboarding_cli/src/util/register_api_task.dart';
 import 'package:at_utils/at_logger.dart';
 
 import '../util/onboarding_util.dart';
+import '../util/registrar_api_constants.dart';
 
 ///Class containing logic to register a free atsign to email provided
 ///through [args] by utilizing methods defined in [RegisterUtil]
@@ -54,7 +54,7 @@ class Register {
 
     //set the following parameter to RegisterApiConstants.apiHostStaging
     //to use the staging environment
-    params['authority'] = RegisterApiConstants.apiHostStaging;
+    params['authority'] = RegistrarApiConstants.apiHostStaging;
 
     //create stream of tasks each of type [RegisterApiTask] and then
     // call start on the stream of tasks
@@ -88,7 +88,7 @@ class RegistrationFlow {
   Future<void> start() async {
     for (RegisterApiTask task in processFlow) {
       task.init(params, registerUtil);
-      if (RegisterApiConstants.isDebugMode) {
+      if (RegistrarApiConstants.isDebugMode) {
         print('Current Task: $task  [params=$params]\n');
       }
       result = await task.run();
@@ -234,14 +234,14 @@ Future<void> main(List<String> args) async {
       stderr.writeln(
           '[Error] Failed getting an atsign. It looks like something went wrong on our side.\n'
           'Please try again or contact support@atsign.com, quoting the text displayed below.');
-      stderr.writeln('Cause: ${e}');
+      stderr.writeln('Cause: $e');
       exit(3);
     }
   } on AtClientException catch (e) {
     stderr.writeln(
         '[Error] Failed getting an atsign. It looks like something went wrong on our side.\n'
         'Please try again or contact support@atsign.com, quoting the text displayed below.');
-    stderr.writeln('Cause: ${e}  ExceptionType:${e.runtimeType}');
+    stderr.writeln('Cause: $e  ExceptionType:${e.runtimeType}');
     exit(4);
   } on Exception catch (e) {
     if (e

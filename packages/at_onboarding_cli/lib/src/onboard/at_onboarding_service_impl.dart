@@ -388,7 +388,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     try {
       Image? image = decodePng(File(path).readAsBytesSync());
       LuminanceSource source = RGBLuminanceSource(image!.width, image.height,
-          image.getBytes(format: Format.abgr).buffer.asInt32List());
+          image.getBytes().buffer.asInt32List());
       BinaryBitmap bitmap = BinaryBitmap(HybridBinarizer(source));
       Result result = QRCodeReader().decode(bitmap);
       String secret = result.text.split(':')[1];
