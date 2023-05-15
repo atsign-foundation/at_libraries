@@ -150,7 +150,7 @@ class AtContactsImpl implements AtContactsLibrary {
     if (scanList.isEmpty) {
       return contactList;
     }
-    for (var key in scanList) {
+    for (final key in scanList) {
       var atsign = reduceKey(key.key!);
       var atKey = _formAtKeyFromScanKeys(key);
       AtContact? contact;
@@ -308,7 +308,7 @@ class AtContactsImpl implements AtContactsLibrary {
     list = (result?.value != null) ? jsonDecode(result?.value) : [];
     list = List<String>.from(list!);
     var groupNames = <String?>[];
-    for (var group in list) {
+    for (final group in list) {
       var groupInfo = AtGroupBasicInfo.fromJson(jsonDecode(group));
       groupNames.add(groupInfo.atGroupName);
     }
@@ -346,7 +346,7 @@ class AtContactsImpl implements AtContactsLibrary {
     list = (result?.value != null) ? jsonDecode(result?.value) : [];
     list = List<String>.from(list!);
     var groupIds = <String?>[];
-    for (var group in list) {
+    for (final group in list) {
       var groupInfo = AtGroupBasicInfo.fromJson(jsonDecode(group));
       groupIds.add(groupInfo.atGroupId);
     }
@@ -442,7 +442,7 @@ class AtContactsImpl implements AtContactsLibrary {
     }
     var atKey = _formKey(KeyType.group, key: atGroup.groupId!);
     var members = atGroup.members;
-    for (var atContact in atContacts) {
+    for (final atContact in atContacts) {
       var contactName = atContact.atSign;
       members!.removeWhere((contact) => (contact.atSign == contactName));
     }
@@ -610,7 +610,7 @@ class AtContactsImpl implements AtContactsLibrary {
   bool isMember(AtContact atContact, AtGroup atGroup) {
     var result = false;
     var members = atGroup.members!;
-    for (var contact in members) {
+    for (final contact in members) {
       if (contact.atSign.toString() == atContact.atSign.toString()) {
         return true;
       }
