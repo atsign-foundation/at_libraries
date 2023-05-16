@@ -306,7 +306,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     logger.finer('Authenticating using PKAM');
     try {
       _isPkamAuthenticated = (await _atLookUp?.pkamAuthenticate())!;
-    } on Exception catch(e){
+    } on Exception {
       throw UnAuthenticatedException('Unable to authenticate.'
           ' Please provide a valid keys file');
     }
