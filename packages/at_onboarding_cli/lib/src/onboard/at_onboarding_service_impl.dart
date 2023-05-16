@@ -11,13 +11,11 @@ import 'package:at_utils/at_utils.dart';
 import 'package:at_commons/at_builders.dart';
 import 'package:at_onboarding_cli/src/factory/service_factories.dart';
 import 'package:at_lookup/at_lookup.dart';
-import 'package:at_server_status/at_server_status.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:crypton/crypton.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:zxing2/qrcode.dart';
 import 'package:image/image.dart';
-import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 
 ///class containing service that can onboard/activate/authenticate @signs
