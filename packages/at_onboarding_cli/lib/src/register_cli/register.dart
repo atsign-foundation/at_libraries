@@ -54,7 +54,7 @@ class Register {
 
     //set the following parameter to RegisterApiConstants.apiHostStaging
     //to use the staging environment
-    params['authority'] = RegistrarApiConstants.apiHostStaging;
+    params['authority'] = RegistrarApiConstants.apiHostProd;
 
     //create stream of tasks each of type [RegisterApiTask] and then
     // call start on the stream of tasks

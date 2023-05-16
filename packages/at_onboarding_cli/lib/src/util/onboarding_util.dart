@@ -154,7 +154,7 @@ class OnboardingUtil {
   /// the registered email
   /// Throws exception in the following cases:
   /// 1) HTTP 400 BAD_REQUEST
-  Future<String> getAtsignCramKey(String atsign, String verificationCode,
+  Future<String> getCramKey(String atsign, String verificationCode,
       {String authority = RegistrarApiConstants.apiHostProd}) async {
     Response response = await postRequest(
         authority,
@@ -167,11 +167,9 @@ class OnboardingUtil {
         cram = cram.split(':')[1];
         stdout.writeln('[Information] CRAM Key fetched successfully');
         return cram;
-      } else if (jsonDecodedBody['message'].contains(
-          'Please enter the 4-character verification code that was sent to your email address')) {
-        throw at_client.InvalidDataException(
-            'Invalid verification code. Please enter a valid verification code');
       }
+      throw at_client.InvalidDataException(
+          'Invalid verification code. Please enter a valid verification code');
     }
     throw at_client.InvalidDataException(jsonDecodedBody['message']);
   }
@@ -181,7 +179,7 @@ class OnboardingUtil {
   /// 2) fetch the CRAM key from registrar using the verification code
   Future<String> getCramUsingOtp(String atsign, String registrarUrl) async {
     await requestAuthenticationOtp(atsign, authority: registrarUrl);
-    return await getAtsignCramKey(atsign, getVerificationCodeFromUser(),
+    return await getCramKey(atsign, getVerificationCodeFromUser(),
         authority: registrarUrl);
   }
 
@@ -204,7 +202,7 @@ class OnboardingUtil {
     Uri uri = Uri.https(authority, path);
 
     String body = json.encode(data);
-    if(RegistrarApiConstants.isDebugMode){
+    if (RegistrarApiConstants.isDebugMode) {
       stdout.writeln('Sending request to url: $uri\nRequest Body: $body');
     }
     Response response = await _ioClient!.post(
@@ -239,7 +237,8 @@ class OnboardingUtil {
   /// Returns only when the user has provided a 4-length String only containing numbers and alphabets
   String getVerificationCodeFromUser() {
     String? otp;
-    stdout.writeln('[Action Required] Enter your verification code: (verification code is not case-sensitive)');
+    stdout.writeln(
+        '[Action Required] Enter your verification code: (verification code is not case-sensitive)');
     otp = stdin.readLineSync()!.toUpperCase();
     while (!validateVerificationCode(otp!)) {
       stderr.writeln(
