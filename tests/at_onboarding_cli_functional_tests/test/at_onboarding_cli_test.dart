@@ -142,7 +142,7 @@ void main() {
   });
 
   group('A group of tests to verify activate_cli', () {
-    String atSign = '@bob🛠';
+    String atSign = '@colin🛠';
     test(
         'A test to verify atSign is activated and .atKeys file is generated using activate_cli',
         () async {

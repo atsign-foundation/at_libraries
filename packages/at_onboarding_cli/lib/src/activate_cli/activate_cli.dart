@@ -70,11 +70,10 @@ Future<void> activate(ArgResults argResults,
     stderr.writeln(
         '[Error] Activation failed. Invalid data provided by user. Please try again\nCause: ${e.message}');
     exitCode = 2;
-  } on AtActivateException catch (e){
+  } on AtActivateException catch (e) {
     stdout.writeln('[Error] $e');
     exitCode = 3;
-  }
-  on Exception catch (e) {
+  } on Exception catch (e) {
     stderr.writeln(
         '[Error] Activation failed. It looks like something went wrong on our side.\n'
         'Please try again or contact support@atsign.com\nCause: $e');

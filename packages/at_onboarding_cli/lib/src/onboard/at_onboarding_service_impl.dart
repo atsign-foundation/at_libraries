@@ -83,18 +83,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     // cram auth doesn't use at_chops. So create at_lookup here.
     AtLookupImpl atLookUpImpl = AtLookupImpl(_atSign,
         atOnboardingPreference.rootDomain, atOnboardingPreference.rootPort);
-    //check and wait till secondary exists
-    await _waitUntilSecondaryCreated(atLookUpImpl);
-
-    if (await isOnboarded()) {
-      throw AtActivateException('atsign is already activated');
-    }
 
     // get cram_secret from either from AtOnboardingPreference
     // or fetch from the registrar using verification code sent to email
     atOnboardingPreference.cramSecret ??= await OnboardingUtil()
         .getCramUsingOtp(_atSign, atOnboardingPreference.registrarUrl);
-
     if (atOnboardingPreference.cramSecret == null) {
       logger.info('Root Server address is ${atOnboardingPreference.rootDomain}:'
           '${atOnboardingPreference.rootPort}');
@@ -102,6 +95,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
           .info('Registrar url is \'${atOnboardingPreference.registrarUrl}\'');
       throw AtKeyNotFoundException(
           'Could not fetch cram secret for \'$_atSign\' from registrar');
+    }
+
+    //check and wait till secondary exists
+    await _waitUntilSecondaryCreated(atLookUpImpl);
+
+    if (await isOnboarded()) {
+      throw AtActivateException('atsign is already activated');
     }
 
     try {
@@ -392,12 +392,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       stderr.writeln('[Error] $e');
     }
     if (secondaryStatus.status() == AtSignStatus.activated) {
-      return true;
+      _isAtsignOnboarded = true;
+      return _isAtsignOnboarded;
     } else if (secondaryStatus.status() == AtSignStatus.teapot) {
       return false;
     }
     stderr.writeln(
-        '[Error] atsign($_atSign) status is \'${secondaryStatus.status()}\'');
+        '[Error] atsign($_atSign) status is \'${secondaryStatus.status()!.name}\'');
     throw AtActivateException('Could not determine atsign activation status',
         intent: Intent.fetchData);
   }
