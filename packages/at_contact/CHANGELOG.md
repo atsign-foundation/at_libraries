@@ -1,3 +1,5 @@
+## 3.0.8
+- **Build**: Fix lint warnings from Dart 3
 ## 3.0.7
 - **chore**: Upgraded to latest at_client version 3.0.27
 ## 3.0.6

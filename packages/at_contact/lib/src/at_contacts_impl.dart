@@ -8,14 +8,12 @@ import 'package:at_contact/src/service/at_contacts_library.dart';
 import 'package:at_utils/at_utils.dart';
 import 'package:uuid/uuid.dart';
 
-import 'config/app_constants.dart';
-
 enum RegexType { all, appSpecific }
 
 class AtContactsImpl implements AtContactsLibrary {
   AtClient? atClient;
   late String atSign;
-  late var logger;
+  late AtSignLogger logger;
   late RegexType _regexType;
 
   AtContactsImpl(this.atClient, this.atSign, {RegexType? regexType}) {
@@ -26,7 +24,7 @@ class AtContactsImpl implements AtContactsLibrary {
   static Future<AtContactsImpl> getInstance(String atSign,
       {RegexType? regexType}) async {
     try {
-      atSign = AtUtils.fixAtSign(AtUtils.formatAtSign(atSign)!);
+      atSign = AtUtils.fixAtSign(atSign);
     } on Exception {
       rethrow;
     }
@@ -83,7 +81,7 @@ class AtContactsImpl implements AtContactsLibrary {
       atKey = _formKey(KeyType.contact, key: atSign, isOld: true);
       atValue = await _get(atKey);
     }
-    //migrate key to new keyformat if atKey is old.
+    //migrate key to new key format if atKey is old.
     if (atValue?.value != null && _isOldKey(atKey)) {
       var newAtKey = _formKey(KeyType.contact, key: atSign);
       await atClient!.put(newAtKey, atValue?.value);
@@ -95,7 +93,7 @@ class AtContactsImpl implements AtContactsLibrary {
       var value = atValue?.value;
       value = value?.replaceAll('data:', '');
       if (value != null && value != 'null') {
-        var json;
+        dynamic json;
         try {
           json = jsonDecode(value);
         } on FormatException catch (e) {
@@ -152,7 +150,7 @@ class AtContactsImpl implements AtContactsLibrary {
     if (scanList.isEmpty) {
       return contactList;
     }
-    for (var key in scanList) {
+    for (final key in scanList) {
       var atsign = reduceKey(key.key!);
       var atKey = _formAtKeyFromScanKeys(key);
       AtContact? contact;
@@ -207,7 +205,7 @@ class AtContactsImpl implements AtContactsLibrary {
     if (id != null) {
       var group = await getGroup(id);
       if (group != null) {
-        throw AlreadyExistsException('Group is already exisits with id $id');
+        throw AlreadyExistsException('Group is already exists with id $id');
       }
     }
     //create groupID
@@ -247,7 +245,7 @@ class AtContactsImpl implements AtContactsLibrary {
     var group = await getGroup(groupId);
     if (group == null) {
       throw GroupNotExistsException(
-          'There is no Group exisits with Id $groupId');
+          'No Group exists with Id $groupId');
     }
     var atKey = _formKey(KeyType.group, key: atGroup.groupId!);
     //update atGroup
@@ -294,7 +292,7 @@ class AtContactsImpl implements AtContactsLibrary {
       atKey = _formKey(KeyType.groupList, isOld: true);
       result = await _get(atKey);
     }
-    //migrate key to new keyformat.
+    //migrate key to new key format.
     if (result?.value != null && _isOldKey(atKey)) {
       var newAtKey = _formKey(
         KeyType.groupList,
@@ -310,10 +308,10 @@ class AtContactsImpl implements AtContactsLibrary {
     list = (result?.value != null) ? jsonDecode(result?.value) : [];
     list = List<String>.from(list!);
     var groupNames = <String?>[];
-    list.forEach((group) {
+    for (final group in list) {
       var groupInfo = AtGroupBasicInfo.fromJson(jsonDecode(group));
       groupNames.add(groupInfo.atGroupName);
-    });
+    }
     return groupNames;
   }
 
@@ -333,7 +331,7 @@ class AtContactsImpl implements AtContactsLibrary {
       atKey = _formKey(KeyType.groupList, isOld: true);
       result = await _get(atKey);
     }
-    //migrate key to new keyformat.
+    //migrate key to new key format.
     if (result?.value != null && _isOldKey(atKey)) {
       var newAtKey = _formKey(KeyType.groupList);
       await atClient!.put(newAtKey, result?.value);
@@ -348,10 +346,10 @@ class AtContactsImpl implements AtContactsLibrary {
     list = (result?.value != null) ? jsonDecode(result?.value) : [];
     list = List<String>.from(list!);
     var groupIds = <String?>[];
-    list.forEach((group) {
+    for (final group in list) {
       var groupInfo = AtGroupBasicInfo.fromJson(jsonDecode(group));
       groupIds.add(groupInfo.atGroupId);
-    });
+    }
     return groupIds;
   }
 
@@ -384,7 +382,7 @@ class AtContactsImpl implements AtContactsLibrary {
       atKey = _formKey(KeyType.group, key: groupId, isOld: true);
       atValue = await _get(atKey);
     }
-    //migrate key to new keyformat.
+    //migrate key to new key format.
     if (atValue?.value != null && _isOldKey(atKey)) {
       var newAtKey = _formKey(KeyType.group, key: groupId);
       await atClient!.put(newAtKey, atValue?.value);
@@ -418,11 +416,11 @@ class AtContactsImpl implements AtContactsLibrary {
     }
     var atKey = _formKey(KeyType.group, key: atGroup.groupId!);
     // Add all contacts in atContacts from atGroup
-    atContacts.forEach((contact) {
+    for (final contact in atContacts) {
       if (!isMember(contact, atGroup)) {
         atGroup.members!.add(contact);
       }
-    });
+    }
     atGroup.updatedBy = AtUtils.fixAtSign(atSign);
     atGroup.updatedOn = DateTime.now();
     var json = atGroup.toJson();
@@ -444,7 +442,7 @@ class AtContactsImpl implements AtContactsLibrary {
     }
     var atKey = _formKey(KeyType.group, key: atGroup.groupId!);
     var members = atGroup.members;
-    for (var atContact in atContacts) {
+    for (final atContact in atContacts) {
       var contactName = atContact.atSign;
       members!.removeWhere((contact) => (contact.atSign == contactName));
     }
@@ -464,7 +462,7 @@ class AtContactsImpl implements AtContactsLibrary {
 
     if (key != null) {
       try {
-        key = AtUtils.fixAtSign(AtUtils.formatAtSign(key)!);
+        key = AtUtils.fixAtSign(key);
       } on Exception {
         rethrow;
       }
@@ -475,6 +473,7 @@ class AtContactsImpl implements AtContactsLibrary {
         : preference!.namespace != null
             ? '.${preference.namespace}'
             : '';
+    // ignore: prefer_typing_uninitialized_variables
     var modifiedKey;
     switch (keyType) {
       case KeyType.contact:
@@ -526,8 +525,7 @@ class AtContactsImpl implements AtContactsLibrary {
 
   /// Created group key from the group name provided
   String formGroupKey(String groupName) {
-    var key = AtUtils.formatAtSign(groupName)!;
-    key = AtUtils.fixAtSign(key);
+    var key = AtUtils.fixAtSign(groupName);
     key = key.replaceFirst('@', '');
     var modifiedKey =
         '${AppConstants.CONTACT_KEY_PREFIX}.${AppConstants.GROUP_KEY_PREFIX}.$key.${atSign.replaceFirst('@', '')}';
@@ -554,10 +552,10 @@ class AtContactsImpl implements AtContactsLibrary {
     result = await _get(atKey);
     //check for old key if new key data is not present.
     if (result?.value == null) {
-      var oldatKey = _formKey(KeyType.groupList, isOld: true);
-      result = await _get(oldatKey);
+      var oldAtKey = _formKey(KeyType.groupList, isOld: true);
+      result = await _get(oldAtKey);
     }
-    //migrate key to new keyformat.
+    //migrate key to new key format.
     if (result?.value != null && _isOldKey(atKey)) {
       var newAtKey = _formKey(KeyType.groupList);
       await atClient!.put(newAtKey, result?.value);
@@ -575,7 +573,8 @@ class AtContactsImpl implements AtContactsLibrary {
 
   ///Adds a group to group list
   Future<bool> _deleteFromGroupList(AtGroupBasicInfo atGroupBasicInfo) async {
-    if (atGroupBasicInfo.atGroupId == null) ;
+    // gkc commented out the next line as it is an empty statement
+    // if (atGroupBasicInfo.atGroupId == null) ;
     var groupId = atGroupBasicInfo.atGroupId;
     var atKey = _formKey(KeyType.groupList, isGet: true);
     if (_regexType == RegexType.all) {
@@ -611,7 +610,7 @@ class AtContactsImpl implements AtContactsLibrary {
   bool isMember(AtContact atContact, AtGroup atGroup) {
     var result = false;
     var members = atGroup.members!;
-    for (var contact in members) {
+    for (final contact in members) {
       if (contact.atSign.toString() == atContact.atSign.toString()) {
         return true;
       }

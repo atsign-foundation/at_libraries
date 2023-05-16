@@ -25,6 +25,7 @@ class AtLookupImpl implements AtLookUp {
 
   OutboundConnection? get connection => _connection;
 
+  @override
   late SecondaryAddressFinder secondaryAddressFinder;
 
   late String _currentAtSign;
