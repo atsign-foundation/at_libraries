@@ -140,7 +140,7 @@ class OnboardingUtil {
     if (response.statusCode == 200) {
       if (apiResponseMessage.contains('Sent Successfully')) {
         stdout.writeln(
-            'Successfully sent verification code to your registered e-mail');
+            '[Information] Successfully sent verification code to your registered e-mail');
         return;
       }
       throw at_client.InternalServerError(

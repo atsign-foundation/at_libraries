@@ -7,6 +7,7 @@ import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart'
     as activate_cli;
 import 'package:at_onboarding_cli/src/util/api_call_status.dart';
+import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 import 'package:at_onboarding_cli/src/util/register_api_result.dart';
 import 'package:at_onboarding_cli/src/util/register_api_task.dart';
 import 'package:at_utils/at_logger.dart';
@@ -102,7 +103,7 @@ class RegistrationFlow {
       if (result.apiCallStatus == ApiCallStatus.success) {
         params.addAll(result.data);
       } else {
-        throw AtClientException.message(result.exceptionMessage);
+        throw AtOnboardingException(result.exceptionMessage);
       }
     }
   }
@@ -237,7 +238,7 @@ Future<void> main(List<String> args) async {
       stderr.writeln('Cause: $e');
       exit(3);
     }
-  } on AtClientException catch (e) {
+  } on AtOnboardingException catch (e) {
     stderr.writeln(
         '[Error] Failed getting an atsign. It looks like something went wrong on our side.\n'
         'Please try again or contact support@atsign.com, quoting the text displayed below.');
