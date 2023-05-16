@@ -8,13 +8,23 @@ import 'package:logging/logging.dart' as logging;
 class AtSignLogger {
   late logging.Logger logger;
   String? _level;
-
   static String _root_level = 'info';
-  static LoggingType loggingType = LoggingType.console;
-  static var loggingHandler = _getLoggingHandler(loggingType);
   bool _hierarchicalLoggingEnabled = false;
 
-  AtSignLogger(String name) {
+  static final ConsoleLoggingHandler _consoleLoggingHandler =
+      ConsoleLoggingHandler();
+  static final StdErrLoggingHandler _stdErrLoggingHandler =
+      StdErrLoggingHandler();
+
+  /// The AtSignLogger is a wrapper on the Logger to log events.
+  ///
+  /// * name: Accepts String as input which represents the name of the AtSignLogger instance.
+  ///
+  /// * loggingType: This is an optionally parameter which specifies where to log
+  /// the events. Supported types are Console and StandardError.
+  /// The default loggingType is set to console which writes log messages to console.
+  AtSignLogger(String name, {LoggingType loggingType = LoggingType.console}) {
+    LoggingHandler loggingHandler = _getLoggingHandler(loggingType);
     logger = logging.Logger.detached(name);
     logger.onRecord.listen(loggingHandler);
     level = _root_level;
@@ -59,11 +69,11 @@ class AtSignLogger {
   static LoggingHandler _getLoggingHandler(LoggingType loggingType) {
     switch (loggingType) {
       case LoggingType.console:
-        return ConsoleLoggingHandler();
+        return _consoleLoggingHandler;
       case LoggingType.stdErr:
-        return StdErrLoggingHandler();
+        return _stdErrLoggingHandler;
       default:
-        return ConsoleLoggingHandler();
+        return _consoleLoggingHandler;
     }
   }
 
