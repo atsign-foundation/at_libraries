@@ -288,7 +288,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }
 
   @override
-  Future<void> authenticate() async {
+  Future<bool> authenticate() async {
     // decrypts all the keys in .atKeysFile using the SelfEncryptionKey
     // and stores the keys in a map
     var atKeysFileDataMap = await _decryptAtKeysFile(
@@ -317,7 +317,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       await _persistKeysLocalSecondary();
     }
 
-    return ;
+    return _isPkamAuthenticated;
   }
 
   AtChops _createAtChops(Map<String, String> atKeysDataMap) {
