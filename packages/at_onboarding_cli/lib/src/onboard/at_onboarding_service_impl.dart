@@ -5,6 +5,8 @@ import 'dart:io';
 
 import 'package:at_chops/at_chops.dart';
 import 'package:at_client/at_client.dart';
+import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
+import 'package:at_server_status/at_server_status.dart';
 import 'package:at_utils/at_utils.dart';
 import 'package:at_commons/at_builders.dart';
 import 'package:at_onboarding_cli/src/factory/service_factories.dart';
@@ -15,6 +17,7 @@ import 'package:crypton/crypton.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:zxing2/qrcode.dart';
 import 'package:image/image.dart';
+import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 
 ///class containing service that can onboard/activate/authenticate @signs
@@ -79,10 +82,15 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   @override
   Future<bool> onboard() async {
-    // TODO uncomment this code after isOnboarded is implemented
-    // if(isOnboarded()) {
-    //   return true;
-    // }
+    // cram auth doesn't use at_chops. So create at_lookup here.
+    AtLookupImpl atLookUpImpl = AtLookupImpl(_atSign,
+        atOnboardingPreference.rootDomain, atOnboardingPreference.rootPort);
+    //check and wait till secondary exists
+    await _waitUntilSecondaryCreated(atLookUpImpl);
+
+    if (await isOnboarded()) {
+      throw AtActivateException('atsign is already activated');
+    }
 
     // get cram_secret from either from AtOnboardingPreference
     // or fetch from the registrar using verification code sent to email
@@ -92,17 +100,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     if (atOnboardingPreference.cramSecret == null) {
       logger.info('Root Server address is ${atOnboardingPreference.rootDomain}:'
           '${atOnboardingPreference.rootPort}');
-      throw AtClientException.message(
-          'Could not fetch cram secret for \'$_atSign\' from '
-          '\'${atOnboardingPreference.registrarUrl}\'');
+      logger
+          .info('Registrar url is \'${atOnboardingPreference.registrarUrl}\'');
+      throw AtKeyNotFoundException(
+          'Could not fetch cram secret for \'$_atSign\' from registrar');
     }
 
-    // cram auth doesn't use at_chops. So create at_lookup here.
-    AtLookupImpl atLookUpImpl = AtLookupImpl(_atSign,
-        atOnboardingPreference.rootDomain, atOnboardingPreference.rootPort);
     try {
-      //check and wait till secondary exists
-      await _waitUntilSecondaryCreated(atLookUpImpl);
       //authenticate into secondary using cram secret
       _isAtsignOnboarded = (await atLookUpImpl
           .authenticate_cram(atOnboardingPreference.cramSecret));
@@ -112,6 +116,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       if (_isAtsignOnboarded) {
         await _activateAtsign(atLookUpImpl);
       }
+    } on Exception catch (e) {
+      logger.info('Caught exception: $e');
     } finally {
       await atLookUpImpl.close();
     }
@@ -159,7 +165,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       logger.finer(await getServerStatus());
       stdout.writeln('[Success]----------atSign activated---------');
     } else {
-      throw AtClientException.message('Pkam Authentication Failed');
+      throw AtAuthenticationFailureException('Pkam Authentication Failed');
     }
   }
 
@@ -292,7 +298,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     if (atOnboardingPreference.authMode == PkamAuthMode.keysFile &&
         pkamPrivateKey == null) {
       throw AtPrivateKeyNotFoundException(
-          'Unable to read pkam private key from provided .atKeys path: ${atOnboardingPreference.atKeysFilePath}',
+          'Unable to read PkamPrivateKey from provided .atKeys path: ${atOnboardingPreference.atKeysFilePath}',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
     await _init(atKeysFileDataMap);
@@ -321,7 +327,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   ///returns map containing encryption keys
   Future<Map<String, String>> _readAtKeysFile(String? atKeysFilePath) async {
     if (atKeysFilePath == null || atKeysFilePath.isEmpty) {
-      throw AtClientException.message(
+      throw InvalidResourceException(
           'atKeys filePath is null or empty. atKeysFile needs to be provided');
     }
     String atAuthData = await File(atKeysFilePath).readAsString();
@@ -379,6 +385,25 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     return atServerStatus.get(_atSign);
   }
 
+  @override
+  Future<bool> isOnboarded() async {
+    late AtStatus secondaryStatus;
+    try {
+      secondaryStatus = await getServerStatus();
+    } catch (e) {
+      stderr.writeln('[Error] $e');
+    }
+    if (secondaryStatus.status() == AtSignStatus.activated) {
+      return true;
+    } else if (secondaryStatus.status() == AtSignStatus.teapot) {
+      return false;
+    }
+    stderr.writeln(
+        '[Error] atsign($_atSign) status is \'${secondaryStatus.status()}\'');
+    throw AtActivateException('Could not determine atsign activation status',
+        intent: Intent.fetchData);
+  }
+
   ///extracts cram secret from qrCode
   @Deprecated('qr_code based cram authentication not supported anymore')
   static String? getSecretFromQr(String? path) {
@@ -387,8 +412,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
     try {
       Image? image = decodePng(File(path).readAsBytesSync());
-      LuminanceSource source = RGBLuminanceSource(image!.width, image.height,
-          image.getBytes().buffer.asInt32List());
+      LuminanceSource source = RGBLuminanceSource(
+          image!.width, image.height, image.getBytes().buffer.asInt32List());
       BinaryBitmap bitmap = BinaryBitmap(HybridBinarizer(source));
       Result result = QRCodeReader().decode(bitmap);
       String secret = result.text.split(':')[1];
@@ -455,12 +480,14 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }
 
   @override
-  Future<void> close() async {
+  Future<void> close({int? exitCode = 0}) async {
     if (_atLookUp != null) {
       await (_atLookUp as AtLookupImpl).close();
     }
     _atClient = null;
-    logger.info('Closing current instance of at_onboarding_cli');
+    logger.info(
+        'Closing current instance of at_onboarding_cli (exit code: $exitCode)');
+    exit(exitCode!);
   }
 
   @override
@@ -487,11 +514,4 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   @override
   AtChops? atChops;
-
-  @override
-  Future<bool> isOnboarded() async {
-    // #TODO implement once AtClient offline access feature is complete.
-    // https://github.com/atsign-foundation/at_client_sdk/issues/915
-    throw UnimplementedError();
-  }
 }
