@@ -18,5 +18,5 @@ class RegistrarApiConstants {
 
   /// DebugMode: setting it to true will print more logs to aid understanding
   /// the inner working of Register_cli
-  static const bool isDebugMode = false;
+  static const bool isDebugMode = true;
 }

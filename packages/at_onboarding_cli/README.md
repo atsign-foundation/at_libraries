@@ -62,8 +62,8 @@ Proving that one actually owns the atSign. User needs to authenticate before per
 ```
 AtOnboardingService atOnboardingService = AtOnboardingServiceImpl('@alice', atOnboardingPreference);
 atOnboardingService.authenticate();
-AtClient? atClient = await atOnboardingService.atClient();
-AtLookup? atLookup = atOnboardingService.atLookUp();
+AtClient? atClient = await atOnboardingService.atClient;
+AtLookup? atLookup = atOnboardingService.atLookUp;
 ```
 
 ### Onboarding: 

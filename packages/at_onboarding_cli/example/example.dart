@@ -1,6 +1,7 @@
 import 'package:at_client/at_client.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
+import 'package:at_onboarding_cli/src/util/onboarding_util.dart';
 
 Future<void> main() async {
   //****************************************************

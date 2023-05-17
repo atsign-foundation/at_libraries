@@ -18,6 +18,10 @@ import 'package:zxing2/qrcode.dart';
 import 'package:image/image.dart';
 import 'package:path/path.dart' as path;
 
+import '../util/auth_key_type.dart';
+import '../util/home_directory_util.dart';
+import '../util/onboarding_util.dart';
+
 ///class containing service that can onboard/activate/authenticate @signs
 class AtOnboardingServiceImpl implements AtOnboardingService {
   late final String _atSign;

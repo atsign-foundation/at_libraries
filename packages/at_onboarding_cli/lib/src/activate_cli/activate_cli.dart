@@ -9,7 +9,7 @@ Future<void> main(List<String> arguments) async {
   //defaults
   String rootServer = 'root.atsign.org';
   String registrarUrl = 'my.atsign.com';
-  AtSignLogger.root_level = 'severe';
+  AtSignLogger.root_level = 'finer';
 
   //get atSign and CRAM key from args
   final parser = ArgParser()
@@ -40,8 +40,6 @@ Future<void> main(List<String> arguments) async {
   }
 
   await activate(argResults);
-
-  exit(0);
 }
 
 Future<void> activate(ArgResults argResults,
@@ -52,6 +50,7 @@ Future<void> activate(ArgResults argResults,
   //onboarding preference builder can be used to set onboardingService parameters
   AtOnboardingPreference atOnboardingPreference = AtOnboardingPreference()
     ..rootDomain = argResults['rootServer']
+    ..registrarUrl = argResults['registrarUrl']
     ..cramSecret =
         argResults.wasParsed('cramkey') ? argResults['cramkey'] : null;
   //onboard the atSign
