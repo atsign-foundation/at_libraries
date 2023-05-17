@@ -67,7 +67,7 @@ Future<void> activate(ArgResults argResults,
     stderr.writeln(
         '[Error] Activation failed. Invalid data provided by user. Please try again\nCause: ${e.message}');
   } on AtActivateException catch (e) {
-    stdout.writeln('[Error] $e');
+    stdout.writeln('[Error] ${e.message}');
   } on Exception catch (e) {
     stderr.writeln(
         '[Error] Activation failed. It looks like something went wrong on our side.\n'

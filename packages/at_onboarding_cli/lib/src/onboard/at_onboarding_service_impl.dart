@@ -116,12 +116,12 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         logger.info('Cram authentication successful');
         await _activateAtsign(atLookUpImpl);
       } else {
-        logger.severe('Cram authentication failed. Please check the cram key'
+        throw AtActivateException('Cram authentication failed. Please check the cram key'
             'and try again \n(or) contact support@atsign.com');
       }
     } on Exception catch (e) {
       if (e.toString().contains('Auth failed')) {
-        logger.severe('Cram authentication failed. Please check the cram key'
+        throw AtActivateException('Cram authentication failed. Please check the cram key'
             'and try again \n(or) contact support@atsign.com');
       }
       logger.severe('Caught exception: $e');
