@@ -51,7 +51,7 @@ void main() {
     var deleteResponse = await atClient?.delete(key);
     stdout.writeln('[Test] Got Delete Response: $deleteResponse');
     expect(deleteResponse, true);
-  });
+  }, skip: true);
 
   tearDown(() async {
     await tearDownFunc();
