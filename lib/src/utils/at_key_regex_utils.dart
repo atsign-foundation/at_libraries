@@ -7,7 +7,7 @@ abstract class Regexes {
   static const charsInAtSign = r'[\w\-_]';
   static const charsInEntity = r'''[\w\.\-_'*"]''';
   static const allowedEmoji =
-      r'''((\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]))''';
+      r'''((\u00a9|\u00ae|[\u2000-\u3300]|[\ufe00-\ufe0f]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]))''';
   static const _charsInReservedKey =
       r'(shared_key|publickey|privatekey|self_encryption_key'
       r'|commitLogCompactionStats|accessLogCompactionStats'
