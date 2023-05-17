@@ -9,7 +9,7 @@ Future<void> main(List<String> arguments) async {
   //defaults
   String rootServer = 'root.atsign.org';
   String registrarUrl = 'my.atsign.com';
-  AtSignLogger.root_level = 'finer';
+  AtSignLogger.root_level = 'severe';
 
   //get atSign and CRAM key from args
   final parser = ArgParser()

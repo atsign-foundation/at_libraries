@@ -79,6 +79,9 @@ Performing initial one-time authentication using cram secret encoded in the qr_c
  ```
 AtOnboardingService atOnboardingService = AtOnboardingServiceImpl('@alice', atOnboardingPreference);
 atOnboardingService.onboard();
+> Successfully sent verification code to your registered e-mail
+> [Action Required] Enter your verification code:
+<your 4 charcter code here>
 AtClient? atClient = await atOnboardingService.atClient();
 AtLookup? atLookup = atOnboardingService.atLookUp();
 ```
@@ -90,12 +93,6 @@ A simple tool to onboard(activate) an atSign through command-line arguments
 #### Usage 1:
 Run the following commands in your command-line tool (Terminal, CMD, PowerShell, etc)
 
-##### To activate using your cram secret
-```
-dart pub global activate at_onboarding_cli
-at_activate -a your_atsign -c your_cram_secret
-```
-
 ##### To activate using a verification code
 ```
 dart pub global activate at_onboarding_cli
@@ -103,6 +100,12 @@ at_activate -a your_atsign
 > Successfully sent verification code to your registered e-mail
 > [Action Required] Enter your verification code:
 <your 4 charcter code here>
+```
+
+##### To activate using your cram secret
+```
+dart pub global activate at_onboarding_cli
+at_activate -a your_atsign -c your_cram_secret
 ```
 
 #### Usage 2:
@@ -113,7 +116,7 @@ at_activate -a your_atsign
 ```
 dart run bin/activate_cli.dart -a your_atsign -c your_cram_secret
 
-(or)
+                             (or)
 
 dart run bin/activate_cli.dart -a your_atsign (to activate using verification code)
 ```
@@ -136,7 +139,7 @@ at_register -e your_email
    3) Run `dart pub get`
    4) Run the following command
 ```
-dart run bin/register.dart -e email@email.com -n staging/production [-n is optional]
+dart run bin/register.dart -e email@email.com
 ```
    5) Enter verification code sent to the provided email when prompted
    6) register_cli fetches the cramkey and the automatically calls activate_cli to activate the fetched atsign

@@ -100,7 +100,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
           'Could not fetch cram secret for \'$_atSign\' from registrar');
     }
 
-    //check and wait till secondary exists
+    // check and wait till secondary exists
     await _waitUntilSecondaryCreated(atLookUpImpl);
 
     if (await isOnboarded()) {
@@ -108,7 +108,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
 
     try {
-      //authenticate into secondary using cram secret
+      // authenticate into secondary using cram secret
       _isAtsignOnboarded = (await atLookUpImpl
           .authenticate_cram(atOnboardingPreference.cramSecret));
 
@@ -120,8 +120,12 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
             'and try again \n(or) contact support@atsign.com');
       }
     } on Exception catch (e) {
+      if (e.toString().contains('Auth failed')) {
+        logger.severe('Cram authentication failed. Please check the cram key'
+            'and try again \n(or) contact support@atsign.com');
+      }
       logger.severe('Caught exception: $e');
-    } on Error catch(e){
+    } on Error catch (e) {
       logger.severe('Caught error: $e');
     } finally {
       await atLookUpImpl.close();
@@ -161,7 +165,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
           await atLookUpImpl.executeVerb(updateBuilder);
       logger
           .info('Encryption public key update result $encryptKeyUpdateResult');
-      //deleting cram secret from the keystore as cram auth is complete
+      // deleting cram secret from the keystore as cram auth is complete
       DeleteVerbBuilder deleteBuilder = DeleteVerbBuilder()
         ..atKey = AT_CRAM_SECRET;
       String? deleteResponse = await atLookUpImpl.executeVerb(deleteBuilder);
@@ -176,7 +180,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }
 
   Future<Map<String, String>> _generateKeyPairs() async {
-    //generate user encryption keypair
+    // generate user encryption keypair
     logger.info('Generating encryption keypair');
     var encryptionKeyPair = generateRsaKeypair();
 
@@ -466,7 +470,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       }
       retryCount++;
     }
-    stdout.writeln('SecondaryAddress **> $secondaryAddress');
     if (secondaryAddress == null) {
       throw SecondaryNotFoundException('Could not find secondary address for '
           '$_atSign after $retryCount retries. Please retry the process');
