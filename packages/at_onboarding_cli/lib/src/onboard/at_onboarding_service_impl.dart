@@ -118,7 +118,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         await _activateAtsign(atLookUpImpl);
       }
     } on Exception catch (e) {
-      logger.info('Caught exception: $e');
+      logger.severe('Caught exception: $e');
+    } on Error catch(e){
+      logger.severe('Caught error: $e');
     } finally {
       await atLookUpImpl.close();
     }
