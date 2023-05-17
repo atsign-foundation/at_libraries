@@ -2,6 +2,7 @@
 - feat: Introduced verification-code based activation of atsigns
 - fix: deprecate qr_code based activation
 - feat: introduced new exceptions
+- fix: improve existing logger messages and added some
 - fix: minor bug fixes
 ## 1.2.6
 - feat: changes to integrate onboarding_cli with pkam secure element
