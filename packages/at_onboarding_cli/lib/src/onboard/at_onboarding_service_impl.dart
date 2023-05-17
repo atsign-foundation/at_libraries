@@ -39,11 +39,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     _atSign = AtUtils.fixAtSign(atsign);
 
     // set default LocalStorage paths for this instance
-    atOnboardingPreference.commitLogPath ??= HomeDirectoryUtil.getCommitLogPath(_atSign);
+    atOnboardingPreference.commitLogPath ??=
+        HomeDirectoryUtil.getCommitLogPath(_atSign);
     atOnboardingPreference.hiveStoragePath ??=
         HomeDirectoryUtil.getHiveStoragePath(_atSign);
     atOnboardingPreference.isLocalStoreRequired = true;
-    atOnboardingPreference.atKeysFilePath ??= HomeDirectoryUtil.getAtKeysPath(_atSign);
+    atOnboardingPreference.atKeysFilePath ??=
+        HomeDirectoryUtil.getAtKeysPath(_atSign);
   }
 
   Future<void> _initAtClient(AtChops atChops) async {
@@ -92,7 +94,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
     if (atOnboardingPreference.downloadPath == null &&
         atOnboardingPreference.atKeysFilePath == null) {
-      throw AtClientException.message('Download path not provided. Please provide'
+      throw AtClientException.message(
+          'Download path not provided. Please provide'
           ' downloadPath through AtOnboardingPreferences.\n DownloadPath is where the atKeys file will be saved.',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
@@ -192,7 +195,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       pkamPublicKey = pkamRsaKeypair.publicKey.toString();
     } else if (atOnboardingPreference.authMode == PkamAuthMode.sim) {
       // get the public key from secure element
-      pkamPublicKey = atChops!.readPublicKey(atOnboardingPreference.publicKeyId!);
+      pkamPublicKey =
+          atChops!.readPublicKey(atOnboardingPreference.publicKeyId!);
       logger.info('pkam  public key from sim: $pkamPublicKey');
       atKeysMap[AuthKeyType.pkamPublicKey] = pkamPublicKey;
       // encryption key pair and self encryption symmetric key
@@ -306,7 +310,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     logger.finer('Authenticating using PKAM');
     try {
       _isPkamAuthenticated = (await _atLookUp?.pkamAuthenticate())!;
-    } on Exception {
+    } on Exception catch (e) {
+      logger.severe('Caught exception: $e');
       throw UnAuthenticatedException('Unable to authenticate.'
           ' Please provide a valid keys file');
     }
@@ -401,7 +406,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     try {
       Image? image = decodePng(File(path).readAsBytesSync());
       LuminanceSource source = RGBLuminanceSource(image!.width, image.height,
-          image.getBytes(format: Format.abgr).buffer.asInt32List());
+          image.getBytes().buffer.asInt32List());
       BinaryBitmap bitmap = BinaryBitmap(HybridBinarizer(source));
       Result result = QRCodeReader().decode(bitmap);
       String secret = result.text.split(':')[1];
