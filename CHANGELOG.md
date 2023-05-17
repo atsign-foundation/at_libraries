@@ -1,3 +1,5 @@
+## 3.0.46
+- fix: Modify emoji list to allow variation selector Unicode
 ## 3.0.45
 - fix: Add constants for AtClientParticulars
 ## 3.0.44
