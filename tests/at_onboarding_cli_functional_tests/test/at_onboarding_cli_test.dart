@@ -7,7 +7,6 @@ import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart'
     as activate_cli;
-import 'package:at_server_status/at_server_status.dart';
 import 'package:at_utils/at_utils.dart';
 import 'package:test/test.dart';
 
@@ -126,11 +125,7 @@ void main() {
       expect(true, status);
       bool status2 = await atOnboardingService.authenticate();
       expect(true, status2);
-      AtServerStatus atServerStatus = AtStatusImpl(
-          rootUrl: atOnboardingPreference.rootDomain,
-          rootPort: atOnboardingPreference.rootPort);
-      AtStatus atStatus = await atServerStatus.get(atSign);
-      expect(atStatus.serverStatus, ServerStatus.activated);
+      expect(atOnboardingService.isOnboarded(), true);
 
       /// Assert .atKeys file is generated for the atSign
       expect(await File(atOnboardingPreference.atKeysFilePath!).exists(), true);

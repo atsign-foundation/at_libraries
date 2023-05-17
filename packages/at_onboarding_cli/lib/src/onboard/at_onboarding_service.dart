@@ -23,7 +23,7 @@ abstract class AtOnboardingService {
   AtLookUp? getAtLookup();
 
   ///Closes the current instance of onboarding_service
-  Future<void> close({int? exitCode});
+  Future<void> close();
 
   set atClient(AtClient? atClient);
 
