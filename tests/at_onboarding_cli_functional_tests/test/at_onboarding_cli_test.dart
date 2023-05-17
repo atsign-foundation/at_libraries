@@ -70,6 +70,7 @@ void main() {
       preference.atKeysFilePath = null;
       AtOnboardingServiceImpl(atSign, preference);
       expect(preference.atKeysFilePath, '$atKeysFilePath/${atSign}_key.atKeys');
+
     });
     tearDown(() async {
       await tearDownFunc();
