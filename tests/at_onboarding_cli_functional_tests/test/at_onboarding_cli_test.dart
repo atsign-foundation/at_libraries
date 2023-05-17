@@ -125,7 +125,7 @@ void main() {
       expect(true, status);
       bool status2 = await atOnboardingService.authenticate();
       expect(true, status2);
-      expect(atOnboardingService.isOnboarded(), true);
+      expect(await atOnboardingService.isOnboarded(), true);
 
       /// Assert .atKeys file is generated for the atSign
       expect(await File(atOnboardingPreference.atKeysFilePath!).exists(), true);
