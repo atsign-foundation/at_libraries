@@ -23,9 +23,8 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
     StringBuffer sb = StringBuffer();
     sb.write('enroll:');
 
-    if (operation != null) {
-      sb.write(getEnrollOperation(operation));
-    }
+    sb.write(getEnrollOperation(operation));
+
     if (appName != null) {
       sb.write(':appName:$appName');
     }
