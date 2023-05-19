@@ -211,8 +211,7 @@ class TestKeys {
     validCachedPublicKeys.add(
         "cached:public:phone.buzz@bob0123456789012345678901234567890123456789012345");
     //  cached public key with valid punctuations in the @sign
-    validCachedPublicKeys
-        .add("cached:public:phone.buzz@jagann_a-d_h");
+    validCachedPublicKeys.add("cached:public:phone.buzz@jagann_a-d_h");
     //  cached public key with emoji's in @sign
     validCachedPublicKeys.add("cached:public:phone.buzz@bob💙");
     // cached public public in both @sign and entity
@@ -265,8 +264,7 @@ class TestKeys {
     invalidCachedPublicKeysNamespaceOptional.addAll(temp);
 
     //  No namespace
-    invalidCachedPublicKeysNamespaceMandatory
-        .add("cached:public:phone@bob");
+    invalidCachedPublicKeysNamespaceMandatory.add("cached:public:phone@bob");
   }
 
   _initNonBobSelfKeys() {

@@ -75,13 +75,18 @@ void main() {
       expect(keyType, equals(KeyType.invalidKey));
     });
 
-    test('Test malformed key cached:public:cached:public:privateaccount.wavi@dying36dragonfly', () {
-      var keyType = AtKey.getKeyType('cached:public:cached:public:privateaccount.wavi@dying36dragonfly', enforceNameSpace: false);
+    test(
+        'Test malformed key cached:public:cached:public:privateaccount.wavi@dying36dragonfly',
+        () {
+      var keyType = AtKey.getKeyType(
+          'cached:public:cached:public:privateaccount.wavi@dying36dragonfly',
+          enforceNameSpace: false);
       expect(keyType, equals(KeyType.invalidKey));
     });
 
     test('Test malformed key public:@public:image.wavi@colin', () {
-      var keyType = AtKey.getKeyType('public:@public:image.wavi@colin', enforceNameSpace: false);
+      var keyType = AtKey.getKeyType('public:@public:image.wavi@colin',
+          enforceNameSpace: false);
       expect(keyType, equals(KeyType.invalidKey));
     });
   });
