@@ -83,3 +83,7 @@ const String ENCODING = 'encoding';
 const String CLIENT_CONFIG = 'clientConfig';
 const String VERSION = 'version';
 const String IS_LOCAL = 'isLocal';
+const String CLIENT_ID = 'clientId';
+const String APP_NAME = 'appName';
+const String APP_VERSION = 'appVersion';
+const String PLATFORM = 'platform';

@@ -225,6 +225,18 @@ void main() {
         expect(type == KeyType.cachedSharedKey, true);
       }
     });
+
+    test('A test to validate reserved key type', () {
+      var keyTypeList = [];
+
+      keyTypeList.add('public:signing_publickey@alice');
+      keyTypeList.add('public:signing_publickey@☎️_0002');
+
+      for (var key in keyTypeList) {
+        var type = RegexUtil.keyType(key, false);
+        expect(type == KeyType.reservedKey, true);
+      }
+    });
   });
 
   group('Public or private key regex match tests', () {

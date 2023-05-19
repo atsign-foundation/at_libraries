@@ -17,7 +17,7 @@ class MonitorVerbBuilder implements VerbBuilder {
   /// then other 'control' notifications (e.g. the statsNotification) which don't necessarily
   /// match the [regex] will also be sent
   String? get regex => _regex;
-  set regex (String? r) {
+  set regex(String? r) {
     if (r != null && r.trim().isEmpty) {
       r = null;
     }
@@ -72,16 +72,20 @@ class MonitorVerbBuilder implements VerbBuilder {
       throw IllegalArgumentException(
           'Commands may not have leading or trailing whitespace');
     }
-    HashMap<String, String?>? verbParams = (VerbUtil.getVerbParam(VerbSyntax.monitor, command));
+    HashMap<String, String?>? verbParams =
+        (VerbUtil.getVerbParam(VerbSyntax.monitor, command));
     if (verbParams == null) {
       throw InvalidSyntaxException('Command does not match the monitor syntax');
     }
 
     var builder = MonitorVerbBuilder();
     builder.strict = verbParams[MONITOR_STRICT_MODE] == MONITOR_STRICT_MODE;
-    builder.multiplexed = verbParams[MONITOR_MULTIPLEXED_MODE] == MONITOR_MULTIPLEXED_MODE;
+    builder.multiplexed =
+        verbParams[MONITOR_MULTIPLEXED_MODE] == MONITOR_MULTIPLEXED_MODE;
     builder.regex = verbParams[MONITOR_REGEX];
-    builder.lastNotificationTime = verbParams[EPOCH_MILLIS] == null ? null : int.parse(verbParams[EPOCH_MILLIS]!);
+    builder.lastNotificationTime = verbParams[EPOCH_MILLIS] == null
+        ? null
+        : int.parse(verbParams[EPOCH_MILLIS]!);
 
     return builder;
   }
@@ -102,5 +106,9 @@ class MonitorVerbBuilder implements VerbBuilder {
           multiplexed == other.multiplexed;
 
   @override
-  int get hashCode => regex.hashCode ^ lastNotificationTime.hashCode ^ strict.hashCode ^ multiplexed.hashCode;
+  int get hashCode =>
+      regex.hashCode ^
+      lastNotificationTime.hashCode ^
+      strict.hashCode ^
+      multiplexed.hashCode;
 }
