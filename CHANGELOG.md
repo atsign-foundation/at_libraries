@@ -1,5 +1,6 @@
 ## 3.0.47
 - fix: Enhance stats verb to allow regex for stats:15
+- feat: Add syntax and verb builder for APKAM enroll verb
 ## 3.0.46
 - fix: Modify emoji list to allow variation selector Unicode
 ## 3.0.45

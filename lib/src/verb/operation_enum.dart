@@ -16,3 +16,8 @@ enum MessageTypeEnum { key, text }
 
 String getMessageType(MessageTypeEnum? messageTypeEnum) =>
     '$messageTypeEnum'.split('.').last;
+
+enum EnrollOperationEnum { request, approve, deny }
+
+String getEnrollOperation(EnrollOperationEnum? enrollOperationEnum) =>
+    '$enrollOperationEnum'.split('.').last;

@@ -125,4 +125,6 @@ class VerbSyntax {
   static const info = r'^info(:brief)?$';
   static const noOp = r'^noop:(?<delayMillis>\d+)$';
   static const notifyRemove = r'notify:remove:(?<id>[\w\d\-\_]+)';
+  static const enroll =
+      r'^enroll:(?<operation>request|approve|deny)(:appName:(?<appName>(\w+)))(:deviceName:(?<deviceName>(\w+)))(:namespaces:(?<namespaces>(.*(?:;.*)*)))(:apkamPublicKey:(?<apkamPublicKey>.*))$';
 }
