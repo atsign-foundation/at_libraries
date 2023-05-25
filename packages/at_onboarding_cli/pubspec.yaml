@@ -27,6 +27,13 @@ dependencies:
   args: ^2.3.1
   http: ^0.13.5
 
+dependency_overrides:
+  at_client:
+    git:
+      url: https://github.com/atsign-foundation/at_client_sdk.git
+      path: packages/at_client
+      ref: monitor_bug_secure_element
+
 dev_dependencies:
   lints: ^2.0.1
   test: ^1.22.1
