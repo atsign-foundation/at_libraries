@@ -13,7 +13,7 @@ void main() {
         ..apkamPublicKey = 'abcd1234';
       var command = enrollVerbBuilder.buildCommand();
       expect(command,
-          'enroll:request:appName:wavi:deviceName:pixel:namespaces:wavi,rw;__manage,r:apkamPublicKey:abcd1234\n');
+          'enroll:request:appName:wavi:deviceName:pixel:namespaces:wavi,rw;__manage,rw:apkamPublicKey:abcd1234\n');
     });
     test('enroll verb - check enroll approve build command', () {
       var enrollVerbBuilder = EnrollVerbBuilder()
