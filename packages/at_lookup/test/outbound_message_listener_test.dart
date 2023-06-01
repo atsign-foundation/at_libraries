@@ -58,7 +58,8 @@ void main() {
     });
 
     test('A test to validate single data comes two packets', () async {
-      await outboundMessageListener.messageHandler('data:public:phone@'.codeUnits);
+      await outboundMessageListener
+          .messageHandler('data:public:phone@'.codeUnits);
       await outboundMessageListener.messageHandler('alice\n@alice@'.codeUnits);
       var response = await outboundMessageListener.read();
       expect(response, 'data:public:phone@alice');
@@ -124,7 +125,8 @@ void main() {
         () async {
       await outboundMessageListener
           .messageHandler('data:public:location@alice,'.codeUnits);
-      await outboundMessageListener.messageHandler('public:phone@alice\n@'.codeUnits);
+      await outboundMessageListener
+          .messageHandler('public:phone@alice\n@'.codeUnits);
       var response = await outboundMessageListener.read();
       expect(response, 'data:public:location@alice,public:phone@alice');
       await outboundMessageListener.messageHandler('data:hi\n@'.codeUnits);
@@ -204,7 +206,8 @@ void main() {
       expect(
           () async =>
               // we want to trigger the maxWaitMilliSeconds exception, so setting transient to a higher value
-              await outboundMessageListener.read(transientWaitTimeMillis: 100, maxWaitMilliSeconds: 50),
+              await outboundMessageListener.read(
+                  transientWaitTimeMillis: 100, maxWaitMilliSeconds: 50),
           throwsA(predicate((dynamic e) =>
               e is AtTimeoutException &&
               e.message.startsWith(
@@ -213,7 +216,8 @@ void main() {
     test(
         'A test to verify partial response - wait time greater than transientWaitTimeMillis',
         () async {
-      await outboundMessageListener.messageHandler('data:public:phone@'.codeUnits);
+      await outboundMessageListener
+          .messageHandler('data:public:phone@'.codeUnits);
       await outboundMessageListener.messageHandler('12'.codeUnits);
       expect(
           () async =>
@@ -226,15 +230,17 @@ void main() {
     test(
         'A test to verify partial response - wait time greater than maxWaitMillis',
         () async {
-      await outboundMessageListener.messageHandler('data:public:phone@'.codeUnits);
+      await outboundMessageListener
+          .messageHandler('data:public:phone@'.codeUnits);
       await outboundMessageListener.messageHandler('12'.codeUnits);
       await outboundMessageListener.messageHandler('34'.codeUnits);
       await outboundMessageListener.messageHandler('56'.codeUnits);
       await outboundMessageListener.messageHandler('78'.codeUnits);
       expect(
           () async =>
-          // we want to trigger the maxWaitMilliSeconds exception, so setting transient to a higher value
-              await outboundMessageListener.read(transientWaitTimeMillis: 30, maxWaitMilliSeconds: 20),
+              // we want to trigger the maxWaitMilliSeconds exception, so setting transient to a higher value
+              await outboundMessageListener.read(
+                  transientWaitTimeMillis: 30, maxWaitMilliSeconds: 20),
           throwsA(predicate((dynamic e) =>
               e is AtTimeoutException &&
               e.message ==

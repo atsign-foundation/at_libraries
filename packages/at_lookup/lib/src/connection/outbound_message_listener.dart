@@ -154,7 +154,8 @@ class OutboundMessageListener {
   /// Logs the error and closes the [OutboundConnection]
   void _errorHandler(Object error) async {
     // logger.finest('outbound error handler called - calling closeConnection - error was $error and stackTrace was\n$stackTrace');
-    logger.finest('outbound error handler called - calling closeConnection - error was $error');
+    logger.finest(
+        'outbound error handler called - calling closeConnection - error was $error');
     await _closeConnection();
     logger.finest('outbound error handler called - closeConnection complete');
   }
