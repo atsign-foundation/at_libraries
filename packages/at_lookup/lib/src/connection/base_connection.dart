@@ -2,9 +2,11 @@ import 'dart:io';
 
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/src/connection/at_connection.dart';
+import 'package:at_utils/at_logger.dart';
 
 /// Base class for common socket operations
 abstract class BaseConnection extends AtConnection {
+  static final AtSignLogger logger = AtSignLogger('BaseConnection');
   late final Socket _socket;
   StringBuffer? buffer;
   AtConnectionMetaData? metaData;
@@ -22,14 +24,21 @@ abstract class BaseConnection extends AtConnection {
 
   @override
   Future<void> close() async {
+    if (getMetaData()!.isClosed) {
+      logger.info('close(): connection is already closed');
+      return;
+    }
+
     try {
+      var address = _socket.remoteAddress;
+      var port = _socket.remotePort;
+
+      logger.info('close(): calling socket.destroy() on connection to $address:$port');
       _socket.destroy();
-    } on Exception {
+    } catch (e) {
+      // Ignore errors or exceptions on a connection close
+      logger.info('Exception "$e" while destroying socket - ignoring');
       getMetaData()!.isStale = true;
-      // Ignore exception on a connection close
-    } on Error {
-      getMetaData()!.isStale = true;
-      // Ignore error on a connection close
     } finally {
       getMetaData()!.isClosed = true;
     }

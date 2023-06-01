@@ -25,6 +25,8 @@ class OutboundMessageListener {
   /// Listens to the underlying connection's socket if the connection is created.
   /// @throws [AtConnectException] if the connection is not yet created
   void listen() {
+    logger.finest('Calling listen with error handler normal again');
+    // Function(Object, StackTrace) errFn = _errorHandler;
     _connection.getSocket().listen(messageHandler,
         onDone: _finishedHandler, onError: _errorHandler);
   }
@@ -149,26 +151,28 @@ class OutboundMessageListener {
         (result.startsWith('@') && result.endsWith('@'));
   }
 
-  /// Logs the error and closes the [RemoteSecondary]
-  Future<void> _errorHandler(error) async {
+  /// Logs the error and closes the [OutboundConnection]
+  void _errorHandler(Object error) async {
+    // logger.finest('outbound error handler called - calling closeConnection - error was $error and stackTrace was\n$stackTrace');
+    logger.finest('outbound error handler called - calling closeConnection - error was $error');
     await _closeConnection();
+    logger.finest('outbound error handler called - closeConnection complete');
   }
 
   /// Closes the [OutboundConnection]
   void _finishedHandler() async {
-    logger.finest('outbound finish handler called');
+    logger.finest('outbound finish handler called - calling closeConnection');
     await _closeConnection();
+    logger.finest('outbound finish handler called - closeConnection complete');
   }
 
   @visibleForTesting
   Duration? delayBeforeClose;
 
   Future<void> _closeConnection() async {
-    if (!_connection.isInValid()) {
-      if (delayBeforeClose != null) {
-        await Future.delayed(delayBeforeClose!);
-      }
-      await _connection.close();
+    if (delayBeforeClose != null) {
+      await Future.delayed(delayBeforeClose!);
     }
+    await _connection.close();
   }
 }

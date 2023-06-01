@@ -217,6 +217,11 @@ class AtLookupImpl implements AtLookUp {
 
   Future<void> createConnection() async {
     if (!isConnectionAvailable()) {
+      if (_connection != null) {
+        // Clean up the connection before creating a new one
+        logger.finer('Closing old connection');
+        await _connection!.close();
+      }
       logger.info('Creating new connection');
       //1. find secondary url for atsign from lookup library
       SecondaryAddress secondaryAddress =
