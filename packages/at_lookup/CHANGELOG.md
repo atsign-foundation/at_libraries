@@ -1,3 +1,5 @@
+## 3.0.37
+- fix: ensure outbound sockets are cleaned up properly
 ## 3.0.36
 - feat: changes to call at_chops.sign() method which supports different signing algorithms.
 - chore: upgrade at_commons to 3.0.43, at_utils to 3.0.12 and at_chops to 1.0.3
