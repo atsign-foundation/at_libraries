@@ -25,8 +25,11 @@ class OutboundMessageListener {
   /// Listens to the underlying connection's socket if the connection is created.
   /// @throws [AtConnectException] if the connection is not yet created
   void listen() {
-    _connection.getSocket().listen(messageHandler,
-        onDone: _finishedHandler, onError: _errorHandler);
+    logger.finest('Calling listen with error handler normal again');
+    // Function(Object, StackTrace) errFn = _errorHandler;
+    _connection
+        .getSocket()
+        .listen(messageHandler, onDone: onSocketDone, onError: onSocketError);
   }
 
   /// Handles messages on the inbound client's connection and calls the verb executor
@@ -124,7 +127,7 @@ class OutboundMessageListener {
       if (DateTime.now().difference(startTime).inMilliseconds >
           maxWaitMilliSeconds) {
         _buffer.clear();
-        await _closeConnection();
+        await closeConnection();
         throw AtTimeoutException(
             'Full response not received after $maxWaitMilliSeconds millis from remote secondary');
       }
@@ -133,7 +136,7 @@ class OutboundMessageListener {
       if (DateTime.now().difference(_lastReceivedTime).inMilliseconds >
           transientWaitTimeMillis) {
         _buffer.clear();
-        await _closeConnection();
+        await closeConnection();
         throw AtTimeoutException(
             'Waited for $transientWaitTimeMillis millis. No response after $_lastReceivedTime ');
       }
@@ -149,26 +152,35 @@ class OutboundMessageListener {
         (result.startsWith('@') && result.endsWith('@'));
   }
 
-  /// Logs the error and closes the [RemoteSecondary]
-  Future<void> _errorHandler(error) async {
-    await _closeConnection();
+  /// Logs the error and closes the [OutboundConnection]
+  @visibleForTesting
+  void onSocketError(Object error) async {
+    // logger.finest('outbound error handler called - calling closeConnection - error was $error and stackTrace was\n$stackTrace');
+    logger.finest(
+        'outbound socket onError handler called - calling closeConnection - error was $error');
+    await closeConnection();
+    logger.finest(
+        'outbound socket onError handler called - closeConnection complete');
   }
 
   /// Closes the [OutboundConnection]
-  void _finishedHandler() async {
-    logger.finest('outbound finish handler called');
-    await _closeConnection();
+  @visibleForTesting
+  void onSocketDone() async {
+    logger.finest(
+        'outbound socket onDone handler called - calling closeConnection');
+    await closeConnection();
+    logger.finest(
+        'outbound socket onDone handler called - closeConnection complete');
   }
 
   @visibleForTesting
   Duration? delayBeforeClose;
 
-  Future<void> _closeConnection() async {
-    if (!_connection.isInValid()) {
-      if (delayBeforeClose != null) {
-        await Future.delayed(delayBeforeClose!);
-      }
-      await _connection.close();
+  @visibleForTesting
+  Future<void> closeConnection() async {
+    if (delayBeforeClose != null) {
+      await Future.delayed(delayBeforeClose!);
     }
+    await _connection.close();
   }
 }

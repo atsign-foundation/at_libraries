@@ -43,6 +43,8 @@ class AtLookupImpl implements AtLookUp {
 
   late SecureSocketConfig _secureSocketConfig;
 
+  late final AtLookupSecureSocketFactory socketFactory;
+
   /// Represents the client configurations.
   late Map<String, dynamic> _clientConfig;
 
@@ -53,7 +55,8 @@ class AtLookupImpl implements AtLookUp {
       this.cramSecret,
       SecondaryAddressFinder? secondaryAddressFinder,
       SecureSocketConfig? secureSocketConfig,
-      Map<String, dynamic>? clientConfig}) {
+      Map<String, dynamic>? clientConfig,
+      AtLookupSecureSocketFactory? secureSocketFactory}) {
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
@@ -63,6 +66,7 @@ class AtLookupImpl implements AtLookUp {
     // Stores the client configurations.
     // If client configurations are not available, defaults to empty map
     _clientConfig = clientConfig ?? {};
+    socketFactory = secureSocketFactory ?? AtLookupSecureSocketFactory();
   }
 
   @Deprecated('use CacheableSecondaryAddressFinder')
@@ -157,7 +161,7 @@ class AtLookupImpl implements AtLookUp {
       logger.finer('value: $value dataSignature:$dataSignature');
       var isDataValid = publicKey.verifySHA256Signature(
           utf8.encode(value) as Uint8List, base64Decode(dataSignature));
-      logger.finer('atlookup data verify result: $isDataValid');
+      logger.finer('data verify result: $isDataValid');
       return 'data:$value';
     } on Exception catch (e) {
       logger.severe(
@@ -217,6 +221,11 @@ class AtLookupImpl implements AtLookUp {
 
   Future<void> createConnection() async {
     if (!isConnectionAvailable()) {
+      if (_connection != null) {
+        // Clean up the connection before creating a new one
+        logger.finer('Closing old connection');
+        await _connection!.close();
+      }
       logger.info('Creating new connection');
       //1. find secondary url for atsign from lookup library
       SecondaryAddress secondaryAddress =
@@ -553,7 +562,7 @@ class AtLookupImpl implements AtLookUp {
           await authenticate_cram(cramSecret);
         } else {
           throw UnAuthenticatedException(
-              'Unable to perform atlookup auth. Private key/cram secret is not set');
+              'Unable to perform atLookup auth. Private key/cram secret is not set');
         }
       }
       try {
@@ -577,8 +586,8 @@ class AtLookupImpl implements AtLookUp {
   Future<bool> createOutBoundConnection(String host, String port,
       String toAtSign, SecureSocketConfig secureSocketConfig) async {
     try {
-      SecureSocket secureSocket = await SecureSocketUtil.createSecureSocket(
-          host, port, secureSocketConfig);
+      SecureSocket secureSocket =
+          await socketFactory.createSocket(host, port, secureSocketConfig);
       _connection = OutboundConnectionImpl(secureSocket);
       if (outboundConnectionTimeout != null) {
         _connection!.setIdleTime(outboundConnectionTimeout);
@@ -622,4 +631,11 @@ class AtLookupImpl implements AtLookUp {
 
   @override
   SigningAlgoType signingAlgoType = SigningAlgoType.rsa2048;
+}
+
+class AtLookupSecureSocketFactory {
+  Future<SecureSocket> createSocket(
+      String host, String port, SecureSocketConfig socketConfig) async {
+    return await SecureSocketUtil.createSecureSocket(host, port, socketConfig);
+  }
 }
