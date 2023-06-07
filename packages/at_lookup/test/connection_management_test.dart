@@ -44,8 +44,7 @@ void main() {
 
     test(
         'test message listener closes connection'
-            ' when socket listener onError is called',
-        () async {
+        ' when socket listener onError is called', () async {
       expect(socketDestroyed, false);
       expect(oc.metaData?.isClosed, false);
       oml.onSocketError('test');
@@ -70,8 +69,7 @@ void main() {
 
     test(
         'test that OutboundMessageListener.closeConnection will call'
-            ' connection.close if the connection is idle',
-        () async {
+        ' connection.close if the connection is idle', () async {
       expect(socketDestroyed, false);
       expect(oc.metaData?.isClosed, false);
 
@@ -89,8 +87,7 @@ void main() {
 
     test(
         'test that OutboundMessageListener.closeConnection will not call'
-            ' connection.close if already marked closed',
-        () async {
+        ' connection.close if already marked closed', () async {
       expect(socketDestroyed, false);
       oc.metaData!.isClosed = true;
 
@@ -102,7 +99,7 @@ void main() {
 
     test(
         'test that OutboundMessageListener.closeConnection will call'
-            ' connection.close even if the connection is marked stale', () async {
+        ' connection.close even if the connection is marked stale', () async {
       expect(socketDestroyed, false);
       expect(oc.metaData?.isClosed, false);
       oc.metaData!.isStale = true;

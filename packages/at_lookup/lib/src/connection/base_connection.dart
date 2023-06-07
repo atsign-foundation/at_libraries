@@ -34,7 +34,8 @@ abstract class BaseConnection extends AtConnection {
       var address = _socket.remoteAddress;
       var port = _socket.remotePort;
 
-      logger.info('close(): calling socket.destroy() on connection to $address:$port');
+      logger.info('close(): calling socket.destroy()'
+          ' on connection to $address:$port');
       _socket.destroy();
     } catch (e) {
       // Ignore errors or exceptions on a connection close

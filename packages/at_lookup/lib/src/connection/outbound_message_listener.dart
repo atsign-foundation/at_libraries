@@ -27,8 +27,9 @@ class OutboundMessageListener {
   void listen() {
     logger.finest('Calling listen with error handler normal again');
     // Function(Object, StackTrace) errFn = _errorHandler;
-    _connection.getSocket().listen(messageHandler,
-        onDone: onSocketDone, onError: onSocketError);
+    _connection
+        .getSocket()
+        .listen(messageHandler, onDone: onSocketDone, onError: onSocketError);
   }
 
   /// Handles messages on the inbound client's connection and calls the verb executor
@@ -158,15 +159,18 @@ class OutboundMessageListener {
     logger.finest(
         'outbound socket onError handler called - calling closeConnection - error was $error');
     await closeConnection();
-    logger.finest('outbound socket onError handler called - closeConnection complete');
+    logger.finest(
+        'outbound socket onError handler called - closeConnection complete');
   }
 
   /// Closes the [OutboundConnection]
   @visibleForTesting
   void onSocketDone() async {
-    logger.finest('outbound socket onDone handler called - calling closeConnection');
+    logger.finest(
+        'outbound socket onDone handler called - calling closeConnection');
     await closeConnection();
-    logger.finest('outbound socket onDone handler called - closeConnection complete');
+    logger.finest(
+        'outbound socket onDone handler called - closeConnection complete');
   }
 
   @visibleForTesting
