@@ -1,6 +1,6 @@
 ## 1.2.7
 - fix: upgraded at_client version to 3.0.60 to fix sync/monitor issue when using pkam private key from secure element.
-- chore: upgraded at_commons to 3.0.47, at_utils to 3.0.13
+- chore: upgraded at_commons to 3.0.47, at_utils to 3.0.13 and at_lookup to 3.0.37
 ## 1.2.6
 - feat: changes to integrate onboarding_cli with pkam secure element
 - fix: issue with atKeys file creation while onboarding if the downloadPath directory does not exist
