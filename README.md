@@ -33,11 +33,14 @@ headless applications such as Internet of Things (IoT) devices.
 library that logs the status of the root server as well as a secondary
 server of your choice.
 
+[at_cli_commons](https://pub.dev/packages/at_cli_commons): A library of
+generic / reusable stuff which is useful when building cli programs which
+use the [AtClient SDK](https://pub.dev/packages/at_client)
+
 ## How do I install?
 
 All installation guidelines are written in their respective directories
 and pub.dev sites. Click on the links above for those details.
 
 ## Maintainers
-
-[Sitaram Pavan Kumar Kalluri](https://github.com/kalluriramkumar), [Muralidharan](https://github.com/murali-shris), [Naresh Gurijala](https://github.com/naresh0689)
+[AtSign Foundation core devs](https://github.com/orgs/atsign-foundation/teams/atcoredevs)
