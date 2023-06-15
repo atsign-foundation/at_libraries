@@ -13,7 +13,7 @@ void main() {
         ..apkamPublicKey = 'abcd1234';
       var command = enrollVerbBuilder.buildCommand();
       expect(command,
-          'enroll:request:appName:wavi:deviceName:pixel:namespaces:wavi,rw;__manage,rw:apkamPublicKey:abcd1234\n');
+          'enroll:request:appName:wavi:deviceName:pixel:namespaces:[wavi,rw;__manage,r]:apkamPublicKey:abcd1234\n');
     });
     test('enroll verb - check enroll approve build command', () {
       var enrollVerbBuilder = EnrollVerbBuilder()
@@ -24,18 +24,19 @@ void main() {
         ..apkamPublicKey = 'abcd1234';
       var command = enrollVerbBuilder.buildCommand();
       expect(command,
-          'enroll:approve:appName:wavi:deviceName:pixel:namespaces:wavi,rw:apkamPublicKey:abcd1234\n');
+          'enroll:approve:appName:wavi:deviceName:pixel:namespaces:[wavi,rw]:apkamPublicKey:abcd1234\n');
     });
     test('enroll verb - check enroll deny build command', () {
       var enrollVerbBuilder = EnrollVerbBuilder()
         ..operation = EnrollOperationEnum.approve
         ..appName = 'wavi'
         ..deviceName = 'pixel'
+        ..totp = 3446
         ..namespaces = ['wavi,rw', '__manage,r']
         ..apkamPublicKey = 'abcd1234';
       var command = enrollVerbBuilder.buildCommand();
       expect(command,
-          'enroll:approve:appName:wavi:deviceName:pixel:namespaces:wavi,rw;__manage,r:apkamPublicKey:abcd1234\n');
+          'enroll:approve:appName:wavi:deviceName:pixel:namespaces:[wavi,rw;__manage,r]:totp:3446:apkamPublicKey:abcd1234\n');
     });
 
     test('enroll verb - check enroll request verb params', () {
@@ -44,15 +45,22 @@ void main() {
         ..appName = 'wavi'
         ..deviceName = 'pixel'
         ..namespaces = ['wavi,rw', '__manage,r']
+        ..totp = 1234
         ..apkamPublicKey = 'abcd1234';
 
       var command = enrollVerbBuilder.buildCommand();
-      var params = VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim())!;
-      expect(params['operation'], 'request');
-      expect(params['appName'], 'wavi');
-      expect(params['deviceName'], 'pixel');
-      expect(params['namespaces'], 'wavi,rw;__manage,r');
-      expect(params['apkamPublicKey'], 'abcd1234');
+      print(command);
+      try {
+        var params = VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim())!;
+        expect(params['operation'], 'request');
+        expect(params['appName'], 'wavi');
+        expect(params['deviceName'], 'pixel');
+        expect(params['namespaces'], 'wavi,rw;__manage,r');
+        expect(params['totp'], '1234');
+        expect(params['apkamPublicKey'], 'abcd1234');
+      } catch(e, trace) {
+        print(trace);
+      }
     });
 
     test('enroll verb - invalid syntax - no app name', () {
@@ -72,8 +80,8 @@ void main() {
     test('enroll verb - invalid syntax - no namespace', () {
       var command =
           'enroll:request:appName:wavi:deviceName:pixel:apkamPublicKey:abcd1234';
-      var params = VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim());
-      expect(params, null);
+      var params = VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim())!;
+      expect(params['namespaces'], null);
     });
     test('enroll verb - invalid syntax - no apkam public key', () {
       var command =

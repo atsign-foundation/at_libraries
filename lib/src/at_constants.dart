@@ -87,3 +87,4 @@ const String CLIENT_ID = 'clientId';
 const String APP_NAME = 'appName';
 const String APP_VERSION = 'appVersion';
 const String PLATFORM = 'platform';
+const String enrollApprovalId = 'enrollApprovalId';

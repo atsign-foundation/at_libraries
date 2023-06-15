@@ -7,7 +7,7 @@ class VerbSyntax {
   static const pol = r'^pol$';
   static const cram = r'^cram:(?<digest>.+$)';
   static const pkam =
-      r'^pkam:(signingAlgo:(?<signingAlgo>ecc_secp256r1|rsa2048):)?(hashingAlgo:(?<hashingAlgo>sha256):)?(?<signature>.+$)';
+      r'^pkam:(signingAlgo:(?<signingAlgo>ecc_secp256r1|rsa2048):)?(hashingAlgo:(?<hashingAlgo>sha256):)?(enrollApprovalId:(?<enrollApprovalId>.+):)?(?<signature>.+$)';
   static const llookup = r'^llookup'
       r'(:(?<operation>meta|all))?'
       r'(:cached)?'
@@ -126,5 +126,6 @@ class VerbSyntax {
   static const noOp = r'^noop:(?<delayMillis>\d+)$';
   static const notifyRemove = r'notify:remove:(?<id>[\w\d\-\_]+)';
   static const enroll =
-      r'^enroll:(?<operation>request|approve|deny)(:appName:(?<appName>(\w+)))(:deviceName:(?<deviceName>(\w+)))(:namespaces:(?<namespaces>(.*(?:;.*)*)))(:apkamPublicKey:(?<apkamPublicKey>.*))$';
+      r'^enroll:(?<operation>request|approve|deny):(?:(?:enrollmentId:(?<enrollmentId>[a-zA-Z0-9-]+))|(?:appName:(?<appName>[a-zA-Z0-9]+):)?(?:deviceName:(?<deviceName>[a-zA-Z0-9_]+):)?(?:namespaces:\[(?<namespaces>[a-zA-Z0-9;_,]+)\]:)?(?:totp:(?<totp>[0-9]+):)?(?:apkamPublicKey:(?<apkamPublicKey>.*)))?$';
+  static const totp = r'^totp:(?<operation>get|validate)(:(?<totp>[0-9]+))?$';
 }
