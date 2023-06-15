@@ -1,3 +1,5 @@
+## 3.0.48
+- feat: totp support in enroll verb
 ## 3.0.47
 - fix: Enhance stats verb to allow regex for stats:15
 - feat: Add syntax and verb builder for APKAM enroll verb
