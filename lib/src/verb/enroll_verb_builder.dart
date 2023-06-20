@@ -1,4 +1,5 @@
 import 'package:at_commons/src/verb/abstract_verb_builder.dart';
+import 'package:meta/meta.dart';
 
 import 'operation_enum.dart';
 
@@ -17,6 +18,7 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
   String? apkamPublicKey;
 
   /// totp for the enroll request. totp must be fetched from an already enrolled app.
+  @experimental
   int? totp;
 
   List<String> namespaces = [];
