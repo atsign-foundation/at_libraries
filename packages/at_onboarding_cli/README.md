@@ -13,7 +13,7 @@ To add this package as the dependency in your pubspec.yaml
 
 ```yaml 
 dependencies:
-  at_onboarding_cli: ^1.3.1
+  at_onboarding_cli: ^1.3.0
 ```
 Getting Dependencies
 
