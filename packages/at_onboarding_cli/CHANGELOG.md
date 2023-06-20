@@ -1,4 +1,4 @@
-## 1.3.1
+## 1.3.0
 - feat: Introduced verification-code based activation of atsigns
 - fix: deprecate qr_code based activation
 - feat: introduced new exceptions
