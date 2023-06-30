@@ -125,7 +125,20 @@ class VerbSyntax {
   static const info = r'^info(:brief)?$';
   static const noOp = r'^noop:(?<delayMillis>\d+)$';
   static const notifyRemove = r'notify:remove:(?<id>[\w\d\-\_]+)';
-  static const enroll =
-      r'^enroll:(?<operation>request|approve|deny):(?:(?:enrollmentId:(?<enrollmentId>[a-zA-Z0-9-]+))|(?:appName:(?<appName>[a-zA-Z0-9]+):)?(?:deviceName:(?<deviceName>[a-zA-Z0-9_]+):)?(?:namespaces:\[(?<namespaces>[a-zA-Z0-9;_,]+)\]:)?(?:totp:(?<totp>[0-9]+):)?(?:apkamPublicKey:(?<apkamPublicKey>.*)))?$';
+  static const enroll = r'^enroll:(?<operation>request|approve|deny):'
+      r'(?:(?:enrollmentId:(?<enrollmentId>[a-zA-Z0-9-]+))|'
+      r'(?:appName:(?<appName>[a-zA-Z0-9]+):)?'
+      r'(?:deviceName:(?<deviceName>[a-zA-Z0-9_]+):)?'
+      r'(?:namespaces:\[(?<namespaces>[a-zA-Z0-9;_,]+)\]:)?'
+      r'(?:totp:(?<totp>[0-9]+):)?(?:apkamPublicKey:(?<apkamPublicKey>.*)))?$';
   static const totp = r'^totp:(?<operation>get|validate)(:(?<totp>[0-9]+))?$';
+  static const keys =
+      r'^keys:(?<operation>put|get|delete):(((?<visibility>public|private|self)(:)?)?)'
+      r'(keyName:(?<keyName>[a-zA-Z0-9_]+)(:)?)?'
+      r'((namespace:(?<namespace>[a-zA-Z0-9_]+):)?)'
+      r'((appName:(?<appName>[a-zA-Z0-9_]+):)?)'
+      r'((deviceName:(?<deviceName>[a-zA-Z0-9_]+):)?)'
+      r'(((keyType:(?<keyType>[a-zA-Z0-9_-]+)):)?)'
+      r'((encryptionKeyName:(?<encryptionKeyName>[a-zA-Z0-9_]+):)?)?'
+      r'((?<keyValue>.*))?$';
 }

@@ -49,18 +49,13 @@ void main() {
         ..apkamPublicKey = 'abcd1234';
 
       var command = enrollVerbBuilder.buildCommand();
-      print(command);
-      try {
-        var params = VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim())!;
-        expect(params['operation'], 'request');
-        expect(params['appName'], 'wavi');
-        expect(params['deviceName'], 'pixel');
-        expect(params['namespaces'], 'wavi,rw;__manage,r');
-        expect(params['totp'], '1234');
-        expect(params['apkamPublicKey'], 'abcd1234');
-      } catch(e, trace) {
-        print(trace);
-      }
+      var params = VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim())!;
+      expect(params['operation'], 'request');
+      expect(params['appName'], 'wavi');
+      expect(params['deviceName'], 'pixel');
+      expect(params['namespaces'], 'wavi,rw;__manage,r');
+      expect(params['totp'], '1234');
+      expect(params['apkamPublicKey'], 'abcd1234');
     });
 
     test('enroll verb - invalid syntax - no app name', () {

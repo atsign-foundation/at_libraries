@@ -25,30 +25,29 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
 
   @override
   String buildCommand() {
-    StringBuffer sb = StringBuffer();
+    var sb = StringBuffer();
     sb.write('enroll:');
 
     sb.write(getEnrollOperation(operation));
 
-    if (appName != null) {
-      sb.write(':appName:$appName');
-    }
-    if (deviceName != null) {
-      sb.write(':deviceName:$deviceName');
-    }
+    sb.write(_getValueWithParamName('appName', appName));
+    sb.write(_getValueWithParamName('deviceName', deviceName));
     if (namespaces.isNotEmpty) {
       sb.write(':namespaces:[${namespaces.join(';')}]');
     }
-    if (totp != null) {
-      sb.write(':totp:${totp.toString()}');
-    }
-    if (apkamPublicKey != null) {
-      sb.write(':apkamPublicKey:$apkamPublicKey');
-    }
+    sb.write(_getValueWithParamName('totp', totp.toString()));
+    sb.write(_getValueWithParamName('apkamPublicKey', apkamPublicKey));
 
     sb.write('\n');
 
     return sb.toString();
+  }
+
+  String _getValueWithParamName(String paramName, String? paramValue) {
+    if (paramValue != null && paramValue.isNotEmpty && paramValue != 'null') {
+      return ':$paramName:$paramValue';
+    }
+    return '';
   }
 
   @override
