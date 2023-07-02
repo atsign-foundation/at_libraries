@@ -12,6 +12,13 @@ contributions, and we want pull requests to hear about issues.
 
 ## What is this for?
 
+[at_commons](https://pub.dev/packages/at_commons) Commonly used components
+in implementation of the atProtocol.
+
+[at_utils](https://pub.dev/packages/at_utils) This is the Utility library
+for atProtocol projects. It contains utility classes for atsign, atmetadata,
+configuration and logger.
+
 This repository contains three atPlatform libraries for developers building
 their own atPlatform applications. (These libraries can also be found on
 [pub.dev](https://pub.dev/publishers/atsign.org/packages))
