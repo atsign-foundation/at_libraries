@@ -49,6 +49,7 @@ jobs:
           - at_lookup
           - at_chops
           - at_onboarding_cli
+          - at_commons
           - at_utils
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
