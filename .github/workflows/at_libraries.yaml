@@ -40,65 +40,17 @@ jobs:
         working-directory: packages/${{ matrix.package }}
         run: dart analyze
 
-  at_lookup_build_and_test:
+  build_and_test:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         package:
           - at_lookup
-    steps:
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
-
-      - uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f # v1.5.0
-        with:
-          sdk: stable
-
-      - name: Install dependencies in ${{ matrix.package }}
-        working-directory: packages/${{ matrix.package }}
-        run: dart pub get
-
-      - name: Analyze project source in ${{ matrix.package }}
-        working-directory: packages/${{ matrix.package }}
-        run: dart analyze
-
-      - name: run tests
-        working-directory: packages/${{ matrix.package }}
-        run: dart test --concurrency=1
-
-  at_chops_build_and_test:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        package:
           - at_chops
-    steps:
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
-
-      - uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f # v1.5.0
-        with:
-          sdk: stable
-
-      - name: Install dependencies in ${{ matrix.package }}
-        working-directory: packages/${{ matrix.package }}
-        run: dart pub get
-
-      - name: Analyze project source in ${{ matrix.package }}
-        working-directory: packages/${{ matrix.package }}
-        run: dart analyze
-
-      - name: run tests
-        working-directory: packages/${{ matrix.package }}
-        run: dart test --concurrency=1
-
-  at_onboarding_cli_build_and_test:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        package:
           - at_onboarding_cli
+          - at_commons
+          - at_utils
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
 
@@ -155,7 +107,7 @@ jobs:
       - name: Check test environment readiness
         working-directory: tests/${{ matrix.package }}
         run: dart run check_test_env.dart
-        
+
       - name: run tests
         working-directory: tests/${{ matrix.package }}
         run: dart test --concurrency=1
