@@ -1,6 +1,7 @@
 ## 3.0.49
 - feat: added syntax and verb builder for keys verb
 - feat: introduced verb builder for enroll and pkam verbs
+- chore: Moved this package to a new repo & updated repository URL
 ## 3.0.48
 - feat: totp support in enroll verb
 ## 3.0.47

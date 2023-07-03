@@ -1,3 +1,5 @@
+## 3.0.14
+- chore: Moved this package to a new repo & updated repository URL
 ## 3.0.13
 - feat: Introduce StdErr(Standard Error) logging type which writes log output to standard error stream
 ## 3.0.12
