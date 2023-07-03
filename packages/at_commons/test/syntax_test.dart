@@ -80,6 +80,94 @@ void main() {
       expect(verbParams[AT_PKAM_HASHING_ALGO], isNull);
     });
   });
+  group('A group of positive tests to verify keys verb regex', () {
+    test('keys verb  - put public key', () {
+      var command =
+          'keys:put:public:keyName:encryptionPublicKey:namespace:__global:keyType:rsa2048:abcd1234';
+      var verbParams = getVerbParams(VerbSyntax.keys, command);
+      expect(verbParams[keyType], 'rsa2048');
+      expect(verbParams[visibility], 'public');
+      expect(verbParams[keyValue], 'abcd1234');
+      expect(verbParams[namespace], '__global');
+      expect(verbParams[AT_OPERATION], 'put');
+      expect(verbParams[keyName], 'encryptionPublicKey');
+    });
+
+    test('keys verb - put private key', () {
+      var command =
+          'keys:put:private:keyName:secretKey:namespace:__private:keyType:aes:abcd1234';
+      var verbParams = getVerbParams(VerbSyntax.keys, command);
+      expect(verbParams[keyType], 'aes');
+      expect(verbParams[visibility], 'private');
+      expect(verbParams[keyValue], 'abcd1234');
+      expect(verbParams[namespace], '__private');
+      expect(verbParams[AT_OPERATION], 'put');
+      expect(verbParams[keyName], 'secretKey');
+    });
+
+    test('keys verb - put private key with app and device name', () {
+      var command =
+          'keys:put:private:keyName:secretKey:namespace:__private:appName:wavi:deviceName:pixel:keyType:aes:abcd1234';
+      var verbParams = getVerbParams(VerbSyntax.keys, command);
+      expect(verbParams[keyType], 'aes');
+      expect(verbParams[visibility], 'private');
+      expect(verbParams[keyValue], 'abcd1234');
+      expect(verbParams[namespace], '__private');
+      expect(verbParams[AT_OPERATION], 'put');
+      expect(verbParams[keyName], 'secretKey');
+      expect(verbParams[APP_NAME], 'wavi');
+      expect(verbParams[deviceName], 'pixel');
+    });
+
+    test('keys verb - put self key with encryption key name', () {
+      var command =
+          'keys:put:self:keyName:mykey:namespace:__global:keyType:aes256:encryptionKeyName:firstKey:zcsfsdff';
+      var verbParams = getVerbParams(VerbSyntax.keys, command);
+      expect(verbParams[keyType], 'aes256');
+      expect(verbParams[visibility], 'self');
+      expect(verbParams[keyValue], 'zcsfsdff');
+      expect(verbParams[namespace], '__global');
+      expect(verbParams[AT_OPERATION], 'put');
+      expect(verbParams[keyName], 'mykey');
+      expect(verbParams[encryptionKeyName], 'firstKey');
+    });
+
+    test('keys verb - get private keys', () {
+      var command = 'keys:get:private';
+      var verbParams = getVerbParams(VerbSyntax.keys, command);
+      expect(verbParams[visibility], 'private');
+    });
+
+    test('keys verb - get self keys', () {
+      var command = 'keys:get:self';
+      var verbParams = getVerbParams(VerbSyntax.keys, command);
+      expect(verbParams[visibility], 'self');
+    });
+
+    test('keys verb - get public keys', () {
+      var command = 'keys:get:public';
+      var verbParams = getVerbParams(VerbSyntax.keys, command);
+      expect(verbParams[visibility], 'public');
+    });
+
+    test('keys verb - get  key by name', () {
+      var command = 'keys:get:keyName:firstKey';
+      var verbParams = getVerbParams(VerbSyntax.keys, command);
+      expect(verbParams[AT_OPERATION], 'get');
+      expect(verbParams[keyName], 'firstKey');
+    });
+  });
+
+  group('A group of negative tests to keys verb regex', () {
+    test('keys verb  - invalid operation', () {
+      var command = 'keys:fetch:keyName:abc123';
+      expect(
+          () => getVerbParams(VerbSyntax.keys, command),
+          throwsA(predicate((dynamic e) =>
+              e is InvalidSyntaxException &&
+              e.message == 'command does not match the regex')));
+    });
+  });
 }
 
 Map getVerbParams(String regex, String command) {
