@@ -1,3 +1,5 @@
+## 3.0.15
+- fix: Replace "LoggingType" with "LoggingHandler" in "AtSignLogger" constructor to enable custom logging
 ## 3.0.14
 - chore: Moved this package to a new repo & updated repository URL
 ## 3.0.13
