@@ -7,7 +7,7 @@
 ## Introduction
 at_onboarding_cli is a library to authenticate and onboard atSigns.
 
-## Get Started
+## Getting Started
 
 To add this package as the dependency in your pubspec.yaml
 
