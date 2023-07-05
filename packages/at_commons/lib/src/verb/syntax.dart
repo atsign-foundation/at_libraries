@@ -86,6 +86,7 @@ class VerbSyntax {
   ///   match the regex will also be sent
   static const monitor = r'^monitor'
       r'(:(?<strict>strict))?'
+      r'(:(?<selfNotifications>selfNotifications))?'
       r'(:(?<multiplexed>multiplexed))?'
       r'(:(?<epochMillis>\d+))?'
       r'( (?<regex>.+))?'

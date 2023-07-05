@@ -1,3 +1,5 @@
+## 3.0.50
+- feat: add self notification flag in monitor syntax for APKAM feature
 ## 3.0.49
 - feat: added syntax and verb builder for keys verb
 - feat: introduced verb builder for enroll and pkam verbs

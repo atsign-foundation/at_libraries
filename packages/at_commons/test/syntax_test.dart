@@ -168,6 +168,52 @@ void main() {
               e.message == 'command does not match the regex')));
     });
   });
+
+  group('A group of positive tests to verify monitor verb regex', () {
+    test('monitor verb syntax - no additional params', () {
+      var command = 'monitor';
+      var verbParams = getVerbParams(VerbSyntax.monitor, command);
+      expect(verbParams[MONITOR_STRICT_MODE], null);
+      expect(verbParams[MONITOR_MULTIPLEXED_MODE], null);
+      expect(verbParams[MONITOR_REGEX], null);
+      expect(verbParams[EPOCH_MILLIS], null);
+    });
+    test('monitor verb syntax - strict mode', () {
+      var command = 'monitor:strict';
+      var verbParams = getVerbParams(VerbSyntax.monitor, command);
+      expect(verbParams[MONITOR_STRICT_MODE], 'strict');
+    });
+    test('monitor verb syntax - multiplexed mode', () {
+      var command = 'monitor:multiplexed';
+      var verbParams = getVerbParams(VerbSyntax.monitor, command);
+      expect(verbParams[MONITOR_MULTIPLEXED_MODE], 'multiplexed');
+    });
+    test('monitor verb syntax - with last notification time', () {
+      var command = 'monitor:1234';
+      var verbParams = getVerbParams(VerbSyntax.monitor, command);
+      expect(verbParams[EPOCH_MILLIS], '1234');
+    });
+    test('monitor verb syntax - with regex', () {
+      var command = 'monitor .wavi';
+      var verbParams = getVerbParams(VerbSyntax.monitor, command);
+      expect(verbParams[MONITOR_REGEX], '.wavi');
+    });
+    test('monitor verb syntax - self notification enabled', () {
+      var command = 'monitor:selfNotifications';
+      var verbParams = getVerbParams(VerbSyntax.monitor, command);
+      print(verbParams);
+      expect(verbParams[MONITOR_SELF_NOTIFICATIONS], 'selfNotifications');
+    });
+
+    test('monitor verb syntax - multiple params', () {
+      var command = 'monitor:strict:selfNotifications:multiplexed .wavi';
+      var verbParams = getVerbParams(VerbSyntax.monitor, command);
+      expect(verbParams[MONITOR_STRICT_MODE], 'strict');
+      expect(verbParams[MONITOR_MULTIPLEXED_MODE], 'multiplexed');
+      expect(verbParams[MONITOR_SELF_NOTIFICATIONS], 'selfNotifications');
+      expect(verbParams[MONITOR_REGEX], '.wavi');
+    });
+  });
 }
 
 Map getVerbParams(String regex, String command) {

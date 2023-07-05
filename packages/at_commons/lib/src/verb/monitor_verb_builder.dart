@@ -1,7 +1,10 @@
 import 'dart:collection';
 
-import 'package:at_commons/at_commons.dart';
+import 'package:at_commons/src/at_constants.dart';
+import 'package:at_commons/src/exception/at_exceptions.dart';
+import 'package:at_commons/src/verb/syntax.dart';
 import 'package:at_commons/src/verb/verb_builder.dart';
+import 'package:at_commons/src/verb/verb_util.dart';
 
 /// Monitor builder generates a command that streams incoming notifications from the secondary server to
 /// the current client. See also [VerbSyntax.monitor]
@@ -42,23 +45,31 @@ class MonitorVerbBuilder implements VerbBuilder {
   /// no request currently in progress
   bool multiplexed = false;
 
+  /// Whether self notifications should be delivered  through monitor.
+  /// This flag is set to false by default.
+  /// New clients with APKAM enabled will set this flag to true.
+  bool selfNotificationsEnabled = false;
+
   @override
   String buildCommand() {
-    var monitorCommand = 'monitor';
+    var sb = StringBuffer('monitor');
     if (strict) {
-      monitorCommand += ':strict';
+      sb.write(':strict');
+    }
+    if (selfNotificationsEnabled) {
+      sb.write(':selfNotifications');
     }
     if (multiplexed) {
-      monitorCommand += ':multiplexed';
+      sb.write(':multiplexed');
     }
     if (lastNotificationTime != null) {
-      monitorCommand += ':$lastNotificationTime';
+      sb.write(':$lastNotificationTime');
     }
     if (regex != null && regex!.trim().isNotEmpty) {
-      monitorCommand += ' $regex';
+      sb.write(' $regex');
     }
-    monitorCommand += '\n';
-    return monitorCommand;
+    sb.write('\n');
+    return sb.toString();
   }
 
   @override
@@ -80,6 +91,8 @@ class MonitorVerbBuilder implements VerbBuilder {
 
     var builder = MonitorVerbBuilder();
     builder.strict = verbParams[MONITOR_STRICT_MODE] == MONITOR_STRICT_MODE;
+    builder.selfNotificationsEnabled =
+        verbParams[MONITOR_SELF_NOTIFICATIONS] == MONITOR_SELF_NOTIFICATIONS;
     builder.multiplexed =
         verbParams[MONITOR_MULTIPLEXED_MODE] == MONITOR_MULTIPLEXED_MODE;
     builder.regex = verbParams[MONITOR_REGEX];
