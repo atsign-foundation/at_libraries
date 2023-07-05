@@ -82,6 +82,16 @@ void main() {
       String c2 = b2.buildCommand();
       expect(c2, c1);
     });
+    test('just self notifications', () {
+      MonitorVerbBuilder b1 = MonitorVerbBuilder()
+        ..selfNotificationsEnabled = true;
+      String c1 = b1.buildCommand();
+      expect(c1, 'monitor:selfNotifications:enable\n');
+      MonitorVerbBuilder b2 = MonitorVerbBuilder.getBuilder(c1.trim());
+      expect(b2, b1);
+      String c2 = b2.buildCommand();
+      expect(c2, c1);
+    });
     test('strict and regex', () {
       MonitorVerbBuilder b1 = MonitorVerbBuilder()
         ..strict = true
@@ -157,6 +167,21 @@ void main() {
         ..lastNotificationTime = nowEpochMillis;
       String c1 = b1.buildCommand();
       expect(c1, 'monitor:strict:multiplexed:$nowEpochMillis\n');
+      MonitorVerbBuilder b2 = MonitorVerbBuilder.getBuilder(c1.trim());
+      expect(b2, b1);
+      String c2 = b2.buildCommand();
+      expect(c2, c1);
+    });
+    test('strict, self notifications , multiplexed and lastNotificationTime',
+        () {
+      MonitorVerbBuilder b1 = MonitorVerbBuilder()
+        ..strict = true
+        ..selfNotificationsEnabled = true
+        ..multiplexed = true
+        ..lastNotificationTime = nowEpochMillis;
+      String c1 = b1.buildCommand();
+      expect(c1,
+          'monitor:strict:selfNotifications:enable:multiplexed:$nowEpochMillis\n');
       MonitorVerbBuilder b2 = MonitorVerbBuilder.getBuilder(c1.trim());
       expect(b2, b1);
       String c2 = b2.buildCommand();
