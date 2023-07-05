@@ -122,8 +122,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     return _isAtsignOnboarded;
   }
 
-  Future<void> _fetchCram() async {}
-
   ///method to generate/update encryption key-pairs to activate an atsign
   Future<bool> _activateAtsign(AtLookupImpl atLookup) async {
     try {
