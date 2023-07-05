@@ -1,25 +1,21 @@
 // ignore_for_file: unnecessary_null_comparison
-
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:at_chops/at_chops.dart';
 import 'package:at_client/at_client.dart';
+import 'package:at_onboarding_cli/src/onboard/OnboardingCalls.dart';
 import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 import 'package:at_server_status/at_server_status.dart';
 import 'package:at_utils/at_utils.dart';
-import 'package:at_commons/at_builders.dart';
 import 'package:at_onboarding_cli/src/factory/service_factories.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:crypton/crypton.dart';
 import 'package:encrypt/encrypt.dart';
-import 'package:zxing2/qrcode.dart';
-import 'package:image/image.dart';
 import 'package:path/path.dart' as path;
 
 import '../util/home_directory_util.dart';
-import '../util/onboarding_util.dart';
 
 ///class containing service that can onboard/activate/authenticate @signs
 class AtOnboardingServiceImpl implements AtOnboardingService {
@@ -41,7 +37,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       {this.atServiceFactory}) {
     // performs atSign format checks on the atSign
     _atSign = AtUtils.fixAtSign(atsign);
-
     // set default LocalStorage paths for this instance
     atOnboardingPreference.commitLogPath ??=
         HomeDirectoryUtil.getCommitLogPath(_atSign);
@@ -50,6 +45,14 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     atOnboardingPreference.isLocalStoreRequired = true;
     atOnboardingPreference.atKeysFilePath ??=
         HomeDirectoryUtil.getAtKeysPath(_atSign);
+  }
+
+  Future<void> _init(Map<String, String> atKeysFileDataMap) async {
+    atChops ??= _createAtChops(atKeysFileDataMap);
+    await _initAtClient(atChops!);
+    _atLookUp!.atChops = atChops;
+    _atClient!.atChops = atChops;
+    _atClient!.getPreferences()!.useAtChops = true;
   }
 
   Future<void> _initAtClient(AtChops atChops) async {
@@ -67,40 +70,21 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     _atClient ??= atClientManager.atClient;
   }
 
-  Future<void> _init(Map<String, String> atKeysFileDataMap) async {
-    atChops ??= _createAtChops(atKeysFileDataMap);
-    await _initAtClient(atChops!);
-    _atLookUp!.atChops = atChops;
-    _atClient!.atChops = atChops;
-    _atClient!.getPreferences()!.useAtChops = true;
-  }
-
-  @override
-  @Deprecated('Use getter')
-  Future<AtClient?> getAtClient() async {
-    return _atClient;
-  }
-
   @override
   Future<bool> onboard() async {
+    bool cramAuthStatus = false;
     // cram auth doesn't use at_chops. So create at_lookup here.
     AtLookupImpl atLookUpImpl = AtLookupImpl(_atSign,
         atOnboardingPreference.rootDomain, atOnboardingPreference.rootPort);
-
-    // get cram_secret from either from AtOnboardingPreference
-    // or fetch from the registrar using verification code sent to email
-    atOnboardingPreference.cramSecret ??= await OnboardingUtil()
-        .getCramUsingOtp(_atSign, atOnboardingPreference.registrarUrl);
-    if (atOnboardingPreference.cramSecret == null) {
-      logger.info('Root Server address is ${atOnboardingPreference.rootDomain}:'
-          '${atOnboardingPreference.rootPort}');
-      logger
-          .info('Registrar url is \'${atOnboardingPreference.registrarUrl}\'');
-      throw AtKeyNotFoundException(
-          'Could not fetch cram secret for \'$_atSign\' from registrar');
-    }
-
-    // check and wait till secondary exists
+    // fetch cram using verification code if not provided through preferences
+    atOnboardingPreference.cramSecret ??= await FetchCramSecret(
+            atLookUp as AtLookupImpl,
+            logger,
+            _atSign,
+            atOnboardingPreference.registrarUrl)
+        .run();
+    // check if secondary exists
+    // If secondary does not exist wait until secondary server is spun up
     await _waitUntilSecondaryCreated(atLookUpImpl);
 
     if (await isOnboarded()) {
@@ -109,25 +93,28 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
     try {
       // authenticate into secondary using cram secret
-      _isAtsignOnboarded = (await atLookUpImpl
-          .authenticate_cram(atOnboardingPreference.cramSecret));
+      cramAuthStatus = await atLookUpImpl
+          .authenticate_cram(atOnboardingPreference.cramSecret);
 
-      if (_isAtsignOnboarded) {
+      if (cramAuthStatus) {
         logger.info('Cram authentication successful');
-        await _activateAtsign(atLookUpImpl);
+        _isAtsignOnboarded = await _activateAtsign(atLookUpImpl);
       } else {
         throw AtActivateException(
             'Cram authentication failed. Please check the cram key'
             ' and try again \n(or) contact support@atsign.com');
       }
     } on Exception catch (e) {
+      await _deleteKeysFile(e.toString());
       if (e.toString().contains('Auth failed')) {
         throw AtActivateException(
             'Cram authentication failed. Please check the cram key'
             ' and try again \n(or) contact support@atsign.com');
       }
-      logger.severe('Caught exception: $e');
+      logger.finer('Caught exception: $e');
+      rethrow;
     } on Error catch (e) {
+      await _deleteKeysFile(e.toString());
       logger.severe('Caught error: $e');
     } finally {
       await atLookUpImpl.close();
@@ -135,57 +122,56 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     return _isAtsignOnboarded;
   }
 
+  Future<void> _fetchCram() async {}
+
   ///method to generate/update encryption key-pairs to activate an atsign
-  Future<void> _activateAtsign(AtLookupImpl atLookUpImpl) async {
-    //1. Generate pkam key pair(if authMode is keyFile), encryption key pair and self encryption key
-    Map<String, String> atKeysMap = await _generateKeyPairs();
+  Future<bool> _activateAtsign(AtLookupImpl atLookup) async {
+    try {
+      //1. Generate pkam key pair(if authMode is keyFile), encryption key pair and self encryption key
+      Map<String, String> atKeysMap = await _generateKeyPairs();
 
-    //2. generate .atKeys file using a copy of atKeysMap
-    await _generateAtKeysFile(Map.of(atKeysMap));
+      //2. generate .atKeys file using a copy of atKeysMap
+      await _generateAtKeysFile(Map.of(atKeysMap));
 
-    //3. Updating pkamPublicKey to remote secondary
-    logger.finer('Updating PkamPublicKey to remote secondary');
-    final pkamPublicKey = atKeysMap[AuthKeyType.pkamPublicKey];
-    String updateCommand = 'update:$AT_PKAM_PUBLIC_KEY $pkamPublicKey\n';
-    String? pkamUpdateResult =
-        await atLookUpImpl.executeCommand(updateCommand, auth: false);
-    logger.info('PkamPublicKey update result: $pkamUpdateResult');
+      //3. Updating pkamPublicKey to remote secondary
+      await SetPkamPublicKey(
+              atLookup, logger, atKeysMap[AuthKeyType.pkamPublicKey]!)
+          .run();
 
-    //4. initialise atClient and atChops and attempt a pkam auth to server.
-    await _init(atKeysMap);
-    _isPkamAuthenticated = (await _atLookUp?.pkamAuthenticate())!;
+      //4. initialise atClient and atChops and attempt a pkam auth to server.
+      await _init(atKeysMap);
 
-    //5. If Pkam auth is success, update encryption public key to secondary and delete cram key from server
-    if (_isPkamAuthenticated) {
-      final encryptionPublicKey = atKeysMap[AuthKeyType.encryptionPublicKey];
-      UpdateVerbBuilder updateBuilder = UpdateVerbBuilder()
-        ..atKey = 'publickey'
-        ..isPublic = true
-        ..value = encryptionPublicKey
-        ..sharedBy = _atSign;
-      String? encryptKeyUpdateResult =
-          await atLookUpImpl.executeVerb(updateBuilder);
-      logger
-          .info('Encryption public key update result $encryptKeyUpdateResult');
-      // deleting cram secret from the keystore as cram auth is complete
-      DeleteVerbBuilder deleteBuilder = DeleteVerbBuilder()
-        ..atKey = AT_CRAM_SECRET;
-      String? deleteResponse = await atLookUpImpl.executeVerb(deleteBuilder);
-      logger.info('Cram secret delete response : $deleteResponse');
-      //displays status of the atsign
-      logger.finer(await getServerStatus());
-      stdout.writeln('[Success]----------atSign activated---------');
-    } else {
-      throw UnAuthenticatedException('Unable to authenticate.'
-          ' Please provide a valid keys file');
+      //5. Authenticate into secondary using the new PkamKeys
+      _isPkamAuthenticated = (await _atLookUp?.pkamAuthenticate())!;
+
+      //6. If Pkam auth is success
+      if (_isPkamAuthenticated) {
+        //6.1 Update encryption public key to secondary
+        await SetEncryptionPublicKey(
+                atLookup, logger, atKeysMap[AuthKeyType.pkamPublicKey]!)
+            .run();
+
+        //6.2 Delete cram secret from the keystore as no longer needed
+        await DeleteCramKey(atLookup, logger).run();
+
+        //displays status of the atsign
+        logger.finer(await getServerStatus());
+        stdout.writeln('[Success]----------atSign activated---------');
+        return true;
+      } else {
+        throw UnAuthenticatedException(
+            'PkamAuthentication failed hence Activation unsuccessful');
+      }
+    } on Exception catch (e) {
+      logger.severe('Unable to complete activation | Cause: $e');
+      throw UnAuthenticatedException('Activation Failed | Cause: $e');
     }
   }
 
   Future<Map<String, String>> _generateKeyPairs() async {
     // generate user encryption keypair
     logger.info('Generating encryption keypair');
-    var encryptionKeyPair = generateRsaKeypair();
-
+    var atEncryptionKeyPair = generateRsaKeypair();
     //generate selfEncryptionKey
     var selfEncryptionKey = generateAESKey();
 
@@ -212,8 +198,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       // encryption key pair and self encryption symmetric key
       // are not available to injected at_chops. Set it here
       atChops!.atChopsKeys.atEncryptionKeyPair = AtEncryptionKeyPair.create(
-          encryptionKeyPair.publicKey.toString(),
-          encryptionKeyPair.privateKey.toString());
+          atEncryptionKeyPair.publicKey.toString(),
+          atEncryptionKeyPair.privateKey.toString());
       atChops!.atChopsKeys.symmetricKey = AESKey(selfEncryptionKey);
     }
     //Standard order of an atKeys file is ->
@@ -221,9 +207,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     // @sign: selfEncryptionKey[self encryption key again]
     // note: "->" stands for "followed by"
     atKeysMap[AuthKeyType.encryptionPublicKey] =
-        encryptionKeyPair.publicKey.toString();
+        atEncryptionKeyPair.publicKey.toString();
     atKeysMap[AuthKeyType.encryptionPrivateKey] =
-        encryptionKeyPair.privateKey.toString();
+        atEncryptionKeyPair.privateKey.toString();
     atKeysMap[AuthKeyType.selfEncryptionKey] = selfEncryptionKey;
     atKeysMap[_atSign] = selfEncryptionKey;
 
@@ -285,11 +271,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       logger
           .finer('PkamPrivateKey persist to localSecondary: status $response');
     }
-    response = await _atClient?.getLocalSecondary()?.putValue(
-        '$AT_ENCRYPTION_PUBLIC_KEY$_atSign',
-        atKeysMap[AuthKeyType.encryptionPublicKey]!);
-    logger.finer(
-        'EncryptionPublicKey persist to localSecondary: status $response');
+    // response = await _atClient?.getLocalSecondary()?.putValue(
+    //     '$AT_ENCRYPTION_PUBLIC_KEY$_atSign',
+    //     atKeysMap[AuthKeyType.encryptionPublicKey]!);
+    // logger.finer(
+    //     'EncryptionPublicKey persist to localSecondary: status $response');
     response = await _atClient?.getLocalSecondary()?.putValue(
         AT_ENCRYPTION_PRIVATE_KEY,
         atKeysMap[AuthKeyType.encryptionPrivateKey]!);
@@ -321,9 +307,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     try {
       _isPkamAuthenticated = (await _atLookUp?.pkamAuthenticate())!;
     } on Exception catch (e) {
-      logger.severe('Caught exception: $e');
-      throw UnAuthenticatedException('Unable to authenticate.'
-          ' Please provide a valid keys file');
+      logger.severe('Caught exception in \'authenticate()\': $e');
+      throw UnAuthenticatedException('Auth failed due to $e');
     }
     logger.finer(
         'PKAM auth result: ${_isPkamAuthenticated ? 'success' : 'failed'}');
@@ -346,8 +331,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     return AtChopsImpl(atChopsKeys);
   }
 
-  ///method to read and return data from .atKeysFile
-  ///returns map containing encryption keys
+  /// Method to read and return data from .atKeysFile.
+  /// Returns map containing encryption keys
   Future<Map<String, String>> _readAtKeysFile(String? atKeysFilePath) async {
     if (atKeysFilePath == null || atKeysFilePath.isEmpty) {
       throw AtClientException.message(
@@ -414,6 +399,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     try {
       secondaryStatus = await getServerStatus();
     } catch (e) {
+      // Uses stderr for uniformity with activate_cli log format
       stderr.writeln('[Error] $e');
     }
     if (secondaryStatus.status() == AtSignStatus.activated) {
@@ -422,83 +408,32 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     } else if (secondaryStatus.status() == AtSignStatus.teapot) {
       return false;
     }
+    // Uses stderr for uniformity with activate_cli log format
     stderr.writeln(
         '[Error] atsign($_atSign) status is \'${secondaryStatus.status()!.name}\'');
     throw AtActivateException('Could not determine atsign activation status',
         intent: Intent.fetchData);
   }
 
-  ///extracts cram secret from qrCode
-  @Deprecated('qr_code based cram authentication not supported anymore')
-  static String? getSecretFromQr(String? path) {
-    if (path == null) {
-      return null;
-    }
-    try {
-      Image? image = decodePng(File(path).readAsBytesSync());
-      LuminanceSource source = RGBLuminanceSource(
-          image!.width, image.height, image.getBytes().buffer.asInt32List());
-      BinaryBitmap bitmap = BinaryBitmap(HybridBinarizer(source));
-      Result result = QRCodeReader().decode(bitmap);
-      String secret = result.text.split(':')[1];
-      return secret;
-    } on Exception catch (e) {
-      stdout.writeln('exception while getting secret from QR code: $e');
-      return null;
+  Future<void> _deleteKeysFile(String cause) async {
+    if (!(await isOnboarded())) {
+      File keysFile = File(atOnboardingPreference.atKeysFilePath!);
+      if (keysFile.existsSync()) {
+        keysFile.delete(recursive: false);
+        logger.finer(
+            'AtKeys file at path \'${atOnboardingPreference.atKeysFilePath}\''
+            ' has been deleted | Cause: $cause}');
+      }
     }
   }
 
-  ///Method to check if secondary belonging to [_atSign] exists
+  ///Method to check if secondary server for [_atSign] exists
   ///If not, wait until secondary is created
   Future<void> _waitUntilSecondaryCreated(AtLookupImpl atLookupImpl) async {
-    final maxRetries = 50;
-    int retryCount = 1;
-    SecondaryAddress? secondaryAddress;
-    SecureSocket? secureSocket;
-    bool connectionFlag = false;
+    SecondaryAddress secondaryAddress =
+        await FindSecondary(atLookupImpl, logger, _atSign).run();
 
-    while (retryCount <= maxRetries && secondaryAddress == null) {
-      await Future.delayed(Duration(seconds: 2));
-      logger.finer('retrying find secondary.......$retryCount/$maxRetries');
-      try {
-        secondaryAddress =
-            await atLookupImpl.secondaryAddressFinder.findSecondary(_atSign);
-      } on Exception catch (e, trace) {
-        logger.finer(e);
-        logger.finer(trace);
-      } on Error catch (e, trace) {
-        logger.finer(e);
-        logger.finer(trace);
-      }
-      retryCount++;
-    }
-    if (secondaryAddress == null) {
-      throw SecondaryNotFoundException('Could not find secondary address for '
-          '$_atSign after $retryCount retries. Please retry the process');
-    }
-    //resetting retry counter to be used for different operation
-    retryCount = 1;
-
-    while (!connectionFlag && retryCount <= maxRetries) {
-      await Future.delayed(Duration(seconds: 2));
-      stdout.writeln('Connecting to secondary ...$retryCount/$maxRetries');
-      try {
-        secureSocket = await SecureSocket.connect(
-            secondaryAddress.host, secondaryAddress.port,
-            timeout: Duration(
-                seconds:
-                    30)); // 30-second timeout should be enough even for slow networks
-        connectionFlag = secureSocket.remoteAddress != null &&
-            secureSocket.remotePort != null;
-      } on Exception catch (e, trace) {
-        logger.finer(e);
-        logger.finer(trace);
-      } on Error catch (e, trace) {
-        logger.finer(e);
-        logger.finer(trace);
-      }
-      retryCount++;
-    }
+    await ConnectToSecondary(atLookupImpl, logger, secondaryAddress).run();
   }
 
   @override
@@ -508,14 +443,19 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
     _atLookUp = null;
     _atClient = null;
-    logger.info(
-        'Closing current instance of at_onboarding_cli (exit code: $exitCode)');
+    logger.info('Closing current instance of at_onboarding_cli');
   }
 
   @override
   @Deprecated('Use getter')
   AtLookUp? getAtLookup() {
     return _atLookUp;
+  }
+
+  @override
+  @Deprecated('Use getter')
+  Future<AtClient?> getAtClient() async {
+    return _atClient;
   }
 
   @override
