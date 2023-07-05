@@ -199,23 +199,18 @@ void main() {
       expect(verbParams[MONITOR_REGEX], '.wavi');
     });
     test('monitor verb syntax - self notification enabled', () {
-      var command = 'monitor:selfNotifications:enable';
+      var command = 'monitor:selfNotifications';
       var verbParams = getVerbParams(VerbSyntax.monitor, command);
       print(verbParams);
-      expect(verbParams[MONITOR_SELF_NOTIFICATIONS], 'enable');
+      expect(verbParams[MONITOR_SELF_NOTIFICATIONS], 'selfNotifications');
     });
-    test('monitor verb syntax - self notification disabled', () {
-      var command = 'monitor:selfNotifications:disable';
-      var verbParams = getVerbParams(VerbSyntax.monitor, command);
-      print(verbParams);
-      expect(verbParams[MONITOR_SELF_NOTIFICATIONS], 'disable');
-    });
+
     test('monitor verb syntax - multiple params', () {
-      var command = 'monitor:strict:selfNotifications:enable:multiplexed .wavi';
+      var command = 'monitor:strict:selfNotifications:multiplexed .wavi';
       var verbParams = getVerbParams(VerbSyntax.monitor, command);
       expect(verbParams[MONITOR_STRICT_MODE], 'strict');
       expect(verbParams[MONITOR_MULTIPLEXED_MODE], 'multiplexed');
-      expect(verbParams[MONITOR_SELF_NOTIFICATIONS], 'enable');
+      expect(verbParams[MONITOR_SELF_NOTIFICATIONS], 'selfNotifications');
       expect(verbParams[MONITOR_REGEX], '.wavi');
     });
   });

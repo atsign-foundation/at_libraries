@@ -86,7 +86,7 @@ void main() {
       MonitorVerbBuilder b1 = MonitorVerbBuilder()
         ..selfNotificationsEnabled = true;
       String c1 = b1.buildCommand();
-      expect(c1, 'monitor:selfNotifications:enable\n');
+      expect(c1, 'monitor:selfNotifications\n');
       MonitorVerbBuilder b2 = MonitorVerbBuilder.getBuilder(c1.trim());
       expect(b2, b1);
       String c2 = b2.buildCommand();
@@ -180,8 +180,8 @@ void main() {
         ..multiplexed = true
         ..lastNotificationTime = nowEpochMillis;
       String c1 = b1.buildCommand();
-      expect(c1,
-          'monitor:strict:selfNotifications:enable:multiplexed:$nowEpochMillis\n');
+      expect(
+          c1, 'monitor:strict:selfNotifications:multiplexed:$nowEpochMillis\n');
       MonitorVerbBuilder b2 = MonitorVerbBuilder.getBuilder(c1.trim());
       expect(b2, b1);
       String c2 = b2.buildCommand();

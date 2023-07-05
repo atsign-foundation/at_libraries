@@ -57,7 +57,7 @@ class MonitorVerbBuilder implements VerbBuilder {
       sb.write(':strict');
     }
     if (selfNotificationsEnabled) {
-      sb.write(':selfNotifications:enable');
+      sb.write(':selfNotifications');
     }
     if (multiplexed) {
       sb.write(':multiplexed');
@@ -92,7 +92,7 @@ class MonitorVerbBuilder implements VerbBuilder {
     var builder = MonitorVerbBuilder();
     builder.strict = verbParams[MONITOR_STRICT_MODE] == MONITOR_STRICT_MODE;
     builder.selfNotificationsEnabled =
-        verbParams[MONITOR_SELF_NOTIFICATIONS] == 'enable';
+        verbParams[MONITOR_SELF_NOTIFICATIONS] == MONITOR_SELF_NOTIFICATIONS;
     builder.multiplexed =
         verbParams[MONITOR_MULTIPLEXED_MODE] == MONITOR_MULTIPLEXED_MODE;
     builder.regex = verbParams[MONITOR_REGEX];
