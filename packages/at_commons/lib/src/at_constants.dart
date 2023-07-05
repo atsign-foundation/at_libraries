@@ -40,6 +40,7 @@ const String EPOCH_MILLIS = 'epochMillis';
 const String MONITOR_STRICT_MODE = 'strict';
 const String MONITOR_MULTIPLEXED_MODE = 'multiplexed';
 const String MONITOR_REGEX = 'regex';
+const String MONITOR_SELF_NOTIFICATIONS = 'selfNotifications';
 const String ID = 'id';
 const String OPERATION = 'operation';
 const String SET_OPERATION = 'setOperation';
