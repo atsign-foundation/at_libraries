@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:at_chops/at_chops.dart';
 import 'package:at_client/at_client.dart';
-import 'package:at_onboarding_cli/src/onboard/OnboardingCalls.dart';
+import 'package:at_onboarding_cli/src/onboard/onboarding_tasks.dart';
 import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 import 'package:at_server_status/at_server_status.dart';
 import 'package:at_utils/at_utils.dart';
@@ -269,11 +269,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       logger
           .finer('PkamPrivateKey persist to localSecondary: status $response');
     }
-    // response = await _atClient?.getLocalSecondary()?.putValue(
-    //     '$AT_ENCRYPTION_PUBLIC_KEY$_atSign',
-    //     atKeysMap[AuthKeyType.encryptionPublicKey]!);
-    // logger.finer(
-    //     'EncryptionPublicKey persist to localSecondary: status $response');
+    response = await _atClient?.getLocalSecondary()?.putValue(
+        '$AT_ENCRYPTION_PUBLIC_KEY$_atSign',
+        atKeysMap[AuthKeyType.encryptionPublicKey]!);
+    logger.finer(
+        'EncryptionPublicKey persist to localSecondary: status $response');
     response = await _atClient?.getLocalSecondary()?.putValue(
         AT_ENCRYPTION_PRIVATE_KEY,
         atKeysMap[AuthKeyType.encryptionPrivateKey]!);
