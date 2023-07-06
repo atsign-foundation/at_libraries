@@ -11,13 +11,15 @@ class AtSignLogger {
   static String _root_level = 'info';
   bool _hierarchicalLoggingEnabled = false;
 
-  static final ConsoleLoggingHandler _consoleLoggingHandler =
+  static final ConsoleLoggingHandler consoleLoggingHandler =
       ConsoleLoggingHandler();
+  static final StdErrLoggingHandler stdErrLoggingHandler =
+      StdErrLoggingHandler();
 
   /// The default logging handler to log events.
   ///
   /// Defaults to [ConsoleLoggingHandler] which writes log events to console.
-  static LoggingHandler defaultLoggingHandler = _consoleLoggingHandler;
+  static LoggingHandler defaultLoggingHandler = consoleLoggingHandler;
 
   /// The AtSignLogger is a wrapper on the Logger to log events.
   ///
@@ -44,7 +46,7 @@ class AtSignLogger {
   /// ```
   AtSignLogger(String name, {LoggingHandler? loggingHandler}) {
     logger = logging.Logger.detached(name);
-    loggingHandler ??= _consoleLoggingHandler;
+    loggingHandler ??= consoleLoggingHandler;
     logger.onRecord.listen(loggingHandler);
     level = _root_level;
   }
