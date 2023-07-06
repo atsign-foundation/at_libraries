@@ -11,21 +11,42 @@ class AtSignLogger {
   static String _root_level = 'info';
   bool _hierarchicalLoggingEnabled = false;
 
-  static final ConsoleLoggingHandler _consoleLoggingHandler =
+  static final ConsoleLoggingHandler consoleLoggingHandler =
       ConsoleLoggingHandler();
-  static final StdErrLoggingHandler _stdErrLoggingHandler =
+  static final StdErrLoggingHandler stdErrLoggingHandler =
       StdErrLoggingHandler();
+
+  /// The default logging handler to log events.
+  ///
+  /// Defaults to [ConsoleLoggingHandler] which writes log events to console.
+  static LoggingHandler defaultLoggingHandler = consoleLoggingHandler;
 
   /// The AtSignLogger is a wrapper on the Logger to log events.
   ///
   /// * name: Accepts String as input which represents the name of the AtSignLogger instance.
   ///
-  /// * loggingType: This is an optionally parameter which specifies where to log
-  /// the events. Supported types are Console and StandardError.
-  /// The default loggingType is set to console which writes log messages to console.
-  AtSignLogger(String name, {LoggingType loggingType = LoggingType.console}) {
-    LoggingHandler loggingHandler = _getLoggingHandler(loggingType);
+  /// * loggingHandler  This is an optional parameter that determines the destination for logging events.
+  ///
+  /// The loggingHandler defaults to the value of [defaultLoggingHandler].
+  ///
+  /// To customize the logging behavior based on your specific requirements, create an
+  /// instance of a class that implements the [LoggingHandler] interface and pass this
+  /// instance to the loggingHandler argument
+  ///
+  /// ```dart
+  /// class MyLoggingHandler implements LoggingHandler {
+  ///   @override
+  ///   void call(LogRecord record) {
+  ///     // Custom implementation of logging behavior
+  ///     print('Logging: ${record.message}');
+  ///   }
+  /// }
+  ///
+  /// AtSignLogger('myLogger', loggingHandler: MyLoggingHandler())
+  /// ```
+  AtSignLogger(String name, {LoggingHandler? loggingHandler}) {
     logger = logging.Logger.detached(name);
+    loggingHandler ??= consoleLoggingHandler;
     logger.onRecord.listen(loggingHandler);
     level = _root_level;
   }
@@ -65,30 +86,7 @@ class AtSignLogger {
     return _root_level;
   }
 
-  /// Returns an instance of Logging Handler basing on the [LoggingType]
-  static LoggingHandler _getLoggingHandler(LoggingType loggingType) {
-    switch (loggingType) {
-      case LoggingType.console:
-        return _consoleLoggingHandler;
-      case LoggingType.stdErr:
-        return _stdErrLoggingHandler;
-      default:
-        return _consoleLoggingHandler;
-    }
-  }
-
-//  static set rootLogFilePath(String path) {
-//    _rootLogFilePath = path;
-//    if (_rootLogFilePath != null) {
-//      logging.Logger.root.onRecord.listen(FileLoggingHandler(_rootLogFilePath));
-//    }
-//  }
-//
-//  void setLogFilePath(String path) {
-//    logger.onRecord.listen(FileLoggingHandler(path));
-//  }
-
-//log methods
+  //log methods
   void shout(message, [Object? error, StackTrace? stackTrace]) =>
       logger.shout(message, error, stackTrace);
 
@@ -119,8 +117,3 @@ class LogLevel {
     'all': logging.Level.ALL
   };
 }
-
-/// Enum to represent supported logging types.
-/// console: Writes the log output to the user screen
-/// standardError: Writes the log output to the standard error stream
-enum LoggingType { console, stdErr }

@@ -75,7 +75,7 @@ void main() {
     });
 
     test('reserved characters with ascii codes - InvalidAtsignException', () {
-      var atSign = '@U' + String.fromCharCode(43);
+      var atSign = '@U${String.fromCharCode(43)}';
       expect(
           () => AtUtils.fixAtSign(atSign),
           throwsA(predicate((dynamic e) =>

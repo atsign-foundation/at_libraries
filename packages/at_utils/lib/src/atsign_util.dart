@@ -48,7 +48,7 @@ class AtUtils {
       throw InvalidAtSignException(AtMessage.noAtSign.text);
     }
     // reconstruct @sign
-    atSign = left + '@' + right;
+    atSign = '$left@$right';
     // Some Characters are reserved
     // If found the @sign should be rejected
     if (atSign.contains(RegExp(r"[\!\*\'`\(\)\;\:\&\=\+\$\,\/\?\#\[\]\{\}]"))) {
