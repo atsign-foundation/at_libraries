@@ -1,3 +1,5 @@
+## 3.0.51
+- feat: added exception class for enrollment exception
 ## 3.0.50
 - feat: add self notification flag in monitor syntax for APKAM feature
 ## 3.0.49
