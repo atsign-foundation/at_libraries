@@ -208,6 +208,11 @@ class InvalidDataException extends AtException {
   InvalidDataException(message) : super(message);
 }
 
+/// Exception thrown for enrollment related exceptions
+class AtEnrollmentException extends AtException {
+  AtEnrollmentException(message) : super(message);
+}
+
 enum ExceptionScenario {
   noNetworkConnectivity,
   rootServerNotReachable,
