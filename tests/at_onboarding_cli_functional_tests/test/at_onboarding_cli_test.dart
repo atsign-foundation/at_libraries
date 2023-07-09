@@ -10,6 +10,8 @@ import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart'
 import 'package:at_utils/at_utils.dart';
 import 'package:test/test.dart';
 
+import 'onboarding_service_impl_overrided.dart';
+
 final String atKeysFilePath = '${Platform.environment['HOME']}/.atsign/keys';
 
 void main() {
@@ -121,7 +123,7 @@ void main() {
         'A test to verify atSign is onboarded and .atKeys file is generated successfully',
         () async {
       AtOnboardingService atOnboardingService =
-          AtOnboardingServiceImpl(atSign, atOnboardingPreference);
+          TestOnboardingServiceImpl(atSign, atOnboardingPreference);
       bool status = await atOnboardingService.onboard();
       expect(true, status);
       bool status2 = await atOnboardingService.authenticate();
@@ -156,7 +158,7 @@ void main() {
       // Authenticate atSign with the .atKeys file generated via the activate_cli tool.
       AtOnboardingPreference atOnboardingPreference = getPreferences(atSign);
       AtOnboardingService onboardingService =
-          AtOnboardingServiceImpl(atSign, atOnboardingPreference);
+          TestOnboardingServiceImpl(atSign, atOnboardingPreference);
       expect(await onboardingService.authenticate(), true);
     });
 
