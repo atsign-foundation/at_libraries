@@ -130,7 +130,7 @@ void main() {
 
       /// Assert .atKeys file is generated for the atSign
       expect(await File(atOnboardingPreference.atKeysFilePath!).exists(), true);
-    }, skip: true);
+    });
 
     tearDown(() async {
       await tearDownFunc();
@@ -158,7 +158,7 @@ void main() {
       AtOnboardingService onboardingService =
           AtOnboardingServiceImpl(atSign, atOnboardingPreference);
       expect(await onboardingService.authenticate(), true);
-    }, skip: true);
+    });
 
     tearDownAll(() async {
       await tearDownFunc();
