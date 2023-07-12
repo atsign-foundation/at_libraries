@@ -1,3 +1,6 @@
+## 3.0.38
+- fix: wrap socket.listen in runZonedGuarded to ensure weird network errors are
+  always caught
 ## 3.0.37
 - fix: ensure outbound sockets are cleaned up properly
 ## 3.0.36
