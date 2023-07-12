@@ -1,7 +1,7 @@
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 
-class TestOnboardingServiceImpl extends AtOnboardingServiceImpl {
-  TestOnboardingServiceImpl(
+class OnboardingServiceImplOverride extends AtOnboardingServiceImpl {
+  OnboardingServiceImplOverride(
       atsign, AtOnboardingPreference atOnboardingPreference)
       : super(atsign, atOnboardingPreference);
 
