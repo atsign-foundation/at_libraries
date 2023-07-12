@@ -5,7 +5,8 @@ import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 import 'dart:io';
 import 'package:at_utils/at_logger.dart';
 
-Future<void> main(List<String> arguments) async {
+Future<void> main(List<String> arguments,
+    {AtOnboardingService? atOnboardingService}) async {
   //defaults
   String rootServer = 'root.atsign.org';
   String registrarUrl = 'my.atsign.com';
@@ -39,7 +40,7 @@ Future<void> main(List<String> arguments) async {
     throw IllegalArgumentException('atSign is required');
   }
 
-  await activate(argResults);
+  await activate(argResults, atOnboardingService: atOnboardingService);
 }
 
 Future<void> activate(ArgResults argResults,
