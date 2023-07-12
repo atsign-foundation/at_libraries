@@ -8,6 +8,7 @@ import 'package:at_utils/at_logger.dart';
 import 'package:test/test.dart';
 import 'package:at_demo_data/at_demo_data.dart' as at_demos;
 import 'at_chops_secure_element_mock.dart';
+import 'onboarding_service_impl_override.dart';
 
 /// Usage: dart main.dart <cram_secret>
 void main() {
@@ -18,7 +19,7 @@ void main() {
   test('Test auth functionality', () async {
     AtOnboardingPreference preference = getPreferences(atSign);
     AtOnboardingService onboardingService =
-        AtOnboardingServiceImpl(atSign, preference);
+        OnboardingServiceImplOverride(atSign, preference);
     // create empty keys in atchops. Encryption key pair will be set later on after generation
     final atChopsImpl =
         AtChopsSecureElementMock(AtChopsKeys.create(null, null));
