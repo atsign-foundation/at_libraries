@@ -126,12 +126,15 @@ class VerbSyntax {
   static const info = r'^info(:brief)?$';
   static const noOp = r'^noop:(?<delayMillis>\d+)$';
   static const notifyRemove = r'notify:remove:(?<id>[\w\d\-\_]+)';
-  static const enroll = r'^enroll:(?<operation>request|approve|deny):'
+  static const enroll = r'^enroll:(?<operation>request|approve|deny|revoke|list)'
+      // Add colon only when operation is request, approve, deny or revoke. Do not add for list
+      r'(?:(?<=request|approve|deny|revoke):)?'
       r'(?:(?:enrollmentId:(?<enrollmentId>[a-zA-Z0-9-]+))|'
       r'(?:appName:(?<appName>[a-zA-Z0-9]+):)?'
       r'(?:deviceName:(?<deviceName>[a-zA-Z0-9_]+):)?'
       r'(?:namespaces:\[(?<namespaces>[a-zA-Z0-9;_,]+)\]:)?'
-      r'(?:totp:(?<totp>[0-9]+):)?(?:apkamPublicKey:(?<apkamPublicKey>.*)))?$';
+      r'(?:totp:(?<totp>[0-9]+):)?'
+      r'(?:apkamPublicKey:(?<apkamPublicKey>.*)))?$';
   static const totp = r'^totp:(?<operation>get|validate)(:(?<totp>[0-9]+))?$';
   static const keys =
       r'^keys:(?<operation>put|get|delete):(((?<visibility>public|private|self)(:)?)?)'
