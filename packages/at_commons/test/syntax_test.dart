@@ -83,19 +83,19 @@ void main() {
   group('A group of positive tests to verify keys verb regex', () {
     test('keys verb  - put public key', () {
       var command =
-          'keys:put:public:keyName:encryptionPublicKey:namespace:__global:keyType:rsa2048:abcd1234';
+          'keys:put:public:namespace:__global:keyType:rsa2048:keyName:encryption_123-a abcd1234';
       var verbParams = getVerbParams(VerbSyntax.keys, command);
       expect(verbParams[keyType], 'rsa2048');
       expect(verbParams[visibility], 'public');
       expect(verbParams[keyValue], 'abcd1234');
       expect(verbParams[namespace], '__global');
       expect(verbParams[AT_OPERATION], 'put');
-      expect(verbParams[keyName], 'encryptionPublicKey');
+      expect(verbParams[keyName], 'encryption_123-a');
     });
 
     test('keys verb - put private key', () {
       var command =
-          'keys:put:private:keyName:secretKey:namespace:__private:keyType:aes:abcd1234';
+          'keys:put:private:namespace:__private:keyType:aes:keyName:secretKey abcd1234';
       var verbParams = getVerbParams(VerbSyntax.keys, command);
       expect(verbParams[keyType], 'aes');
       expect(verbParams[visibility], 'private');
@@ -107,7 +107,7 @@ void main() {
 
     test('keys verb - put private key with app and device name', () {
       var command =
-          'keys:put:private:keyName:secretKey:namespace:__private:appName:wavi:deviceName:pixel:keyType:aes:abcd1234';
+          'keys:put:private:namespace:__private:appName:wavi:deviceName:pixel:keyType:aes:keyName:secretKey abcd1234';
       var verbParams = getVerbParams(VerbSyntax.keys, command);
       expect(verbParams[keyType], 'aes');
       expect(verbParams[visibility], 'private');
@@ -121,7 +121,7 @@ void main() {
 
     test('keys verb - put self key with encryption key name', () {
       var command =
-          'keys:put:self:keyName:mykey:namespace:__global:keyType:aes256:encryptionKeyName:firstKey:zcsfsdff';
+          'keys:put:self:namespace:__global:keyType:aes256:encryptionKeyName:encryption_123-a:keyName:mykey zcsfsdff';
       var verbParams = getVerbParams(VerbSyntax.keys, command);
       expect(verbParams[keyType], 'aes256');
       expect(verbParams[visibility], 'self');
@@ -129,7 +129,7 @@ void main() {
       expect(verbParams[namespace], '__global');
       expect(verbParams[AT_OPERATION], 'put');
       expect(verbParams[keyName], 'mykey');
-      expect(verbParams[encryptionKeyName], 'firstKey');
+      expect(verbParams[encryptionKeyName], 'encryption_123-a');
     });
 
     test('keys verb - get private keys', () {
