@@ -7,7 +7,7 @@ void main() {
     AtSignLogger.defaultLoggingHandler = AtSignLogger.consoleLoggingHandler;
   });
 
-  group('A group of fixAtSign tests', () {
+  group('A group of AtSignLogger tests', () {
     test('Test logging handler', () {
       var records = <LogRecord>[];
       var testLogger = AtSignLogger('test_console_logging');
