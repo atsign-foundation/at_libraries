@@ -136,13 +136,13 @@ class VerbSyntax {
       r'(?:totp:(?<totp>[0-9]+):)?'
       r'(?:apkamPublicKey:(?<apkamPublicKey>.*)))?$';
   static const totp = r'^totp:(?<operation>get|validate)(:(?<totp>[0-9]+))?$';
-  static const keys =
-      r'^keys:(?<operation>put|get|delete):(((?<visibility>public|private|self)(:)?)?)'
-      r'(keyName:(?<keyName>[a-zA-Z0-9_]+)(:)?)?'
+  static const keys = r'^keys:(?<operation>put|get|delete):'
+      r'(((?<visibility>public|private|self)(:)?)?)'
       r'((namespace:(?<namespace>[a-zA-Z0-9_]+):)?)'
       r'((appName:(?<appName>[a-zA-Z0-9_]+):)?)'
       r'((deviceName:(?<deviceName>[a-zA-Z0-9_]+):)?)'
-      r'(((keyType:(?<keyType>[a-zA-Z0-9_-]+)):)?)'
-      r'((encryptionKeyName:(?<encryptionKeyName>[a-zA-Z0-9_]+):)?)?'
+      r'(((keyType:(?<keyType>[a-zA-Z0-9_-]+))(:))?)'
+      r'((encryptionKeyName:(?<encryptionKeyName>[a-zA-Z0-9_\-]+)(:))?)'
+      r'(keyName:(?<keyName>[a-zA-Z0-9_.:@\-]+)( )?)?'
       r'((?<keyValue>.*))?$';
 }
