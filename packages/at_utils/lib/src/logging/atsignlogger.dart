@@ -46,7 +46,7 @@ class AtSignLogger {
   /// ```
   AtSignLogger(String name, {LoggingHandler? loggingHandler}) {
     logger = logging.Logger.detached(name);
-    loggingHandler ??= consoleLoggingHandler;
+    loggingHandler ??= defaultLoggingHandler;
     logger.onRecord.listen(loggingHandler);
     level = _root_level;
   }
