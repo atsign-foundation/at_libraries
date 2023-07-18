@@ -43,12 +43,15 @@ void main() {
       var l2 = AtSignLogger('console'); // should use the defaultLoggingHandler
 
       l1.info('testing per-instance logging handler');
-      expect(lh1.lastLogRecord!.message, 'testing per-instance logging handler');
+      expect(
+          lh1.lastLogRecord!.message, 'testing per-instance logging handler');
       expect(testDefaultLH.lastLogRecord, null);
 
       l2.info('testing with default logging handler');
-      expect(lh1.lastLogRecord!.message, 'testing per-instance logging handler');
-      expect(testDefaultLH.lastLogRecord!.message, 'testing with default logging handler');
+      expect(
+          lh1.lastLogRecord!.message, 'testing per-instance logging handler');
+      expect(testDefaultLH.lastLogRecord!.message,
+          'testing with default logging handler');
     });
   });
 }
