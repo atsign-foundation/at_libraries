@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:at_utils/at_logger.dart';
 import 'package:logging/logging.dart';
 import 'package:test/test.dart';
