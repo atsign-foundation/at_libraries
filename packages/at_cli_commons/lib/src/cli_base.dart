@@ -16,7 +16,7 @@ class CLIBase {
         help: 'Usage instructions')
     ..addOption('atsign', abbr: 'a', mandatory: true,
         help: 'This client\'s atSign')
-    ..addOption('namespace', abbr: 'n', mandatory: false,
+    ..addOption('namespace', abbr: 'n', mandatory: true,
         help: 'Namespace')
     ..addOption('key-file', abbr: 'k', mandatory: false,
         help: 'Your atSign\'s atKeys file if not in ~/.atsign/keys/')
@@ -81,6 +81,7 @@ class CLIBase {
     localStoragePathToUse = storageDir ?? '$homeDir/.$nameSpace/$atSign/storage';
     downloadPathToUse = downloadDir ?? '$homeDir/.$nameSpace/$atSign/files';
 
+    AtSignLogger.defaultLoggingHandler = AtSignLogger.stdErrLoggingHandler;
 
     logger = AtSignLogger(runtimeType.toString());
     logger.hierarchicalLoggingEnabled = true;
