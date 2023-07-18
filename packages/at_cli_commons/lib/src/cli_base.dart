@@ -1,4 +1,3 @@
-
 import 'dart:io';
 
 import 'package:args/args.dart';
@@ -12,27 +11,28 @@ import 'package:version/version.dart';
 
 class CLIBase {
   static final ArgParser argsParser = ArgParser()
-    ..addFlag('help', negatable: false,
-        help: 'Usage instructions')
-    ..addOption('atsign', abbr: 'a', mandatory: true,
-        help: 'This client\'s atSign')
-    ..addOption('namespace', abbr: 'n', mandatory: true,
-        help: 'Namespace')
-    ..addOption('key-file', abbr: 'k', mandatory: false,
+    ..addFlag('help', negatable: false, help: 'Usage instructions')
+    ..addOption('atsign',
+        abbr: 'a', mandatory: true, help: 'This client\'s atSign')
+    ..addOption('namespace', abbr: 'n', mandatory: true, help: 'Namespace')
+    ..addOption('key-file',
+        abbr: 'k',
+        mandatory: false,
         help: 'Your atSign\'s atKeys file if not in ~/.atsign/keys/')
-    ..addOption('cram-secret', abbr: 'c', mandatory: false,
-        help: 'atSign\'s cram secret')
-    ..addOption('home-dir', abbr: 'h', mandatory: false,
-        help: 'home directory')
-    ..addOption('storage-dir', abbr: 's', mandatory: false,
+    ..addOption('cram-secret',
+        abbr: 'c', mandatory: false, help: 'atSign\'s cram secret')
+    ..addOption('home-dir', abbr: 'h', mandatory: false, help: 'home directory')
+    ..addOption('storage-dir',
+        abbr: 's',
+        mandatory: false,
         help: 'directory for this client\'s local storage files')
-    ..addOption('root-domain', abbr: 'd', mandatory: false,
-        help: 'Root Domain', defaultsTo: 'root.atsign.org')
-    ..addFlag('verbose', abbr: 'v', negatable: false,
-        help: 'More logging')
-    ..addFlag('never-sync', negatable: false,
-        help: 'Do not run sync')
-  ;
+    ..addOption('root-domain',
+        abbr: 'd',
+        mandatory: false,
+        help: 'Root Domain',
+        defaultsTo: 'root.atsign.org')
+    ..addFlag('verbose', abbr: 'v', negatable: false, help: 'More logging')
+    ..addFlag('never-sync', negatable: false, help: 'Do not run sync');
 
   final String atSign;
   final String nameSpace;
@@ -53,32 +53,36 @@ class CLIBase {
   late final AtSignLogger logger;
   late final AtClient atClient;
 
-  CLIBase({
-    required this.atSign,
-    required this.nameSpace,
-    required this.rootDomain,
-    this.homeDir,
-    this.verbose=false,
-    this.atKeysFilePath,
-    this.storageDir,
-    this.downloadDir,
-    this.cramSecret,
-    this.syncDisabled = false}) {
-
+  CLIBase(
+      {required this.atSign,
+      required this.nameSpace,
+      required this.rootDomain,
+      this.homeDir,
+      this.verbose = false,
+      this.atKeysFilePath,
+      this.storageDir,
+      this.downloadDir,
+      this.cramSecret,
+      this.syncDisabled = false}) {
     if (homeDir == null) {
       if (atKeysFilePath == null) {
-        throw IllegalArgumentException('homeDir must be provided when atKeysFilePath is not provided');
+        throw IllegalArgumentException(
+            'homeDir must be provided when atKeysFilePath is not provided');
       }
       if (storageDir == null) {
-        throw IllegalArgumentException('homeDir must be provided when storageDir is not provided');
+        throw IllegalArgumentException(
+            'homeDir must be provided when storageDir is not provided');
       }
       if (downloadDir == null) {
-        throw IllegalArgumentException('homeDir must be provided when downloadDir is not provided');
+        throw IllegalArgumentException(
+            'homeDir must be provided when downloadDir is not provided');
       }
     }
 
-    atKeysFilePathToUse = atKeysFilePath ?? '$homeDir/.atsign/keys/${atSign}_key.atKeys';
-    localStoragePathToUse = storageDir ?? '$homeDir/.$nameSpace/$atSign/storage';
+    atKeysFilePathToUse =
+        atKeysFilePath ?? '$homeDir/.atsign/keys/${atSign}_key.atKeys';
+    localStoragePathToUse =
+        storageDir ?? '$homeDir/.$nameSpace/$atSign/storage';
     downloadPathToUse = downloadDir ?? '$homeDir/.$nameSpace/$atSign/files';
 
     AtSignLogger.defaultLoggingHandler = AtSignLogger.stdErrLoggingHandler;
@@ -115,9 +119,11 @@ class CLIBase {
       ..cramSecret = cramSecret
       ..atProtocolEmitted = Version(2, 0, 0);
 
-    AtOnboardingService onboardingService = AtOnboardingServiceImpl(atSign, atOnboardingConfig, atServiceFactory: atServiceFactory);
+    AtOnboardingService onboardingService = AtOnboardingServiceImpl(
+        atSign, atOnboardingConfig,
+        atServiceFactory: atServiceFactory);
 
-    if (! File(atKeysFilePathToUse).existsSync()) {
+    if (!File(atKeysFilePathToUse).existsSync()) {
       await onboardingService.onboard();
     }
 
@@ -126,10 +132,13 @@ class CLIBase {
     while (!authenticated) {
       try {
         stdout.write(chalk.brightBlue('\r\x1b[KConnecting ... '));
-        await Future.delayed(Duration(milliseconds: 1000)); // Pause just long enough for the retry to be visible
+        await Future.delayed(Duration(
+            milliseconds:
+                1000)); // Pause just long enough for the retry to be visible
         authenticated = await onboardingService.authenticate();
       } catch (exception) {
-        stdout.write(chalk.brightRed('$exception. Will retry in ${retryDuration.inSeconds} seconds'));
+        stdout.write(chalk.brightRed(
+            '$exception. Will retry in ${retryDuration.inSeconds} seconds'));
       }
       if (!authenticated) {
         await Future.delayed(retryDuration);
