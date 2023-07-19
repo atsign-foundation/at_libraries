@@ -3,6 +3,8 @@
 A library of generic / reusable stuff which is useful when building cli programs
 which use the [AtClient SDK](https://pub.dev/packages/at_client)
 
+For usage example, see the demo software [here](https://github.com/atsign-foundation/at_lorawan)
+
 ## Features
 
 - The CLIBase class in cli_base.dart takes care of all the boilerplate
