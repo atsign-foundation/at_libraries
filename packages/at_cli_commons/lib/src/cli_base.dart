@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:at_cli_commons/src/service_factories.dart';
+import 'package:at_cli_commons/src/utils.dart';
 import 'package:at_client/at_client.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_utils/at_logger.dart';
@@ -10,6 +11,8 @@ import 'package:logging/logging.dart';
 import 'package:version/version.dart';
 
 class CLIBase {
+  /// An ArgParser which has all of the options and flags required by [CLIBase]
+  /// Used by [fromCommandLineArgs] if the `parser` parameter isn't supplied.
   static final ArgParser argsParser = ArgParser()
     ..addFlag('help', negatable: false, help: 'Usage instructions')
     ..addOption('atsign',
@@ -34,6 +37,44 @@ class CLIBase {
     ..addFlag('verbose', abbr: 'v', negatable: false, help: 'More logging')
     ..addFlag('never-sync', negatable: false, help: 'Do not run sync');
 
+  /// Constructs a CLIBase from a list of command-line arguments
+  /// and calls [init] on it.
+  /// <br/>
+  /// <br/>
+  /// If [parser] is not supplied then uses CLIBase's [argsParser] static var.
+  /// Allowing [parser] to be supplied enables callers to do something like this:
+  /// ```
+  ///     ArgParser argsParser = CLIBase.argsParser
+  ///       ..addOption('my-cli-option',
+  ///          help: "an option which configures my cli's unique feature");
+  ///
+  ///     CLIBase cliBase = await CLIBase.fromCommandLineArgs(args, parser: argsParser);
+  /// ```
+  static Future<CLIBase> fromCommandLineArgs(List<String> args, {ArgParser? parser}) async {
+    parser ??= argsParser;
+    ArgResults parsedArgs = parser.parse(args);
+
+    if (parsedArgs['help'] == true) {
+      print(parser.usage);
+      exit(0);
+    }
+
+    CLIBase cliBase = CLIBase(
+        atSign: parsedArgs['atsign'],
+        atKeysFilePath: parsedArgs['key-file'],
+        nameSpace: parsedArgs['namespace'],
+        rootDomain: parsedArgs['root-domain'],
+        homeDir: getHomeDirectory(),
+        storageDir: parsedArgs['storage-dir'],
+        verbose: parsedArgs['verbose'],
+        cramSecret: parsedArgs['cram-secret'],
+        syncDisabled: parsedArgs['never-sync']);
+
+    await cliBase.init();
+
+    return cliBase;
+  }
+
   final String atSign;
   final String nameSpace;
   final String rootDomain;
@@ -53,6 +94,22 @@ class CLIBase {
   late final AtSignLogger logger;
   late final AtClient atClient;
 
+  /// Validates parameters and constructs a CLIBase instance.
+  /// <br/> <br/>
+  /// Validation rules:
+  /// - homeDir must be non-null when any of the atKeysFilePath, storageDir or
+  ///   downloadDir parameters are null
+  ///
+  /// <br/>
+  /// Also configures the default AtSignLogger log level to be either INFO
+  /// if verbose is true, or SHOUT if verbose is false (the default). If the
+  /// application wishes to use a different default log level then it can do
+  /// something like this:
+  /// ```
+  ///     AtSignLogger.root_level = 'FINEST';
+  ///     cliBase.logger.logger.level = Level.FINEST;
+  /// ```
+  /// Throws an [IllegalArgumentException] if the parameters fail validation.
   CLIBase(
       {required this.atSign,
       required this.nameSpace,
@@ -94,11 +151,11 @@ class CLIBase {
       logger.logger.level = Level.INFO;
     } else {
       AtSignLogger.root_level = 'SHOUT';
-      // logger.logger.level = Level.SHOUT;
-      logger.logger.level = Level.INFO;
+      logger.logger.level = Level.SHOUT;
     }
   }
 
+  /// Does the various things required to create an AtClient object
   Future<void> init() async {
     AtServiceFactory? atServiceFactory;
 
