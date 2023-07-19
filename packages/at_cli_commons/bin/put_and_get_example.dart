@@ -16,25 +16,28 @@ Future<void> main(List<String> args) async {
 
     String example = 'put_and_get_example';
     AtKey id = AtKey()
-      ..namespace=atClient.getPreferences()!.namespace!
-      ..key=example
-      ..sharedBy=atClient.getCurrentAtSign();
+      ..namespace = atClient.getPreferences()!.namespace!
+      ..key = example
+      ..sharedBy = atClient.getCurrentAtSign();
 
     // Store it. Will talk direct to the remote atServer rather than use the
     // local datastore, so we don't have to wait for a local-to-atServer sync
     // to complete.
-    PutRequestOptions pro = PutRequestOptions()..useRemoteAtServer=true;
+    PutRequestOptions pro = PutRequestOptions()..useRemoteAtServer = true;
     await atClient.put(id, 'hello, world', putRequestOptions: pro);
 
-    var scanResult = (await atClient.getRemoteSecondary()!.executeCommand(
-        'scan $example\n'))!.replaceFirst('data:', '');
+    var scanResult = (await atClient
+            .getRemoteSecondary()!
+            .executeCommand('scan $example\n'))!
+        .replaceFirst('data:', '');
     print("Stored to: $scanResult");
 
     print('Fetching $id');
 
     // Fetch it direct from remote
-    var asStored = (await atClient.getRemoteSecondary()!.executeCommand(
-        'llookup:$id\n'))!.replaceFirst('data:', '');
+    var asStored =
+        (await atClient.getRemoteSecondary()!.executeCommand('llookup:$id\n'))!
+            .replaceFirst('data:', '');
     print('As stored: $asStored');
 
     // Fetch it from local

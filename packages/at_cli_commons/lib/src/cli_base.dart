@@ -50,7 +50,8 @@ class CLIBase {
   ///
   ///     CLIBase cliBase = await CLIBase.fromCommandLineArgs(args, parser: argsParser);
   /// ```
-  static Future<CLIBase> fromCommandLineArgs(List<String> args, {ArgParser? parser}) async {
+  static Future<CLIBase> fromCommandLineArgs(List<String> args,
+      {ArgParser? parser}) async {
     parser ??= argsParser;
     ArgResults parsedArgs = parser.parse(args);
 

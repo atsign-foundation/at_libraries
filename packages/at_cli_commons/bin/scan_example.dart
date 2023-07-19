@@ -11,11 +11,12 @@ import 'package:at_client/at_client.dart';
 Future<void> main(List<String> args) async {
   try {
     AtClient atClient = (await CLIBase.fromCommandLineArgs(args)).atClient;
-    var allDataKeys = await atClient.getRemoteSecondary()!.executeCommand('scan\n');
+    var allDataKeys =
+        await atClient.getRemoteSecondary()!.executeCommand('scan\n');
     print(allDataKeys);
     exit(0);
   } catch (e) {
-    print (e);
-    print (CLIBase.argsParser.usage);
+    print(e);
+    print(CLIBase.argsParser.usage);
   }
 }
