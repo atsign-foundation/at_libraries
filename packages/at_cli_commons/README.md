@@ -3,7 +3,15 @@
 A library of generic / reusable stuff which is useful when building cli programs
 which use the [AtClient SDK](https://pub.dev/packages/at_client)
 
-For usage example, see the demo software [here](https://github.com/atsign-foundation/at_lorawan)
+The simplest usage would be
+```dart
+  AtClient atClient = (await CLIBase.fromCommandLineArgs(args)).atClient;
+```
+For further usage examples, see 
+- In the bin/ directory
+  - `scan_example.dart`
+  - `put_and_get_example.dart`
+- The demo software [here](https://github.com/atsign-foundation/at_lorawan)
 
 ## Features
 
