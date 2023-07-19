@@ -8,7 +8,7 @@ The simplest usage would be
   AtClient atClient = (await CLIBase.fromCommandLineArgs(args)).atClient;
 ```
 For further usage examples, see 
-- In the bin/ directory
+- In the example/bin/ directory
   - `scan_example.dart`
   - `put_and_get_example.dart`
 - The demo software [here](https://github.com/atsign-foundation/at_lorawan)
