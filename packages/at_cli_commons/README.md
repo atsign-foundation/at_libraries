@@ -3,14 +3,15 @@
 A library of generic / reusable stuff which is useful when building cli programs
 which use the [AtClient SDK](https://pub.dev/packages/at_client)
 
+For usage example, see the demo software [here](https://github.com/atsign-foundation/at_lorawan)
+
 ## Features
 
 - The CLIBase class in cli_base.dart takes care of all the boilerplate
   involved in getting from program startup to having an AtClient object you can
   use - parsing command-line arguments, standard configuration, loading
   authentication keys, etc.
-- There are a few other small utilities in this package which CLIBase uses -
-  for example getHomeDirectory in home_directory.dart
+- There are a few other small utilities in utils.dart which CLIBase uses
 
 ## Open source usage and contributions
 
