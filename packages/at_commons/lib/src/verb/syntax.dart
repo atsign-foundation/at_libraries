@@ -143,6 +143,6 @@ class VerbSyntax {
       r'((deviceName:(?<deviceName>[a-zA-Z0-9_]+):)?)'
       r'(((keyType:(?<keyType>[a-zA-Z0-9_-]+))(:))?)'
       r'((encryptionKeyName:(?<encryptionKeyName>[a-zA-Z0-9_\-]+)(:))?)'
-      r'(keyName:(?<keyName>[a-zA-Z0-9_.:@\-]+)( )?)?'
+      r'(keyName:(?<keyName>\S+)( )?)?'
       r'((?<keyValue>.*))?$';
 }
