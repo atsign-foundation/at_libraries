@@ -126,7 +126,8 @@ class VerbSyntax {
   static const info = r'^info(:brief)?$';
   static const noOp = r'^noop:(?<delayMillis>\d+)$';
   static const notifyRemove = r'notify:remove:(?<id>[\w\d\-\_]+)';
-  static const enroll = r'^enroll:(?<operation>request|approve|deny|revoke|list)'
+  static const enroll =
+      r'^enroll:(?<operation>request|approve|deny|revoke|list)'
       // Add colon only when operation is request, approve, deny or revoke. Do not add for list
       r'(?:(?<=request|approve|deny|revoke):)?'
       r'(?:(?:enrollmentId:(?<enrollmentId>[a-zA-Z0-9-]+))|'
@@ -146,14 +147,3 @@ class VerbSyntax {
       r'(?:keyName:(?<keyName>\S+) ?)?'
       r'(?<keyValue>.*)?$';
 }
-
-      
-
-// keys:((?<operation>put|get|delete):?)
-//(?:(?<visibility>public|private|self):?)?
-//(?:namespace:(?<namespace>[a-zA-Z0-9_]+):?)?
-//(?:appName:(?<appName>[a-zA-Z0-9_]+):?)?
-//(?:deviceName:(?<deviceName>[a-zA-Z0-9_]+):?)?
-//(?:keyType:(?<keyType>[a-zA-Z0-9_-]+):?)?
-//(?:encryptionKeyName:(?<encryptionKeyName>[a-zA-Z0-9_\-]+):?)?
-//(?:keyName:(?<keyName>\S+) ?)?(?<keyValue>.*)?$
