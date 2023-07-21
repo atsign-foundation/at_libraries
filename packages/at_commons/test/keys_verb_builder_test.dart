@@ -31,18 +31,42 @@ void main() {
           keysVerbBuilder.buildCommand(), 'keys:get:private:keyName:mykey\n');
     });
 
+      test('test get private key by keyname with emoji', () {
+      final keysVerbBuilder = KeysVerbBuilder('get')
+        ..visibility = 'private'
+        ..keyName = 'mykey🛠';
+      expect(
+          keysVerbBuilder.buildCommand(), 'keys:get:private:keyName:mykey🛠\n');
+    });
+
     test('test get self key by keyname', () {
       final keysVerbBuilder = KeysVerbBuilder('get')
         ..visibility = 'self'
         ..keyName = 'mykey';
       expect(keysVerbBuilder.buildCommand(), 'keys:get:self:keyName:mykey\n');
     });
+
+     test('test get self key by keyname with emoji', () {
+      final keysVerbBuilder = KeysVerbBuilder('get')
+        ..visibility = 'self'
+        ..keyName = 'mykey🛠';
+      expect(keysVerbBuilder.buildCommand(), 'keys:get:self:keyName:mykey🛠\n');
+    });
+
     test('test get public key by keyname', () {
       final keysVerbBuilder = KeysVerbBuilder('get')
         ..visibility = 'public'
         ..keyName = 'mykey';
       expect(keysVerbBuilder.buildCommand(), 'keys:get:public:keyName:mykey\n');
     });
+
+    test('test get public key by keyname with emoji', () {
+      final keysVerbBuilder = KeysVerbBuilder('get')
+        ..visibility = 'public'
+        ..keyName = 'mykey🛠';
+      expect(keysVerbBuilder.buildCommand(), 'keys:get:public:keyName:mykey🛠\n');
+    });
+
     test('test put public key', () {
       final keysVerbBuilder = KeysVerbBuilder('put')
         ..visibility = 'public'
