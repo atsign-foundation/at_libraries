@@ -150,11 +150,18 @@ void main() {
       expect(verbParams[visibility], 'public');
     });
 
-    test('keys verb - get  key by name', () {
+    test('keys verb - get key by name', () {
       var command = 'keys:get:keyName:firstKey';
       var verbParams = getVerbParams(VerbSyntax.keys, command);
       expect(verbParams[AT_OPERATION], 'get');
       expect(verbParams[keyName], 'firstKey');
+    });
+
+    test('keys verb - get key by name with emoji', () {
+      var command = 'keys:get:keyName:firstKey🛠';
+      var verbParams = getVerbParams(VerbSyntax.keys, command);
+      expect(verbParams[AT_OPERATION], 'get');
+      expect(verbParams[keyName], 'firstKey🛠');
     });
   });
 
