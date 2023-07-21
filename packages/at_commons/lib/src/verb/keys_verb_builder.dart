@@ -45,7 +45,7 @@ class KeysVerbBuilder implements VerbBuilder {
       ..write(_getValueWithParamName('encryptionKeyName', encryptionKeyName))
       ..write(_getValueWithParamName('keyName', keyName))
       ..write(
-          _getValue(value)) //value is prepended with a whitespace as per regexs
+          _getValue(value)) //value is prepended with a whitespace as per regex
       ..write('\n');
 
     return sb.toString();
@@ -53,7 +53,7 @@ class KeysVerbBuilder implements VerbBuilder {
 
   String _getValue(String? paramValue) {
     if (paramValue != null && paramValue.isNotEmpty && paramValue != 'null') {
-      return ' $paramValue'; //value is prepended with a whitespace as per regexs
+      return ' $paramValue'; //value is prepended with a whitespace as per regex
     }
     return '';
   }
