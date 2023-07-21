@@ -51,7 +51,7 @@ void main() {
         ..keyType = 'rsa2048'
         ..value = 'abcd1234';
       expect(keysVerbBuilder.buildCommand(),
-          'keys:put:public:keyName:encryptionPublicKey:namespace:__global:keyType:rsa2048:abcd1234\n');
+          'keys:put:public:namespace:__global:keyType:rsa2048:keyName:encryptionPublicKey abcd1234\n');
     });
 
     test('test put private key', () {
@@ -62,7 +62,7 @@ void main() {
         ..keyType = 'aes256'
         ..value = 'abcd1234';
       expect(keysVerbBuilder.buildCommand(),
-          'keys:put:private:keyName:secretKey:namespace:__private:keyType:aes256:abcd1234\n');
+          'keys:put:private:namespace:__private:keyType:aes256:keyName:secretKey abcd1234\n');
     });
 
     test('test put self key', () {
@@ -74,7 +74,7 @@ void main() {
         ..encryptionKeyName = 'firstKey'
         ..value = 'zcsfsdff';
       expect(keysVerbBuilder.buildCommand(),
-          'keys:put:self:keyName:selfkey:namespace:__global:keyType:aes256:encryptionKeyName:firstKey:zcsfsdff\n');
+          'keys:put:self:namespace:__global:keyType:aes256:encryptionKeyName:firstKey:keyName:selfkey zcsfsdff\n');
     });
   });
 }
