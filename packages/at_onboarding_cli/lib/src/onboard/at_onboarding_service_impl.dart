@@ -273,23 +273,16 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     //when authenticating keys need to be fetched from atKeys file
     Map<String, String> atKeysMap = await _decryptAtKeysFile(
         (await _readAtKeysFile(atOnboardingPreference.atKeysFilePath)));
-    //backup keys into local secondary
-    bool? response = await _atClient
-        ?.getLocalSecondary()
-        ?.putValue(AT_PKAM_PUBLIC_KEY, atKeysMap[AuthKeyType.pkamPublicKey]!);
-    logger.finer('PkamPublicKey persist to localSecondary: status $response');
-    // save pkam private key only when auth mode is keyFile. if auth mode is sim/any other secure element private key cannot be read and hence will not be part of keys file
+    bool? response;
+    // save pkam private key only when auth mode is keyFile.
+    // if auth mode is sim/any other secure element private key cannot be
+    // read and hence will not be part of keys file
     if (atOnboardingPreference.authMode == PkamAuthMode.keysFile) {
       response = await _atClient?.getLocalSecondary()?.putValue(
           AT_PKAM_PRIVATE_KEY, atKeysMap[AuthKeyType.pkamPrivateKey]!);
       logger
           .finer('PkamPrivateKey persist to localSecondary: status $response');
     }
-    response = await _atClient?.getLocalSecondary()?.putValue(
-        '$AT_ENCRYPTION_PUBLIC_KEY$_atSign',
-        atKeysMap[AuthKeyType.encryptionPublicKey]!);
-    logger.finer(
-        'EncryptionPublicKey persist to localSecondary: status $response');
     response = await _atClient?.getLocalSecondary()?.putValue(
         AT_ENCRYPTION_PRIVATE_KEY,
         atKeysMap[AuthKeyType.encryptionPrivateKey]!);
