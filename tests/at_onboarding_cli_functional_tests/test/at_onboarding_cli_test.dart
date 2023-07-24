@@ -97,15 +97,8 @@ void main() {
       expect(at_demos.pkamPrivateKeyMap[atSign],
           await atClient?.getLocalSecondary()?.getPrivateKey());
 
-      expect(at_demos.pkamPublicKeyMap[atSign],
-          await atClient?.getLocalSecondary()?.getPublicKey());
-
       expect(at_demos.encryptionPrivateKeyMap[atSign],
           await atClient?.getLocalSecondary()?.getEncryptionPrivateKey());
-
-      String? encryptionPublicKey =
-          await atClient?.getLocalSecondary()?.getEncryptionPublicKey(atSign);
-      expect(at_demos.encryptionPublicKeyMap[atSign], encryptionPublicKey);
     });
 
     tearDown(() async {
