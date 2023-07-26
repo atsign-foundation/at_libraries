@@ -165,6 +165,7 @@ AtOnboardingPreference getPreferences(String atSign) {
     ..rootDomain = 'vip.ve.atsign.zone'
     ..isLocalStoreRequired = true
     ..hiveStoragePath = 'storage/hive/client'
+    ..namespace = 'functional_tests'
     ..commitLogPath = 'storage/hive/client/commit'
     ..privateKey = null
     ..cramSecret = at_demos.cramKeyMap[atSign]

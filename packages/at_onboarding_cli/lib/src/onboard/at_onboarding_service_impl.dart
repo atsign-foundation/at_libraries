@@ -61,7 +61,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       logger.severe(
           'Please set namespace in AtOnboardingPreferences.'
               ' Cannot create at_client instance without namespace.');
-      throw AtOnboardingException('namespace cannot be null');
+      throw AtOnboardingException('namespace cannot be empty');
     }
     await atClientManager.setCurrentAtSign(
         _atSign, atOnboardingPreference.namespace, atOnboardingPreference,
