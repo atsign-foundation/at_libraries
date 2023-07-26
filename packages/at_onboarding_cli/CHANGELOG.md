@@ -1,5 +1,7 @@
+## 1.3.1
+- feat: make namespace mandatory for authentication
 ## 1.3.0
-- feat: Introduced verification-code based activation of atsigns
+- feat: Introduced verification-code based activation of atsign's
 - fix: deprecate qr_code based activation
 - feat: introduced new exceptions
 - fix: improve existing logger messages and added some
