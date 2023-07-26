@@ -5,18 +5,18 @@ import 'dart:io';
 
 import 'package:at_chops/at_chops.dart';
 import 'package:at_client/at_client.dart';
+import 'package:at_commons/at_builders.dart';
+import 'package:at_lookup/at_lookup.dart';
+import 'package:at_onboarding_cli/at_onboarding_cli.dart';
+import 'package:at_onboarding_cli/src/factory/service_factories.dart';
 import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 import 'package:at_server_status/at_server_status.dart';
 import 'package:at_utils/at_utils.dart';
-import 'package:at_commons/at_builders.dart';
-import 'package:at_onboarding_cli/src/factory/service_factories.dart';
-import 'package:at_lookup/at_lookup.dart';
-import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:crypton/crypton.dart';
 import 'package:encrypt/encrypt.dart';
-import 'package:zxing2/qrcode.dart';
 import 'package:image/image.dart';
 import 'package:path/path.dart' as path;
+import 'package:zxing2/qrcode.dart';
 
 import '../util/home_directory_util.dart';
 import '../util/onboarding_util.dart';
@@ -56,6 +56,12 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     AtClientManager atClientManager = AtClientManager.getInstance();
     if (atOnboardingPreference.skipSync == true) {
       atServiceFactory = ServiceFactoryWithNoOpSyncService();
+    }
+    if (atOnboardingPreference.namespace == null) {
+      logger.severe(
+          'Please set namespace in AtOnboardingPreferences.'
+              ' Cannot create at_client instance without namespace.');
+      throw AtOnboardingException('namespace cannot be null');
     }
     await atClientManager.setCurrentAtSign(
         _atSign, atOnboardingPreference.namespace, atOnboardingPreference,
