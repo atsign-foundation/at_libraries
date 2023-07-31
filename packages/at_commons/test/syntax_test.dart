@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:convert';
 
 import 'package:at_commons/at_commons.dart';
 import 'package:test/test.dart';
@@ -219,6 +220,73 @@ void main() {
       expect(verbParams[MONITOR_MULTIPLEXED_MODE], 'multiplexed');
       expect(verbParams[MONITOR_SELF_NOTIFICATIONS], 'selfNotifications');
       expect(verbParams[MONITOR_REGEX], '.wavi');
+    });
+  });
+
+  group('A group of tests related to enroll verb', () {
+    test('A test to verify enroll request params', () {
+      String command =
+          'enroll:request:{"enrollmentId":"1234","appName":"wavi","deviceName":"pixel","namespaces":{"wavi":"rw","__manage":"r"},"encryptedDefaultEncryptedPrivateKey":"dummy_encrypted_private_key","encryptedDefaultSelfEncryptionKey":"dummy_self_encryption_key","encryptedAPKAMSymmetricKey":"dummy_pkam_sym_key","apkamPublicKey":"abcd1234"}\n';
+      var enrollVerbParams =
+          VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim())!;
+      expect(enrollVerbParams['operation'], 'request');
+      var verbParams = jsonDecode(enrollVerbParams['enrollParams']!);
+      expect(verbParams['enrollmentId'], '1234');
+      expect(verbParams['appName'], 'wavi');
+      expect(verbParams['deviceName'], 'pixel');
+      expect(verbParams['namespaces']['wavi'], 'rw');
+      expect(verbParams['namespaces']['__manage'], 'r');
+      expect(verbParams['encryptedDefaultEncryptedPrivateKey'],
+          'dummy_encrypted_private_key');
+      expect(verbParams['encryptedDefaultSelfEncryptionKey'],
+          'dummy_self_encryption_key');
+      expect(verbParams['encryptedAPKAMSymmetricKey'], 'dummy_pkam_sym_key');
+      expect(verbParams['apkamPublicKey'], 'abcd1234');
+    });
+
+    test('A test to verify enroll approve params', () {
+      String command =
+          'enroll:approve:{"enrollmentId":"1234","appName":"wavi","deviceName":"pixel","namespaces":{"wavi":"rw","__manage":"r"},"encryptedDefaultEncryptedPrivateKey":"dummy_encrypted_private_key","encryptedDefaultSelfEncryptionKey":"dummy_self_encryption_key","encryptedAPKAMSymmetricKey":"dummy_pkam_sym_key","apkamPublicKey":"abcd1234"}\n';
+      var enrollVerbParams =
+          VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim())!;
+      expect(enrollVerbParams['operation'], 'approve');
+      var verbParams = jsonDecode(enrollVerbParams['enrollParams']!);
+      expect(verbParams['enrollmentId'], '1234');
+      expect(verbParams['appName'], 'wavi');
+      expect(verbParams['deviceName'], 'pixel');
+      expect(verbParams['namespaces']['wavi'], 'rw');
+      expect(verbParams['namespaces']['__manage'], 'r');
+      expect(verbParams['encryptedDefaultEncryptedPrivateKey'],
+          'dummy_encrypted_private_key');
+      expect(verbParams['encryptedDefaultSelfEncryptionKey'],
+          'dummy_self_encryption_key');
+      expect(verbParams['encryptedAPKAMSymmetricKey'], 'dummy_pkam_sym_key');
+      expect(verbParams['apkamPublicKey'], 'abcd1234');
+    });
+
+    test('A test to verify enroll deny params', () {
+      String command = 'enroll:deny:{"enrollmentId":"1234"}\n';
+      var enrollVerbParams =
+          VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim())!;
+      expect(enrollVerbParams['operation'], 'deny');
+      var verbParams = jsonDecode(enrollVerbParams['enrollParams']!);
+      expect(verbParams['enrollmentId'], '1234');
+    });
+
+    test('A test to verify enroll revoke params', () {
+      String command = 'enroll:revoke:{"enrollmentId":"1234"}\n';
+      var enrollVerbParams =
+          VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim())!;
+      expect(enrollVerbParams['operation'], 'revoke');
+      var verbParams = jsonDecode(enrollVerbParams['enrollParams']!);
+      expect(verbParams['enrollmentId'], '1234');
+    });
+
+    test('A test to assert enroll list command', () {
+      String command = 'enroll:list\n';
+      var enrollVerbParams =
+          VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim())!;
+      expect(enrollVerbParams['operation'], 'list');
     });
   });
 }
