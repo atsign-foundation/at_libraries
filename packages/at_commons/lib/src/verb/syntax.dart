@@ -130,6 +130,8 @@ class VerbSyntax {
       r'^enroll:(?<operation>request|approve|deny|revoke|list)'
       // Positive lookbehind - Matches the value of operation named group
       //  To ignore ":" if operation is list
+      //  To be precise, this is actually to require ":"
+      //  if operation is request|approve|deny|revoke
       r'((?<=request|approve|deny|revoke):)?'
       r'(?<enrollParams>.+)?$';
   static const totp = r'^totp:(?<operation>get|validate)(:(?<totp>[0-9]+))?$';
