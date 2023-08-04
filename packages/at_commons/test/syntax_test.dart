@@ -288,6 +288,16 @@ void main() {
           VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim())!;
       expect(enrollVerbParams['operation'], 'list');
     });
+
+    test('A test to verify enroll list throws exception if appended with :',
+        () {
+      String command = 'enroll:list:\n';
+      expect(
+          () => getVerbParams(VerbSyntax.enroll, command),
+          throwsA(predicate((dynamic e) =>
+              e is InvalidSyntaxException &&
+              e.message == 'command does not match the regex')));
+    });
   });
 }
 
