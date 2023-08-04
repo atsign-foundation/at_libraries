@@ -10,15 +10,14 @@ void main() {
       expect(pkamVerbBuilder.buildCommand(), 'pkam:abc123\n');
     });
     test(
-        'check pkam verb command when signed challenge and enroll approval id are set',
+        'check pkam verb command when signed challenge and enrollment id are set',
         () {
       var signature = 'abc123';
       var pkamVerbBuilder = PkamVerbBuilder()
         ..signature = signature
-        ..enrollApprovalId = '123';
+        ..enrollmentlId = '123';
       expect(pkamVerbBuilder.checkParams(), true);
-      expect(
-          pkamVerbBuilder.buildCommand(), 'pkam:enrollApprovalId:123:abc123\n');
+      expect(pkamVerbBuilder.buildCommand(), 'pkam:enrollmentId:123:abc123\n');
     });
 
     test(
@@ -35,17 +34,17 @@ void main() {
     });
 
     test(
-        'check pkam verb command when enrollment approval Id, signed challenge and signing/hashing algo are set',
+        'check pkam verb command when enrollment Id, signed challenge and signing/hashing algo are set',
         () {
       var signature = 'abc123';
       var pkamVerbBuilder = PkamVerbBuilder()
-        ..enrollApprovalId = '123'
+        ..enrollmentlId = '123'
         ..signature = signature
         ..signingAlgo = 'rsa2048'
         ..hashingAlgo = 'sha256';
       expect(pkamVerbBuilder.checkParams(), true);
       expect(pkamVerbBuilder.buildCommand(),
-          'pkam:signingAlgo:rsa2048:hashingAlgo:sha256:enrollApprovalId:123:abc123\n');
+          'pkam:signingAlgo:rsa2048:hashingAlgo:sha256:enrollmentId:123:abc123\n');
     });
   });
 }

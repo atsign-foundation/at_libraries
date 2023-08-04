@@ -7,7 +7,7 @@ class VerbSyntax {
   static const pol = r'^pol$';
   static const cram = r'^cram:(?<digest>.+$)';
   static const pkam =
-      r'^pkam:(signingAlgo:(?<signingAlgo>ecc_secp256r1|rsa2048):)?(hashingAlgo:(?<hashingAlgo>sha256):)?(enrollApprovalId:(?<enrollApprovalId>.+):)?(?<signature>.+$)';
+      r'^pkam:(signingAlgo:(?<signingAlgo>ecc_secp256r1|rsa2048):)?(hashingAlgo:(?<hashingAlgo>sha256):)?(enrollmentId:(?<enrollmentId>.+):)?(?<signature>.+$)';
   static const llookup = r'^llookup'
       r'(:(?<operation>meta|all))?'
       r'(:cached)?'
@@ -127,15 +127,8 @@ class VerbSyntax {
   static const noOp = r'^noop:(?<delayMillis>\d+)$';
   static const notifyRemove = r'notify:remove:(?<id>[\w\d\-\_]+)';
   static const enroll =
-      r'^enroll:(?<operation>request|approve|deny|revoke|list)'
-      // Add colon only when operation is request, approve, deny or revoke. Do not add for list
-      r'(?:(?<=request|approve|deny|revoke):)?'
-      r'(?:(?:enrollmentId:(?<enrollmentId>[a-zA-Z0-9-]+))|'
-      r'(?:appName:(?<appName>[a-zA-Z0-9]+):)?'
-      r'(?:deviceName:(?<deviceName>[a-zA-Z0-9_]+):)?'
-      r'(?:namespaces:\[(?<namespaces>[a-zA-Z0-9;_,]+)\]:)?'
-      r'(?:totp:(?<totp>[0-9]+):)?'
-      r'(?:apkamPublicKey:(?<apkamPublicKey>.*)))?$';
+      // The non-capturing group (?::)? matches ":" if the operation is request|approve|deny|revoke
+      r'^enroll:(?<operation>(?:list$|(request|approve|deny|revoke)))(?::)?(?<enrollParams>.+)?$';
   static const totp = r'^totp:(?<operation>get|validate)(:(?<totp>[0-9]+))?$';
   static const keys = r'^keys:((?<operation>put|get|delete):?)'
       r'(?:(?<visibility>public|private|self):?)?'

@@ -1,88 +1,62 @@
-import 'package:at_commons/at_commons.dart';
 import 'package:at_commons/src/verb/enroll_verb_builder.dart';
+import 'package:at_commons/src/verb/operation_enum.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('A group of enroll verb builder tests', () {
-    test('enroll verb - check enroll request build command', () {
+  group('A group of enroll verb builder test', () {
+    test('A test to verify enroll request', () {
       var enrollVerbBuilder = EnrollVerbBuilder()
         ..operation = EnrollOperationEnum.request
         ..appName = 'wavi'
         ..deviceName = 'pixel'
-        ..namespaces = ['wavi,rw', '__manage,r']
-        ..apkamPublicKey = 'abcd1234';
+        ..namespaces = {'wavi': 'rw', '__manage': 'r'}
+        ..apkamPublicKey = 'abcd1234'
+        ..enrollmentId = '1234'
+        ..encryptedAPKAMSymmetricKey = 'dummy_pkam_sym_key'
+        ..encryptedDefaultEncryptedPrivateKey = 'dummy_encrypted_private_key'
+        ..encryptedDefaultSelfEncryptionKey = 'dummy_self_encryption_key';
       var command = enrollVerbBuilder.buildCommand();
       expect(command,
-          'enroll:request:appName:wavi:deviceName:pixel:namespaces:[wavi,rw;__manage,r]:apkamPublicKey:abcd1234\n');
+          'enroll:request:{"enrollmentId":"1234","appName":"wavi","deviceName":"pixel","namespaces":{"wavi":"rw","__manage":"r"},"encryptedDefaultEncryptedPrivateKey":"dummy_encrypted_private_key","encryptedDefaultSelfEncryptionKey":"dummy_self_encryption_key","encryptedAPKAMSymmetricKey":"dummy_pkam_sym_key","apkamPublicKey":"abcd1234"}\n');
     });
-    test('enroll verb - check enroll approve build command', () {
+
+    test('A test to verify enroll approve operation', () {
       var enrollVerbBuilder = EnrollVerbBuilder()
         ..operation = EnrollOperationEnum.approve
+        ..enrollmentId = '123'
         ..appName = 'wavi'
         ..deviceName = 'pixel'
-        ..namespaces = ['wavi,rw']
-        ..apkamPublicKey = 'abcd1234';
+        ..namespaces = {'wavi': 'rw'}
+        ..apkamPublicKey = 'abcd1234'
+        ..encryptedAPKAMSymmetricKey = 'dummy_pkam_sym_key'
+        ..encryptedDefaultEncryptedPrivateKey = 'dummy_encrypted_private_key'
+        ..encryptedDefaultSelfEncryptionKey = 'dummy_self_encryption_key';
       var command = enrollVerbBuilder.buildCommand();
       expect(command,
-          'enroll:approve:appName:wavi:deviceName:pixel:namespaces:[wavi,rw]:apkamPublicKey:abcd1234\n');
+          'enroll:approve:{"enrollmentId":"123","appName":"wavi","deviceName":"pixel","namespaces":{"wavi":"rw"},"encryptedDefaultEncryptedPrivateKey":"dummy_encrypted_private_key","encryptedDefaultSelfEncryptionKey":"dummy_self_encryption_key","encryptedAPKAMSymmetricKey":"dummy_pkam_sym_key","apkamPublicKey":"abcd1234"}\n');
     });
-    test('enroll verb - check enroll deny build command', () {
+
+    test('A test to verify enroll deny operation', () {
       var enrollVerbBuilder = EnrollVerbBuilder()
-        ..operation = EnrollOperationEnum.approve
-        ..appName = 'wavi'
-        ..deviceName = 'pixel'
-        ..totp = 3446
-        ..namespaces = ['wavi,rw', '__manage,r']
-        ..apkamPublicKey = 'abcd1234';
+        ..operation = EnrollOperationEnum.deny
+        ..enrollmentId = '123';
       var command = enrollVerbBuilder.buildCommand();
-      expect(command,
-          'enroll:approve:appName:wavi:deviceName:pixel:namespaces:[wavi,rw;__manage,r]:totp:3446:apkamPublicKey:abcd1234\n');
+      expect(command, 'enroll:deny:{"enrollmentId":"123"}\n');
     });
 
-    test('enroll verb - check enroll request verb params', () {
+    test('A test to verify enroll revoke operation', () {
       var enrollVerbBuilder = EnrollVerbBuilder()
-        ..operation = EnrollOperationEnum.request
-        ..appName = 'wavi'
-        ..deviceName = 'pixel'
-        ..namespaces = ['wavi,rw', '__manage,r']
-        ..totp = 1234
-        ..apkamPublicKey = 'abcd1234';
-
+        ..operation = EnrollOperationEnum.revoke
+        ..enrollmentId = '123';
       var command = enrollVerbBuilder.buildCommand();
-      var params = VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim())!;
-      expect(params['operation'], 'request');
-      expect(params['appName'], 'wavi');
-      expect(params['deviceName'], 'pixel');
-      expect(params['namespaces'], 'wavi,rw;__manage,r');
-      expect(params['totp'], '1234');
-      expect(params['apkamPublicKey'], 'abcd1234');
+      expect(command, 'enroll:revoke:{"enrollmentId":"123"}\n');
     });
 
-    test('enroll verb - invalid syntax - no app name', () {
-      var command =
-          'enroll:request:deviceName:pixel:namespaces:wavi,rw;__manage,r:apkamPublicKey:abcd1234';
-      var params = VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim());
-      expect(params, null);
-    });
-
-    test('enroll verb - invalid syntax - no device name', () {
-      var command =
-          'enroll:request:appName:wavi:namespaces:wavi,rw;__manage,r:apkamPublicKey:abcd1234';
-      var params = VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim());
-      expect(params, null);
-    });
-
-    test('enroll verb - invalid syntax - no namespace', () {
-      var command =
-          'enroll:request:appName:wavi:deviceName:pixel:apkamPublicKey:abcd1234';
-      var params = VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim())!;
-      expect(params['namespaces'], null);
-    });
-    test('enroll verb - invalid syntax - no apkam public key', () {
-      var command =
-          'enroll:request:appName:wavi:deviceName:pixel:namespaces:wavi,r;_manage';
-      var params = VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim());
-      expect(params, null);
+    test('A test to verify enroll list operation', () {
+      var enrollVerbBuilder = EnrollVerbBuilder()
+        ..operation = EnrollOperationEnum.list;
+      var command = enrollVerbBuilder.buildCommand();
+      expect(command, 'enroll:list\n');
     });
   });
 }
