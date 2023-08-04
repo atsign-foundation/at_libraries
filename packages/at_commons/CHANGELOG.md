@@ -1,3 +1,6 @@
+## 3.0.53
+- feat: Modify "enroll" verb regex.
+- feat: Introduce "EnrollParams" class to encapsulate enrollment attributes.
 ## 3.0.52
 - fix: Add revoke and list operations to "enroll" verb
 - fix: Modify "keys" verb regex and verb builder
