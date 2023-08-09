@@ -1,13 +1,13 @@
 import 'dart:io';
 
+import 'package:at_client/at_client.dart';
+import 'package:at_demo_data/at_demo_data.dart' as at_demo;
+import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:at_lookup/at_lookup.dart';
-import 'package:at_client/at_client.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
-import 'package:at_demo_data/at_demo_data.dart' as at_demo;
 
 void main() {
   AtLookupImpl mockAtLookup = MockAtLookupImpl();
@@ -16,11 +16,13 @@ void main() {
   });
   group('A group of tests to verify at_chops creation in onboarding_cli', () {
     AtSignLogger.root_level = 'FINER';
+
     test('A test to whether at_chops instance is set on authenticate',
         () async {
       final atSign = '@alice🛠';
       AtOnboardingPreference onboardingPreference = AtOnboardingPreference()
-        ..atKeysFilePath = 'test/data/@alice🛠.atKeys';
+        ..atKeysFilePath = 'test/data/@alice🛠.atKeys'
+        ..namespace = 'unit_test';
       AtOnboardingService onboardingService =
           AtOnboardingServiceImpl(atSign, onboardingPreference);
       onboardingService.atLookUp = mockAtLookup;
@@ -33,10 +35,12 @@ void main() {
       expect(atChops, isNotNull);
       expect(atChops?.atChopsKeys, isNotNull);
     });
+
     test('A test to check whether at_chops keys are set correctly', () async {
       final atSign = '@alice🛠';
       AtOnboardingPreference onboardingPreference = AtOnboardingPreference()
-        ..atKeysFilePath = 'test/data/@alice🛠.atKeys';
+        ..atKeysFilePath = 'test/data/@alice🛠.atKeys'
+        ..namespace = 'unit_test';
       AtOnboardingService onboardingService =
           AtOnboardingServiceImpl(atSign, onboardingPreference);
       onboardingService.atLookUp = mockAtLookup;
@@ -74,10 +78,10 @@ Future<void> tearDownFunc() async {
 class MockAtLookupImpl extends Mock implements AtLookupImpl {}
 
 AtClientPreference getAlicePreference() {
-  var preference = AtClientPreference();
-  preference.hiveStoragePath = 'test/hive/client';
-  preference.commitLogPath = 'test/hive/client/commit';
-  preference.isLocalStoreRequired = true;
-  preference.rootDomain = 'vip.ve.atsign.zone';
-  return preference;
+  return AtClientPreference()
+    ..hiveStoragePath = 'test/hive/client'
+    ..commitLogPath = 'test/hive/client/commit'
+    ..isLocalStoreRequired = true
+    ..rootDomain = 'vip.ve.atsign.zone'
+    ..namespace = 'testing';
 }

@@ -1,17 +1,19 @@
+import 'dart:io';
+
+import 'package:args/args.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
-import 'package:args/args.dart';
 import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
-import 'dart:io';
 import 'package:at_utils/at_logger.dart';
 
-Future<void> main(List<String> arguments,
-    {AtOnboardingService? atOnboardingService}) async {
+AtOnboardingService? atOnboardingService;
+
+Future<void> main(List<String> arguments) async {
   //defaults
   String rootServer = 'root.atsign.org';
   String registrarUrl = 'my.atsign.com';
   AtSignLogger.root_level = 'severe';
-
+  stdout.write('Got args: $arguments');
   //get atSign and CRAM key from args
   final parser = ArgParser()
     ..addOption('atsign', abbr: 'a', help: 'atSign to activate')
@@ -40,11 +42,10 @@ Future<void> main(List<String> arguments,
     throw IllegalArgumentException('atSign is required');
   }
 
-  await activate(argResults, atOnboardingService: atOnboardingService);
+  await activate(argResults);
 }
 
-Future<void> activate(ArgResults argResults,
-    {AtOnboardingService? atOnboardingService}) async {
+Future<void> activate(ArgResults argResults) async {
   stdout.writeln('[Information] Root server is ${argResults['rootServer']}');
   stdout.writeln(
       '[Information] Registrar url provided is ${argResults['registrarUrl']}');
@@ -60,7 +61,7 @@ Future<void> activate(ArgResults argResults,
   stdout.writeln(
       '[Information] Activating your atSign. This may take up to 2 minutes.');
   try {
-    await atOnboardingService.onboard();
+    await atOnboardingService!.onboard();
   } on InvalidDataException catch (e) {
     stderr.writeln(
         '[Error] Activation failed. Invalid data provided by user. Please try again\nCause: ${e.message}');
@@ -74,6 +75,6 @@ Future<void> activate(ArgResults argResults,
         '[Error] Activation failed. It looks like something went wrong on our side.\n'
         'Please try again or contact support@atsign.com\nCause: $e');
   } finally {
-    await atOnboardingService.close();
+    await atOnboardingService!.close();
   }
 }
