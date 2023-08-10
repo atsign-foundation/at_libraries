@@ -13,7 +13,6 @@ Future<void> main(List<String> arguments) async {
   String rootServer = 'root.atsign.org';
   String registrarUrl = 'my.atsign.com';
   AtSignLogger.root_level = 'severe';
-  stdout.write('Got args: $arguments');
   //get atSign and CRAM key from args
   final parser = ArgParser()
     ..addOption('atsign', abbr: 'a', help: 'atSign to activate')
