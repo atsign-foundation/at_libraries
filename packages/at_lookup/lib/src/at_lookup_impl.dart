@@ -433,7 +433,7 @@ class AtLookupImpl implements AtLookUp {
   }
 
   @override
-  Future<bool> pkamAuthenticate() async {
+  Future<bool> pkamAuthenticate({String? enrollmentId}) async {
     await createConnection();
     try {
       await _pkamAuthenticationMutex.acquire();
@@ -456,10 +456,13 @@ class AtLookupImpl implements AtLookUp {
           ..hashingAlgoType = hashingAlgoType
           ..signingMode = AtSigningMode.pkam;
         var signingResult = _atChops!.sign(atSigningInput);
-        var pkamCommand =
-            'pkam:signingAlgo:${signingAlgoType.name}:hashingAlgo:${hashingAlgoType.name}:${signingResult.result}\n';
-        logger.finer('pkamCommand:$pkamCommand');
-        await _sendCommand(pkamCommand);
+        var pkamBuilder = PkamVerbBuilder()
+          ..signingAlgo = signingAlgoType.name
+          ..hashingAlgo = hashingAlgoType.name
+          ..enrollmentlId = enrollmentId
+          ..signature = signingResult.result;
+        logger.finer('pkamCommand:${pkamBuilder.buildCommand()}');
+        await _sendCommand(pkamBuilder.buildCommand());
 
         var pkamResponse = await messageListener.read();
         if (pkamResponse == 'data:success') {

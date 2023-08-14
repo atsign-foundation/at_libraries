@@ -27,6 +27,13 @@ dependencies:
    http: ^0.13.6
    at_chops: ^1.0.3
 
+dependency_overrides:
+  at_chops:
+    path: ../at_chops
+  at_lookup:
+    path: ../at_lookup
+
+
 dev_dependencies:
   lints: ^2.1.0
   test: ^1.24.2

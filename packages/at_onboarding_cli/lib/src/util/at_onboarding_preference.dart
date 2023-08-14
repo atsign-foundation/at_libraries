@@ -27,4 +27,8 @@ class AtOnboardingPreference extends AtClientPreference {
 
   /// the hostName of the registrar which will be used to activate the atsign
   String registrarUrl = RegistrarApiConstants.apiHostProd;
+
+  late String appName;
+
+  late String deviceName;
 }

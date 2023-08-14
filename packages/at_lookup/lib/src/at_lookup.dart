@@ -28,7 +28,8 @@ abstract class AtLookUp {
 
   /// performs a PKAM authentication using private key on the client side and public key on secondary server
   /// Default signing algorithm for pkam signature is [SigningAlgoType.rsa2048] and default hashing algorithm is [HashingAlgoType.sha256]
-  Future<bool> pkamAuthenticate();
+  /// Optionally pass enrollmentId is the client is enrolled using APKAM
+  Future<bool> pkamAuthenticate({String? enrollmentId});
 
   /// set an instance of  [AtChops] for signing and verification operations.
   set atChops(AtChops? atChops);

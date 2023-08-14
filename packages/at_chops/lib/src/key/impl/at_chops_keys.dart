@@ -8,10 +8,19 @@ class AtChopsKeys {
 
   AtPkamKeyPair? _atPkamKeyPair;
   AtSigningKeyPair? atSigningKeyPair;
+
+  @Deprecated('Use selfEncryptionKey')
   SymmetricKey? symmetricKey;
+
+  SymmetricKey? selfEncryptionKey;
+
+  SymmetricKey? apkamSymmetricKey;
 
   AtChopsKeys.create(this.atEncryptionKeyPair, this._atPkamKeyPair);
 
+  AtChopsKeys();
+
+  @Deprecated('Use selfEncryptionKey')
   AtChopsKeys.createSymmetric(this.symmetricKey);
 
   AtPkamKeyPair? get atPkamKeyPair => _atPkamKeyPair;

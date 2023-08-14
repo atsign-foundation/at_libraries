@@ -12,8 +12,8 @@ dependencies:
   path: ^1.8.0
   crypton: ^2.0.1
   crypto: ^3.0.1
-  at_utils: ^3.0.12
-  at_commons: ^3.0.43
+  at_utils: ^3.0.15
+  at_commons: ^3.0.53
   mutex: ^3.0.0
   mocktail: ^0.3.0
   meta: ^1.8.0
