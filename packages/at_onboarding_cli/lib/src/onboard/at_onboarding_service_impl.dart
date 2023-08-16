@@ -57,12 +57,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     if (atOnboardingPreference.skipSync == true) {
       atServiceFactory = ServiceFactoryWithNoOpSyncService();
     }
-    if (atOnboardingPreference.namespace == null) {
-      logger.severe(
-          'Please set namespace in AtOnboardingPreferences.'
-              ' Cannot create at_client instance without namespace.');
-      throw AtOnboardingException('namespace cannot be empty');
-    }
     await atClientManager.setCurrentAtSign(
         _atSign, atOnboardingPreference.namespace, atOnboardingPreference,
         atChops: atChops, serviceFactory: atServiceFactory);
