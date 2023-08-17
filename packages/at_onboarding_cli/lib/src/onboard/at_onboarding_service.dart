@@ -7,9 +7,18 @@ abstract class AtOnboardingService {
   ///returns true if onboarded
   Future<bool> onboard();
 
-  ///authenticate into secondary server using privateKey
+  ///Authenticate into secondary server using PKAM privateKey for legacy clients
+  ///For clients that are enrolled through APKAM, pass the enrollmentId and auth is done using APKAM private key
   ///returns true if authenticated
-  Future<bool> authenticate();
+  Future<bool> authenticate({String? enrollmentId});
+
+  /// Sends an enroll request to the server. Apps that are already enrolled will receive notifications for this enroll request and can approve/deny the request
+  /// appName - application name of the client e.g wavi,buzz, atmosphere etc.,
+  /// deviceName - device identifier from the requesting application e.g iphone,any unique ID that identifies the requesting client
+  /// totp - otp retrieved from an already enrolled app
+  /// namespaces - key-value pair of namespace-access of the requesting client e.g {"wavi":"rw","contacts":"r"}
+  Future<bool> enroll(String appName, String deviceName, String totp,
+      Map<String, String> namespaces);
 
   ///returns an authenticated instance of AtClient
   @Deprecated('use getter')

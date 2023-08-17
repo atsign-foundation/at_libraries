@@ -557,7 +557,7 @@ class AtLookupImpl implements AtLookUp {
       if (auth && _isAuthRequired()) {
         if (_atChops != null) {
           logger.finer('calling pkam using atchops');
-          await pkamAuthenticate();
+          await pkamAuthenticate(enrollmentId: enrollmentId);
         } else if (privateKey != null) {
           logger.finer('calling pkam without atchops');
           await authenticate(privateKey);
@@ -634,6 +634,9 @@ class AtLookupImpl implements AtLookUp {
 
   @override
   SigningAlgoType signingAlgoType = SigningAlgoType.rsa2048;
+
+  @override
+  String? enrollmentId;
 }
 
 class AtLookupSecureSocketFactory {

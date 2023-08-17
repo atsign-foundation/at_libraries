@@ -32,6 +32,8 @@ dependency_overrides:
     path: ../at_chops
   at_lookup:
     path: ../at_lookup
+  at_client:
+    path: ../../../at_client_sdk/packages/at_client
 
 
 dev_dependencies:

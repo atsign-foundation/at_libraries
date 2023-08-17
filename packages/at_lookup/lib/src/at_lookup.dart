@@ -49,4 +49,9 @@ abstract class AtLookUp {
   set hashingAlgoType(HashingAlgoType hashingAlgoType);
 
   HashingAlgoType get hashingAlgoType;
+
+  /// EnrollmentId has to be set for clients that are enrolled through APKAM.
+  set enrollmentId(String? enrollmentId);
+
+  String? get enrollmentId;
 }
