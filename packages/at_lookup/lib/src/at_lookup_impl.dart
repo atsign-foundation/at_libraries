@@ -383,6 +383,7 @@ class AtLookupImpl implements AtLookUp {
     return await _process(atCommand, auth: true);
   }
 
+  @override
   Future<String?> executeCommand(String atCommand, {bool auth = false}) async {
     return await _process(atCommand, auth: auth);
   }
@@ -433,7 +434,7 @@ class AtLookupImpl implements AtLookUp {
   }
 
   @override
-  Future<bool> pkamAuthenticate() async {
+  Future<bool> pkamAuthenticate({String? enrollmentId}) async {
     await createConnection();
     try {
       await _pkamAuthenticationMutex.acquire();
@@ -456,10 +457,13 @@ class AtLookupImpl implements AtLookUp {
           ..hashingAlgoType = hashingAlgoType
           ..signingMode = AtSigningMode.pkam;
         var signingResult = _atChops!.sign(atSigningInput);
-        var pkamCommand =
-            'pkam:signingAlgo:${signingAlgoType.name}:hashingAlgo:${hashingAlgoType.name}:${signingResult.result}\n';
-        logger.finer('pkamCommand:$pkamCommand');
-        await _sendCommand(pkamCommand);
+        var pkamBuilder = PkamVerbBuilder()
+          ..signingAlgo = signingAlgoType.name
+          ..hashingAlgo = hashingAlgoType.name
+          ..enrollmentlId = enrollmentId
+          ..signature = signingResult.result;
+        logger.finer('pkamCommand:${pkamBuilder.buildCommand()}');
+        await _sendCommand(pkamBuilder.buildCommand());
 
         var pkamResponse = await messageListener.read();
         if (pkamResponse == 'data:success') {
@@ -554,7 +558,7 @@ class AtLookupImpl implements AtLookUp {
       if (auth && _isAuthRequired()) {
         if (_atChops != null) {
           logger.finer('calling pkam using atchops');
-          await pkamAuthenticate();
+          await pkamAuthenticate(enrollmentId: enrollmentId);
         } else if (privateKey != null) {
           logger.finer('calling pkam without atchops');
           await authenticate(privateKey);
@@ -631,6 +635,9 @@ class AtLookupImpl implements AtLookUp {
 
   @override
   SigningAlgoType signingAlgoType = SigningAlgoType.rsa2048;
+
+  @override
+  String? enrollmentId;
 }
 
 class AtLookupSecureSocketFactory {
