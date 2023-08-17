@@ -1,3 +1,7 @@
+## 1.0.4
+- feat: Deprecated symmetric key pair in AtChopsKeys and introduced selfEncryptionKey and apkamSymmetricKey
+- chore: Upgrade at_commons to 3.0.53 and at_util to 3.0.15
+- fix: Removed at_onboarding_cli dependency in pubspec
 ## 1.0.3
 - chore: Changed the Dart SDK version to 2.15.1 from 2.18.3 to support dependent packages
 ## 1.0.2
