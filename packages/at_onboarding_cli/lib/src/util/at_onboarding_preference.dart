@@ -31,4 +31,6 @@ class AtOnboardingPreference extends AtClientPreference {
   late String appName;
 
   late String deviceName;
+
+  int apkamAuthRetryDurationMins = 30;
 }

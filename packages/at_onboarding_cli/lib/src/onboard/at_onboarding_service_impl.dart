@@ -32,8 +32,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   AtOnboardingPreference atOnboardingPreference;
   AtClient? _atClient;
   AtLookUp? _atLookUp;
-  //#TODO move to config/preference
-  static const int _apkamAuthRetryDurationMins = 30;
 
   /// The object which controls what types of AtClients, NotificationServices
   /// and SyncServices get created when we call [AtClientManager.setCurrentAtSign].
@@ -153,7 +151,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
           'appName and deviceName are mandatory for enrollment');
     }
     final Duration retryInterval =
-        Duration(minutes: _apkamAuthRetryDurationMins);
+        Duration(minutes: atOnboardingPreference.apkamAuthRetryDurationMins);
     logger.info('Generating apkam encryption keypair');
     //1. Generate new apkam key pair and apkam symmetric key
     var apkamKeyPair = generateRsaKeypair();
@@ -161,6 +159,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
     AtLookupImpl atLookUpImpl = AtLookupImpl(_atSign,
         atOnboardingPreference.rootDomain, atOnboardingPreference.rootPort);
+
     //2. Retrieve default encryption public key and encrypt apkam symmetric key
     var defaultEncryptionPublicKey =
         await _retrieveEncryptionPublicKey(atLookUpImpl);
@@ -183,6 +182,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         AtPkamKeyPair.create(apkamKeyPair.publicKey.toString(),
             apkamKeyPair.privateKey.toString()));
     atLookUpImpl.atChops = AtChopsImpl(atChopsKeys);
+
     //5. try pkam auth every 30 mins or configured time interval until enrollment timesout or approved/denied by another authorized app
     var pkamAuthResult = false;
     while (!pkamAuthResult) {
@@ -195,31 +195,16 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
 
     //6. Retrieve encrypted keys from server
-    var privateKeyCommand =
-        'keys:get:keyName:$enrollmentIdFromServer.$defaultEncryptionPrivateKey.__manage$_atSign\n';
-    var selfEncryptionKeyCommand =
-        'keys:get:keyName:$enrollmentIdFromServer.$defaultSelfEncryptionKey.__manage$_atSign\n';
-    var getPrivateKeyResult;
-    var getSelfEncryptionKeyResult;
-    try {
-      getPrivateKeyResult =
-          await atLookUpImpl.executeCommand(privateKeyCommand, auth: true);
-      getSelfEncryptionKeyResult = await atLookUpImpl
-          .executeCommand(selfEncryptionKeyCommand, auth: true);
-    } on Exception catch (e) {
-      throw AtEnrollmentException(
-          'Exception while getting encrypted private key/self key from server: $e');
-    }
-    getPrivateKeyResult = getPrivateKeyResult.replaceFirst('data:', '');
-    var privateKeyResultJson = jsonDecode(getPrivateKeyResult);
-    getSelfEncryptionKeyResult =
-        getSelfEncryptionKeyResult.replaceFirst('data:', '');
-    var selfEncryptionKeyResultJson = jsonDecode(getSelfEncryptionKeyResult);
     var decryptedEncryptionPrivateKey = EncryptionUtil.decryptValue(
-        privateKeyResultJson['value'], apkamSymmetricKey);
+        await _getEncryptionPrivateKeyFromServer(
+            enrollmentIdFromServer, atLookUpImpl),
+        apkamSymmetricKey);
     var decryptedSelfEncryptionKey = EncryptionUtil.decryptValue(
-        selfEncryptionKeyResultJson['value'], apkamSymmetricKey);
+        await _getSelfEncryptionKeyFromServer(
+            enrollmentIdFromServer, atLookUpImpl),
+        apkamSymmetricKey);
 
+    //7. Save security keys and enrollmentId in atKeys file
     var atSecurityKeys = AtSecurityKeys()
       ..defaultEncryptionPrivateKey = decryptedEncryptionPrivateKey
       ..defaultEncryptionPublicKey = defaultEncryptionPublicKey
@@ -229,6 +214,51 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       ..apkamPrivateKey = apkamKeyPair.privateKey.toString();
     await _generateAtKeysFile(enrollmentIdFromServer, atSecurityKeys);
     return pkamAuthResult;
+  }
+
+  Future<String> _getEncryptionPrivateKeyFromServer(
+      String enrollmentIdFromServer, AtLookUp atLookUp) async {
+    var privateKeyCommand =
+        'keys:get:keyName:$enrollmentIdFromServer.$defaultEncryptionPrivateKey.__manage$_atSign\n';
+    var encryptionPrivateKeyFromServer;
+    try {
+      var getPrivateKeyResult =
+          await atLookUp.executeCommand(privateKeyCommand, auth: true);
+      if (getPrivateKeyResult == null || getPrivateKeyResult.isEmpty) {
+        throw AtEnrollmentException('$privateKeyCommand returned null/empty');
+      }
+      getPrivateKeyResult = getPrivateKeyResult.replaceFirst('data:', '');
+      var privateKeyResultJson = jsonDecode(getPrivateKeyResult);
+      encryptionPrivateKeyFromServer = privateKeyResultJson['value'];
+    } on Exception catch (e) {
+      throw AtEnrollmentException(
+          'Exception while getting encrypted private key/self key from server: $e');
+    }
+    return encryptionPrivateKeyFromServer;
+  }
+
+  Future<String> _getSelfEncryptionKeyFromServer(
+      String enrollmentIdFromServer, AtLookUp atLookUp) async {
+    var selfEncryptionKeyCommand =
+        'keys:get:keyName:$enrollmentIdFromServer.$defaultSelfEncryptionKey.__manage$_atSign\n';
+    var selfEncryptionKeyFromServer;
+    try {
+      var getSelfEncryptionKeyResult =
+          await atLookUp.executeCommand(selfEncryptionKeyCommand, auth: true);
+      if (getSelfEncryptionKeyResult == null ||
+          getSelfEncryptionKeyResult.isEmpty) {
+        throw AtEnrollmentException(
+            '$selfEncryptionKeyCommand returned null/empty');
+      }
+      getSelfEncryptionKeyResult =
+          getSelfEncryptionKeyResult.replaceFirst('data:', '');
+      var selfEncryptionKeyResultJson = jsonDecode(getSelfEncryptionKeyResult);
+      selfEncryptionKeyFromServer = selfEncryptionKeyResultJson['value'];
+    } on Exception catch (e) {
+      throw AtEnrollmentException(
+          'Exception while getting encrypted private key/self key from server: $e');
+    }
+    return selfEncryptionKeyFromServer;
   }
 
   Future<bool> _attemptPkamAuth(AtLookUp atLookUp,

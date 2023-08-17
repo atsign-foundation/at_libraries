@@ -26,6 +26,8 @@ abstract class AtLookUp {
 
   Future<String?> executeVerb(VerbBuilder builder, {bool sync = false});
 
+  Future<String?> executeCommand(String command, {bool auth = false});
+
   /// performs a PKAM authentication using private key on the client side and public key on secondary server
   /// Default signing algorithm for pkam signature is [SigningAlgoType.rsa2048] and default hashing algorithm is [HashingAlgoType.sha256]
   /// Optionally pass enrollmentId is the client is enrolled using APKAM

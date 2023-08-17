@@ -383,6 +383,7 @@ class AtLookupImpl implements AtLookUp {
     return await _process(atCommand, auth: true);
   }
 
+  @override
   Future<String?> executeCommand(String atCommand, {bool auth = false}) async {
     return await _process(atCommand, auth: auth);
   }
