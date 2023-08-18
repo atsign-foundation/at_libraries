@@ -14,6 +14,22 @@ dependencies:
   at_lookup: ^3.0.36
   at_client: ^3.0.58
 
+dependency_overrides: 
+  at_chops:
+    git:
+      url: https://github.com/atsign-foundation/at_libraries
+      path: packages/at_chops
+      ref: atchops_apkam_changes
+  at_lookup:
+    git:
+      url: https://github.com/atsign-foundation/at_libraries
+      path: packages/at_lookup
+      ref: atlookup_apkam_changes
+  at_client:
+    git:
+      url: https://github.com/atsign-foundation/at_client_sdk.git
+      path: packages/at_client
+      ref: apkam_changes
 dev_dependencies:
   lints: ^1.0.0
   test: ^1.17.2
