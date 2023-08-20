@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:convert';
 
 import 'package:at_commons/at_commons.dart';
 import 'package:test/test.dart';
@@ -83,19 +84,19 @@ void main() {
   group('A group of positive tests to verify keys verb regex', () {
     test('keys verb  - put public key', () {
       var command =
-          'keys:put:public:keyName:encryptionPublicKey:namespace:__global:keyType:rsa2048:abcd1234';
+          'keys:put:public:namespace:__global:keyType:rsa2048:keyName:encryption_123-a abcd1234';
       var verbParams = getVerbParams(VerbSyntax.keys, command);
       expect(verbParams[keyType], 'rsa2048');
       expect(verbParams[visibility], 'public');
       expect(verbParams[keyValue], 'abcd1234');
       expect(verbParams[namespace], '__global');
       expect(verbParams[AT_OPERATION], 'put');
-      expect(verbParams[keyName], 'encryptionPublicKey');
+      expect(verbParams[keyName], 'encryption_123-a');
     });
 
     test('keys verb - put private key', () {
       var command =
-          'keys:put:private:keyName:secretKey:namespace:__private:keyType:aes:abcd1234';
+          'keys:put:private:namespace:__private:keyType:aes:keyName:secretKey abcd1234';
       var verbParams = getVerbParams(VerbSyntax.keys, command);
       expect(verbParams[keyType], 'aes');
       expect(verbParams[visibility], 'private');
@@ -107,7 +108,7 @@ void main() {
 
     test('keys verb - put private key with app and device name', () {
       var command =
-          'keys:put:private:keyName:secretKey:namespace:__private:appName:wavi:deviceName:pixel:keyType:aes:abcd1234';
+          'keys:put:private:namespace:__private:appName:wavi:deviceName:pixel:keyType:aes:keyName:secretKey abcd1234';
       var verbParams = getVerbParams(VerbSyntax.keys, command);
       expect(verbParams[keyType], 'aes');
       expect(verbParams[visibility], 'private');
@@ -121,7 +122,7 @@ void main() {
 
     test('keys verb - put self key with encryption key name', () {
       var command =
-          'keys:put:self:keyName:mykey:namespace:__global:keyType:aes256:encryptionKeyName:firstKey:zcsfsdff';
+          'keys:put:self:namespace:__global:keyType:aes256:encryptionKeyName:encryption_123-a:keyName:mykey zcsfsdff';
       var verbParams = getVerbParams(VerbSyntax.keys, command);
       expect(verbParams[keyType], 'aes256');
       expect(verbParams[visibility], 'self');
@@ -129,7 +130,7 @@ void main() {
       expect(verbParams[namespace], '__global');
       expect(verbParams[AT_OPERATION], 'put');
       expect(verbParams[keyName], 'mykey');
-      expect(verbParams[encryptionKeyName], 'firstKey');
+      expect(verbParams[encryptionKeyName], 'encryption_123-a');
     });
 
     test('keys verb - get private keys', () {
@@ -150,11 +151,18 @@ void main() {
       expect(verbParams[visibility], 'public');
     });
 
-    test('keys verb - get  key by name', () {
+    test('keys verb - get key by name', () {
       var command = 'keys:get:keyName:firstKey';
       var verbParams = getVerbParams(VerbSyntax.keys, command);
       expect(verbParams[AT_OPERATION], 'get');
       expect(verbParams[keyName], 'firstKey');
+    });
+
+    test('keys verb - get key by name with emoji', () {
+      var command = 'keys:get:keyName:firstKey🛠';
+      var verbParams = getVerbParams(VerbSyntax.keys, command);
+      expect(verbParams[AT_OPERATION], 'get');
+      expect(verbParams[keyName], 'firstKey🛠');
     });
   });
 
@@ -212,6 +220,83 @@ void main() {
       expect(verbParams[MONITOR_MULTIPLEXED_MODE], 'multiplexed');
       expect(verbParams[MONITOR_SELF_NOTIFICATIONS], 'selfNotifications');
       expect(verbParams[MONITOR_REGEX], '.wavi');
+    });
+  });
+
+  group('A group of tests related to enroll verb', () {
+    test('A test to verify enroll request params', () {
+      String command =
+          'enroll:request:{"enrollmentId":"1234","appName":"wavi","deviceName":"pixel","namespaces":{"wavi":"rw","__manage":"r"},"encryptedDefaultEncryptedPrivateKey":"dummy_encrypted_private_key","encryptedDefaultSelfEncryptionKey":"dummy_self_encryption_key","encryptedAPKAMSymmetricKey":"dummy_pkam_sym_key","apkamPublicKey":"abcd1234"}\n';
+      var enrollVerbParams =
+          VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim())!;
+      expect(enrollVerbParams['operation'], 'request');
+      var verbParams = jsonDecode(enrollVerbParams['enrollParams']!);
+      expect(verbParams['enrollmentId'], '1234');
+      expect(verbParams['appName'], 'wavi');
+      expect(verbParams['deviceName'], 'pixel');
+      expect(verbParams['namespaces']['wavi'], 'rw');
+      expect(verbParams['namespaces']['__manage'], 'r');
+      expect(verbParams['encryptedDefaultEncryptedPrivateKey'],
+          'dummy_encrypted_private_key');
+      expect(verbParams['encryptedDefaultSelfEncryptionKey'],
+          'dummy_self_encryption_key');
+      expect(verbParams['encryptedAPKAMSymmetricKey'], 'dummy_pkam_sym_key');
+      expect(verbParams['apkamPublicKey'], 'abcd1234');
+    });
+
+    test('A test to verify enroll approve params', () {
+      String command =
+          'enroll:approve:{"enrollmentId":"1234","appName":"wavi","deviceName":"pixel","namespaces":{"wavi":"rw","__manage":"r"},"encryptedDefaultEncryptedPrivateKey":"dummy_encrypted_private_key","encryptedDefaultSelfEncryptionKey":"dummy_self_encryption_key","encryptedAPKAMSymmetricKey":"dummy_pkam_sym_key","apkamPublicKey":"abcd1234"}\n';
+      var enrollVerbParams =
+          VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim())!;
+      expect(enrollVerbParams['operation'], 'approve');
+      var verbParams = jsonDecode(enrollVerbParams['enrollParams']!);
+      expect(verbParams['enrollmentId'], '1234');
+      expect(verbParams['appName'], 'wavi');
+      expect(verbParams['deviceName'], 'pixel');
+      expect(verbParams['namespaces']['wavi'], 'rw');
+      expect(verbParams['namespaces']['__manage'], 'r');
+      expect(verbParams['encryptedDefaultEncryptedPrivateKey'],
+          'dummy_encrypted_private_key');
+      expect(verbParams['encryptedDefaultSelfEncryptionKey'],
+          'dummy_self_encryption_key');
+      expect(verbParams['encryptedAPKAMSymmetricKey'], 'dummy_pkam_sym_key');
+      expect(verbParams['apkamPublicKey'], 'abcd1234');
+    });
+
+    test('A test to verify enroll deny params', () {
+      String command = 'enroll:deny:{"enrollmentId":"1234"}\n';
+      var enrollVerbParams =
+          VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim())!;
+      expect(enrollVerbParams['operation'], 'deny');
+      var verbParams = jsonDecode(enrollVerbParams['enrollParams']!);
+      expect(verbParams['enrollmentId'], '1234');
+    });
+
+    test('A test to verify enroll revoke params', () {
+      String command = 'enroll:revoke:{"enrollmentId":"1234"}\n';
+      var enrollVerbParams =
+          VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim())!;
+      expect(enrollVerbParams['operation'], 'revoke');
+      var verbParams = jsonDecode(enrollVerbParams['enrollParams']!);
+      expect(verbParams['enrollmentId'], '1234');
+    });
+
+    test('A test to assert enroll list command', () {
+      String command = 'enroll:list\n';
+      var enrollVerbParams =
+          VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim())!;
+      expect(enrollVerbParams['operation'], 'list');
+    });
+
+    test('A test to verify enroll list throws exception if appended with :',
+        () {
+      String command = 'enroll:list:\n';
+      expect(
+          () => getVerbParams(VerbSyntax.enroll, command),
+          throwsA(predicate((dynamic e) =>
+              e is InvalidSyntaxException &&
+              e.message == 'command does not match the regex')));
     });
   });
 }

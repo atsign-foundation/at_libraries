@@ -1,10 +1,15 @@
+import 'dart:convert';
+
 import 'package:at_commons/src/verb/abstract_verb_builder.dart';
+import 'package:at_commons/src/verb/enroll_params.dart';
 import 'package:meta/meta.dart';
 
 import 'operation_enum.dart';
 
 /// Enroll verb builder generates enroll verb command for APKAM(Application PKAM) authentication process.
 class EnrollVerbBuilder extends AbstractVerbBuilder {
+  String? enrollmentId;
+
   /// Operation type of the enroll verb - request/approve/deny. Default value will be request
   EnrollOperationEnum operation = EnrollOperationEnum.request;
 
@@ -19,42 +24,48 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
 
   /// totp for the enroll request. totp must be fetched from an already enrolled app.
   @experimental
-  int? totp;
+  String? totp;
 
-  List<String> namespaces = [];
+  Map<String, String>? namespaces;
+
+  String? encryptedDefaultEncryptedPrivateKey;
+  String? encryptedDefaultSelfEncryptionKey;
+  String? encryptedAPKAMSymmetricKey;
 
   @override
   String buildCommand() {
     var sb = StringBuffer();
     sb.write('enroll:');
-
     sb.write(getEnrollOperation(operation));
 
-    sb.write(_getValueWithParamName('appName', appName));
-    sb.write(_getValueWithParamName('deviceName', deviceName));
-    if (namespaces.isNotEmpty) {
-      sb.write(':namespaces:[${namespaces.join(';')}]');
+    Map<String, dynamic> enrollParams = (EnrollParams()
+          ..enrollmentId = enrollmentId
+          ..appName = appName
+          ..deviceName = deviceName
+          ..apkamPublicKey = apkamPublicKey
+          ..totp = totp
+          ..namespaces = namespaces
+          ..encryptedDefaultEncryptedPrivateKey =
+              encryptedDefaultEncryptedPrivateKey
+          ..encryptedDefaultSelfEncryptionKey =
+              encryptedDefaultSelfEncryptionKey
+          ..encryptedAPKAMSymmetricKey = encryptedAPKAMSymmetricKey)
+        .toJson();
+    enrollParams
+        .removeWhere((key, value) => value == null || value.toString().isEmpty);
+    if (enrollParams.isNotEmpty) {
+      sb.write(':${jsonEncode(enrollParams)}');
     }
-    sb.write(_getValueWithParamName('totp', totp.toString()));
-    sb.write(_getValueWithParamName('apkamPublicKey', apkamPublicKey));
-
     sb.write('\n');
-
     return sb.toString();
-  }
-
-  String _getValueWithParamName(String paramName, String? paramValue) {
-    if (paramValue != null && paramValue.isNotEmpty && paramValue != 'null') {
-      return ':$paramName:$paramValue';
-    }
-    return '';
   }
 
   @override
   bool checkParams() {
     return appName != null &&
         deviceName != null &&
-        namespaces.isNotEmpty &&
+        namespaces != null &&
+        namespaces!.isNotEmpty &&
         totp != null &&
         apkamPublicKey != null;
   }

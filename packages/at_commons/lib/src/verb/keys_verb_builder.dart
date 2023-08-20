@@ -20,7 +20,7 @@ class KeysVerbBuilder implements VerbBuilder {
   String? appName;
 
   /// name of the device which requested this key operation
-  String? device;
+  String? deviceName;
 
   /// Encryption key type e.g rsa2048,aes256, ecdsa
   String? keyType;
@@ -37,14 +37,15 @@ class KeysVerbBuilder implements VerbBuilder {
   String buildCommand() {
     var sb = StringBuffer("keys:")
       ..write(operation)
-      ..write(_getValue(visibility))
-      ..write(_getValueWithParamName('keyName', keyName))
+      ..write(':$visibility')
       ..write(_getValueWithParamName('namespace', namespace))
       ..write(_getValueWithParamName('appName', appName))
-      ..write(_getValueWithParamName('device', device))
+      ..write(_getValueWithParamName('deviceName', deviceName))
       ..write(_getValueWithParamName('keyType', keyType))
       ..write(_getValueWithParamName('encryptionKeyName', encryptionKeyName))
-      ..write(_getValue(value))
+      ..write(_getValueWithParamName('keyName', keyName))
+      ..write(
+          _getValue(value)) //value is prepended with a whitespace as per regex
       ..write('\n');
 
     return sb.toString();
@@ -52,7 +53,7 @@ class KeysVerbBuilder implements VerbBuilder {
 
   String _getValue(String? paramValue) {
     if (paramValue != null && paramValue.isNotEmpty && paramValue != 'null') {
-      return ':$paramValue';
+      return ' $paramValue'; //value is prepended with a whitespace as per regex
     }
     return '';
   }

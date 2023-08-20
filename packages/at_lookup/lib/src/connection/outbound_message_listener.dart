@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 
@@ -25,11 +26,38 @@ class OutboundMessageListener {
   /// Listens to the underlying connection's socket if the connection is created.
   /// @throws [AtConnectException] if the connection is not yet created
   void listen() {
-    logger.finest('Calling listen with error handler normal again');
-    // Function(Object, StackTrace) errFn = _errorHandler;
-    _connection
-        .getSocket()
-        .listen(messageHandler, onDone: onSocketDone, onError: onSocketError);
+    logger.finest('Calling socket.listen within runZonedGuarded block');
+
+    runZonedGuarded(() {
+      _connection
+          .getSocket()
+          .listen(messageHandler, onDone: onSocketDone, onError: onSocketError);
+    }, (Object error, StackTrace st) {
+      logger.warning(
+          'runZonedGuarded received socket error $error - calling onSocketError() to close connection');
+      onSocketError(error);
+    });
+  }
+
+  /// Logs the error and closes the [OutboundConnection]
+  @visibleForTesting
+  void onSocketError(Object error) async {
+    // logger.finest('outbound error handler called - calling closeConnection - error was $error and stackTrace was\n$stackTrace');
+    logger.finest(
+        'outbound socket onError handler called - calling closeConnection - error was $error');
+    await closeConnection();
+    logger.finest(
+        'outbound socket onError handler called - closeConnection complete');
+  }
+
+  /// Closes the [OutboundConnection]
+  @visibleForTesting
+  void onSocketDone() async {
+    logger.finest(
+        'outbound socket onDone handler called - calling closeConnection');
+    await closeConnection();
+    logger.finest(
+        'outbound socket onDone handler called - closeConnection complete');
   }
 
   /// Handles messages on the inbound client's connection and calls the verb executor
@@ -150,27 +178,6 @@ class OutboundMessageListener {
         result.startsWith('stream:') ||
         result.startsWith('error:') ||
         (result.startsWith('@') && result.endsWith('@'));
-  }
-
-  /// Logs the error and closes the [OutboundConnection]
-  @visibleForTesting
-  void onSocketError(Object error) async {
-    // logger.finest('outbound error handler called - calling closeConnection - error was $error and stackTrace was\n$stackTrace');
-    logger.finest(
-        'outbound socket onError handler called - calling closeConnection - error was $error');
-    await closeConnection();
-    logger.finest(
-        'outbound socket onError handler called - closeConnection complete');
-  }
-
-  /// Closes the [OutboundConnection]
-  @visibleForTesting
-  void onSocketDone() async {
-    logger.finest(
-        'outbound socket onDone handler called - calling closeConnection');
-    await closeConnection();
-    logger.finest(
-        'outbound socket onDone handler called - closeConnection complete');
   }
 
   @visibleForTesting

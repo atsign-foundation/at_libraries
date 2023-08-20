@@ -31,18 +31,42 @@ void main() {
           keysVerbBuilder.buildCommand(), 'keys:get:private:keyName:mykey\n');
     });
 
+      test('test get private key by keyname with emoji', () {
+      final keysVerbBuilder = KeysVerbBuilder('get')
+        ..visibility = 'private'
+        ..keyName = 'mykey🛠';
+      expect(
+          keysVerbBuilder.buildCommand(), 'keys:get:private:keyName:mykey🛠\n');
+    });
+
     test('test get self key by keyname', () {
       final keysVerbBuilder = KeysVerbBuilder('get')
         ..visibility = 'self'
         ..keyName = 'mykey';
       expect(keysVerbBuilder.buildCommand(), 'keys:get:self:keyName:mykey\n');
     });
+
+     test('test get self key by keyname with emoji', () {
+      final keysVerbBuilder = KeysVerbBuilder('get')
+        ..visibility = 'self'
+        ..keyName = 'mykey🛠';
+      expect(keysVerbBuilder.buildCommand(), 'keys:get:self:keyName:mykey🛠\n');
+    });
+
     test('test get public key by keyname', () {
       final keysVerbBuilder = KeysVerbBuilder('get')
         ..visibility = 'public'
         ..keyName = 'mykey';
       expect(keysVerbBuilder.buildCommand(), 'keys:get:public:keyName:mykey\n');
     });
+
+    test('test get public key by keyname with emoji', () {
+      final keysVerbBuilder = KeysVerbBuilder('get')
+        ..visibility = 'public'
+        ..keyName = 'mykey🛠';
+      expect(keysVerbBuilder.buildCommand(), 'keys:get:public:keyName:mykey🛠\n');
+    });
+
     test('test put public key', () {
       final keysVerbBuilder = KeysVerbBuilder('put')
         ..visibility = 'public'
@@ -51,7 +75,7 @@ void main() {
         ..keyType = 'rsa2048'
         ..value = 'abcd1234';
       expect(keysVerbBuilder.buildCommand(),
-          'keys:put:public:keyName:encryptionPublicKey:namespace:__global:keyType:rsa2048:abcd1234\n');
+          'keys:put:public:namespace:__global:keyType:rsa2048:keyName:encryptionPublicKey abcd1234\n');
     });
 
     test('test put private key', () {
@@ -62,7 +86,7 @@ void main() {
         ..keyType = 'aes256'
         ..value = 'abcd1234';
       expect(keysVerbBuilder.buildCommand(),
-          'keys:put:private:keyName:secretKey:namespace:__private:keyType:aes256:abcd1234\n');
+          'keys:put:private:namespace:__private:keyType:aes256:keyName:secretKey abcd1234\n');
     });
 
     test('test put self key', () {
@@ -74,7 +98,7 @@ void main() {
         ..encryptionKeyName = 'firstKey'
         ..value = 'zcsfsdff';
       expect(keysVerbBuilder.buildCommand(),
-          'keys:put:self:keyName:selfkey:namespace:__global:keyType:aes256:encryptionKeyName:firstKey:zcsfsdff\n');
+          'keys:put:self:namespace:__global:keyType:aes256:encryptionKeyName:firstKey:keyName:selfkey zcsfsdff\n');
     });
   });
 }

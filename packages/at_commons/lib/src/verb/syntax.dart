@@ -7,7 +7,7 @@ class VerbSyntax {
   static const pol = r'^pol$';
   static const cram = r'^cram:(?<digest>.+$)';
   static const pkam =
-      r'^pkam:(signingAlgo:(?<signingAlgo>ecc_secp256r1|rsa2048):)?(hashingAlgo:(?<hashingAlgo>sha256):)?(enrollApprovalId:(?<enrollApprovalId>.+):)?(?<signature>.+$)';
+      r'^pkam:(signingAlgo:(?<signingAlgo>ecc_secp256r1|rsa2048):)?(hashingAlgo:(?<hashingAlgo>sha256):)?(enrollmentId:(?<enrollmentId>.+):)?(?<signature>.+$)';
   static const llookup = r'^llookup'
       r'(:(?<operation>meta|all))?'
       r'(:cached)?'
@@ -126,20 +126,17 @@ class VerbSyntax {
   static const info = r'^info(:brief)?$';
   static const noOp = r'^noop:(?<delayMillis>\d+)$';
   static const notifyRemove = r'notify:remove:(?<id>[\w\d\-\_]+)';
-  static const enroll = r'^enroll:(?<operation>request|approve|deny):'
-      r'(?:(?:enrollmentId:(?<enrollmentId>[a-zA-Z0-9-]+))|'
-      r'(?:appName:(?<appName>[a-zA-Z0-9]+):)?'
-      r'(?:deviceName:(?<deviceName>[a-zA-Z0-9_]+):)?'
-      r'(?:namespaces:\[(?<namespaces>[a-zA-Z0-9;_,]+)\]:)?'
-      r'(?:totp:(?<totp>[0-9]+):)?(?:apkamPublicKey:(?<apkamPublicKey>.*)))?$';
+  static const enroll =
+      // The non-capturing group (?::)? matches ":" if the operation is request|approve|deny|revoke
+      r'^enroll:(?<operation>(?:list$|(request|approve|deny|revoke)))(?::)?(?<enrollParams>.+)?$';
   static const totp = r'^totp:(?<operation>get|validate)(:(?<totp>[0-9]+))?$';
-  static const keys =
-      r'^keys:(?<operation>put|get|delete):(((?<visibility>public|private|self)(:)?)?)'
-      r'(keyName:(?<keyName>[a-zA-Z0-9_]+)(:)?)?'
-      r'((namespace:(?<namespace>[a-zA-Z0-9_]+):)?)'
-      r'((appName:(?<appName>[a-zA-Z0-9_]+):)?)'
-      r'((deviceName:(?<deviceName>[a-zA-Z0-9_]+):)?)'
-      r'(((keyType:(?<keyType>[a-zA-Z0-9_-]+)):)?)'
-      r'((encryptionKeyName:(?<encryptionKeyName>[a-zA-Z0-9_]+):)?)?'
-      r'((?<keyValue>.*))?$';
+  static const keys = r'^keys:((?<operation>put|get|delete):?)'
+      r'(?:(?<visibility>public|private|self):?)?'
+      r'(?:namespace:(?<namespace>[a-zA-Z0-9_]+):?)?'
+      r'(?:appName:(?<appName>[a-zA-Z0-9_]+):?)?'
+      r'(?:deviceName:(?<deviceName>[a-zA-Z0-9_]+):?)?'
+      r'(?:keyType:(?<keyType>[a-zA-Z0-9_-]+):?)?'
+      r'(?:encryptionKeyName:(?<encryptionKeyName>[a-zA-Z0-9_\-]+):?)?'
+      r'(?:keyName:(?<keyName>\S+) ?)?'
+      r'(?<keyValue>.*)?$';
 }
