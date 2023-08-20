@@ -5,7 +5,8 @@ import 'package:at_client/at_client.dart';
 import 'package:at_demo_data/at_demo_data.dart' as at_demos;
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
-import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart' as activate_cli;
+import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart'
+    as activate_cli;
 import 'package:at_utils/at_utils.dart';
 import 'package:test/test.dart';
 
@@ -15,6 +16,7 @@ final String atKeysFilePath = '${Platform.environment['HOME']}/.atsign/keys';
 
 void main() {
   AtSignLogger.root_level = 'finest';
+
   group('A group of tests to assert on authenticate functionality', () {
     test('A test to verify authentication is successful with .atKeys file',
         () async {
@@ -116,12 +118,12 @@ void main() {
   group('A group of tests to verify onboard functionality', () {
     String atSign = '@egcovidlab🛠';
     AtOnboardingPreference atOnboardingPreference = getPreferences(atSign);
+    AtOnboardingService atOnboardingService =
+        OnboardingServiceImplOverride(atSign, atOnboardingPreference);
 
     test(
         'A test to verify atSign is onboarded and .atKeys file is generated successfully',
         () async {
-      AtOnboardingService atOnboardingService =
-          OnboardingServiceImplOverride(atSign, atOnboardingPreference);
       expect(await atOnboardingService.onboard(), true);
       expect(await atOnboardingService.authenticate(), true);
       // Assert .atKeys file is generated for the atSign
@@ -135,6 +137,9 @@ void main() {
 
   group('A group of tests to verify activate_cli', () {
     String atSign = '@colin🛠';
+    AtOnboardingPreference onboardingPreference = getPreferences(atSign);
+    AtOnboardingService onboardingService =
+    OnboardingServiceImplOverride(atSign, onboardingPreference);
     test(
         'A test to verify atSign is activated and .atKeys file is generated using activate_cli',
         () async {
@@ -146,16 +151,13 @@ void main() {
         '-r',
         'vip.ve.atsign.zone'
       ];
-      AtOnboardingPreference pref = getPreferences(atSign);
-      AtOnboardingService onboardingService =
-          OnboardingServiceImplOverride(atSign, pref);
       activate_cli.atOnboardingService = onboardingService;
       // perform activation of atSign
       await activate_cli.main(args);
 
       expect(await onboardingService.authenticate(), true);
       // Authenticate atSign with the .atKeys file generated via the activate_cli tool.
-      expect(await File(pref.atKeysFilePath!).exists(), true);
+      expect(await File(onboardingPreference.atKeysFilePath!).exists(), true);
     });
 
     tearDownAll(() async {
