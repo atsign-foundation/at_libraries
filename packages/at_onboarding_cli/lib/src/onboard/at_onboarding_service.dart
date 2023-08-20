@@ -17,7 +17,7 @@ abstract class AtOnboardingService {
   /// deviceName - device identifier from the requesting application e.g iphone,any unique ID that identifies the requesting client
   /// totp - otp retrieved from an already enrolled app
   /// namespaces - key-value pair of namespace-access of the requesting client e.g {"wavi":"rw","contacts":"r"}
-  Future<bool> enroll(String appName, String deviceName, String totp,
+  Future<EnrollResponse> enroll(String appName, String deviceName, String totp,
       Map<String, String> namespaces);
 
   ///returns an authenticated instance of AtClient
