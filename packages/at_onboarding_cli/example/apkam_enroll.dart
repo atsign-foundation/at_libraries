@@ -17,5 +17,6 @@ Future<void> main() async {
       AtOnboardingServiceImpl(atSign, atOnboardingPreference);
   Map<String, String> namespaces = {"buzz": "rw"};
   // run totp:get from enrolled client and pass the otp
-  await onboardingService.enroll('buzz', 'iphone', "562137", namespaces);
+  var enrollmentResponse = await onboardingService.enroll('buzz', 'iphone', "068881", namespaces);
+  print('enrollmentResponse: $enrollmentResponse');
 }
