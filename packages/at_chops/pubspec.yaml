@@ -1,6 +1,6 @@
 name: at_chops
 description: Package for at_protocol cryptographic and hashing operations
-version: 1.0.3
+version: 1.0.4
 repository: https://github.com/atsign-foundation/at_libraries
 
 environment:
@@ -15,9 +15,8 @@ dependencies:
   dart_periphery: ^0.9.3
   elliptic: ^0.3.8
   pointycastle: ^3.6.2
-  at_commons: ^3.0.39
-  at_onboarding_cli: ^1.2.3
-  at_utils: ^3.0.11
+  at_commons: ^3.0.53
+  at_utils: ^3.0.15
 
 dev_dependencies:
   lints: ^2.0.0
