@@ -14,7 +14,10 @@ class AtChopsKeys {
   AtSigningKeyPair? atSigningKeyPair;
 
   @Deprecated('Use selfEncryptionKey')
-  SymmetricKey? symmetricKey;
+  SymmetricKey? get symmetricKey => selfEncryptionKey;
+
+  @Deprecated('Use selfEncryptionKey')
+  void set symmetricKey(SymmetricKey? sk) => selfEncryptionKey = sk;
 
   /// Default self encryption key
   SymmetricKey? selfEncryptionKey;
@@ -27,7 +30,9 @@ class AtChopsKeys {
   AtChopsKeys();
 
   @Deprecated('Use selfEncryptionKey')
-  AtChopsKeys.createSymmetric(this.symmetricKey);
+  AtChopsKeys.createSymmetric(SymmetricKey sk) {
+    selfEncryptionKey = sk;
+  }
 
   AtPkamKeyPair? get atPkamKeyPair => _atPkamKeyPair;
 }
