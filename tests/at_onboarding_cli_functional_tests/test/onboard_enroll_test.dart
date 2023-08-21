@@ -7,7 +7,7 @@ import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_utils/at_utils.dart';
 import 'package:test/test.dart';
 
-String atSign = '@alice';
+String atSign = '@alice🛠';
 var pkamPublicKey;
 var pkamPrivateKey;
 var encryptionPublicKey;
@@ -24,12 +24,10 @@ void main() {
       bool status = await onboardingService.onboard();
       expect(status, true);
       getAtKeys();
-      print('pkam public key : $pkamPublicKey');
       preference.privateKey = pkamPrivateKey;
       await onboardingService.authenticate();
-      AtClient? atClient = await onboardingService.atClient;
       // run totp:get from enrolled client and pass the otp
-      String? totp = await atClient!
+      String? totp = await onboardingService.atClient!
           .getRemoteSecondary()!
           .executeCommand('totp:get\n', auth: true);
       totp = totp!.replaceFirst('data:', '');
@@ -37,14 +35,17 @@ void main() {
       Map<String, String> namespaces = {"buzz": "rw"};
       AtOnboardingPreference enrollPreference = getPreferenceForEnroll(atSign);
       onboardingService = AtOnboardingServiceImpl(atSign, enrollPreference);
-      await onboardingService.enroll('buzz', 'iphone', totp, namespaces);
-
+      var enrollResponse =
+          await onboardingService.enroll('buzz', 'iphone', totp, namespaces);
+      print('enroll response $enrollResponse');
+      var enrollmentId = enrollResponse.enrollmentId;
       // once enroll request is successful, atkeys should be created
       // assert that the keys file is created
       expect(await File(enrollPreference.atKeysFilePath!).exists(), true);
       // check the authentication with the newly generated auth file
-      //  TODO needs an enrollment ID of the above enrollment request
-      // await onboardingService.authenticate(enrollmentId: '');
+      bool authenticateStatusWithEnrollId =
+          await onboardingService.authenticate(enrollmentId: enrollmentId);
+      expect(authenticateStatusWithEnrollId, true);
     }, timeout: Timeout(Duration(minutes: 5)));
   });
 }
@@ -59,7 +60,8 @@ AtOnboardingPreference getPreferenceForAuth(String atSign) {
     ..cramSecret = at_demos.cramKeyMap[atSign]
     ..namespace =
         'wavi' // unique identifier that can be used to identify data from your app
-    ..atKeysFilePath = '/home/shaikirfan/.atsign/keys/@alice_key.atKeys'
+    ..atKeysFilePath =
+        '${Platform.environment['HOME']}/.atsign/keys/${atSign}_key.atKeys'
     ..appName = 'wavi'
     ..deviceName = 'pixel'
     ..rootDomain = 'vip.ve.atsign.zone';
@@ -72,7 +74,8 @@ AtOnboardingPreference getPreferenceForEnroll(String atSign) {
   AtOnboardingPreference atOnboardingPreference = AtOnboardingPreference()
     ..namespace =
         'buzz' // unique identifier that can be used to identify data from your app
-    ..atKeysFilePath = '/home/shaikirfan/.atsign/keys/@alice_buzzkey.atKeys'
+    ..atKeysFilePath =
+        '${Platform.environment['HOME']}/.atsign/keys/${atSign}_buzzkey.atKeys'
     ..appName = 'buzz'
     ..deviceName = 'iphone'
     ..rootDomain = 'vip.ve.atsign.zone'
