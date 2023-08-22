@@ -45,6 +45,10 @@ class AtLookupImpl implements AtLookUp {
 
   late final AtLookupSecureSocketFactory socketFactory;
 
+  late final AtLookupSecureSocketListenerFactory socketListenerFactory;
+
+  late AtLookupOutboundConnectionFactory outboundConnectionFactory;
+
   /// Represents the client configurations.
   late Map<String, dynamic> _clientConfig;
 
@@ -56,7 +60,9 @@ class AtLookupImpl implements AtLookUp {
       SecondaryAddressFinder? secondaryAddressFinder,
       SecureSocketConfig? secureSocketConfig,
       Map<String, dynamic>? clientConfig,
-      AtLookupSecureSocketFactory? secureSocketFactory}) {
+      AtLookupSecureSocketFactory? secureSocketFactory,
+      AtLookupSecureSocketListenerFactory? socketListenerFactory,
+      AtLookupOutboundConnectionFactory? outboundConnectionFactory}) {
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
@@ -67,6 +73,10 @@ class AtLookupImpl implements AtLookUp {
     // If client configurations are not available, defaults to empty map
     _clientConfig = clientConfig ?? {};
     socketFactory = secureSocketFactory ?? AtLookupSecureSocketFactory();
+    this.socketListenerFactory =
+        socketListenerFactory ?? AtLookupSecureSocketListenerFactory();
+    this.outboundConnectionFactory =
+        outboundConnectionFactory ?? AtLookupOutboundConnectionFactory();
   }
 
   @Deprecated('use CacheableSecondaryAddressFinder')
@@ -236,7 +246,7 @@ class AtLookupImpl implements AtLookUp {
       await createOutBoundConnection(
           host, port.toString(), _currentAtSign, _secureSocketConfig);
       //3. listen to server response
-      messageListener = OutboundMessageListener(_connection!);
+      messageListener = socketListenerFactory.createListener(_connection!);
       messageListener.listen();
       logger.info('New connection created OK');
     }
@@ -592,7 +602,8 @@ class AtLookupImpl implements AtLookUp {
     try {
       SecureSocket secureSocket =
           await socketFactory.createSocket(host, port, secureSocketConfig);
-      _connection = OutboundConnectionImpl(secureSocket);
+      _connection =
+          outboundConnectionFactory.createOutboundConnection(secureSocket);
       if (outboundConnectionTimeout != null) {
         _connection!.setIdleTime(outboundConnectionTimeout);
       }
@@ -644,5 +655,18 @@ class AtLookupSecureSocketFactory {
   Future<SecureSocket> createSocket(
       String host, String port, SecureSocketConfig socketConfig) async {
     return await SecureSocketUtil.createSecureSocket(host, port, socketConfig);
+  }
+}
+
+class AtLookupSecureSocketListenerFactory {
+  OutboundMessageListener createListener(
+      OutboundConnection outboundConnection) {
+    return OutboundMessageListener(outboundConnection);
+  }
+}
+
+class AtLookupOutboundConnectionFactory {
+  OutboundConnection createOutboundConnection(SecureSocket secureSocket) {
+    return OutboundConnectionImpl(secureSocket);
   }
 }
