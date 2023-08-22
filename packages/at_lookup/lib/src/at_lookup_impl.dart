@@ -45,6 +45,10 @@ class AtLookupImpl implements AtLookUp {
 
   late final AtLookupSecureSocketFactory socketFactory;
 
+  late final AtLookupSecureSocketListenerFactory socketListenerFactory;
+
+  late AtLookupOutboundConnectionFactory outboundConnectionFactory;
+
   /// Represents the client configurations.
   late Map<String, dynamic> _clientConfig;
 
@@ -56,7 +60,9 @@ class AtLookupImpl implements AtLookUp {
       SecondaryAddressFinder? secondaryAddressFinder,
       SecureSocketConfig? secureSocketConfig,
       Map<String, dynamic>? clientConfig,
-      AtLookupSecureSocketFactory? secureSocketFactory}) {
+      AtLookupSecureSocketFactory? secureSocketFactory,
+      AtLookupSecureSocketListenerFactory? socketListenerFactory,
+      AtLookupOutboundConnectionFactory? outboundConnectionFactory}) {
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
@@ -67,6 +73,10 @@ class AtLookupImpl implements AtLookUp {
     // If client configurations are not available, defaults to empty map
     _clientConfig = clientConfig ?? {};
     socketFactory = secureSocketFactory ?? AtLookupSecureSocketFactory();
+    this.socketListenerFactory =
+        socketListenerFactory ?? AtLookupSecureSocketListenerFactory();
+    this.outboundConnectionFactory =
+        outboundConnectionFactory ?? AtLookupOutboundConnectionFactory();
   }
 
   @Deprecated('use CacheableSecondaryAddressFinder')
@@ -236,7 +246,7 @@ class AtLookupImpl implements AtLookUp {
       await createOutBoundConnection(
           host, port.toString(), _currentAtSign, _secureSocketConfig);
       //3. listen to server response
-      messageListener = OutboundMessageListener(_connection!);
+      messageListener = socketListenerFactory.createListener(_connection!);
       messageListener.listen();
       logger.info('New connection created OK');
     }
@@ -383,6 +393,7 @@ class AtLookupImpl implements AtLookUp {
     return await _process(atCommand, auth: true);
   }
 
+  @override
   Future<String?> executeCommand(String atCommand, {bool auth = false}) async {
     return await _process(atCommand, auth: auth);
   }
@@ -433,7 +444,7 @@ class AtLookupImpl implements AtLookUp {
   }
 
   @override
-  Future<bool> pkamAuthenticate() async {
+  Future<bool> pkamAuthenticate({String? enrollmentId}) async {
     await createConnection();
     try {
       await _pkamAuthenticationMutex.acquire();
@@ -456,10 +467,13 @@ class AtLookupImpl implements AtLookUp {
           ..hashingAlgoType = hashingAlgoType
           ..signingMode = AtSigningMode.pkam;
         var signingResult = _atChops!.sign(atSigningInput);
-        var pkamCommand =
-            'pkam:signingAlgo:${signingAlgoType.name}:hashingAlgo:${hashingAlgoType.name}:${signingResult.result}\n';
-        logger.finer('pkamCommand:$pkamCommand');
-        await _sendCommand(pkamCommand);
+        var pkamBuilder = PkamVerbBuilder()
+          ..signingAlgo = signingAlgoType.name
+          ..hashingAlgo = hashingAlgoType.name
+          ..enrollmentlId = enrollmentId
+          ..signature = signingResult.result;
+        logger.finer('pkamCommand:${pkamBuilder.buildCommand()}');
+        await _sendCommand(pkamBuilder.buildCommand());
 
         var pkamResponse = await messageListener.read();
         if (pkamResponse == 'data:success') {
@@ -554,7 +568,7 @@ class AtLookupImpl implements AtLookUp {
       if (auth && _isAuthRequired()) {
         if (_atChops != null) {
           logger.finer('calling pkam using atchops');
-          await pkamAuthenticate();
+          await pkamAuthenticate(enrollmentId: enrollmentId);
         } else if (privateKey != null) {
           logger.finer('calling pkam without atchops');
           await authenticate(privateKey);
@@ -588,7 +602,8 @@ class AtLookupImpl implements AtLookUp {
     try {
       SecureSocket secureSocket =
           await socketFactory.createSocket(host, port, secureSocketConfig);
-      _connection = OutboundConnectionImpl(secureSocket);
+      _connection =
+          outboundConnectionFactory.createOutboundConnection(secureSocket);
       if (outboundConnectionTimeout != null) {
         _connection!.setIdleTime(outboundConnectionTimeout);
       }
@@ -631,11 +646,27 @@ class AtLookupImpl implements AtLookUp {
 
   @override
   SigningAlgoType signingAlgoType = SigningAlgoType.rsa2048;
+
+  @override
+  String? enrollmentId;
 }
 
 class AtLookupSecureSocketFactory {
   Future<SecureSocket> createSocket(
       String host, String port, SecureSocketConfig socketConfig) async {
     return await SecureSocketUtil.createSecureSocket(host, port, socketConfig);
+  }
+}
+
+class AtLookupSecureSocketListenerFactory {
+  OutboundMessageListener createListener(
+      OutboundConnection outboundConnection) {
+    return OutboundMessageListener(outboundConnection);
+  }
+}
+
+class AtLookupOutboundConnectionFactory {
+  OutboundConnection createOutboundConnection(SecureSocket secureSocket) {
+    return OutboundConnectionImpl(secureSocket);
   }
 }
