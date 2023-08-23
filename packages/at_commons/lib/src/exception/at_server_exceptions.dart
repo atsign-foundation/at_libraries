@@ -37,19 +37,3 @@ class InternalServerError extends AtServerException {
 class ServerIsPausedException extends AtServerException {
   ServerIsPausedException(message) : super(message);
 }
-
-/// When enrollment request for an enrollment id has been denied
-/// If that enrollment id is used to attempt authentication this exception is thrown
-class ApkamAuthDenied extends AtServerException {
-  ApkamAuthDenied(message) : super(message);
-}
-
-class ApkamAuthFailed extends AtServerException {
-  ApkamAuthFailed(message) : super(message);
-}
-
-/// When enrollment request for an enrollment id has been revoked
-/// If that enrollment id is used to attempt authentication this exception is thrown
-class ApkamAccessRevoked extends AtServerException {
-  ApkamAccessRevoked(message) : super(message);
-}
