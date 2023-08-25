@@ -1,3 +1,6 @@
+## 3.0.39
+- feat: Changes for apkam
+- chore: Upgraded at_commons to 3.0.53 and at_utils to 3.0.15
 ## 3.0.38
 - fix: wrap socket.listen in runZonedGuarded to ensure weird network errors are
   always caught
