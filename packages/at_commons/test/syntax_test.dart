@@ -299,6 +299,23 @@ void main() {
               e.message == 'command does not match the regex')));
     });
   });
+
+  group('A group of tests related to totp verb', () {
+    test('A test to verify totp verb for get operation', () {
+      String command = 'totp:get\n';
+      var enrollVerbParams =
+          VerbUtil.getVerbParam(VerbSyntax.totp, command.trim())!;
+      expect(enrollVerbParams['operation'], 'get');
+    });
+
+    test('A test to verify totp verb for validate operation', () {
+      String command = 'totp:validate:ABC123\n';
+      var enrollVerbParams =
+          VerbUtil.getVerbParam(VerbSyntax.totp, command.trim());
+      expect(enrollVerbParams!['operation'], 'validate');
+      expect(enrollVerbParams['otp'], 'ABC123');
+    });
+  });
 }
 
 Map getVerbParams(String regex, String command) {

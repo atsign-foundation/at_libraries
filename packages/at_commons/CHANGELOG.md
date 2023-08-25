@@ -1,3 +1,5 @@
+## 3.0.54
+- fix: Modify "totp" verb regex to include alpha-numeric characters
 ## 3.0.53
 - feat: Modify "enroll" verb regex.
 - feat: Introduce "EnrollParams" class to encapsulate enrollment attributes.
