@@ -103,7 +103,7 @@ void main() {
     });
   });
 
-  group('A group of tests to verify atlookup pkam authentication', () {
+  group('A group of tests to verify atlookup cram authentication', () {
     test('Cram auth- auth success', () async {
       final secret =
           'b26455a907582760ebf35bc4847de549bc41c24b25c8b1c58d5964f7b4f8a43bc55b0e9a601c9a9657d9a8b8bbc32f88b4e38ffaca03c8710ebae1b14ca9f364';
@@ -134,7 +134,9 @@ void main() {
       var result = await atLookup.authenticate_cram(secret);
       expect(result, true);
     });
+  });
 
+  group('A group of tests to verify atlookup pkam authentication', () {
     test('pkam auth without enrollmentId - auth success', () async {
       final pkamSignature =
           'MbNbIwCSxsHxm4CHyakSE2yLqjjtnmzpSLPcGG7h+4M/GQAiJkklQfd/x9z58CSJfuSW8baIms26SrnmuYePZURfp5oCqtwRpvt+l07Gnz8aYpXH0k5qBkSR34SBk4nb+hdAjsXXgfWWC56gROPMwpOEbuDS6esU7oku+a7Rdr10xrFlk1Tf2eRwPOMWyuKwOvLwSgyq/INAFRYav5RmLFiecQhPME6ssc1jW92wztylKBtuZT4rk8787b6Z9StxT4dPZzWjfV1+oYDLaqu2PcQS2ZthH+Wj8NgoogDxSP+R7BE1FOVJKnavpuQWeOqNWeUbKkSVP0B0DN6WopAdsg==';
