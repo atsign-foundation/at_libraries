@@ -9,10 +9,10 @@ Future<void> main() async {
     ..namespace =
         'buzz' // unique identifier that can be used to identify data from your app
     ..atKeysFilePath = '/home/user/atsign/alice_buzzkey.atKeys'
-    ..rootDomain = 'vip.ve.atsign.zone'
-    ..enrollmentId = enrollIdFromServer;
-  AtOnboardingService? onboardingService =
-      AtOnboardingServiceImpl(atSign, atOnboardingPreference);
+    ..rootDomain = 'vip.ve.atsign.zone';
+  AtOnboardingService? onboardingService = AtOnboardingServiceImpl(
+      atSign, atOnboardingPreference,
+      enrollmentId: enrollIdFromServer);
   await onboardingService.authenticate(
       enrollmentId: enrollIdFromServer); // when authenticating
   AtLookUp? atLookup = onboardingService.atLookUp;

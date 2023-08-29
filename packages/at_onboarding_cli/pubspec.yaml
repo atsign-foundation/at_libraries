@@ -15,11 +15,11 @@ executables:
 dependencies:
    at_utils: ^3.0.12
    at_client: ^3.0.59
-   at_lookup: ^3.0.36
+   at_lookup: ^3.0.39
    zxing2: ^0.2.0
    image: ^4.0.17
    crypton: ^2.0.3
-   at_commons: ^3.0.45
+   at_commons: ^3.0.53
    encrypt: ^5.0.1
    at_server_status: ^1.0.3
    path: ^1.8.1
@@ -27,15 +27,15 @@ dependencies:
    http: ^0.13.6
    at_chops: ^1.0.3
 
+#TODO replace with published versions before merging
 dependency_overrides:
-  at_chops:
-    path: ../at_chops
-  at_lookup:
-    path: ../at_lookup
   at_commons:
     path: ../at_commons
   at_client:
-    path: ../../../at_client_sdk/packages/at_client
+    git:
+      url: https://github.com/atsign-foundation/at_client_sdk
+      ref: trunk
+      path: packages/at_client
 
 
 dev_dependencies:

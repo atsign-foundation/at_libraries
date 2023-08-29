@@ -1,6 +1,7 @@
 import 'package:at_chops/at_chops.dart';
 import 'package:at_client/at_client.dart';
 import 'package:at_lookup/at_lookup.dart';
+import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 
 abstract class AtOnboardingService {
   ///perform initial one_time authentication to activate the atsign
@@ -17,8 +18,11 @@ abstract class AtOnboardingService {
   /// deviceName - device identifier from the requesting application e.g iphone,any unique ID that identifies the requesting client
   /// totp - otp retrieved from an already enrolled app
   /// namespaces - key-value pair of namespace-access of the requesting client e.g {"wavi":"rw","contacts":"r"}
+  /// pkamRetryIntervalMins - optional param which specifies interval in mins for pkam retry for this enrollment.
+  /// The passed value will override the value in [AtOnboardingPreference]
   Future<EnrollResponse> enroll(String appName, String deviceName, String totp,
-      Map<String, String> namespaces);
+      Map<String, String> namespaces,
+      {int? pkamRetryIntervalMins});
 
   ///returns an authenticated instance of AtClient
   @Deprecated('use getter')
