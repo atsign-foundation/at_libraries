@@ -300,18 +300,18 @@ void main() {
     });
   });
 
-  group('A group of tests related to totp verb', () {
-    test('A test to verify totp verb for get operation', () {
-      String command = 'totp:get\n';
+  group('A group of tests related to otp verb', () {
+    test('A test to verify otp verb for get operation', () {
+      String command = 'otp:get\n';
       var enrollVerbParams =
-          VerbUtil.getVerbParam(VerbSyntax.totp, command.trim())!;
+          VerbUtil.getVerbParam(VerbSyntax.otp, command.trim())!;
       expect(enrollVerbParams['operation'], 'get');
     });
 
-    test('A test to verify totp verb for validate operation', () {
-      String command = 'totp:validate:ABC123\n';
+    test('A test to verify otp verb for validate operation', () {
+      String command = 'otp:validate:ABC123\n';
       var enrollVerbParams =
-          VerbUtil.getVerbParam(VerbSyntax.totp, command.trim());
+          VerbUtil.getVerbParam(VerbSyntax.otp, command.trim());
       expect(enrollVerbParams!['operation'], 'validate');
       expect(enrollVerbParams['otp'], 'ABC123');
     });
