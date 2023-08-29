@@ -637,7 +637,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     final atPkamKeyPair = AtPkamKeyPair.create(
         atKeysFile.apkamPublicKey!, atKeysFile.apkamPrivateKey!);
     final atChopsKeys = AtChopsKeys.create(atEncryptionKeyPair, atPkamKeyPair);
-    atChopsKeys.apkamSymmetricKey = AESKey(atKeysFile.apkamSymmetricKey!);
+    if (atKeysFile.apkamSymmetricKey != null) {
+      atChopsKeys.apkamSymmetricKey = AESKey(atKeysFile.apkamSymmetricKey!);
+    }
     atChopsKeys.selfEncryptionKey =
         AESKey(atKeysFile.defaultSelfEncryptionKey!);
     return AtChopsImpl(atChopsKeys);
