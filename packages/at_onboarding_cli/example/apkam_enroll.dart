@@ -1,5 +1,3 @@
-import 'package:at_client/at_client.dart';
-import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_utils/at_logger.dart';
 
@@ -17,6 +15,7 @@ Future<void> main() async {
       AtOnboardingServiceImpl(atSign, atOnboardingPreference);
   Map<String, String> namespaces = {"buzz": "rw"};
   // run totp:get from enrolled client and pass the otp
-  var enrollmentResponse = await onboardingService.enroll('buzz', 'iphone', "068881", namespaces);
+  var enrollmentResponse =
+      await onboardingService.enroll('buzz', 'iphone', "068881", namespaces);
   print('enrollmentResponse: $enrollmentResponse');
 }

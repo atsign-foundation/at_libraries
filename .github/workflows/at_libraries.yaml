@@ -101,8 +101,9 @@ jobs:
         working-directory: tests/${{ matrix.package }}
         run: dart run check_docker_readiness.dart
 
-      - name: run pkamLoad on docker-image
-        run: sudo docker exec at_onboarding_cli_functional_tests_virtualenv_1 supervisorctl start pkamLoad
+#      commented since onboarding tests throw atsign already activated exception
+#      - name: run pkamLoad on docker-image
+#        run: sudo docker exec at_onboarding_cli_functional_tests_virtualenv_1 supervisorctl start pkamLoad
 
       - name: Check test environment readiness
         working-directory: tests/${{ matrix.package }}
