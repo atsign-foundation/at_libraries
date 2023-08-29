@@ -8,7 +8,6 @@ import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_utils/at_utils.dart';
 import 'package:test/test.dart';
 
-String atSign = '@alice🛠';
 var pkamPublicKey;
 var pkamPrivateKey;
 var encryptionPublicKey;
@@ -19,6 +18,9 @@ void main() {
   final logger = AtSignLogger('OnboardingEnrollmentTest');
   group('A group of tests to assert on authenticate functionality', () {
     test('A test to verify authentication and enroll request', () async {
+      // if onboard is testing use distinct demo atsign per test,
+      // since cram keys get deleted on server for already onboarded atsign
+      String atSign = '@naresh🛠';
       //1. Onboard first client
       AtOnboardingPreference preference_1 = getPreferenceForAuth(atSign);
       AtOnboardingService? onboardingService_1 =
@@ -114,7 +116,7 @@ Future<void> _setLastReceivedNotificationDateTime(AtClient atClient) async {
   var atNotification = AtNotification(
       '124',
       '@bob🛠:testnotificationkey',
-      '@alice',
+      '@naresh🛠',
       '@bob🛠',
       DateTime.now().millisecondsSinceEpoch,
       MessageTypeEnum.text.toString(),
@@ -157,7 +159,7 @@ AtOnboardingPreference getPreferenceForEnroll(String atSign) {
   return atOnboardingPreference;
 }
 
-Future<void> getAtKeys() async {
+Future<void> getAtKeys(String atSign) async {
   AtOnboardingPreference preference = getPreferenceForAuth(atSign);
   String? filePath = preference.atKeysFilePath;
   var fileContents = File(filePath!).readAsStringSync();
