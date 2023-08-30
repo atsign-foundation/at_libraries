@@ -45,5 +45,8 @@ const Map error_description = {
   'AT0021': 'Unable to connect to secondary',
   'AT0022': 'Illegal arguments',
   'AT0023': 'Timeout waiting for response',
-  'AT0024': 'Server is paused'
+  'AT0024': 'Server is paused',
+  'AT0025': 'ApkamAuthDenied',
+  'AT0026': 'ApkamAuthFailed',
+  'AT0027': 'ApkamAccessRevoked'
 };
