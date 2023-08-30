@@ -95,7 +95,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     if (atOnboardingPreference.appName == null ||
         atOnboardingPreference.deviceName == null) {
       throw AtOnboardingException(
-          'appName and deviceName are mandatory for onboarding');
+          'appName and deviceName are mandatory for onboarding. Please set the params in AtOnboardingPreference');
     }
     // cram auth doesn't use at_chops. So create at_lookup here.
     AtLookupImpl atLookUpImpl = AtLookupImpl(_atSign,

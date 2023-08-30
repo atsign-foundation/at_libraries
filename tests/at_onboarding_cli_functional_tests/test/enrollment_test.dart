@@ -17,7 +17,9 @@ void main() {
   AtSignLogger.root_level = 'info';
   final logger = AtSignLogger('OnboardingEnrollmentTest');
   group('A group of tests to assert on authenticate functionality', () {
-    test('A test to verify authentication and enroll request', () async {
+    test(
+        'A test to verify send enroll request, approve enrollment and auth by enrollmentId',
+        () async {
       // if onboard is testing use distinct demo atsign per test,
       // since cram keys get deleted on server for already onboarded atsign
       String atSign = '@naresh🛠';
@@ -56,7 +58,7 @@ void main() {
       onboardingService_1.atClient!.notificationService
           .subscribe(regex: '.__manage')
           .listen(expectAsync1((notification) async {
-            logger.finer('got enroll notificaiton');
+            logger.finer('got enroll notification');
             await _notificationCallback(
                 notification, onboardingService_1.atClient!);
             completer.complete();
