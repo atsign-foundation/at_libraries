@@ -23,6 +23,8 @@ dependency_overrides:
       url: https://github.com/atsign-foundation/at_client_sdk
       ref: trunk
       path: packages/at_client
+  at_lookup:
+    path: ../../../at_libraries/packages/at_lookup
 
 dev_dependencies:
   lints: ^1.0.0

@@ -33,7 +33,8 @@ void main() {
 
       //2. authenticate first client
       await onboardingService_1.authenticate();
-      await _setLastReceivedNotificationDateTime(onboardingService_1.atClient!);
+      await _setLastReceivedNotificationDateTime(
+          onboardingService_1.atClient!, atSign);
 
       //3. run totp:get from first client
       String? totp = await onboardingService_1.atClient!
@@ -52,6 +53,8 @@ void main() {
       var enrollResponse =
           await onboardingService_2.enroll('buzz', 'iphone', totp, namespaces);
       logger.finer('enroll response $enrollResponse');
+      // enrollment id from the response
+      var enrollmentId = enrollResponse.enrollmentId;
       var completer = Completer<void>(); // Create a Completer
 
       //5. listen for notification from first client and invoke callback which approves the enrollment
@@ -60,7 +63,7 @@ void main() {
           .listen(expectAsync1((notification) async {
             logger.finer('got enroll notification');
             await _notificationCallback(
-                notification, onboardingService_1.atClient!);
+                notification, onboardingService_1.atClient!, 'approve');
             completer.complete();
           }, count: 1, max: -1));
       await completer.future;
@@ -71,13 +74,70 @@ void main() {
         await Future.delayed(Duration(seconds: 10));
       }
       expect(await enrolledClientKeysFile.exists(), true);
+      //  Authenticate now with the approved enrollmentID
+      // assert that authentication is successful
+      bool authResultWithEnrollment =
+          await onboardingService_2.authenticate(enrollmentId: enrollmentId);
+      expect(authResultWithEnrollment, true);
       enrolledClientKeysFile.deleteSync();
     }, timeout: Timeout(Duration(minutes: 3)));
   });
+
+  test(
+      'A test to verify send enroll request, deny enrollment and auth by enrollmentId should fail',
+      () async {
+    // if onboard is testing use distinct demo atsign per test,
+    // since cram keys get deleted on server for already onboarded atsign
+    String atSign = '@purnima🛠';
+    //1. Onboard first client
+    AtOnboardingPreference preference_1 = getPreferenceForAuth(atSign);
+    AtOnboardingService? onboardingService_1 =
+        AtOnboardingServiceImpl(atSign, preference_1);
+    bool status = await onboardingService_1.onboard();
+    expect(status, true);
+    preference_1.privateKey = pkamPrivateKey;
+
+    //2. authenticate first client
+    await onboardingService_1.authenticate();
+    await _setLastReceivedNotificationDateTime(
+        onboardingService_1.atClient!, atSign);
+
+    //3. run totp:get from first client
+    String? totp = await onboardingService_1.atClient!
+        .getRemoteSecondary()!
+        .executeCommand('totp:get\n', auth: true);
+    totp = totp!.replaceFirst('data:', '');
+    totp = totp.trim();
+    logger.finer('otp: $totp');
+    Map<String, String> namespaces = {"buzz": "rw"};
+
+    //4. enroll second client
+    AtOnboardingPreference enrollPreference_2 = getPreferenceForEnroll(atSign);
+    final onboardingService_2 =
+        AtOnboardingServiceImpl(atSign, enrollPreference_2);
+
+    var enrollResponse =
+        await onboardingService_2.enroll('buzz', 'iphone', totp, namespaces);
+    logger.finer('enroll response $enrollResponse');
+
+    var completer = Completer<void>(); // Create a Completer
+
+    //5. listen for notification from first client and invoke callback which denies the enrollment
+    onboardingService_1.atClient!.notificationService
+        .subscribe(regex: '.__manage')
+        .listen(expectAsync1((notification) async {
+          logger.finer('got enroll notification');
+          await _notificationCallback(
+              notification, onboardingService_1.atClient!, 'deny');
+          completer.complete();
+        }, count: 1, max: -1));
+    await completer.future;
+    //  TODO - assert for atEnrollmentException
+  }, timeout: Timeout(Duration(minutes: 10)));
 }
 
 Future<void> _notificationCallback(
-    AtNotification notification, AtClient atClient) async {
+    AtNotification notification, AtClient atClient, String response) async {
   print('enroll notification received: ${notification.toString()}');
   final notificationKey = notification.key;
   final enrollmentId =
@@ -101,15 +161,21 @@ Future<void> _notificationCallback(
       encryptedDefaultPrivateEncKey;
   enrollParamsJson['encryptedDefaultSelfEncryptionKey'] =
       encryptedDefaultSelfEncKey;
-  enrollRequest = 'enroll:approve:${jsonEncode(enrollParamsJson)}\n';
-  print('enroll approval request to server: $enrollRequest');
+  if (response == 'approve') {
+    enrollRequest = 'enroll:approve:${jsonEncode(enrollParamsJson)}\n';
+    print('enroll approval request to server: $enrollRequest');
+  } else {
+    enrollRequest = 'enroll:deny:${jsonEncode(enrollParamsJson)}\n';
+    print('enroll denial request $enrollRequest');
+  }
   String? enrollResponse = await atClient
       .getRemoteSecondary()!
       .executeCommand(enrollRequest, auth: true);
-  print('enroll approval Response: $enrollResponse');
+  print('enroll Response from server: $enrollResponse');
 }
 
-Future<void> _setLastReceivedNotificationDateTime(AtClient atClient) async {
+Future<void> _setLastReceivedNotificationDateTime(
+    AtClient atClient, String atSign) async {
   var lastReceivedNotificationAtKey = AtKey.local(
           'lastreceivednotification', atClient.getCurrentAtSign()!,
           namespace: atClient.getPreferences()!.namespace)
@@ -118,7 +184,7 @@ Future<void> _setLastReceivedNotificationDateTime(AtClient atClient) async {
   var atNotification = AtNotification(
       '124',
       '@bob🛠:testnotificationkey',
-      '@naresh🛠',
+      atSign,
       '@bob🛠',
       DateTime.now().millisecondsSinceEpoch,
       MessageTypeEnum.text.toString(),

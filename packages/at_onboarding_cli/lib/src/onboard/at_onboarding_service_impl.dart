@@ -340,7 +340,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       if (e.message.contains('error:AT0401')) {
         logger.finer('Retrying pkam auth');
         await Future.delayed(retryInterval);
-      } else if (e.message.contains('error:AT0402')) {
+      } else if (e.message.contains('error:AT0025')) {
         //# TODO change the error code once server bug is fixed
         logger.finer(
             'enrollmentId $enrollmentIdFromServer denied.Exiting pkam retry logic');
