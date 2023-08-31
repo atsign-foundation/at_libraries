@@ -48,5 +48,6 @@ const Map error_description = {
   'AT0024': 'Server is paused',
   'AT0025': 'ApkamAuthDenied',
   'AT0026': 'ApkamAuthFailed',
-  'AT0027': 'ApkamAccessRevoked'
+  'AT0027': 'ApkamAccessRevoked',
+  'AT0028': 'ApkamEnrollmentExpired'
 };
