@@ -7,7 +7,7 @@ class EnrollParams {
   String? appName;
   String? deviceName;
   Map<String, String>? namespaces;
-  String? totp;
+  String? otp;
   String? encryptedDefaultEncryptedPrivateKey;
   String? encryptedDefaultSelfEncryptionKey;
   String? encryptedAPKAMSymmetricKey;
