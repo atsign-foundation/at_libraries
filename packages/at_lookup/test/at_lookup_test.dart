@@ -24,6 +24,9 @@ void main() {
   late AtChops mockAtChops;
   late SecureSocket mockSecureSocket;
 
+  String atServerHost = '127.0.0.1';
+  int atServerPort = 12345;
+
   setUp(() {
     mockOutBoundConnection = MockOutboundConnectionImpl();
     mockSecondaryAddressFinder = MockSecondaryAddressFinder();
@@ -33,15 +36,14 @@ void main() {
     mockOutboundConnectionFactory = MockOutboundConnectionFactory();
     mockAtChops = MockAtChops();
     registerFallbackValue(SecureSocketConfig());
-    mockSecureSocket = createMockSecureSocket();
+    mockSecureSocket = createMockAtServerSocket(atServerHost, atServerPort);
 
     when(() => mockSecondaryAddressFinder.findSecondary('@alice'))
         .thenAnswer((_) async {
-      return SecondaryAddress('127.0.0.1', 12345);
+      return SecondaryAddress(atServerHost, atServerPort);
     });
-    when(() => mockSocketFactory.createSocket('127.0.0.1', '12345', any()))
+    when(() => mockSocketFactory.createSocket(atServerHost, '12345', any()))
         .thenAnswer((invocation) {
-      print('Mock SecureSocketFactory returning mock socket');
       return Future<SecureSocket>.value(mockSecureSocket);
     });
     when(() => mockOutboundConnectionFactory
@@ -88,7 +90,7 @@ void main() {
         return Future.value();
       });
 
-      final atLookup = AtLookupImpl('@alice', '127.0.0.1', 64,
+      final atLookup = AtLookupImpl('@alice', atServerHost, 64,
           secondaryAddressFinder: mockSecondaryAddressFinder,
           secureSocketFactory: mockSocketFactory,
           socketListenerFactory: mockSecureSocketListenerFactory,
@@ -124,7 +126,7 @@ void main() {
         return Future.value();
       });
 
-      final atLookup = AtLookupImpl('@alice', '127.0.0.1', 64,
+      final atLookup = AtLookupImpl('@alice', atServerHost, 64,
           secondaryAddressFinder: mockSecondaryAddressFinder,
           secureSocketFactory: mockSocketFactory,
           socketListenerFactory: mockSecureSocketListenerFactory,
@@ -160,7 +162,7 @@ void main() {
         return Future.value();
       });
 
-      final atLookup = AtLookupImpl('@alice', '127.0.0.1', 64,
+      final atLookup = AtLookupImpl('@alice', atServerHost, 64,
           secondaryAddressFinder: mockSecondaryAddressFinder,
           secureSocketFactory: mockSocketFactory,
           socketListenerFactory: mockSecureSocketListenerFactory,
@@ -197,7 +199,7 @@ void main() {
         return Future.value();
       });
 
-      final atLookup = AtLookupImpl('@alice', '127.0.0.1', 64,
+      final atLookup = AtLookupImpl('@alice', atServerHost, 64,
           secondaryAddressFinder: mockSecondaryAddressFinder,
           secureSocketFactory: mockSocketFactory,
           socketListenerFactory: mockSecureSocketListenerFactory,
@@ -212,7 +214,7 @@ void main() {
   });
   group('A group of tests to verify executeCommand method', () {
     test('executeCommand - from verb - auth false', () async {
-      final atLookup = AtLookupImpl('@alice', '127.0.0.1', 64,
+      final atLookup = AtLookupImpl('@alice', atServerHost, 64,
           secondaryAddressFinder: mockSecondaryAddressFinder,
           secureSocketFactory: mockSocketFactory,
           socketListenerFactory: mockSecureSocketListenerFactory,
@@ -226,7 +228,7 @@ void main() {
     });
     test('executeCommand -llookup verb - auth true - auth key not set',
         () async {
-      final atLookup = AtLookupImpl('@alice', '127.0.0.1', 64,
+      final atLookup = AtLookupImpl('@alice', atServerHost, 64,
           secondaryAddressFinder: mockSecondaryAddressFinder,
           secureSocketFactory: mockSocketFactory,
           socketListenerFactory: mockSecureSocketListenerFactory,
@@ -241,7 +243,7 @@ void main() {
     });
 
     test('executeCommand -llookup verb - auth true - at_chops set', () async {
-      final atLookup = AtLookupImpl('@alice', '127.0.0.1', 64,
+      final atLookup = AtLookupImpl('@alice', atServerHost, 64,
           secondaryAddressFinder: mockSecondaryAddressFinder,
           secureSocketFactory: mockSocketFactory,
           socketListenerFactory: mockSecureSocketListenerFactory,

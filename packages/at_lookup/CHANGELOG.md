@@ -1,3 +1,6 @@
+## 3.0.40
+- feat: make atServer address lookup resilient to transient failures to reach
+  atDirectory
 ## 3.0.39
 - feat: Changes for apkam
 - chore: Upgraded at_commons to 3.0.53 and at_utils to 3.0.15

@@ -1,6 +1,7 @@
+import 'dart:io';
+
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
-import 'package:at_lookup/src/cache/cacheable_secondary_address_finder.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 import 'package:mocktail/mocktail.dart';
@@ -56,6 +57,12 @@ void main() async {
           secondaryFinder: mockSecondaryFinder);
     });
 
+    test('test lookup of @alice on non-existent atDirectory', () async {
+      CacheableSecondaryAddressFinder cache = CacheableSecondaryAddressFinder('root.no.no.no', 64);
+      expect(() async => await cache.findSecondary('@alice'),
+          throwsA(predicate((e) => e is RootServerConnectivityException)));
+    });
+
     test('test simple lookup for @registeredAtSign1', () async {
       var atSign = '@registeredAtSign1';
       var secondaryAddress = await cache.findSecondary(atSign);
@@ -63,6 +70,7 @@ void main() async {
       expect(secondaryAddress.host, isNotNull);
       expect(secondaryAddress.toString(), _addressFromAtSign(atSign));
     });
+
     test('test simple lookup for registeredAtSign1', () async {
       var atSign = 'registeredAtSign1';
       var secondaryAddress = await cache.findSecondary(atSign);
@@ -70,6 +78,7 @@ void main() async {
       expect(secondaryAddress.host, isNotNull);
       expect(secondaryAddress.toString(), _addressFromAtSign(atSign));
     });
+
     test('test simple lookup for notRegisteredAtSign1', () async {
       var atSign = 'notRegisteredAtSign1';
       expect(
@@ -119,16 +128,118 @@ void main() async {
 //    });
   });
 
-  group('some cache tests with a real SecondaryUrlFinder non-existent or mocked root server', () {
-    test('test lookup of @alice on non-existent atDirectory', () async {
-      String atSign = '@alice';
-      CacheableSecondaryAddressFinder cache = CacheableSecondaryAddressFinder('root.no.no.no', 64);
-      expect(() async => await cache.findSecondary(atSign),
-          throwsA(predicate((e) => e is RootServerConnectivityException)));
+  group('some cache tests with a real SecondaryUrlFinder on a mocked root server', () {
+    registerFallbackValue(SecureSocketConfig());
+    String atSign = '@alice';
+    String noAtAtSign = atSign.replaceFirst('@', '');
+    String mockAtDirectoryHost = '127.0.0.5';
+    String mockedAtServerAddress = 'guid.swarm.zone.test:12345';
+
+    late Function socketOnDataFn;
+
+    late SecureSocket mockSocket;
+    late MockSecureSocketFactory mockSocketFactory;
+
+    late CacheableSecondaryAddressFinder cachingAtServerFinder;
+
+    late int numSocketCreateCalls;
+    late int requiredFailures;
+
+    SecureSocket createMockAtDirectorySocket(String address, int port) {
+      SecureSocket mss = MockSecureSocket();
+      when(() => mss.flush()).thenAnswer((invocation) => Future<void>.value());
+      when(() => mss.destroy()).thenAnswer((invocation) {
+        (mss as MockSecureSocket).destroyed = true;
+      });
+      when(() => mss.setOption(SocketOption.tcpNoDelay, true)).thenReturn(true);
+      when(() => mss.remoteAddress).thenReturn(InternetAddress(address));
+      when(() => mss.remotePort).thenReturn(port);
+      return mss;
+    }
+
+    setUp(() {
+      mockSocket = createMockAtDirectorySocket(mockAtDirectoryHost, 64);
+      mockSocketFactory = MockSecureSocketFactory();
+
+      cachingAtServerFinder = CacheableSecondaryAddressFinder(
+          mockAtDirectoryHost, 64,
+          secondaryFinder:
+          SecondaryUrlFinder(mockAtDirectoryHost, 64, mockSocketFactory));
+
+      numSocketCreateCalls = 0;
+      when(() =>
+          mockSocketFactory.createSocket(mockAtDirectoryHost, '64', any()))
+          .thenAnswer((invocation) {
+            print ('mock create socket: numFailures $numSocketCreateCalls requiredFailures $requiredFailures');
+        if (numSocketCreateCalls++ < requiredFailures) {
+          throw SocketException('Simulating socket connection failure');
+        } else {
+          return Future<SecureSocket>.value(mockSocket);
+        }
+      });
+
+      when(() => mockSocket.listen(any(),
+          onError: any(named: "onError"),
+          onDone: any(named: "onDone"))).thenAnswer((Invocation invocation) {
+        socketOnDataFn = invocation.positionalArguments[0];
+        // socketOnErrorFn = invocation.namedArguments[#onError];
+        // socketOnDoneFn = invocation.namedArguments[#onDone];
+
+        socketOnDataFn('@'.codeUnits);
+        return MockStreamSubscription();
+      });
+
+      when(() => mockSocket.write('$noAtAtSign\n'))
+          .thenAnswer((Invocation invocation) async {
+        socketOnDataFn("@$mockedAtServerAddress\n"
+            .codeUnits);
+      });
     });
 
-    test('test lookup of @alice with mocked atDirectory', () async {
+    test('test lookup of @alice with mocked atDirectory and zero failures', () async {
+      requiredFailures = 0;
+      SecondaryAddress sa = await cachingAtServerFinder.findSecondary(atSign);
+      expect(sa.toString(), mockedAtServerAddress);
+      expect(numSocketCreateCalls-1, requiredFailures);
+    });
 
+    test('test lookup of @alice with mocked atDirectory and 1 failure', () async {
+      requiredFailures = 1;
+      SecondaryAddress sa = await cachingAtServerFinder.findSecondary(atSign);
+      expect(sa.toString(), mockedAtServerAddress);
+      expect(numSocketCreateCalls-1, requiredFailures);
+    });
+
+    test('test lookup of @alice with mocked atDirectory and 2 failures', () async {
+      requiredFailures = 2;
+      SecondaryAddress sa = await cachingAtServerFinder.findSecondary(atSign);
+      expect(sa.toString(), mockedAtServerAddress);
+      expect(numSocketCreateCalls-1, requiredFailures);
+    });
+
+    test('test lookup of @alice with mocked atDirectory and 3 failures', () async {
+      requiredFailures = 3;
+      SecondaryAddress sa = await cachingAtServerFinder.findSecondary(atSign);
+      expect(sa.toString(), mockedAtServerAddress);
+      expect(numSocketCreateCalls-1, requiredFailures);
+    });
+
+    test('test lookup of @alice with mocked atDirectory and 4 failures', () async {
+      requiredFailures = 4;
+      SecondaryAddress sa = await cachingAtServerFinder.findSecondary(atSign);
+      expect(sa.toString(), mockedAtServerAddress);
+      expect(numSocketCreateCalls-1, requiredFailures);
+    });
+
+    test('test lookup of @alice with mocked atDirectory and 5 failures',
+        () async {
+      requiredFailures = 5;
+      expect(() async => await cachingAtServerFinder.findSecondary(atSign),
+          throwsA(predicate((e) {
+        print('${e.runtimeType} : $e');
+        expect(numSocketCreateCalls, requiredFailures);
+        return e is RootServerConnectivityException;
+      })));
     });
   });
 
@@ -143,40 +254,40 @@ void main() async {
       return '$proxyHost:$rootPort';
     }
 
-    late CacheableSecondaryAddressFinder cache;
+    late CacheableSecondaryAddressFinder csaf;
 
     setUp(() {
-      cache = CacheableSecondaryAddressFinder(rootDomain, rootPort);
+      csaf = CacheableSecondaryAddressFinder(rootDomain, rootPort);
     });
 
     test('test simple lookup for @registeredAtSign1', () async {
       var atSign = '@registeredAtSign1';
-      var secondaryAddress = await cache.findSecondary(atSign);
+      var secondaryAddress = await csaf.findSecondary(atSign);
       expect(secondaryAddress.port, isNotNull);
       expect(secondaryAddress.host, isNotNull);
       expect(secondaryAddress.toString(), _addressFromAtSign(atSign));
     });
     test('test simple lookup for registeredAtSign1', () async {
       var atSign = 'registeredAtSign1';
-      var secondaryAddress = await cache.findSecondary(atSign);
+      var secondaryAddress = await csaf.findSecondary(atSign);
       expect(secondaryAddress.port, isNotNull);
       expect(secondaryAddress.host, isNotNull);
       expect(secondaryAddress.toString(), _addressFromAtSign(atSign));
     });
     test('test isCached for registeredAtSign1', () async {
       var atSign = 'registeredAtSign1';
-      await cache.findSecondary(atSign);
-      expect(cache.cacheContains(atSign), true);
+      await csaf.findSecondary(atSign);
+      expect(csaf.cacheContains(atSign), true);
     });
 
     test('test expiry time - default cache expiry for registeredAtSign1',
         () async {
       var atSign = 'registeredAtSign1';
-      await cache.findSecondary(atSign);
+      await csaf.findSecondary(atSign);
       final approxExpiry =
           DateTime.now().add(Duration(hours: 1)).millisecondsSinceEpoch;
-      expect(cache.getCacheExpiryTime(atSign), isNotNull);
-      expect((approxExpiry - cache.getCacheExpiryTime(atSign)!) < 100, true);
+      expect(csaf.getCacheExpiryTime(atSign), isNotNull);
+      expect((approxExpiry - csaf.getCacheExpiryTime(atSign)!) < 100, true);
     });
   });
 }

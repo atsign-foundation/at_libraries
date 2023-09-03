@@ -37,14 +37,14 @@ class MockAtChops extends Mock implements AtChopsImpl {}
 class MockOutboundConnectionImpl extends Mock
     implements OutboundConnectionImpl {}
 
-SecureSocket createMockSecureSocket() {
+SecureSocket createMockAtServerSocket(String address, int port) {
   SecureSocket mss = MockSecureSocket();
   when(() => mss.destroy()).thenAnswer((invocation) {
     (mss as MockSecureSocket).destroyed = true;
   });
   when(() => mss.setOption(SocketOption.tcpNoDelay, true)).thenReturn(true);
-  when(() => mss.remoteAddress).thenReturn(InternetAddress('127.0.0.1'));
-  when(() => mss.remotePort).thenReturn(12345);
+  when(() => mss.remoteAddress).thenReturn(InternetAddress('127.0.0.66'));
+  when(() => mss.remotePort).thenReturn(port);
   when(() => mss.listen(any(),
       onError: any(named: "onError"),
       onDone: any(named: "onDone"))).thenReturn(MockStreamSubscription());

@@ -16,14 +16,12 @@ class CacheableSecondaryAddressFinder implements SecondaryAddressFinder {
   final String _rootDomain;
   final int _rootPort;
   late SecondaryUrlFinder _secondaryFinder;
-  late AtLookupSecureSocketFactory _socketFactory;
 
   CacheableSecondaryAddressFinder(this._rootDomain, this._rootPort,
-      {SecondaryUrlFinder? secondaryFinder,
-      AtLookupSecureSocketFactory? socketFactory}) {
-    _socketFactory = socketFactory ?? AtLookupSecureSocketFactory();
-    _secondaryFinder =
-        secondaryFinder ?? SecondaryUrlFinder(_rootDomain, _rootPort, _socketFactory);
+      {SecondaryUrlFinder? secondaryFinder}) {
+    _secondaryFinder = secondaryFinder ??
+        SecondaryUrlFinder(
+            _rootDomain, _rootPort, AtLookupSecureSocketFactory());
   }
 
   bool cacheContains(String atSign) {
@@ -119,12 +117,28 @@ class SecondaryAddressCacheEntry {
   SecondaryAddressCacheEntry(this.secondaryAddress, this.expiresAt);
 }
 
+/// When SecondaryUrlFinder tries to lookup the atServer's address from an
+/// atDirectory, it may encounter intermittent failures for various reasons -
+/// 'network weather', service glitches, etc.
+///
+/// In order to be resilient to such failures, we implement retries.
+///
+/// The static variable [retryDelaysMillis] controls
+/// (a) how many retries are done, and
+/// (b) the delay before each retry
 class SecondaryUrlFinder {
   final String _rootDomain;
   final int _rootPort;
   final AtLookupSecureSocketFactory socketFactory;
+
   SecondaryUrlFinder(this._rootDomain, this._rootPort, this.socketFactory);
+
   final _logger = AtSignLogger('SecondaryUrlFinder');
+
+  /// Controls
+  /// (a) how many retries are done, and
+  /// (b) the delay before each retry
+  static List<int> retryDelaysMillis = [50, 100, 150, 200];
 
   Future<String?> findSecondaryUrl(String atSign) async {
     if (_rootDomain.startsWith("proxy:")) {
@@ -136,22 +150,25 @@ class SecondaryUrlFinder {
       return '${_rootDomain.substring("proxy:".length)}:$_rootPort';
     } else {
       String? address;
-      List<int> retryDelaysMillis = [50, 100, 250, 500];
-      for (int attempt = 0; attempt <= retryDelaysMillis.length; attempt++) {
+      for (int i = 0; i <= retryDelaysMillis.length; i++) {
         try {
           address = await _findSecondary(atSign);
           return address;
         } catch (e) {
-          if (attempt == retryDelaysMillis.length) {
-            _logger.severe('AtLookup.findSecondary $atSign failed with $e : ${retryDelaysMillis.length + 1} failed attempts, giving up');
+          if (i == retryDelaysMillis.length) {
+            _logger.severe('AtLookup.findSecondary $atSign failed with $e'
+                ' : ${retryDelaysMillis.length + 1} failures, giving up');
             rethrow;
           } else {
-            _logger.info('AtLookup.findSecondary $atSign failed with $e : will retry in ${retryDelaysMillis[attempt]} milliseconds');
-            await Future.delayed(Duration(milliseconds: retryDelaysMillis[attempt]));
+            _logger.info('AtLookup.findSecondary $atSign failed with $e'
+                ' : will retry in ${retryDelaysMillis[i]} milliseconds');
+            await Future.delayed(Duration(milliseconds: retryDelaysMillis[i]));
           }
         }
       }
-      throw AtConnectException('CacheableSecondaryAddressFinder.SecondaryUrlFinder.findSecondaryUrl exceeded max retries');
+      throw AtConnectException(
+          'CacheableSecondaryAddressFinder.SecondaryUrlFinder.findSecondaryUrl'
+          ' : ${retryDelaysMillis.length + 1} failures, giving up');
     }
   }
 
@@ -167,11 +184,12 @@ class SecondaryUrlFinder {
       var prompt = false;
       var once = true;
 
-      socket = await SecureSocket.connect(_rootDomain, _rootPort);
-      socket = await socketFactory.createSocket(_rootDomain, '$_rootPort', SecureSocketConfig());
+      socket = await socketFactory.createSocket(
+          _rootDomain, '$_rootPort', SecureSocketConfig());
 
       // listen to the received data event stream
       socket.listen((List<int> event) async {
+        _logger.finest('root socket listener received: $event');
         answer = utf8.decode(event);
 
         if (answer.endsWith('@') && prompt == false && once == true) {
@@ -209,9 +227,9 @@ class SecondaryUrlFinder {
       await socket.flush();
       socket.destroy();
       throw AtTimeoutException('AtLookup.findSecondary timed out');
-    } on SocketException {
+    } on SocketException catch (se) {
       throw RootServerConnectivityException(
-          'Failed connecting to root server url $_rootDomain on port $_rootPort');
+          '_findSecondary caught exception [$se] while connecting to root server url $_rootDomain on port $_rootPort');
     } on Exception catch (exception) {
       _logger.severe('AtLookup.findSecondary connection to ' +
           _rootDomain +
@@ -224,9 +242,10 @@ class SecondaryUrlFinder {
           _rootDomain +
           ' exception: ' +
           exception.toString());
-    } catch (error) {
+    } catch (error, stackTrace) {
       _logger.severe(
           'AtLookup.findSecondary connection to root server failed with error: $error');
+      _logger.severe(stackTrace);
       if (socket != null) {
         socket.destroy();
       }
