@@ -92,7 +92,7 @@ void main() {
           'dummy_encrypted_private_key';
       enrollParamsMap['encryptedDefaultSelfEncryptionKey'] =
           'dummy_self_encryption_key';
-      enrollParamsMap['totp'] = '123';
+      enrollParamsMap['otp'] = '123';
 
       var enrollParams = EnrollParams.fromJson(enrollParamsMap);
       expect(enrollParams.appName, 'wavi');
@@ -104,7 +104,7 @@ void main() {
           'dummy_encrypted_private_key');
       expect(enrollParams.encryptedDefaultSelfEncryptionKey,
           'dummy_self_encryption_key');
-      expect(enrollParams.totp, '123');
+      expect(enrollParams.otp, '123');
       expect(enrollParams.namespaces, {'wavi': 'rw', '__manage': 'r'});
     });
   });
