@@ -1,10 +1,11 @@
 import 'package:at_commons/at_commons.dart';
+import 'package:at_lookup/at_lookup.dart';
 import 'package:at_lookup/src/cache/cacheable_secondary_address_finder.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockSecondaryFinder extends Mock implements SecondaryUrlFinder {}
+import 'at_lookup_test_utils.dart';
 
 void main() async {
   group('this should be moved to functional tests', () {
@@ -22,7 +23,7 @@ void main() async {
     String rootDomain = 'root.atsign.unit.tests';
     int rootPort = 64;
 
-    SecondaryUrlFinder mockSecondaryFinder = MockSecondaryFinder();
+    SecondaryUrlFinder mockSecondaryFinder = MockSecondaryUrlFinder();
 
     String _addressFromAtSign(String atSign) {
       if (atSign.startsWith('@')) {
@@ -116,6 +117,19 @@ void main() async {
 //      await cache.findSecondary(atSign, refreshCacheNow: true);
 //      expect(cache.cacheContains(atSign), true);
 //    });
+  });
+
+  group('some cache tests with a real SecondaryUrlFinder non-existent or mocked root server', () {
+    test('test lookup of @alice on non-existent atDirectory', () async {
+      String atSign = '@alice';
+      CacheableSecondaryAddressFinder cache = CacheableSecondaryAddressFinder('root.no.no.no', 64);
+      expect(() async => await cache.findSecondary(atSign),
+          throwsA(predicate((e) => e is RootServerConnectivityException)));
+    });
+
+    test('test lookup of @alice with mocked atDirectory', () async {
+
+    });
   });
 
   group(

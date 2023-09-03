@@ -8,54 +8,12 @@ import 'package:test/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:at_utils/at_logger.dart';
 
-import 'connection_management_test.dart';
-
-class MockOutboundConnectionImpl extends Mock
-    implements OutboundConnectionImpl {}
-
-class MockSecondaryAddressFinder extends Mock
-    implements SecondaryAddressFinder {}
-
-class MockOutboundMessageListener extends Mock
-    implements OutboundMessageListener {}
-
-late int mockSocketNumber;
-
-class MockSecureSocket extends Mock implements SecureSocket {
-  bool destroyed = false;
-  int mockNumber = mockSocketNumber++;
-}
-
-class MockSecureSocketFactory extends Mock
-    implements AtLookupSecureSocketFactory {}
-
-class MockSecureSocketListenerFactory extends Mock
-    implements AtLookupSecureSocketListenerFactory {}
-
-class MockOutboundConnectionFactory extends Mock
-    implements AtLookupOutboundConnectionFactory {}
-
-class MockAtChops extends Mock implements AtChopsImpl {}
+import 'at_lookup_test_utils.dart';
 
 class FakeAtSigningInput extends Fake implements AtSigningInput {}
 
-SecureSocket createMockSecureSocket() {
-  SecureSocket mss = MockSecureSocket();
-  when(() => mss.destroy()).thenAnswer((invocation) {
-    (mss as MockSecureSocket).destroyed = true;
-  });
-  when(() => mss.setOption(SocketOption.tcpNoDelay, true)).thenReturn(true);
-  when(() => mss.remoteAddress).thenReturn(InternetAddress('127.0.0.1'));
-  when(() => mss.remotePort).thenReturn(12345);
-  when(() => mss.listen(any(),
-      onError: any(named: "onError"),
-      onDone: any(named: "onDone"))).thenReturn(MockStreamSubscription());
-  return mss;
-}
-
 void main() {
   AtSignLogger.root_level = 'finest';
-  mockSocketNumber = 1;
   late OutboundConnection mockOutBoundConnection;
   late SecondaryAddressFinder mockSecondaryAddressFinder;
   late OutboundMessageListener mockOutboundListener;
