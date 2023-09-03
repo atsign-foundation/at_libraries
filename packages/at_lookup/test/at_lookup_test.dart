@@ -8,54 +8,12 @@ import 'package:test/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:at_utils/at_logger.dart';
 
-import 'connection_management_test.dart';
-
-class MockOutboundConnectionImpl extends Mock
-    implements OutboundConnectionImpl {}
-
-class MockSecondaryAddressFinder extends Mock
-    implements SecondaryAddressFinder {}
-
-class MockOutboundMessageListener extends Mock
-    implements OutboundMessageListener {}
-
-late int mockSocketNumber;
-
-class MockSecureSocket extends Mock implements SecureSocket {
-  bool destroyed = false;
-  int mockNumber = mockSocketNumber++;
-}
-
-class MockSecureSocketFactory extends Mock
-    implements AtLookupSecureSocketFactory {}
-
-class MockSecureSocketListenerFactory extends Mock
-    implements AtLookupSecureSocketListenerFactory {}
-
-class MockOutboundConnectionFactory extends Mock
-    implements AtLookupOutboundConnectionFactory {}
-
-class MockAtChops extends Mock implements AtChopsImpl {}
+import 'at_lookup_test_utils.dart';
 
 class FakeAtSigningInput extends Fake implements AtSigningInput {}
 
-SecureSocket createMockSecureSocket() {
-  SecureSocket mss = MockSecureSocket();
-  when(() => mss.destroy()).thenAnswer((invocation) {
-    (mss as MockSecureSocket).destroyed = true;
-  });
-  when(() => mss.setOption(SocketOption.tcpNoDelay, true)).thenReturn(true);
-  when(() => mss.remoteAddress).thenReturn(InternetAddress('127.0.0.1'));
-  when(() => mss.remotePort).thenReturn(12345);
-  when(() => mss.listen(any(),
-      onError: any(named: "onError"),
-      onDone: any(named: "onDone"))).thenReturn(MockStreamSubscription());
-  return mss;
-}
-
 void main() {
   AtSignLogger.root_level = 'finest';
-  mockSocketNumber = 1;
   late OutboundConnection mockOutBoundConnection;
   late SecondaryAddressFinder mockSecondaryAddressFinder;
   late OutboundMessageListener mockOutboundListener;
@@ -66,6 +24,9 @@ void main() {
   late AtChops mockAtChops;
   late SecureSocket mockSecureSocket;
 
+  String atServerHost = '127.0.0.1';
+  int atServerPort = 12345;
+
   setUp(() {
     mockOutBoundConnection = MockOutboundConnectionImpl();
     mockSecondaryAddressFinder = MockSecondaryAddressFinder();
@@ -75,15 +36,14 @@ void main() {
     mockOutboundConnectionFactory = MockOutboundConnectionFactory();
     mockAtChops = MockAtChops();
     registerFallbackValue(SecureSocketConfig());
-    mockSecureSocket = createMockSecureSocket();
+    mockSecureSocket = createMockAtServerSocket(atServerHost, atServerPort);
 
     when(() => mockSecondaryAddressFinder.findSecondary('@alice'))
         .thenAnswer((_) async {
-      return SecondaryAddress('127.0.0.1', 12345);
+      return SecondaryAddress(atServerHost, atServerPort);
     });
-    when(() => mockSocketFactory.createSocket('127.0.0.1', '12345', any()))
+    when(() => mockSocketFactory.createSocket(atServerHost, '12345', any()))
         .thenAnswer((invocation) {
-      print('Mock SecureSocketFactory returning mock socket');
       return Future<SecureSocket>.value(mockSecureSocket);
     });
     when(() => mockOutboundConnectionFactory
@@ -130,7 +90,7 @@ void main() {
         return Future.value();
       });
 
-      final atLookup = AtLookupImpl('@alice', '127.0.0.1', 64,
+      final atLookup = AtLookupImpl('@alice', atServerHost, 64,
           secondaryAddressFinder: mockSecondaryAddressFinder,
           secureSocketFactory: mockSocketFactory,
           socketListenerFactory: mockSecureSocketListenerFactory,
@@ -166,7 +126,7 @@ void main() {
         return Future.value();
       });
 
-      final atLookup = AtLookupImpl('@alice', '127.0.0.1', 64,
+      final atLookup = AtLookupImpl('@alice', atServerHost, 64,
           secondaryAddressFinder: mockSecondaryAddressFinder,
           secureSocketFactory: mockSocketFactory,
           socketListenerFactory: mockSecureSocketListenerFactory,
@@ -202,7 +162,7 @@ void main() {
         return Future.value();
       });
 
-      final atLookup = AtLookupImpl('@alice', '127.0.0.1', 64,
+      final atLookup = AtLookupImpl('@alice', atServerHost, 64,
           secondaryAddressFinder: mockSecondaryAddressFinder,
           secureSocketFactory: mockSocketFactory,
           socketListenerFactory: mockSecureSocketListenerFactory,
@@ -239,7 +199,7 @@ void main() {
         return Future.value();
       });
 
-      final atLookup = AtLookupImpl('@alice', '127.0.0.1', 64,
+      final atLookup = AtLookupImpl('@alice', atServerHost, 64,
           secondaryAddressFinder: mockSecondaryAddressFinder,
           secureSocketFactory: mockSocketFactory,
           socketListenerFactory: mockSecureSocketListenerFactory,
@@ -254,7 +214,7 @@ void main() {
   });
   group('A group of tests to verify executeCommand method', () {
     test('executeCommand - from verb - auth false', () async {
-      final atLookup = AtLookupImpl('@alice', '127.0.0.1', 64,
+      final atLookup = AtLookupImpl('@alice', atServerHost, 64,
           secondaryAddressFinder: mockSecondaryAddressFinder,
           secureSocketFactory: mockSocketFactory,
           socketListenerFactory: mockSecureSocketListenerFactory,
@@ -268,7 +228,7 @@ void main() {
     });
     test('executeCommand -llookup verb - auth true - auth key not set',
         () async {
-      final atLookup = AtLookupImpl('@alice', '127.0.0.1', 64,
+      final atLookup = AtLookupImpl('@alice', atServerHost, 64,
           secondaryAddressFinder: mockSecondaryAddressFinder,
           secureSocketFactory: mockSocketFactory,
           socketListenerFactory: mockSecureSocketListenerFactory,
@@ -283,7 +243,7 @@ void main() {
     });
 
     test('executeCommand -llookup verb - auth true - at_chops set', () async {
-      final atLookup = AtLookupImpl('@alice', '127.0.0.1', 64,
+      final atLookup = AtLookupImpl('@alice', atServerHost, 64,
           secondaryAddressFinder: mockSecondaryAddressFinder,
           secureSocketFactory: mockSocketFactory,
           socketListenerFactory: mockSecureSocketListenerFactory,

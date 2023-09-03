@@ -6,8 +6,7 @@ import 'package:at_lookup/src/connection/outbound_message_listener.dart';
 import 'package:test/test.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockOutboundConnectionImpl extends Mock
-    implements OutboundConnectionImpl {}
+import 'at_lookup_test_utils.dart';
 
 void main() {
   OutboundConnection mockOutBoundConnection = MockOutboundConnectionImpl();
