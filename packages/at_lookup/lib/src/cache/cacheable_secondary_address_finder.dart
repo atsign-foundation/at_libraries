@@ -19,9 +19,8 @@ class CacheableSecondaryAddressFinder implements SecondaryAddressFinder {
 
   CacheableSecondaryAddressFinder(this._rootDomain, this._rootPort,
       {SecondaryUrlFinder? secondaryFinder}) {
-    _secondaryFinder = secondaryFinder ??
-        SecondaryUrlFinder(
-            _rootDomain, _rootPort, AtLookupSecureSocketFactory());
+    _secondaryFinder =
+        secondaryFinder ?? SecondaryUrlFinder(_rootDomain, _rootPort);
   }
 
   bool cacheContains(String atSign) {
@@ -129,9 +128,11 @@ class SecondaryAddressCacheEntry {
 class SecondaryUrlFinder {
   final String _rootDomain;
   final int _rootPort;
-  final AtLookupSecureSocketFactory socketFactory;
+  late final AtLookupSecureSocketFactory _socketFactory;
 
-  SecondaryUrlFinder(this._rootDomain, this._rootPort, this.socketFactory);
+  SecondaryUrlFinder(this._rootDomain, this._rootPort, {AtLookupSecureSocketFactory? socketFactory}) {
+    _socketFactory = socketFactory ?? AtLookupSecureSocketFactory();
+  }
 
   final _logger = AtSignLogger('SecondaryUrlFinder');
 
@@ -184,7 +185,7 @@ class SecondaryUrlFinder {
       var prompt = false;
       var once = true;
 
-      socket = await socketFactory.createSocket(
+      socket = await _socketFactory.createSocket(
           _rootDomain, '$_rootPort', SecureSocketConfig());
 
       // listen to the received data event stream

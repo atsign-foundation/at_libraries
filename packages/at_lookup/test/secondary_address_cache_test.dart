@@ -164,7 +164,7 @@ void main() async {
       cachingAtServerFinder = CacheableSecondaryAddressFinder(
           mockAtDirectoryHost, 64,
           secondaryFinder:
-          SecondaryUrlFinder(mockAtDirectoryHost, 64, mockSocketFactory));
+          SecondaryUrlFinder(mockAtDirectoryHost, 64, socketFactory: mockSocketFactory));
 
       numSocketCreateCalls = 0;
       when(() =>
