@@ -1,3 +1,13 @@
+## 3.0.40
+- feat: make `SecondaryUrlFinder` (atServer address lookup) resilient to 
+  transient failures to reach an atDirectory
+- feat: made `retryDelaysMillis` a public static variable
+  in `SecondaryUrlFinder`; this allows clients to control
+  - (1) how many retries are done and
+  - (2) the delay after each subsequent retry
+## 3.0.39
+- feat: Changes for apkam
+- chore: Upgraded at_commons to 3.0.53 and at_utils to 3.0.15
 ## 3.0.38
 - fix: wrap socket.listen in runZonedGuarded to ensure weird network errors are
   always caught

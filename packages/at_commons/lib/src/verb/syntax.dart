@@ -129,7 +129,7 @@ class VerbSyntax {
   static const enroll =
       // The non-capturing group (?::)? matches ":" if the operation is request|approve|deny|revoke
       r'^enroll:(?<operation>(?:list$|(request|approve|deny|revoke)))(?::)?(?<enrollParams>.+)?$';
-  static const totp = r'^totp:(?<operation>get|validate)(:(?<totp>[0-9]+))?$';
+  static const otp = r'^otp:(?<operation>get|validate)(:(?<otp>\w+))?$';
   static const keys = r'^keys:((?<operation>put|get|delete):?)'
       r'(?:(?<visibility>public|private|self):?)?'
       r'(?:namespace:(?<namespace>[a-zA-Z0-9_]+):?)?'

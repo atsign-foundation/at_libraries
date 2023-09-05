@@ -7,42 +7,15 @@ import 'package:at_lookup/src/connection/outbound_message_listener.dart';
 import 'package:test/test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'at_lookup_test_utils.dart';
+
 class MockOutboundConnectionImpl extends Mock
     implements OutboundConnectionImpl {}
-
-late int mockSocketNumber;
-
-class MockSecureSocket extends Mock implements SecureSocket {
-  bool destroyed = false;
-  int mockNumber = mockSocketNumber++;
-}
-
-class MockSecondaryAddressFinder extends Mock
-    implements SecondaryAddressFinder {}
-
-class MockSecureSocketFactory extends Mock
-    implements AtLookupSecureSocketFactory {}
-
-class MockStreamSubscription<T> extends Mock implements StreamSubscription<T> {}
 
 void main() {
   group('test connection close and socket cleanup', () {
     late SecondaryAddressFinder finder;
     late MockSecureSocketFactory mockSocketFactory;
-
-    SecureSocket createMockSecureSocket() {
-      SecureSocket mss = MockSecureSocket();
-      when(() => mss.destroy()).thenAnswer((invocation) {
-        (mss as MockSecureSocket).destroyed = true;
-      });
-      when(() => mss.setOption(SocketOption.tcpNoDelay, true)).thenReturn(true);
-      when(() => mss.remoteAddress).thenReturn(InternetAddress('127.0.0.1'));
-      when(() => mss.remotePort).thenReturn(12345);
-      when(() => mss.listen(any(),
-          onError: any(named: "onError"),
-          onDone: any(named: "onDone"))).thenReturn(MockStreamSubscription());
-      return mss;
-    }
 
     setUp(() {
       mockSocketNumber = 1;
@@ -57,8 +30,7 @@ void main() {
       when(() =>
               mockSocketFactory.createSocket('test.test.test', '12345', any()))
           .thenAnswer((invocation) {
-        print('Mock SecureSocketFactory returning mock socket');
-        return Future<SecureSocket>.value(createMockSecureSocket());
+        return Future<SecureSocket>.value(createMockAtServerSocket('test.test.test', 12345));
       });
     });
 
@@ -123,7 +95,7 @@ void main() {
     test(
         'test message listener closes connection'
         ' when socket listener onDone is called', () async {
-      OutboundConnection oc = OutboundConnectionImpl(createMockSecureSocket());
+      OutboundConnection oc = OutboundConnectionImpl(createMockAtServerSocket('test.test.test', 12345));
       OutboundMessageListener oml = OutboundMessageListener(oc);
       expect((oc.getSocket() as MockSecureSocket).destroyed, false);
       expect(oc.metaData?.isClosed, false);
@@ -135,7 +107,7 @@ void main() {
     test(
         'test message listener closes connection'
         ' when socket listener onError is called', () async {
-      OutboundConnection oc = OutboundConnectionImpl(createMockSecureSocket());
+      OutboundConnection oc = OutboundConnectionImpl(createMockAtServerSocket('test.test.test', 12345));
       OutboundMessageListener oml = OutboundMessageListener(oc);
       expect((oc.getSocket() as MockSecureSocket).destroyed, false);
       expect(oc.metaData?.isClosed, false);
@@ -145,7 +117,7 @@ void main() {
     });
 
     test('test can safely call connection.close() repeatedly', () async {
-      OutboundConnection oc = OutboundConnectionImpl(createMockSecureSocket());
+      OutboundConnection oc = OutboundConnectionImpl(createMockAtServerSocket('test.test.test', 12345));
       OutboundMessageListener oml = OutboundMessageListener(oc);
       expect((oc.getSocket() as MockSecureSocket).destroyed, false);
       expect(oc.metaData?.isClosed, false);
@@ -164,7 +136,7 @@ void main() {
     test(
         'test that OutboundMessageListener.closeConnection will call'
         ' connection.close if the connection is idle', () async {
-      OutboundConnection oc = OutboundConnectionImpl(createMockSecureSocket());
+      OutboundConnection oc = OutboundConnectionImpl(createMockAtServerSocket('test.test.test', 12345));
       OutboundMessageListener oml = OutboundMessageListener(oc);
       expect((oc.getSocket() as MockSecureSocket).destroyed, false);
       expect(oc.metaData?.isClosed, false);
@@ -184,7 +156,7 @@ void main() {
     test(
         'test that OutboundMessageListener.closeConnection will not call'
         ' connection.close if already marked closed', () async {
-      OutboundConnection oc = OutboundConnectionImpl(createMockSecureSocket());
+      OutboundConnection oc = OutboundConnectionImpl(createMockAtServerSocket('test.test.test', 12345));
       OutboundMessageListener oml = OutboundMessageListener(oc);
       expect((oc.getSocket() as MockSecureSocket).destroyed, false);
       oc.metaData!.isClosed = true;
@@ -198,7 +170,7 @@ void main() {
     test(
         'test that OutboundMessageListener.closeConnection will call'
         ' connection.close even if the connection is marked stale', () async {
-      OutboundConnection oc = OutboundConnectionImpl(createMockSecureSocket());
+      OutboundConnection oc = OutboundConnectionImpl(createMockAtServerSocket('test.test.test', 12345));
       OutboundMessageListener oml = OutboundMessageListener(oc);
       expect((oc.getSocket() as MockSecureSocket).destroyed, false);
       expect(oc.metaData?.isClosed, false);
