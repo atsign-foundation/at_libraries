@@ -36,10 +36,10 @@ void main() {
       await _setLastReceivedNotificationDateTime(
           onboardingService_1.atClient!, atSign);
 
-      //3. run totp:get from first client
+      //3. run otp:get from first client
       String? totp = await onboardingService_1.atClient!
           .getRemoteSecondary()!
-          .executeCommand('totp:get\n', auth: true);
+          .executeCommand('otp:get\n', auth: true);
       totp = totp!.replaceFirst('data:', '');
       totp = totp.trim();
       logger.finer('otp: $totp');
@@ -102,10 +102,10 @@ void main() {
     await _setLastReceivedNotificationDateTime(
         onboardingService_1.atClient!, atSign);
 
-    //3. run totp:get from first client
+    //3. run otp:get from first client
     String? totp = await onboardingService_1.atClient!
         .getRemoteSecondary()!
-        .executeCommand('totp:get\n', auth: true);
+        .executeCommand('otp:get\n', auth: true);
     totp = totp!.replaceFirst('data:', '');
     totp = totp.trim();
     logger.finer('otp: $totp');
