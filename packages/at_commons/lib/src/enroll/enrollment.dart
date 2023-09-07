@@ -1,6 +1,7 @@
 class EnrollResponse {
   String enrollmentId;
   EnrollStatus enrollStatus;
+
   EnrollResponse(this.enrollmentId, this.enrollStatus);
 
   @override

@@ -150,7 +150,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }
 
   @override
-  Future<EnrollResponse> enroll(String appName, String deviceName, String totp,
+  Future<EnrollResponse> enroll(String appName, String deviceName, String otp,
       Map<String, String> namespaces,
       {int? pkamRetryIntervalMins}) async {
     if (appName == null || deviceName == null) {
@@ -177,7 +177,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     var enrollmentResponse = await _sendEnrollRequest(
         appName,
         deviceName,
-        totp,
+        otp,
         namespaces,
         apkamKeyPair.publicKey.toString(),
         encryptedApkamSymmetricKey,
@@ -234,33 +234,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       await _generateAtKeysFile(enrollmentIdFromServer, atSecurityKeys);
     });
   }
-
-  // Future<void> _pkamSuccessCallback(
-  //     AtLookupImpl atLookUpImpl,
-  //     String enrollmentIdFromServer,
-  //     String apkamSymmetricKey,
-  //     String defaultEncryptionPublicKey,
-  //     RSAKeypair apkamKeyPair) async {
-  //   //1. Retrieve encrypted keys from server
-  //   var decryptedEncryptionPrivateKey = EncryptionUtil.decryptValue(
-  //       await _getEncryptionPrivateKeyFromServer(
-  //           enrollmentIdFromServer, atLookUpImpl),
-  //       apkamSymmetricKey);
-  //   var decryptedSelfEncryptionKey = EncryptionUtil.decryptValue(
-  //       await _getSelfEncryptionKeyFromServer(
-  //           enrollmentIdFromServer, atLookUpImpl),
-  //       apkamSymmetricKey);
-  //
-  //   //2. Save security keys and enrollmentId in atKeys file
-  //   var atSecurityKeys = AtSecurityKeys()
-  //     ..defaultEncryptionPrivateKey = decryptedEncryptionPrivateKey
-  //     ..defaultEncryptionPublicKey = defaultEncryptionPublicKey
-  //     ..apkamSymmetricKey = apkamSymmetricKey
-  //     ..defaultSelfEncryptionKey = decryptedSelfEncryptionKey
-  //     ..apkamPublicKey = apkamKeyPair.publicKey.toString()
-  //     ..apkamPrivateKey = apkamKeyPair.privateKey.toString();
-  //   await _generateAtKeysFile(enrollmentIdFromServer, atSecurityKeys);
-  // }
 
   Future<String> _getEncryptionPrivateKeyFromServer(
       String enrollmentIdFromServer, AtLookUp atLookUp) async {
@@ -438,7 +411,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   Future<EnrollResponse> _sendEnrollRequest(
       String appName,
       String deviceName,
-      String totp,
+      String otp,
       Map<String, String> namespaces,
       String apkamPublicKey,
       String encryptedApkamSymmetricKey,
@@ -447,7 +420,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       ..appName = appName
       ..deviceName = deviceName
       ..namespaces = namespaces
-      ..totp = totp
+      ..otp = otp
       ..apkamPublicKey = apkamPublicKey
       ..encryptedAPKAMSymmetricKey = encryptedApkamSymmetricKey;
     var enrollResult =

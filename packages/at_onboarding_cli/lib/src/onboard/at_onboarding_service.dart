@@ -16,11 +16,11 @@ abstract class AtOnboardingService {
   /// Sends an enroll request to the server. Apps that are already enrolled will receive notifications for this enroll request and can approve/deny the request
   /// appName - application name of the client e.g wavi,buzz, atmosphere etc.,
   /// deviceName - device identifier from the requesting application e.g iphone,any unique ID that identifies the requesting client
-  /// totp - otp retrieved from an already enrolled app
+  /// otp - otp retrieved from an already enrolled app
   /// namespaces - key-value pair of namespace-access of the requesting client e.g {"wavi":"rw","contacts":"r"}
   /// pkamRetryIntervalMins - optional param which specifies interval in mins for pkam retry for this enrollment.
   /// The passed value will override the value in [AtOnboardingPreference]
-  Future<EnrollResponse> enroll(String appName, String deviceName, String totp,
+  Future<EnrollResponse> enroll(String appName, String deviceName, String otp,
       Map<String, String> namespaces,
       {int? pkamRetryIntervalMins});
 
