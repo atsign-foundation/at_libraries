@@ -50,5 +50,5 @@ const Map error_description = {
   'AT0025': 'ApkamAuthDenied',
   'AT0026': 'ApkamAuthFailed',
   'AT0027': 'ApkamAccessRevoked',
-  'AT0028': 'Requests exceeded the limit within a specified time frame'
+  'AT0028': 'Too Many Requests'
 };
