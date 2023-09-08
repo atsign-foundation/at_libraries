@@ -1,5 +1,6 @@
 ## 3.0.55
 - feat: Introduce "AtThrottleLimitExceeded" exception which is thrown when enrollment request exceeds the limit
+- feat: Introduce new error codes for apkam enrollments 
 ## 3.0.54
 - fix: Modify "totp" verb regex to include alpha-numeric characters
 - feat: Introduce "EnrollResponse" class which represents the enrollment response.
