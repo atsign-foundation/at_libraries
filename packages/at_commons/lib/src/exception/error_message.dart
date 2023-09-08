@@ -47,9 +47,9 @@ const Map error_description = {
   'AT0022': 'Illegal arguments',
   'AT0023': 'Timeout waiting for response',
   'AT0024': 'Server is paused',
-  'AT0025': 'ApkamAuthDenied',
-  'AT0026': 'ApkamAuthFailed',
-  'AT0027': 'ApkamAccessRevoked',
-  'AT0028': 'Too Many Requests',
-  'AT0029': 'ApkamEnrollmentExpired'
+  'AT0025': 'Apkam Auth Denied',
+  'AT0026': 'Apkam Auth Failed',
+  'AT0027': 'Apkam Access Revoked',
+  'AT0028': 'Apkam Enrollment Expired',
+  'AT0029': 'Too Many Requests'
 };
