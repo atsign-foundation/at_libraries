@@ -14,27 +14,18 @@ executables:
 
 dependencies:
    at_utils: ^3.0.15
-   at_client: ^3.0.64
+   at_client: ^3.0.65
    at_lookup: ^3.0.40
    zxing2: ^0.2.0
    image: ^4.0.17
    crypton: ^2.0.3
-   at_commons: ^3.0.54
+   at_commons: ^3.0.55
    encrypt: ^5.0.1
    at_server_status: ^1.0.3
    path: ^1.8.1
    args: ^2.4.1
    http: ^0.13.6
    at_chops: ^1.0.4
-
-#TODO replace with published versions before merging
-dependency_overrides:
-  at_client:
-    git:
-      url: https://github.com/atsign-foundation/at_client_sdk
-      ref: trunk
-      path: packages/at_client
-
 
 dev_dependencies:
   lints: ^2.1.0
