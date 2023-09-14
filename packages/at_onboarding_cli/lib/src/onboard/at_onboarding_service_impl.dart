@@ -287,6 +287,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       String apkamSymmetricKey,
       String defaultEncryptionPublicKey,
       RSAKeypair apkamKeyPair) async {
+    // Pkam auth will be retried until server approves/denies/expires the enrollment
     while (true) {
       logger.finer('Attempting pkam for $enrollmentIdFromServer');
       bool pkamAuthResult = await _attemptPkamAuth(

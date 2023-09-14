@@ -132,8 +132,7 @@ void main() {
           completer.complete();
         }, count: 1, max: -1));
     await completer.future;
-    //  TODO - assert for atEnrollmentException
-  }, timeout: Timeout(Duration(minutes: 10)));
+  }, timeout: Timeout(Duration(minutes: 5)));
 }
 
 Future<void> _notificationCallback(
