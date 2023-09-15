@@ -33,4 +33,6 @@ class AtOnboardingPreference extends AtClientPreference {
   String? deviceName;
 
   int apkamAuthRetryDurationMins = 30;
+
+  bool enableEnrollmentDuringOnboard = false;
 }

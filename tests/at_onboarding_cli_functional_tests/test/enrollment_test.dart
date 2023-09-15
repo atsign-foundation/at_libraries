@@ -25,6 +25,7 @@ void main() {
       String atSign = '@naresh🛠';
       //1. Onboard first client
       AtOnboardingPreference preference_1 = getPreferenceForAuth(atSign);
+      preference_1..enableEnrollmentDuringOnboard = true;
       AtOnboardingService? onboardingService_1 =
           AtOnboardingServiceImpl(atSign, preference_1);
       bool status = await onboardingService_1.onboard();
@@ -91,6 +92,7 @@ void main() {
     String atSign = '@purnima🛠';
     //1. Onboard first client
     AtOnboardingPreference preference_1 = getPreferenceForAuth(atSign);
+    preference_1.enableEnrollmentDuringOnboard = true;
     AtOnboardingService? onboardingService_1 =
         AtOnboardingServiceImpl(atSign, preference_1);
     bool status = await onboardingService_1.onboard();
