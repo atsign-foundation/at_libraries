@@ -312,11 +312,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         return true;
       }
     } on UnAuthenticatedException catch (e) {
-      if (e.message.contains('error:AT0401')) {
+      if (e.message.contains('error:AT0401') ||
+          e.message.contains('error:AT0026')) {
         logger.finer('Retrying pkam auth');
         await Future.delayed(retryInterval);
       } else if (e.message.contains('error:AT0025')) {
-        //# TODO change the error code once server bug is fixed
         logger.finer(
             'enrollmentId $enrollmentIdFromServer denied.Exiting pkam retry logic');
         throw AtEnrollmentException('enrollment denied');
@@ -329,7 +329,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   Future<void> _activateAtsign(AtLookupImpl atLookUpImpl) async {
     //1. Generate pkam key pair(if authMode is keyFile), encryption key pair, self encryption key and apkam symmetric key pair
     AtSecurityKeys atSecurityKeys = _generateKeyPairs();
-    var enrollmentIdFromServer;
+    String? enrollmentIdFromServer;
 
     //2. Send enrollment request to server if enable enrollment is set in preference
     if (atOnboardingPreference.enableEnrollmentDuringOnboard) {
@@ -510,7 +510,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   ///write newly created encryption keypairs into atKeys file
   Future<void> _generateAtKeysFile(
-      String currentEnrollmentId, AtSecurityKeys atSecurityKeys) async {
+      String? currentEnrollmentId, AtSecurityKeys atSecurityKeys) async {
     final atKeysMap = <String, String>{
       AuthKeyType.pkamPublicKey: EncryptionUtil.encryptValue(
         atSecurityKeys.apkamPublicKey!,
@@ -526,9 +526,12 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       ),
       AuthKeyType.selfEncryptionKey: atSecurityKeys.defaultSelfEncryptionKey!,
       _atSign: atSecurityKeys.defaultSelfEncryptionKey!,
-      AuthKeyType.apkamSymmetricKey: atSecurityKeys.apkamSymmetricKey!,
-      'enrollmentId': currentEnrollmentId,
+      AuthKeyType.apkamSymmetricKey: atSecurityKeys.apkamSymmetricKey!
     };
+
+    if (currentEnrollmentId != null) {
+      atKeysMap['enrollmentId'] = currentEnrollmentId;
+    }
 
     if (atOnboardingPreference.authMode == PkamAuthMode.keysFile) {
       atKeysMap[AuthKeyType.pkamPrivateKey] = EncryptionUtil.encryptValue(

@@ -82,6 +82,9 @@ void main() {
       expect(authResultWithEnrollment, true);
       enrolledClientKeysFile.deleteSync();
     }, timeout: Timeout(Duration(minutes: 3)));
+    tearDown(() async {
+      await tearDownFunc();
+    });
   });
 
   test(
@@ -243,4 +246,11 @@ Future<void> getAtKeys(String atSign) async {
       keysJSON['aesEncryptPublicKey'], selfEncryptionKey);
   encryptionPrivateKey = EncryptionUtil.decryptValue(
       keysJSON['aesEncryptPrivateKey'], selfEncryptionKey);
+}
+
+Future<void> tearDownFunc() async {
+  bool isExists = await Directory('storage/').exists();
+  if (isExists) {
+    Directory('storage/').deleteSync(recursive: true);
+  }
 }
