@@ -58,7 +58,8 @@ void main() async {
     });
 
     test('test lookup of @alice on non-existent atDirectory', () async {
-      CacheableSecondaryAddressFinder cache = CacheableSecondaryAddressFinder('root.no.no.no', 64);
+      CacheableSecondaryAddressFinder cache =
+          CacheableSecondaryAddressFinder('root.no.no.no', 64);
       expect(() async => await cache.findSecondary('@alice'),
           throwsA(predicate((e) => e is RootServerConnectivityException)));
     });
@@ -128,7 +129,9 @@ void main() async {
 //    });
   });
 
-  group('some cache tests with a real SecondaryUrlFinder on a mocked root server', () {
+  group(
+      'some cache tests with a real SecondaryUrlFinder on a mocked root server',
+      () {
     registerFallbackValue(SecureSocketConfig());
     String atSign = '@alice';
     String noAtAtSign = atSign.replaceFirst('@', '');
@@ -163,14 +166,15 @@ void main() async {
 
       cachingAtServerFinder = CacheableSecondaryAddressFinder(
           mockAtDirectoryHost, 64,
-          secondaryFinder:
-          SecondaryUrlFinder(mockAtDirectoryHost, 64, socketFactory: mockSocketFactory));
+          secondaryFinder: SecondaryUrlFinder(mockAtDirectoryHost, 64,
+              socketFactory: mockSocketFactory));
 
       numSocketCreateCalls = 0;
       when(() =>
-          mockSocketFactory.createSocket(mockAtDirectoryHost, '64', any()))
+              mockSocketFactory.createSocket(mockAtDirectoryHost, '64', any()))
           .thenAnswer((invocation) {
-            print ('mock create socket: numFailures $numSocketCreateCalls requiredFailures $requiredFailures');
+        print(
+            'mock create socket: numFailures $numSocketCreateCalls requiredFailures $requiredFailures');
         if (numSocketCreateCalls++ < requiredFailures) {
           throw SocketException('Simulating socket connection failure');
         } else {
@@ -191,44 +195,48 @@ void main() async {
 
       when(() => mockSocket.write('$noAtAtSign\n'))
           .thenAnswer((Invocation invocation) async {
-        socketOnDataFn("@$mockedAtServerAddress\n"
-            .codeUnits);
+        socketOnDataFn("@$mockedAtServerAddress\n".codeUnits);
       });
     });
 
-    test('test lookup of @alice with mocked atDirectory and zero failures', () async {
+    test('test lookup of @alice with mocked atDirectory and zero failures',
+        () async {
       requiredFailures = 0;
       SecondaryAddress sa = await cachingAtServerFinder.findSecondary(atSign);
       expect(sa.toString(), mockedAtServerAddress);
-      expect(numSocketCreateCalls-1, requiredFailures);
+      expect(numSocketCreateCalls - 1, requiredFailures);
     });
 
-    test('test lookup of @alice with mocked atDirectory and 1 failure', () async {
+    test('test lookup of @alice with mocked atDirectory and 1 failure',
+        () async {
       requiredFailures = 1;
       SecondaryAddress sa = await cachingAtServerFinder.findSecondary(atSign);
       expect(sa.toString(), mockedAtServerAddress);
-      expect(numSocketCreateCalls-1, requiredFailures);
+      expect(numSocketCreateCalls - 1, requiredFailures);
     });
 
-    test('test lookup of @alice with mocked atDirectory and 2 failures', () async {
+    test('test lookup of @alice with mocked atDirectory and 2 failures',
+        () async {
       requiredFailures = 2;
       SecondaryAddress sa = await cachingAtServerFinder.findSecondary(atSign);
       expect(sa.toString(), mockedAtServerAddress);
-      expect(numSocketCreateCalls-1, requiredFailures);
+      expect(numSocketCreateCalls - 1, requiredFailures);
     });
 
-    test('test lookup of @alice with mocked atDirectory and 3 failures', () async {
+    test('test lookup of @alice with mocked atDirectory and 3 failures',
+        () async {
       requiredFailures = 3;
       SecondaryAddress sa = await cachingAtServerFinder.findSecondary(atSign);
       expect(sa.toString(), mockedAtServerAddress);
-      expect(numSocketCreateCalls-1, requiredFailures);
+      expect(numSocketCreateCalls - 1, requiredFailures);
     });
 
-    test('test lookup of @alice with mocked atDirectory and 4 failures', () async {
+    test('test lookup of @alice with mocked atDirectory and 4 failures',
+        () async {
       requiredFailures = 4;
       SecondaryAddress sa = await cachingAtServerFinder.findSecondary(atSign);
       expect(sa.toString(), mockedAtServerAddress);
-      expect(numSocketCreateCalls-1, requiredFailures);
+      expect(numSocketCreateCalls - 1, requiredFailures);
     });
 
     test('test lookup of @alice with mocked atDirectory and 5 failures',
