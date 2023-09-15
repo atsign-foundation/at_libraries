@@ -7,6 +7,8 @@ import 'package:at_demo_data/at_demo_data.dart' as at_demos;
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_utils/at_utils.dart';
 import 'package:test/test.dart';
+import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
+
 
 var pkamPublicKey;
 var pkamPrivateKey;
@@ -82,6 +84,55 @@ void main() {
       expect(authResultWithEnrollment, true);
       enrolledClientKeysFile.deleteSync();
     }, timeout: Timeout(Duration(minutes: 3)));
+
+    test(
+        'A test to verify pkam authentication is successful when enableEnrollmentDuringOnboard flag is set to false',
+        () async {
+      // if onboard is testing use distinct demo atsign per test,
+      // since cram keys get deleted on server for already onboarded atsign
+      String atSign = '@ashish🛠';
+      //1. Onboard first client
+      AtOnboardingPreference preference_1 = getPreferenceForAuth(atSign);
+      preference_1.enableEnrollmentDuringOnboard = false;
+      AtOnboardingService? onboardingService_1 =
+          AtOnboardingServiceImpl(atSign, preference_1);
+      bool status = await onboardingService_1.onboard();
+      expect(status, true);
+      preference_1.privateKey = pkamPrivateKey;
+
+      //2. authenticate first client
+      var authStatus = await onboardingService_1.authenticate();
+      expect(authStatus, true);
+    }, timeout: Timeout(Duration(minutes: 10)));
+
+    test(
+        'A test to verify an onboarding exception is thrown when enableEnrollmentDuringOnboard is set to true and deviceName and appName are not passed',
+        () async {
+      // if onboard is testing use distinct demo atsign per test,
+      // since cram keys get deleted on server for already onboarded atsign
+      String atSign = '@colin🛠';
+      // preference without appName and deviceName
+      AtOnboardingPreference preference_1 = AtOnboardingPreference()
+        ..rootDomain = 'vip.ve.atsign.zone'
+        ..isLocalStoreRequired = true
+        ..hiveStoragePath = 'storage/hive/client'
+        ..commitLogPath = 'storage/hive/client/commit'
+        ..cramSecret = at_demos.cramKeyMap[atSign]
+        ..namespace =
+            'wavi' // unique identifier that can be used to identify data from your app
+        ..rootDomain = 'vip.ve.atsign.zone'
+        ..enableEnrollmentDuringOnboard = true;
+
+      AtOnboardingService? onboardingService_1 =
+          AtOnboardingServiceImpl(atSign, preference_1);
+      expect(
+          () async => await onboardingService_1.onboard(),
+          throwsA(predicate((dynamic e) =>
+              e is AtOnboardingException &&
+              e.message ==
+                  'appName and deviceName are mandatory for onboarding. Please set the params in AtOnboardingPreference')));
+    }, timeout: Timeout(Duration(minutes: 10)));
+
     tearDown(() async {
       await tearDownFunc();
     });
