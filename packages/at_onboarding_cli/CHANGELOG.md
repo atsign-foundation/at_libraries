@@ -1,3 +1,5 @@
+## 1.3.1
+- build: require at_client 3.0.65 or above
 ## 1.3.0
 - feat: Introduced verification-code based activation of atsigns
 - fix: deprecate qr_code based activation
