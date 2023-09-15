@@ -10,7 +10,7 @@ class EnrollResponse {
   }
 }
 
-enum EnrollStatus { pending, approved, denied, revoked }
+enum EnrollStatus { pending, approved, denied, revoked, expired }
 
 EnrollStatus getEnrollStatusFromString(String value) {
   switch (value) {
@@ -22,6 +22,8 @@ EnrollStatus getEnrollStatusFromString(String value) {
       return EnrollStatus.pending;
     case 'revoked':
       return EnrollStatus.revoked;
+    case 'expired':
+      return EnrollStatus.expired;
     default:
       throw ArgumentError('Unknown enroll status string: $value');
   }

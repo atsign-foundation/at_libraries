@@ -130,7 +130,8 @@ class SecondaryUrlFinder {
   final int _rootPort;
   late final AtLookupSecureSocketFactory _socketFactory;
 
-  SecondaryUrlFinder(this._rootDomain, this._rootPort, {AtLookupSecureSocketFactory? socketFactory}) {
+  SecondaryUrlFinder(this._rootDomain, this._rootPort,
+      {AtLookupSecureSocketFactory? socketFactory}) {
     _socketFactory = socketFactory ?? AtLookupSecureSocketFactory();
   }
 

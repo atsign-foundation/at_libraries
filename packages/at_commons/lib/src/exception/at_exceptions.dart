@@ -213,6 +213,12 @@ class AtEnrollmentException extends AtException {
   AtEnrollmentException(message) : super(message);
 }
 
+/// Exception thrown when the enrollment requests exceed the limit
+/// in the given time window
+class AtThrottleLimitExceeded extends AtException {
+  AtThrottleLimitExceeded(message) : super(message);
+}
+
 enum ExceptionScenario {
   noNetworkConnectivity,
   rootServerNotReachable,

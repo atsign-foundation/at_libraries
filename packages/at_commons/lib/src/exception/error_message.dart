@@ -20,7 +20,8 @@ const Map error_codes = {
   'SecondaryConnectException': 'AT0021',
   'IllegalArgumentException': 'AT0022',
   'AtTimeoutException': 'AT0023',
-  'ServerIsPausedException': 'AT0024'
+  'ServerIsPausedException': 'AT0024',
+  'AtThrottleLimitException': 'AT0028'
 };
 
 // ignore: constant_identifier_names
@@ -46,7 +47,9 @@ const Map error_description = {
   'AT0022': 'Illegal arguments',
   'AT0023': 'Timeout waiting for response',
   'AT0024': 'Server is paused',
-  'AT0025': 'ApkamAuthDenied',
-  'AT0026': 'ApkamAuthFailed',
-  'AT0027': 'ApkamAccessRevoked'
+  'AT0025': 'Apkam Auth Denied',
+  'AT0026': 'Apkam Auth Failed',
+  'AT0027': 'Apkam Access Revoked',
+  'AT0028': 'Apkam Enrollment Expired',
+  'AT0029': 'Too Many Requests'
 };
