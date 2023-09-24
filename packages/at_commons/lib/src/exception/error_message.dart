@@ -51,5 +51,6 @@ const Map error_description = {
   'AT0026': 'Apkam Auth Failed',
   'AT0027': 'Apkam Access Revoked',
   'AT0028': 'Apkam Enrollment Expired',
-  'AT0029': 'Too Many Requests'
+  'AT0029': 'Too Many Requests',
+  'AT0030': "Invalid Enrollment Status"
 };
