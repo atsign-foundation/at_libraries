@@ -6,6 +6,12 @@ import 'package:at_chops/at_chops.dart';
 import 'package:at_chops/src/algorithm/at_algorithm.dart';
 import 'package:encrypt/encrypt.dart';
 
+/// Usage:
+/// Using new key pairs created at runtime
+/// dart run at_chops_example.dart
+/// or
+/// Using key pairs from atKeys file
+/// dart run at_chops_example.dart <path_to_atkeys_file>
 void main(List<String> args) async {
   AtChops atChops;
   if (args.isNotEmpty) {
