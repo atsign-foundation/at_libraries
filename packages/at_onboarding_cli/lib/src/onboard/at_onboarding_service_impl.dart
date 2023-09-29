@@ -47,14 +47,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         HomeDirectoryUtil.getAtKeysPath(_atSign);
   }
 
-  Future<void> _init(Map<String, String> atKeysFileDataMap) async {
-    atChops ??= _createAtChops(atKeysFileDataMap);
-    await _initAtClient(atChops!);
-    _atLookUp!.atChops = atChops;
-    _atClient!.atChops = atChops;
-    _atClient!.getPreferences()!.useAtChops = true;
-  }
-
   Future<void> _initAtClient(AtChops atChops) async {
     AtClientManager atClientManager = AtClientManager.getInstance();
     if (atOnboardingPreference.skipSync == true) {
@@ -68,6 +60,14 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     _atLookUp?.signingAlgoType = atOnboardingPreference.signingAlgoType;
     _atLookUp?.hashingAlgoType = atOnboardingPreference.hashingAlgoType;
     _atClient ??= atClientManager.atClient;
+  }
+
+  Future<void> _init(Map<String, String> atKeysFileDataMap) async {
+    atChops ??= _createAtChops(atKeysFileDataMap);
+    await _initAtClient(atChops!);
+    _atLookUp!.atChops = atChops;
+    _atClient!.atChops = atChops;
+    _atClient!.getPreferences()!.useAtChops = true;
   }
 
   @override
