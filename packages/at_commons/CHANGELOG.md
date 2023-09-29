@@ -1,3 +1,6 @@
+## 3.0.56
+- feat: Introduce "AtInvalidEnrollmentException" which is thrown when an enrollment is expired or invalid
+- feat: Introduce error code 'AT0030' for Invalid Enrollment Status
 ## 3.0.55
 - feat: Introduce "AtThrottleLimitExceeded" exception which is thrown when enrollment request exceeds the limit
 - feat: Introduce new error codes for apkam enrollments 

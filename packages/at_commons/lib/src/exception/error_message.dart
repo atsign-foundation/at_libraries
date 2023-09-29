@@ -21,7 +21,8 @@ const Map error_codes = {
   'IllegalArgumentException': 'AT0022',
   'AtTimeoutException': 'AT0023',
   'ServerIsPausedException': 'AT0024',
-  'AtThrottleLimitException': 'AT0028'
+  'AtThrottleLimitException': 'AT0028',
+  'AtInvalidEnrollmentException': 'AT0029',
 };
 
 // ignore: constant_identifier_names
@@ -50,6 +51,7 @@ const Map error_description = {
   'AT0025': 'Apkam Auth Denied',
   'AT0026': 'Apkam Auth Failed',
   'AT0027': 'Apkam Access Revoked',
-  'AT0028': 'Apkam Enrollment Expired',
-  'AT0029': 'Too Many Requests'
+  'AT0028': 'Too Many Requests',
+  'AT0029': 'Apkam Enrollment Expired',
+  'AT0030': 'Invalid Enrollment Status'
 };

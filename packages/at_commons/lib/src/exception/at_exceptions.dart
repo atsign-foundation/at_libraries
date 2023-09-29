@@ -213,6 +213,11 @@ class AtEnrollmentException extends AtException {
   AtEnrollmentException(message) : super(message);
 }
 
+/// Exception thrown when an Enrollment_id is expired or invalid
+class AtInvalidEnrollmentException extends AtException {
+  AtInvalidEnrollmentException(message) : super(message);
+}
+
 /// Exception thrown when the enrollment requests exceed the limit
 /// in the given time window
 class AtThrottleLimitExceeded extends AtException {
