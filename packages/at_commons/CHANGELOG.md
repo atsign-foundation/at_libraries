@@ -1,9 +1,10 @@
 ## 3.0.56
 - feat: Introduce "AtInvalidEnrollmentException" which is thrown when an enrollment is expired or invalid
 - feat: Introduce error code 'AT0030' for Invalid Enrollment Status
+- chore: Deprecated all variables in `src/at_constants.dart`, use `AtConstants.<variable-name>` instead
 ## 3.0.55
 - feat: Introduce "AtThrottleLimitExceeded" exception which is thrown when enrollment request exceeds the limit
-- feat: Introduce new error codes for apkam enrollments 
+- feat: Introduce new error codes for apkam enrollments
 ## 3.0.54
 - fix: Modify "totp" verb regex to include alpha-numeric characters
 - feat: Introduce "EnrollResponse" class which represents the enrollment response.
