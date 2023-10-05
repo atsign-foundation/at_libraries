@@ -1,3 +1,5 @@
+## 3.0.57
+- feat: Introduced TTL(Time to Live) for OTP verb to configure OTP expiry
 ## 3.0.56
 - feat: Introduce "AtInvalidEnrollmentException" which is thrown when an enrollment is expired or invalid
 - feat: Introduce error code 'AT0030' for Invalid Enrollment Status
