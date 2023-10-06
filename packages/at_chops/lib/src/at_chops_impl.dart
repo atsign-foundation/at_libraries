@@ -10,6 +10,7 @@ import 'package:at_chops/src/algorithm/default_signing_algo.dart';
 import 'package:at_chops/src/algorithm/ecc_signing_algo.dart';
 import 'package:at_chops/src/algorithm/pkam_signing_algo.dart';
 import 'package:at_chops/src/at_chops_base.dart';
+import 'package:at_chops/src/key/at_key_pair.dart';
 import 'package:at_chops/src/key/impl/aes_key.dart';
 import 'package:at_chops/src/key/impl/at_chops_keys.dart';
 import 'package:at_chops/src/key/impl/at_encryption_key_pair.dart';
@@ -274,9 +275,9 @@ class AtChopsImpl extends AtChops {
         // TODO: Handle this case.
         break;
       case EncryptionKeyType.aes128:
-        return AESEncryptionAlgo(atChopsKeys.symmetricKey! as AESKey);
+        return AESEncryptionAlgo(_getSymmetricKey(keyName)! as AESKey);
       case EncryptionKeyType.aes256:
-        return AESEncryptionAlgo(atChopsKeys.symmetricKey! as AESKey);
+        return AESEncryptionAlgo(_getSymmetricKey(keyName)! as AESKey);
       default:
         throw AtEncryptionException(
             'Cannot find encryption algorithm for encryption key type $encryptionKeyType');
@@ -289,6 +290,15 @@ class AtChopsImpl extends AtChops {
       return atChopsKeys.atEncryptionKeyPair!;
     }
     // #TODO plugin implementation for different keyNames
+    return null;
+  }
+
+  SymmetricKey? _getSymmetricKey(String? keyName) {
+    if (keyName == null || keyName == 'selfEncryptionKey') {
+      return atChopsKeys.selfEncryptionKey!;
+    } else if (keyName == 'apkamSymmetricKey') {
+      return atChopsKeys.apkamSymmetricKey!;
+    }
     return null;
   }
 
