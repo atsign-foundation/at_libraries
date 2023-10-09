@@ -11,8 +11,13 @@ class AtChopsUtil {
   /// Generates a random initialisation vector from a given length
   /// Length must be 0 to 16
   /// #TODO explain about implications of changing length
-  static InitialisationVector generateIV(int length) {
+  static InitialisationVector generateRandomIV(int length) {
     final iv = IV.fromSecureRandom(length);
+    return InitialisationVector(iv.bytes);
+  }
+
+  static InitialisationVector generateIVFromBase64String(String ivBase64) {
+    final iv = IV.fromBase64(ivBase64);
     return InitialisationVector(iv.bytes);
   }
 

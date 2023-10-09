@@ -56,10 +56,10 @@ class AtAuthImpl implements AtAuth {
     var atSecurityKeys = _generateKeyPairs(atOnboardingRequest.authMode,
         publicKeyId: atOnboardingRequest.publicKeyId);
 
+    _createAtChops(atSecurityKeys);
+
     //3. update pkam public key through enrollment or manually based on app preference
     String? enrollmentIdFromServer;
-
-    //2. Send enrollment request to server if enable enrollment is set in preference
     if (atOnboardingRequest.enableEnrollment) {
       // server will update the apkam public key during enrollment.So don't have to manually update in this scenario.
       enrollmentIdFromServer = await _sendOnboardingEnrollment(
@@ -75,7 +75,69 @@ class AtAuthImpl implements AtAuth {
       _logger.info('PkamPublicKey update result: $pkamUpdateResult');
     }
 
+    //3. Close connection to server
+    try {
+      (_atLookUp as AtLookupImpl).close();
+    } on Exception catch (e) {
+      _logger.severe('error while closing connection to server: $e');
+    }
+
+    //4. Init _atLookUp again and attempt pkam auth
+    _atLookUp = AtLookupImpl(atOnboardingRequest.atSign,
+        atOnboardingRequest.rootDomain, atOnboardingRequest.rootPort);
+
+    var isPkamAuthenticated = false;
+    //5. Do pkam auth
+    try {
+      isPkamAuthenticated = await _atLookUp!
+          .pkamAuthenticate(enrollmentId: enrollmentIdFromServer);
+    } on UnAuthenticatedException catch (e) {
+      throw AtOnboardingException('Pkam auth failed - $e ');
+    }
+    if (!isPkamAuthenticated) {
+      throw AtOnboardingException('Pkam auth returned false');
+    }
+
+    //5. If Pkam auth is success, update encryption public key to secondary and delete cram key from server
+    final encryptionPublicKey = atSecurityKeys.defaultEncryptionPublicKey;
+    UpdateVerbBuilder updateBuilder = UpdateVerbBuilder()
+      ..atKey = 'publickey'
+      ..isPublic = true
+      ..value = encryptionPublicKey
+      ..sharedBy = atOnboardingRequest.atSign;
+    String? encryptKeyUpdateResult =
+        await _atLookUp!.executeVerb(updateBuilder);
+    _logger.info('Encryption public key update result $encryptKeyUpdateResult');
+    // deleting cram secret from the keystore as cram auth is complete
+    DeleteVerbBuilder deleteBuilder = DeleteVerbBuilder()
+      ..atKey = AT_CRAM_SECRET;
+    String? deleteResponse = await _atLookUp!.executeVerb(deleteBuilder);
+    _logger.info('Cram secret delete response : $deleteResponse');
+
     return atOnboardingResponse;
+  }
+
+  // Future<void> _init(AtSecurityKeys atKeysFile, {String? enrollmentId}) async {
+  //   atChops ??= _createAtChops(atKeysFile);
+  //   await _initAtClient(atChops!, enrollmentId: enrollmentId);
+  //   _atLookUp!.atChops = atChops;
+  //   _atClient!.atChops = atChops;
+  //   _atClient!.getPreferences()!.useAtChops = true;
+  // }
+
+  AtChops _createAtChops(AtSecurityKeys atKeysFile) {
+    final atEncryptionKeyPair = AtEncryptionKeyPair.create(
+        atKeysFile.defaultEncryptionPublicKey!,
+        atKeysFile.defaultEncryptionPrivateKey!);
+    final atPkamKeyPair = AtPkamKeyPair.create(
+        atKeysFile.apkamPublicKey!, atKeysFile.apkamPrivateKey!);
+    final atChopsKeys = AtChopsKeys.create(atEncryptionKeyPair, atPkamKeyPair);
+    if (atKeysFile.apkamSymmetricKey != null) {
+      atChopsKeys.apkamSymmetricKey = AESKey(atKeysFile.apkamSymmetricKey!);
+    }
+    atChopsKeys.selfEncryptionKey =
+        AESKey(atKeysFile.defaultSelfEncryptionKey!);
+    return AtChopsImpl(atChopsKeys);
   }
 
   Future<String> _sendOnboardingEnrollment(

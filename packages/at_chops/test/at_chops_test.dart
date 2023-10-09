@@ -43,7 +43,7 @@ void main() {
       final aesKey = AtChopsUtil.generateSymmetricKey(EncryptionKeyType.aes256);
       final atChopsKeys = AtChopsKeys.createSymmetric(aesKey);
       final atChops = AtChopsImpl(atChopsKeys);
-      final iv = AtChopsUtil.generateIV(16);
+      final iv = AtChopsUtil.generateRandomIV(16);
 
       final encryptionResult = atChops.encryptBytes(
           utf8.encode(data) as Uint8List, EncryptionKeyType.aes256,
@@ -73,7 +73,7 @@ void main() {
       final aesKey = AtChopsUtil.generateSymmetricKey(EncryptionKeyType.aes256);
       final atChopsKeys = AtChopsKeys.createSymmetric(aesKey);
       final atChops = AtChopsImpl(atChopsKeys);
-      final iv = AtChopsUtil.generateIV(16);
+      final iv = AtChopsUtil.generateRandomIV(16);
 
       final encryptionResult = atChops.encryptBytes(
           utf8.encode(data) as Uint8List, EncryptionKeyType.aes256,
@@ -103,7 +103,7 @@ void main() {
       final aesKey = AtChopsUtil.generateSymmetricKey(EncryptionKeyType.aes256);
       final atChopsKeys = AtChopsKeys.createSymmetric(aesKey);
       final atChops = AtChopsImpl(atChopsKeys);
-      final iv = AtChopsUtil.generateIV(16);
+      final iv = AtChopsUtil.generateRandomIV(16);
 
       final encryptionResult = atChops.encryptBytes(
           utf8.encode(data) as Uint8List, EncryptionKeyType.aes256,
@@ -134,7 +134,7 @@ void main() {
       final aesKey = AtChopsUtil.generateSymmetricKey(EncryptionKeyType.aes256);
       final atChopsKeys = AtChopsKeys.createSymmetric(aesKey);
       final atChops = AtChopsImpl(atChopsKeys);
-      final iv = AtChopsUtil.generateIV(16);
+      final iv = AtChopsUtil.generateRandomIV(16);
 
       final encryptionResult =
           atChops.encryptString(data, EncryptionKeyType.aes256, iv: iv);
@@ -163,7 +163,7 @@ void main() {
       final aesKey = AtChopsUtil.generateSymmetricKey(EncryptionKeyType.aes256);
       final atChopsKeys = AtChopsKeys.createSymmetric(aesKey);
       final atChops = AtChopsImpl(atChopsKeys);
-      final iv = AtChopsUtil.generateIV(16);
+      final iv = AtChopsUtil.generateRandomIV(16);
 
       final encryptionResult =
           atChops.encryptString(data, EncryptionKeyType.aes256, iv: iv);
@@ -192,7 +192,7 @@ void main() {
       final aesKey = AtChopsUtil.generateSymmetricKey(EncryptionKeyType.aes256);
       final atChopsKeys = AtChopsKeys.createSymmetric(aesKey);
       final atChops = AtChopsImpl(atChopsKeys);
-      final iv = AtChopsUtil.generateIV(16);
+      final iv = AtChopsUtil.generateRandomIV(16);
 
       final encryptionResult =
           atChops.encryptString(data, EncryptionKeyType.aes256, iv: iv);
