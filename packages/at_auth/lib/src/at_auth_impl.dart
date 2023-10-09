@@ -153,12 +153,15 @@ class AtAuthImpl implements AtAuth {
     enrollBuilder.encryptedDefaultEncryptedPrivateKey = atChops!
         .encryptString(atSecurityKeys.defaultEncryptionPrivateKey!,
             EncryptionKeyType.aes256,
-            encryptionAlgorithm: symmetricEncryptionAlgo)
+            encryptionAlgorithm: symmetricEncryptionAlgo,
+            iv: AtChopsUtil.generateIVLegacy())
         .result;
+
     enrollBuilder.encryptedDefaultSelfEncryptionKey = atChops!
         .encryptString(
             atSecurityKeys.defaultSelfEncryptionKey!, EncryptionKeyType.aes256,
-            encryptionAlgorithm: symmetricEncryptionAlgo)
+            encryptionAlgorithm: symmetricEncryptionAlgo,
+            iv: AtChopsUtil.generateIVLegacy())
         .result;
     enrollBuilder.apkamPublicKey = atSecurityKeys.apkamPublicKey;
 
