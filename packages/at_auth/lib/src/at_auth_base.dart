@@ -1,7 +1,7 @@
 import 'package:at_auth/src/onboard/at_onboarding_request.dart';
 import 'package:at_auth/src/onboard/at_onboarding_response.dart';
-import 'package:at_auth/src/request/at_auth_request.dart';
-import 'package:at_auth/src/response/at_auth_response.dart';
+import 'package:at_auth/src/auth/at_auth_request.dart';
+import 'package:at_auth/src/auth/at_auth_response.dart';
 import 'package:at_chops/at_chops.dart';
 
 abstract class AtAuth {
