@@ -6,7 +6,7 @@ import 'dart:io';
 
 import 'package:at_chops/at_chops.dart';
 import 'package:at_client/at_client.dart';
-import 'package:at_onboarding_cli/src/onboard/at_security_keys.dart';
+import 'package:at_auth/at_auth.dart';
 import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 import 'package:at_server_status/at_server_status.dart';
 import 'package:at_utils/at_utils.dart';
@@ -118,35 +118,22 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     // check and wait till secondary exists
     await _waitUntilSecondaryCreated(atLookUpImpl);
 
-    if (await isOnboarded()) {
-      throw AtActivateException('atsign is already activated');
-    }
+    // if (await isOnboarded()) {
+    //   throw AtActivateException('atsign is already activated');
+    // }
 
-    try {
-      // authenticate into secondary using cram secret
-      _isAtsignOnboarded = (await atLookUpImpl
-          .authenticate_cram(atOnboardingPreference.cramSecret));
-
-      if (_isAtsignOnboarded) {
-        logger.info('Cram authentication successful');
-        await _activateAtsign(atLookUpImpl);
-      } else {
-        throw AtActivateException(
-            'Cram authentication failed. Please check the cram key'
-            ' and try again \n(or) contact support@atsign.com');
-      }
-    } on Exception catch (e) {
-      if (e.toString().contains('Auth failed')) {
-        throw AtActivateException(
-            'Cram authentication failed. Please check the cram key'
-            ' and try again \n(or) contact support@atsign.com');
-      }
-      logger.severe('Caught exception: $e');
-    } on Error catch (e, trace) {
-      logger.severe('Caught error: $e $trace');
-    } finally {
-      await atLookUpImpl.close();
-    }
+    var atAuthService = AtAuthImpl();
+    var atOnboardingRequest = AtOnboardingRequest(_atSign);
+    atOnboardingRequest.rootDomain = atOnboardingPreference.rootDomain;
+    atOnboardingRequest.rootPort = atOnboardingPreference.rootPort;
+    atOnboardingRequest.enableEnrollment =
+        atOnboardingPreference.enableEnrollmentDuringOnboard;
+    atOnboardingRequest.appName = atOnboardingPreference.appName;
+    atOnboardingRequest.deviceName = atOnboardingPreference.deviceName;
+    atOnboardingRequest.publicKeyId = atOnboardingPreference.publicKeyId;
+    var atOnboardingResponse = await atAuthService.onboard(
+        atOnboardingRequest, atOnboardingPreference.cramSecret!);
+    print('****atOnboardingResponse: $atOnboardingResponse');
     return _isAtsignOnboarded;
   }
 
