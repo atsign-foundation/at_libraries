@@ -3,7 +3,7 @@ import 'package:at_auth/src/auth_constants.dart' as auth_constants;
 /// Holder for different encryption keys that will be stored in .atKeys file.
 /// Apkam symmetric key, enrollmentId and defaultSelfEncryptionKey will be stored in unencrypted format in .atKeys file.
 /// All other values will be encrypted before saving to .atKeys file.
-class AtSecurityKeys {
+class AtAuthKeys {
   String? apkamPublicKey;
   String? apkamPrivateKey;
   String? defaultEncryptionPublicKey;

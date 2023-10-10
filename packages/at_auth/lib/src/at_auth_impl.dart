@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:at_auth/src/at_auth_base.dart';
 import 'package:at_auth/src/auth/cram_authenticator.dart';
-import 'package:at_auth/src/keys/at_security_keys.dart';
+import 'package:at_auth/src/keys/at_auth_keys.dart';
 import 'package:at_auth/src/onboard/at_onboarding_request.dart';
 import 'package:at_auth/src/onboard/at_onboarding_response.dart';
 import 'package:at_auth/src/onboarding_exceptions.dart';
@@ -29,21 +29,21 @@ class AtAuthImpl implements AtAuth {
   @override
   Future<AtAuthResponse> authenticate(AtAuthRequest atAuthRequest) async {
     if (atAuthRequest.atKeysFilePath == null &&
-        atAuthRequest.atSecurityKeys == null) {
+        atAuthRequest.atAuthKeys == null) {
       throw UnAuthenticatedException(
-          'Keyfile path or atSecurityKeys object has to be set in atAuthRequest');
+          'Keyfile path or atAuthKeys object has to be set in atAuthRequest');
     }
     // decrypts all the keys in .atKeysFile using the SelfEncryptionKey
     // and stores the keys in a map
-    var atSecurityKeys;
+    var atAuthKeys;
     if (atAuthRequest.atKeysFilePath != null) {
-      atSecurityKeys = _decryptAtKeysFile(
+      atAuthKeys = _decryptAtKeysFile(
           await _readAtKeysFile(atAuthRequest.atKeysFilePath),
           atAuthRequest.authMode);
     } else {
-      atSecurityKeys = atAuthRequest.atSecurityKeys;
+      atAuthKeys = atAuthRequest.atAuthKeys;
     }
-    var pkamPrivateKey = atSecurityKeys.apkamPrivateKey;
+    var pkamPrivateKey = atAuthKeys.apkamPrivateKey;
 
     if (atAuthRequest.authMode == PkamAuthMode.keysFile &&
         pkamPrivateKey == null) {
@@ -52,7 +52,7 @@ class AtAuthImpl implements AtAuth {
           '${atAuthRequest.atKeysFilePath}. Please provide a valid atKeys file',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
-    var atChops = _createAtChops(atSecurityKeys);
+    var atChops = _createAtChops(atAuthKeys);
     this.atChops = atChops;
     _atLookUp!.atChops = atChops;
     _logger.finer('Authenticating using PKAM');
@@ -93,10 +93,10 @@ class AtAuthImpl implements AtAuth {
           ' and try again \n(or) contact support@atsign.com');
     }
     //2. generate key pairs
-    var atSecurityKeys = _generateKeyPairs(atOnboardingRequest.authMode,
+    var atAuthKeys = _generateKeyPairs(atOnboardingRequest.authMode,
         publicKeyId: atOnboardingRequest.publicKeyId);
 
-    var atChops = _createAtChops(atSecurityKeys);
+    var atChops = _createAtChops(atAuthKeys);
     this.atChops = atChops;
     _atLookUp!.atChops = atChops;
 
@@ -105,12 +105,12 @@ class AtAuthImpl implements AtAuth {
     if (atOnboardingRequest.enableEnrollment) {
       // server will update the apkam public key during enrollment.So don't have to manually update in this scenario.
       enrollmentIdFromServer = await _sendOnboardingEnrollment(
-          atOnboardingRequest, atSecurityKeys, _atLookUp!);
-      atSecurityKeys.enrollmentId = enrollmentIdFromServer;
+          atOnboardingRequest, atAuthKeys, _atLookUp!);
+      atAuthKeys.enrollmentId = enrollmentIdFromServer;
     } else {
       // update pkam public key to server if enrollment is not set in preference
       _logger.finer('Updating PkamPublicKey to remote secondary');
-      final pkamPublicKey = atSecurityKeys.apkamPublicKey;
+      final pkamPublicKey = atAuthKeys.apkamPublicKey;
       String updateCommand = 'update:$AT_PKAM_PUBLIC_KEY $pkamPublicKey\n';
       String? pkamUpdateResult =
           await _atLookUp!.executeCommand(updateCommand, auth: false);
@@ -142,7 +142,7 @@ class AtAuthImpl implements AtAuth {
     }
 
     //5. If Pkam auth is success, update encryption public key to secondary and delete cram key from server
-    final encryptionPublicKey = atSecurityKeys.defaultEncryptionPublicKey;
+    final encryptionPublicKey = atAuthKeys.defaultEncryptionPublicKey;
     UpdateVerbBuilder updateBuilder = UpdateVerbBuilder()
       ..atKey = 'publickey'
       ..isPublic = true
@@ -158,10 +158,11 @@ class AtAuthImpl implements AtAuth {
     _logger.info('Cram secret delete response : $deleteResponse');
     atOnboardingResponse.isSuccessful = true;
     atOnboardingResponse.enrollmentId = enrollmentIdFromServer;
+    atOnboardingResponse.atAuthKeys = atAuthKeys;
     return atOnboardingResponse;
   }
 
-  AtChops _createAtChops(AtSecurityKeys atKeysFile) {
+  AtChops _createAtChops(AtAuthKeys atKeysFile) {
     final atEncryptionKeyPair = AtEncryptionKeyPair.create(
         atKeysFile.defaultEncryptionPublicKey!,
         atKeysFile.defaultEncryptionPrivateKey!);
@@ -178,28 +179,28 @@ class AtAuthImpl implements AtAuth {
 
   Future<String> _sendOnboardingEnrollment(
       AtOnboardingRequest atOnboardingRequest,
-      AtSecurityKeys atSecurityKeys,
+      AtAuthKeys atAuthKeys,
       AtLookUp atLookup) async {
     var enrollBuilder = EnrollVerbBuilder()
       ..appName = atOnboardingRequest.appName
       ..deviceName = atOnboardingRequest.deviceName;
 
     var symmetricEncryptionAlgo =
-        AESEncryptionAlgo(AESKey(atSecurityKeys.apkamSymmetricKey!));
+        AESEncryptionAlgo(AESKey(atAuthKeys.apkamSymmetricKey!));
     enrollBuilder.encryptedDefaultEncryptedPrivateKey = atChops!
-        .encryptString(atSecurityKeys.defaultEncryptionPrivateKey!,
-            EncryptionKeyType.aes256,
+        .encryptString(
+            atAuthKeys.defaultEncryptionPrivateKey!, EncryptionKeyType.aes256,
             encryptionAlgorithm: symmetricEncryptionAlgo,
             iv: AtChopsUtil.generateIVLegacy())
         .result;
 
     enrollBuilder.encryptedDefaultSelfEncryptionKey = atChops!
         .encryptString(
-            atSecurityKeys.defaultSelfEncryptionKey!, EncryptionKeyType.aes256,
+            atAuthKeys.defaultSelfEncryptionKey!, EncryptionKeyType.aes256,
             encryptionAlgorithm: symmetricEncryptionAlgo,
             iv: AtChopsUtil.generateIVLegacy())
         .result;
-    enrollBuilder.apkamPublicKey = atSecurityKeys.apkamPublicKey;
+    enrollBuilder.apkamPublicKey = atAuthKeys.apkamPublicKey;
 
     var enrollResult = await atLookup
         .executeCommand(enrollBuilder.buildCommand(), auth: false);
@@ -220,9 +221,9 @@ class AtAuthImpl implements AtAuth {
     return enrollmentIdFromServer;
   }
 
-  AtSecurityKeys _decryptAtKeysFile(
+  AtAuthKeys _decryptAtKeysFile(
       Map<String, String> jsonData, PkamAuthMode authMode) {
-    var securityKeys = AtSecurityKeys();
+    var securityKeys = AtAuthKeys();
     String decryptionKey = jsonData[auth_constants.defaultSelfEncryptionKey]!;
     var atChops =
         AtChopsImpl(AtChopsKeys()..selfEncryptionKey = AESKey(decryptionKey));
@@ -271,8 +272,7 @@ class AtAuthImpl implements AtAuth {
     return jsonData;
   }
 
-  AtSecurityKeys _generateKeyPairs(PkamAuthMode authMode,
-      {String? publicKeyId}) {
+  AtAuthKeys _generateKeyPairs(PkamAuthMode authMode, {String? publicKeyId}) {
     // generate user encryption keypair
     _logger.info('Generating encryption keypair');
     var atEncryptionKeyPair = AtChopsUtil.generateAtEncryptionKeyPair();
@@ -282,7 +282,7 @@ class AtAuthImpl implements AtAuth {
         AtChopsUtil.generateSymmetricKey(EncryptionKeyType.aes256);
     var apkamSymmetricKey =
         AtChopsUtil.generateSymmetricKey(EncryptionKeyType.aes256);
-    var atKeysFile = AtSecurityKeys();
+    var atKeysFile = AtAuthKeys();
     _logger.info(
         '[Information] Generating your encryption keys and .atKeys file\n');
     //generating pkamKeyPair only if authMode is keysFile
