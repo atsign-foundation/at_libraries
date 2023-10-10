@@ -56,7 +56,9 @@ class AtAuthImpl implements AtAuth {
     var atSecurityKeys = _generateKeyPairs(atOnboardingRequest.authMode,
         publicKeyId: atOnboardingRequest.publicKeyId);
 
-    _createAtChops(atSecurityKeys);
+    var atChops = _createAtChops(atSecurityKeys);
+    this.atChops = atChops;
+    _atLookUp!.atChops = atChops;
 
     //3. update pkam public key through enrollment or manually based on app preference
     String? enrollmentIdFromServer;
@@ -85,6 +87,7 @@ class AtAuthImpl implements AtAuth {
     //4. Init _atLookUp again and attempt pkam auth
     _atLookUp = AtLookupImpl(atOnboardingRequest.atSign,
         atOnboardingRequest.rootDomain, atOnboardingRequest.rootPort);
+    _atLookUp!.atChops = atChops;
 
     var isPkamAuthenticated = false;
     //5. Do pkam auth
@@ -199,16 +202,16 @@ class AtAuthImpl implements AtAuth {
     _logger.info(
         '[Information] Generating your encryption keys and .atKeys file\n');
     //generating pkamKeyPair only if authMode is keysFile
+    var pkamPublicKey;
     if (authMode == PkamAuthMode.keysFile) {
       _logger.info('Generating pkam keypair');
       var apkamRsaKeypair = AtChopsUtil.generateAtPkamKeyPair();
-      atKeysFile.apkamPublicKey =
-          apkamRsaKeypair.atPublicKey.publicKey.toString();
+      pkamPublicKey = apkamRsaKeypair.atPublicKey.publicKey.toString();
       atKeysFile.apkamPrivateKey =
           apkamRsaKeypair.atPrivateKey.privateKey.toString();
     } else if (authMode == PkamAuthMode.sim) {
       // get the public key from secure element
-      atKeysFile.apkamPublicKey = atChops!.readPublicKey(publicKeyId!);
+      pkamPublicKey = atChops!.readPublicKey(publicKeyId!);
       _logger.info('pkam  public key from sim: ${atKeysFile.apkamPublicKey}');
 
       // encryption key pair and self encryption symmetric key
@@ -217,7 +220,7 @@ class AtAuthImpl implements AtAuth {
       atChops!.atChopsKeys.selfEncryptionKey = selfEncryptionKey;
       atChops!.atChopsKeys.apkamSymmetricKey = apkamSymmetricKey;
     }
-    atKeysFile.apkamPublicKey = apkamPublicKey;
+    atKeysFile.apkamPublicKey = pkamPublicKey;
     //Standard order of an atKeys file is ->
     // pkam keypair -> encryption keypair -> selfEncryption key -> enrollmentId --> apkam symmetric key -->
     // @sign: selfEncryptionKey[self encryption key again]
