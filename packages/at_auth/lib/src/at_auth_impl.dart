@@ -157,6 +157,7 @@ class AtAuthImpl implements AtAuth {
     String? deleteResponse = await _atLookUp!.executeVerb(deleteBuilder);
     _logger.info('Cram secret delete response : $deleteResponse');
     atOnboardingResponse.isSuccessful = true;
+    atOnboardingResponse.enrollmentId = enrollmentIdFromServer;
     return atOnboardingResponse;
   }
 
