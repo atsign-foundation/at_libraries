@@ -4,6 +4,11 @@ class AtOnboardingResponse {
   String atSign;
   String? enrollmentId;
   AtOnboardingResponse(this.atSign);
-  bool? isSuccessful;
+  bool isSuccessful = false;
   AtSecurityKeys? atSecurityKeys;
+
+  @override
+  String toString() {
+    return 'AtOnboardingResponse{atSign: $atSign, enrollmentId: $enrollmentId, isSuccessful: $isSuccessful}';
+  }
 }
