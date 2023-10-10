@@ -7,6 +7,7 @@ class AtAuthRequest {
   String? enrollmentId;
   AtSecurityKeys? atSecurityKeys;
   PkamAuthMode authMode = PkamAuthMode.keysFile;
+  String? atKeysFilePath;
 
   /// public key id from secure element if [authMode] is [PkamAuthMode.sim]
   String? publicKeyId;
