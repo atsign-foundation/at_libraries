@@ -36,10 +36,12 @@ class AtAuthImpl implements AtAuth {
     // decrypts all the keys in .atKeysFile using the SelfEncryptionKey
     // and stores the keys in a map
     var atAuthKeys;
+    var enrollmentId = atAuthRequest.enrollmentId;
     if (atAuthRequest.atKeysFilePath != null) {
       atAuthKeys = _decryptAtKeysFile(
           await _readAtKeysFile(atAuthRequest.atKeysFilePath),
           atAuthRequest.authMode);
+      enrollmentId ??= atAuthKeys.enrollmentId;
     } else {
       atAuthKeys = atAuthRequest.atAuthKeys;
     }
