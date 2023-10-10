@@ -134,6 +134,12 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     var atOnboardingResponse = await atAuthService.onboard(
         atOnboardingRequest, atOnboardingPreference.cramSecret!);
     print('****atOnboardingResponse: $atOnboardingResponse');
+    if (atOnboardingResponse.isSuccessful) {
+      logger.finer(
+          'Onboarding successful.Generating keyfile in path: ${atOnboardingPreference.atKeysFilePath}');
+      await _generateAtKeysFile(atOnboardingResponse.enrollmentId,
+          atOnboardingResponse.atSecurityKeys!);
+    }
     return _isAtsignOnboarded;
   }
 
