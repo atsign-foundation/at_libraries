@@ -7,3 +7,4 @@ export 'src/onboard/at_onboarding_response.dart';
 export 'src/auth/at_auth_request.dart';
 export 'src/auth/at_auth_response.dart';
 export 'src/keys/at_auth_keys.dart';
+export 'src/exception/at_auth_exceptions.dart';

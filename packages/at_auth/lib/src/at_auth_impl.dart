@@ -3,15 +3,15 @@ import 'dart:io';
 
 import 'package:at_auth/src/at_auth_base.dart';
 import 'package:at_auth/src/auth/cram_authenticator.dart';
+import 'package:at_auth/src/auth/pkam_authenticator.dart';
 import 'package:at_auth/src/keys/at_auth_keys.dart';
 import 'package:at_auth/src/onboard/at_onboarding_request.dart';
 import 'package:at_auth/src/onboard/at_onboarding_response.dart';
-import 'package:at_auth/src/onboarding_exceptions.dart';
+import 'package:at_auth/src/exception/at_auth_exceptions.dart';
 import 'package:at_auth/src/auth/at_auth_request.dart';
 import 'package:at_auth/src/auth/at_auth_response.dart';
 import 'package:at_auth/src/auth_constants.dart' as auth_constants;
 import 'package:at_chops/at_chops.dart';
-import 'package:at_chops/src/at_chops_base.dart';
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
@@ -22,9 +22,17 @@ class AtAuthImpl implements AtAuth {
   @override
   AtChops? atChops;
 
-  CramAuthenticator? _cramAuthenticator;
+  CramAuthenticator? cramAuthenticator;
 
-  AtLookUp? _atLookUp;
+  PkamAuthenticator? pkamAuthenticator;
+
+  AtLookUp? atLookUp;
+
+  AtAuthImpl(
+      {this.atLookUp,
+      this.atChops,
+      this.cramAuthenticator,
+      this.pkamAuthenticator});
 
   @override
   Future<AtAuthResponse> authenticate(AtAuthRequest atAuthRequest) async {
@@ -35,35 +43,40 @@ class AtAuthImpl implements AtAuth {
     }
     // decrypts all the keys in .atKeysFile using the SelfEncryptionKey
     // and stores the keys in a map
-    var atAuthKeys;
-    var enrollmentId = atAuthRequest.enrollmentId;
+    AtAuthKeys? atAuthKeys;
+    var enrollmentIdFromRequest = atAuthRequest.enrollmentId;
     if (atAuthRequest.atKeysFilePath != null) {
       atAuthKeys = _decryptAtKeysFile(
           await _readAtKeysFile(atAuthRequest.atKeysFilePath),
           atAuthRequest.authMode);
-      enrollmentId ??= atAuthKeys.enrollmentId;
+      enrollmentIdFromRequest ??= atAuthKeys.enrollmentId;
     } else {
       atAuthKeys = atAuthRequest.atAuthKeys;
+    }
+    if (atAuthKeys == null) {
+      throw AtAuthenticationException(
+          'AtAuthKeys is not set in the request/cannot be read from provided keysfile');
     }
     var pkamPrivateKey = atAuthKeys.apkamPrivateKey;
 
     if (atAuthRequest.authMode == PkamAuthMode.keysFile &&
         pkamPrivateKey == null) {
       throw AtPrivateKeyNotFoundException(
-          'Unable to read PkamPrivateKey from provided atKeys file at path: '
-          '${atAuthRequest.atKeysFilePath}. Please provide a valid atKeys file',
+          'Unable to read PkamPrivateKey from provided atKeys file/atAuthKeys object',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
-    _atLookUp = AtLookupImpl(
+    atLookUp ??= AtLookupImpl(
         atAuthRequest.atSign, atAuthRequest.rootDomain, atAuthRequest.rootPort);
     var atChops = _createAtChops(atAuthKeys);
     this.atChops = atChops;
-    _atLookUp!.atChops = atChops;
+    atLookUp!.atChops = atChops;
     _logger.finer('Authenticating using PKAM');
     var isPkamAuthenticated = false;
+    pkamAuthenticator ??= PkamAuthenticator(atAuthRequest.atSign, atLookUp!);
     try {
-      isPkamAuthenticated =
-          (await _atLookUp?.pkamAuthenticate(enrollmentId: enrollmentId))!;
+      var pkamResponse = (await pkamAuthenticator!
+          .authenticate(enrollmentId: enrollmentIdFromRequest));
+      isPkamAuthenticated = pkamResponse.isSuccessful;
     } on Exception catch (e) {
       _logger.severe('Caught exception: $e');
       throw UnAuthenticatedException('Unable to authenticate- ${e.toString()}');
@@ -72,27 +85,20 @@ class AtAuthImpl implements AtAuth {
         'PKAM auth result: ${isPkamAuthenticated ? 'success' : 'failed'}');
     return AtAuthResponse(atAuthRequest.atSign)
       ..isSuccessful = isPkamAuthenticated
-      ..enrollmentId = enrollmentId;
-    ;
-  }
-
-  @override
-  Future<bool> isOnboarded({String? atSign}) {
-    // TODO: implement isOnboarded
-    throw UnimplementedError();
+      ..enrollmentId = enrollmentIdFromRequest;
   }
 
   @override
   Future<AtOnboardingResponse> onboard(
       AtOnboardingRequest atOnboardingRequest, String cramSecret) async {
     var atOnboardingResponse = AtOnboardingResponse(atOnboardingRequest.atSign);
-    _atLookUp = AtLookupImpl(atOnboardingRequest.atSign,
+    atLookUp ??= AtLookupImpl(atOnboardingRequest.atSign,
         atOnboardingRequest.rootDomain, atOnboardingRequest.rootPort);
 
     //1. cram auth
-    _cramAuthenticator ??=
-        CramAuthenticator(atOnboardingRequest.atSign, cramSecret, _atLookUp);
-    var cramAuthResult = await _cramAuthenticator!.authenticate();
+    cramAuthenticator ??=
+        CramAuthenticator(atOnboardingRequest.atSign, cramSecret, atLookUp);
+    var cramAuthResult = await cramAuthenticator!.authenticate();
     if (!cramAuthResult.isSuccessful) {
       throw AtOnboardingException(
           'Cram authentication failed. Please check the cram key'
@@ -101,17 +107,18 @@ class AtAuthImpl implements AtAuth {
     //2. generate key pairs
     var atAuthKeys = _generateKeyPairs(atOnboardingRequest.authMode,
         publicKeyId: atOnboardingRequest.publicKeyId);
-
-    var atChops = _createAtChops(atAuthKeys);
-    this.atChops = atChops;
-    _atLookUp!.atChops = atChops;
+    if (atChops == null) {
+      var atChops = _createAtChops(atAuthKeys);
+      this.atChops = atChops;
+      atLookUp!.atChops = atChops;
+    }
 
     //3. update pkam public key through enrollment or manually based on app preference
     String? enrollmentIdFromServer;
     if (atOnboardingRequest.enableEnrollment) {
       // server will update the apkam public key during enrollment.So don't have to manually update in this scenario.
       enrollmentIdFromServer = await _sendOnboardingEnrollment(
-          atOnboardingRequest, atAuthKeys, _atLookUp!);
+          atOnboardingRequest, atAuthKeys, atLookUp!);
       atAuthKeys.enrollmentId = enrollmentIdFromServer;
     } else {
       // update pkam public key to server if enrollment is not set in preference
@@ -119,27 +126,30 @@ class AtAuthImpl implements AtAuth {
       final pkamPublicKey = atAuthKeys.apkamPublicKey;
       String updateCommand = 'update:$AT_PKAM_PUBLIC_KEY $pkamPublicKey\n';
       String? pkamUpdateResult =
-          await _atLookUp!.executeCommand(updateCommand, auth: false);
+          await atLookUp!.executeCommand(updateCommand, auth: false);
       _logger.info('PkamPublicKey update result: $pkamUpdateResult');
     }
 
     //3. Close connection to server
     try {
-      (_atLookUp as AtLookupImpl).close();
+      (atLookUp as AtLookupImpl).close();
     } on Exception catch (e) {
       _logger.severe('error while closing connection to server: $e');
     }
 
     //4. Init _atLookUp again and attempt pkam auth
-    _atLookUp = AtLookupImpl(atOnboardingRequest.atSign,
-        atOnboardingRequest.rootDomain, atOnboardingRequest.rootPort);
-    _atLookUp!.atChops = atChops;
+    // atLookUp = AtLookupImpl(atOnboardingRequest.atSign,
+    //     atOnboardingRequest.rootDomain, atOnboardingRequest.rootPort);
+    atLookUp!.atChops = atChops;
 
     var isPkamAuthenticated = false;
     //5. Do pkam auth
+    pkamAuthenticator ??=
+        PkamAuthenticator(atOnboardingRequest.atSign, atLookUp!);
     try {
-      isPkamAuthenticated = await _atLookUp!
-          .pkamAuthenticate(enrollmentId: enrollmentIdFromServer);
+      var pkamResponse = await pkamAuthenticator!
+          .authenticate(enrollmentId: enrollmentIdFromServer);
+      isPkamAuthenticated = pkamResponse.isSuccessful;
     } on UnAuthenticatedException catch (e) {
       throw AtOnboardingException('Pkam auth failed - $e ');
     }
@@ -154,13 +164,12 @@ class AtAuthImpl implements AtAuth {
       ..isPublic = true
       ..value = encryptionPublicKey
       ..sharedBy = atOnboardingRequest.atSign;
-    String? encryptKeyUpdateResult =
-        await _atLookUp!.executeVerb(updateBuilder);
+    String? encryptKeyUpdateResult = await atLookUp!.executeVerb(updateBuilder);
     _logger.info('Encryption public key update result $encryptKeyUpdateResult');
     // deleting cram secret from the keystore as cram auth is complete
     DeleteVerbBuilder deleteBuilder = DeleteVerbBuilder()
       ..atKey = AT_CRAM_SECRET;
-    String? deleteResponse = await _atLookUp!.executeVerb(deleteBuilder);
+    String? deleteResponse = await atLookUp!.executeVerb(deleteBuilder);
     _logger.info('Cram secret delete response : $deleteResponse');
     atOnboardingResponse.isSuccessful = true;
     atOnboardingResponse.enrollmentId = enrollmentIdFromServer;
@@ -292,7 +301,7 @@ class AtAuthImpl implements AtAuth {
     _logger.info(
         '[Information] Generating your encryption keys and .atKeys file\n');
     //generating pkamKeyPair only if authMode is keysFile
-    var pkamPublicKey;
+    String? pkamPublicKey;
     if (authMode == PkamAuthMode.keysFile) {
       _logger.info('Generating pkam keypair');
       var apkamRsaKeypair = AtChopsUtil.generateAtPkamKeyPair();

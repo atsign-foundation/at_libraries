@@ -22,12 +22,6 @@ abstract class AtAuth {
   /// Set [atAuthRequest.publicKeyId] if pkam auth mode is [PkamAuthMode.sim]
   Future<AtAuthResponse> authenticate(AtAuthRequest atAuthRequest);
 
-  /// Check whether an atSign is already onboarded
-  /// If an atsign is already onboarded then key pairs/symmetric keys should be available in local keystore.
-  /// Returns true if pkam public key, default encryption keypair, self encryption key are available in local keystore.
-  /// Returns false if any of the above keys are not present.
-  Future<bool> isOnboarded({String? atSign});
-
   /// Onboard method is called when an atsign is activated for the first time in an app.
   /// Step 1. perform cram auth
   /// Step 2. generate pkam key pair (if pkam auth mode is [PkamAuthMode.keysFile])
