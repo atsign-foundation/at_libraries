@@ -100,7 +100,7 @@ class AtAuthImpl implements AtAuth {
         CramAuthenticator(atOnboardingRequest.atSign, cramSecret, atLookUp);
     var cramAuthResult = await cramAuthenticator!.authenticate();
     if (!cramAuthResult.isSuccessful) {
-      throw AtOnboardingException(
+      throw AtAuthenticationException(
           'Cram authentication failed. Please check the cram key'
           ' and try again \n(or) contact support@atsign.com');
     }
@@ -151,10 +151,10 @@ class AtAuthImpl implements AtAuth {
           .authenticate(enrollmentId: enrollmentIdFromServer);
       isPkamAuthenticated = pkamResponse.isSuccessful;
     } on UnAuthenticatedException catch (e) {
-      throw AtOnboardingException('Pkam auth failed - $e ');
+      throw AtAuthenticationException('Pkam auth failed - $e ');
     }
     if (!isPkamAuthenticated) {
-      throw AtOnboardingException('Pkam auth returned false');
+      throw AtAuthenticationException('Pkam auth returned false');
     }
 
     //5. If Pkam auth is success, update encryption public key to secondary and delete cram key from server
@@ -220,9 +220,9 @@ class AtAuthImpl implements AtAuth {
     var enrollResult = await atLookup
         .executeCommand(enrollBuilder.buildCommand(), auth: false);
     if (enrollResult == null || enrollResult.isEmpty) {
-      throw AtOnboardingException('Enrollment response is null or empty');
+      throw AtAuthenticationException('Enrollment response is null or empty');
     } else if (enrollResult.startsWith('error:')) {
-      throw AtOnboardingException('Enrollment error:$enrollResult');
+      throw AtAuthenticationException('Enrollment error:$enrollResult');
     }
     enrollResult = enrollResult.replaceFirst('data:', '');
     _logger.finer('enrollResult: $enrollResult');
@@ -230,7 +230,7 @@ class AtAuthImpl implements AtAuth {
     var enrollmentIdFromServer = enrollResultJson[enrollmentId];
     var enrollmentStatus = enrollResultJson['status'];
     if (enrollmentStatus != 'approved') {
-      throw AtOnboardingException(
+      throw AtAuthenticationException(
           'initial enrollment is not approved. Status from server: $enrollmentStatus');
     }
     return enrollmentIdFromServer;
