@@ -6,6 +6,7 @@ import 'package:at_lookup/at_lookup.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'package:at_auth/at_auth.dart';
+import 'package:at_utils/at_logger.dart';
 
 // Create a mock for AtLookUp
 class MockAtLookUp extends Mock implements AtLookupImpl {}
@@ -24,18 +25,14 @@ class FakeVerbBuilder extends Fake implements VerbBuilder {}
 void main() {
   late AtAuthImpl atAuth;
   late MockAtLookUp mockAtLookUp;
-  late MockAtChops mockAtChops;
   late MockPkamAuthenticator mockPkamAuthenticator;
   final String testEnrollmentId = '352b78c8-4b6f-4d07-a9cf-5466512ffa44';
 
   setUp(() {
     mockAtLookUp = MockAtLookUp();
-    mockAtChops = MockAtChops();
     mockPkamAuthenticator = MockPkamAuthenticator();
     atAuth = AtAuthImpl(
-        atLookUp: mockAtLookUp,
-        atChops: mockAtChops,
-        pkamAuthenticator: mockPkamAuthenticator);
+        atLookUp: mockAtLookUp, pkamAuthenticator: mockPkamAuthenticator);
     registerFallbackValue(FakeVerbBuilder());
   });
   group('AtAuthImpl authentication tests', () {
@@ -188,6 +185,35 @@ void main() {
       expect(
           () async => await atAuth.onboard(atOnboardingRequest, testCramSecret),
           throwsA(isA<AtAuthenticationException>()));
+    });
+
+    test('Test onboard - enable enrollment', () async {
+      when(() => mockAtLookUp.authenticate_cram(testCramSecret))
+          .thenAnswer((_) => Future.value(true));
+      var mockEnrollResponse =
+          'data:{"enrollmentId":"abc123","status":"approved"}';
+      when(() => mockAtLookUp.executeCommand(any(that: startsWith('enroll:'))))
+          .thenAnswer((_) => Future.value(mockEnrollResponse));
+      when(() => mockAtLookUp.executeVerb(any()))
+          .thenAnswer((_) => Future.value('data:2'));
+
+      when(() => mockAtLookUp.close()).thenAnswer((_) async => {});
+      when(() => mockPkamAuthenticator.authenticate(enrollmentId: "abc123"))
+          .thenAnswer((_) =>
+              Future.value(AtAuthResponse('@alice🛠')..isSuccessful = true));
+
+      final atOnboardingRequest = AtOnboardingRequest('@alice🛠')
+        ..rootDomain = 'test.atsign.com'
+        ..rootPort = 64
+        ..enableEnrollment = true
+        ..appName = 'wavi'
+        ..deviceName = 'iphone';
+
+      final response =
+          await atAuth.onboard(atOnboardingRequest, testCramSecret);
+
+      expect(response.isSuccessful, true);
+      expect(response.enrollmentId, 'abc123');
     });
   });
 }

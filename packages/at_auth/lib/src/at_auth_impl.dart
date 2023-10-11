@@ -127,7 +127,7 @@ class AtAuthImpl implements AtAuth {
       String updateCommand = 'update:$AT_PKAM_PUBLIC_KEY $pkamPublicKey\n';
       String? pkamUpdateResult =
           await atLookUp!.executeCommand(updateCommand, auth: false);
-      _logger.info('PkamPublicKey update result: $pkamUpdateResult');
+      _logger.finer('PkamPublicKey update result: $pkamUpdateResult');
     }
 
     //3. Close connection to server
