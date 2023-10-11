@@ -38,7 +38,7 @@ class AtAuthImpl implements AtAuth {
   Future<AtAuthResponse> authenticate(AtAuthRequest atAuthRequest) async {
     if (atAuthRequest.atKeysFilePath == null &&
         atAuthRequest.atAuthKeys == null) {
-      throw UnAuthenticatedException(
+      throw AtAuthenticationException(
           'Keyfile path or atAuthKeys object has to be set in atAuthRequest');
     }
     // decrypts all the keys in .atKeysFile using the SelfEncryptionKey
@@ -79,7 +79,7 @@ class AtAuthImpl implements AtAuth {
       isPkamAuthenticated = pkamResponse.isSuccessful;
     } on Exception catch (e) {
       _logger.severe('Caught exception: $e');
-      throw UnAuthenticatedException('Unable to authenticate- ${e.toString()}');
+      throw AtAuthenticationException('Unable to authenticate- ${e.toString()}');
     }
     _logger.finer(
         'PKAM auth result: ${isPkamAuthenticated ? 'success' : 'failed'}');

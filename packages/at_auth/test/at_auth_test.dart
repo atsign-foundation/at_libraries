@@ -19,6 +19,8 @@ class FakeUpdateVerbBuilder extends Fake implements UpdateVerbBuilder {}
 
 class FakeDeleteVerbBuilder extends Fake implements DeleteVerbBuilder {}
 
+class FakeVerbBuilder extends Fake implements VerbBuilder {}
+
 void main() {
   late AtAuthImpl atAuth;
   late MockAtLookUp mockAtLookUp;
@@ -34,13 +36,16 @@ void main() {
         atLookUp: mockAtLookUp,
         atChops: mockAtChops,
         pkamAuthenticator: mockPkamAuthenticator);
-    registerFallbackValue(FakeUpdateVerbBuilder());
-    registerFallbackValue(FakeDeleteVerbBuilder());
+    registerFallbackValue(FakeVerbBuilder());
   });
   group('AtAuthImpl authentication tests', () {
     test('Test authenticate() true with keys file', () async {
       when(() => mockAtLookUp.pkamAuthenticate(enrollmentId: testEnrollmentId))
           .thenAnswer((_) => Future.value(true));
+      when(() =>
+          mockPkamAuthenticator.authenticate(
+              enrollmentId: testEnrollmentId)).thenAnswer(
+          (_) => Future.value(AtAuthResponse('@alice🛠')..isSuccessful = true));
       final atAuthRequest = AtAuthRequest('@alice🛠', 'example.com', 64);
       atAuthRequest.enrollmentId = testEnrollmentId;
       atAuthRequest.atKeysFilePath = 'test/data/@alice🛠_key.atKeys';
@@ -54,6 +59,10 @@ void main() {
     test('Test authenticate() false with keys file', () async {
       when(() => mockAtLookUp.pkamAuthenticate(enrollmentId: testEnrollmentId))
           .thenAnswer((_) => Future.value(false));
+      when(() => mockPkamAuthenticator.authenticate(
+              enrollmentId: testEnrollmentId))
+          .thenAnswer((_) =>
+              Future.value(AtAuthResponse('@alice🛠')..isSuccessful = false));
       final atAuthRequest = AtAuthRequest('@alice🛠', 'example.com', 64);
       atAuthRequest.enrollmentId = testEnrollmentId;
       atAuthRequest.atKeysFilePath = 'test/data/@alice🛠_key.atKeys';
@@ -67,6 +76,10 @@ void main() {
     test('Test authenticate() with atAuthKeys set', () async {
       when(() => mockAtLookUp.pkamAuthenticate(enrollmentId: testEnrollmentId))
           .thenAnswer((_) => Future.value(true));
+      when(() =>
+          mockPkamAuthenticator.authenticate(
+              enrollmentId: testEnrollmentId)).thenAnswer(
+          (_) => Future.value(AtAuthResponse('@alice🛠')..isSuccessful = true));
       final atAuthRequest = AtAuthRequest('@alice🛠', 'example.com', 64);
       atAuthRequest.enrollmentId = testEnrollmentId;
       atAuthRequest.atAuthKeys = AtAuthKeys()
@@ -88,6 +101,10 @@ void main() {
         () async {
       when(() => mockAtLookUp.pkamAuthenticate(enrollmentId: testEnrollmentId))
           .thenAnswer((_) => Future.value(true));
+      when(() =>
+          mockPkamAuthenticator.authenticate(
+              enrollmentId: testEnrollmentId)).thenAnswer(
+          (_) => Future.value(AtAuthResponse('@alice🛠')..isSuccessful = true));
       final atAuthRequest = AtAuthRequest('@alice🛠', 'example.com', 64);
       atAuthRequest.enrollmentId = testEnrollmentId;
       atAuthRequest.atAuthKeys = AtAuthKeys()
@@ -110,7 +127,7 @@ void main() {
       atAuthRequest.enrollmentId = testEnrollmentId;
 
       expect(() async => await atAuth.authenticate(atAuthRequest),
-          throwsA(isA<UnAuthenticatedException>()));
+          throwsA(isA<AtAuthenticationException>()));
     });
 
     test(
@@ -118,36 +135,59 @@ void main() {
         () async {
       when(() => mockAtLookUp.pkamAuthenticate(enrollmentId: testEnrollmentId))
           .thenThrow(UnAuthenticatedException('Unauthenticated'));
+      when(() => mockPkamAuthenticator.authenticate(
+              enrollmentId: testEnrollmentId))
+          .thenThrow(AtAuthenticationException('Unauthenticated'));
       final atAuthRequest = AtAuthRequest('@alice🛠', 'example.com', 64);
       atAuthRequest.enrollmentId = testEnrollmentId;
       atAuthRequest.atKeysFilePath = 'test/data/@alice🛠_key.atKeys';
 
       expect(() async => await atAuth.authenticate(atAuthRequest),
-          throwsA(isA<UnAuthenticatedException>()));
+          throwsA(isA<AtAuthenticationException>()));
     });
   });
   group('AtAuthImpl onboarding tests', () {
     var testCramSecret = 'cram123';
-    // test('Test onboard - authenticate_cram returns true', () async {
-    //   when(() => mockAtLookUp.authenticate_cram(testCramSecret))
-    //       .thenAnswer((_) => Future.value(true));
-    //   when(() => mockAtLookUp.executeCommand(any()))
-    //       .thenAnswer((_) => Future.value('data:1'));
-    //   when(() => mockAtLookUp.executeVerb(any()))
-    //       .thenAnswer((_) => Future.value('data:2'));
-    //
-    //   when(() => mockAtLookUp.close()).thenAnswer((_) async => {});
-    //   when(() => mockPkamAuthenticator.authenticate())
-    //       .thenAnswer((_) => Future.value(AtAuthResponse('@alice🛠')..isSuccessful=true));
-    //
-    //   final atOnboardingRequest = AtOnboardingRequest('@alice🛠')
-    //     ..rootDomain = 'test.atsign.com'
-    //     ..rootPort = 64;
-    //
-    //   final response =
-    //       await atAuth.onboard(atOnboardingRequest, testCramSecret);
-    //
-    //   expect(response.isSuccessful, true);
-    // });
+    test('Test onboard - authenticate_cram returns true', () async {
+      when(() => mockAtLookUp.authenticate_cram(testCramSecret))
+          .thenAnswer((_) => Future.value(true));
+      when(() => mockAtLookUp.executeCommand(any()))
+          .thenAnswer((_) => Future.value('data:1'));
+      when(() => mockAtLookUp.executeVerb(any()))
+          .thenAnswer((_) => Future.value('data:2'));
+
+      when(() => mockAtLookUp.close()).thenAnswer((_) async => {});
+      when(() => mockPkamAuthenticator.authenticate()).thenAnswer(
+          (_) => Future.value(AtAuthResponse('@alice🛠')..isSuccessful = true));
+
+      final atOnboardingRequest = AtOnboardingRequest('@alice🛠')
+        ..rootDomain = 'test.atsign.com'
+        ..rootPort = 64;
+
+      final response =
+          await atAuth.onboard(atOnboardingRequest, testCramSecret);
+
+      expect(response.isSuccessful, true);
+    });
+    test('Test onboard - authenticate_cram returns false', () async {
+      when(() => mockAtLookUp.authenticate_cram(testCramSecret))
+          .thenAnswer((_) => Future.value(false));
+      when(() => mockAtLookUp.executeCommand(any()))
+          .thenAnswer((_) => Future.value('data:1'));
+      when(() => mockAtLookUp.executeVerb(any()))
+          .thenAnswer((_) => Future.value('data:2'));
+
+      when(() => mockAtLookUp.close()).thenAnswer((_) async => {});
+      when(() => mockPkamAuthenticator.authenticate()).thenAnswer(
+          (_) => Future.value(AtAuthResponse('@alice🛠')..isSuccessful = true));
+
+      final atOnboardingRequest = AtOnboardingRequest('@alice🛠')
+        ..rootDomain = 'test.atsign.com'
+        ..rootPort = 64;
+
+      expect(
+          () async => await atAuth.onboard(atOnboardingRequest, testCramSecret),
+          throwsA(isA<AtAuthenticationException>()));
+    });
   });
 }
