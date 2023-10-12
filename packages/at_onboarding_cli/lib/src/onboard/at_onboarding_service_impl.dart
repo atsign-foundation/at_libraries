@@ -29,7 +29,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   bool _isAtsignOnboarded = false;
   AtSignLogger logger = AtSignLogger('OnboardingCli');
   AtOnboardingPreference atOnboardingPreference;
-  AtClient? _atClient;
   AtLookUp? _atLookUp;
 
   final StreamController<String> _pkamSuccessController =
@@ -72,13 +71,14 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     _atLookUp?.enrollmentId = enrollmentId;
     _atLookUp?.signingAlgoType = atOnboardingPreference.signingAlgoType;
     _atLookUp?.hashingAlgoType = atOnboardingPreference.hashingAlgoType;
-    _atClient ??= atClientManager.atClient;
+    atClient ??= atClientManager.atClient;
+    _atLookUp!.atChops = atChops;
   }
 
   @override
   @Deprecated('Use getter')
   Future<AtClient?> getAtClient() async {
-    return _atClient;
+    return atClient;
   }
 
   @override
@@ -131,6 +131,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       await _generateAtKeysFile(
           atOnboardingResponse.enrollmentId, atOnboardingResponse.atAuthKeys!);
     }
+    _isAtsignOnboarded = atOnboardingResponse.isSuccessful;
     return _isAtsignOnboarded;
   }
 
@@ -397,29 +398,29 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     AtAuthKeys atAuthKeys = _decryptAtKeysFile(
         (await _readAtKeysFile(atOnboardingPreference.atKeysFilePath)));
     //backup keys into local secondary
-    bool? response = await _atClient
+    bool? response = await atClient
         ?.getLocalSecondary()
         ?.putValue(AtConstants.atPkamPublicKey, atAuthKeys.apkamPublicKey!);
     logger.finer('PkamPublicKey persist to localSecondary: status $response');
     // save pkam private key only when auth mode is keyFile. if auth mode is sim/any other secure element private key cannot be read and hence will not be part of keys file
     if (atOnboardingPreference.authMode == PkamAuthMode.keysFile) {
-      response = await _atClient
+      response = await atClient
           ?.getLocalSecondary()
           ?.putValue(AtConstants.atPkamPrivateKey, atAuthKeys.apkamPrivateKey!);
       logger
           .finer('PkamPrivateKey persist to localSecondary: status $response');
     }
-    response = await _atClient?.getLocalSecondary()?.putValue(
+    response = await atClient?.getLocalSecondary()?.putValue(
         '${AtConstants.atEncryptionPublicKey}$_atSign',
         atAuthKeys.defaultEncryptionPublicKey!);
     logger.finer(
         'EncryptionPublicKey persist to localSecondary: status $response');
-    response = await _atClient?.getLocalSecondary()?.putValue(
+    response = await atClient?.getLocalSecondary()?.putValue(
         AtConstants.atEncryptionPrivateKey,
         atAuthKeys.defaultEncryptionPrivateKey!);
     logger.finer(
         'EncryptionPrivateKey persist to localSecondary: status $response');
-    response = await _atClient?.getLocalSecondary()?.putValue(
+    response = await atClient?.getLocalSecondary()?.putValue(
         AtConstants.atEncryptionSelfKey, atAuthKeys.defaultSelfEncryptionKey!);
   }
 
@@ -433,8 +434,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       ..authMode = atOnboardingPreference.authMode;
     var atAuthResponse = await atAuth!.authenticate(atAuthRequest);
     logger.finer('Auth response: $atAuthResponse');
-    if (!_isAtsignOnboarded &&
-        atAuthResponse.isSuccessful &&
+    if (atAuthResponse.isSuccessful &&
         atOnboardingPreference.atKeysFilePath != null) {
       logger.finer('Calling persist keys to local secondary');
       await _initAtClient(atAuth!.atChops!,
@@ -617,7 +617,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       await (_atLookUp as AtLookupImpl).close();
     }
     _atLookUp = null;
-    _atClient = null;
+    atClient = null;
     logger.info(
         'Closing current instance of at_onboarding_cli (exit code: $exitCode)');
   }
@@ -629,17 +629,12 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }
 
   @override
-  set atClient(AtClient? atClient) {
-    _atClient = atClient;
-  }
+  AtClient? atClient;
 
   @override
   set atLookUp(AtLookUp? atLookUp) {
     _atLookUp = atLookUp;
   }
-
-  @override
-  AtClient? get atClient => _atClient;
 
   @override
   AtLookUp? get atLookUp => _atLookUp;

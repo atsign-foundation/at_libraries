@@ -9,7 +9,6 @@ import 'package:at_client/at_client.dart';
 import 'package:at_auth/at_auth.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
-import 'package:at_demo_data/at_demo_data.dart' as at_demo;
 
 class MockAtLookupImpl extends Mock implements AtLookupImpl {}
 
