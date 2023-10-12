@@ -9,7 +9,6 @@ import 'package:at_utils/at_utils.dart';
 import 'package:test/test.dart';
 import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 
-
 var pkamPublicKey;
 var pkamPrivateKey;
 var encryptionPublicKey;
@@ -263,7 +262,8 @@ AtOnboardingPreference getPreferenceForAuth(String atSign) {
         '${Platform.environment['HOME']}/.atsign/keys/${atSign}_key.atKeys'
     ..appName = 'wavi'
     ..deviceName = 'pixel'
-    ..rootDomain = 'vip.ve.atsign.zone';
+    ..rootDomain = 'vip.ve.atsign.zone'
+    ..useAtChops = true;
 
   return atOnboardingPreference;
 }
@@ -278,7 +278,8 @@ AtOnboardingPreference getPreferenceForEnroll(String atSign) {
     ..appName = 'buzz'
     ..deviceName = 'iphone'
     ..rootDomain = 'vip.ve.atsign.zone'
-    ..apkamAuthRetryDurationMins = 1;
+    ..apkamAuthRetryDurationMins = 1
+    ..useAtChops = true;
   return atOnboardingPreference;
 }
 
