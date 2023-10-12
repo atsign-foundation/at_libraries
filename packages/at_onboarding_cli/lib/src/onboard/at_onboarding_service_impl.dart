@@ -75,14 +75,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     _atClient ??= atClientManager.atClient;
   }
 
-  Future<void> _init(AtAuthKeys atAuthKeys, {String? enrollmentId}) async {
-    atChops ??= _createAtChops(atAuthKeys);
-    await _initAtClient(atChops!, enrollmentId: enrollmentId);
-    _atLookUp!.atChops = atChops;
-    _atClient!.atChops = atChops;
-    _atClient!.getPreferences()!.useAtChops = true;
-  }
-
   @override
   @Deprecated('Use getter')
   Future<AtClient?> getAtClient() async {
@@ -121,7 +113,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       throw AtActivateException('atsign is already activated');
     }
 
-    var atAuthImpl = AtAuthImpl();
+    atAuth ??= AtAuthImpl();
     var atOnboardingRequest = AtOnboardingRequest(_atSign);
     atOnboardingRequest.rootDomain = atOnboardingPreference.rootDomain;
     atOnboardingRequest.rootPort = atOnboardingPreference.rootPort;
@@ -130,8 +122,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     atOnboardingRequest.appName = atOnboardingPreference.appName;
     atOnboardingRequest.deviceName = atOnboardingPreference.deviceName;
     atOnboardingRequest.publicKeyId = atOnboardingPreference.publicKeyId;
-    var atOnboardingResponse = await atAuthImpl.onboard(
-        atOnboardingRequest, atOnboardingPreference.cramSecret!);
+    var atOnboardingResponse = await atAuth!
+        .onboard(atOnboardingRequest, atOnboardingPreference.cramSecret!);
     logger.finer('Onboarding Response: $atOnboardingResponse');
     if (atOnboardingResponse.isSuccessful) {
       logger.finer(
@@ -433,39 +425,24 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   @override
   Future<bool> authenticate({String? enrollmentId}) async {
-    var atAuthImpl = AtAuthImpl();
+    atAuth ??= AtAuthImpl();
     var atAuthRequest = AtAuthRequest(_atSign,
         atOnboardingPreference.rootDomain, atOnboardingPreference.rootPort)
       ..enrollmentId = enrollmentId
       ..atKeysFilePath = atOnboardingPreference.atKeysFilePath
       ..authMode = atOnboardingPreference.authMode;
-    var atAuthResponse = await atAuthImpl.authenticate(atAuthRequest);
+    var atAuthResponse = await atAuth!.authenticate(atAuthRequest);
     logger.finer('Auth response: $atAuthResponse');
     if (!_isAtsignOnboarded &&
         atAuthResponse.isSuccessful &&
         atOnboardingPreference.atKeysFilePath != null) {
       logger.finer('Calling persist keys to local secondary');
-      await _initAtClient(atAuthImpl.atChops!,
+      await _initAtClient(atAuth!.atChops!,
           enrollmentId: atAuthResponse.enrollmentId);
       await _persistKeysLocalSecondary();
     }
 
     return atAuthResponse.isSuccessful;
-  }
-
-  AtChops _createAtChops(AtAuthKeys atKeysFile) {
-    final atEncryptionKeyPair = AtEncryptionKeyPair.create(
-        atKeysFile.defaultEncryptionPublicKey!,
-        atKeysFile.defaultEncryptionPrivateKey!);
-    final atPkamKeyPair = AtPkamKeyPair.create(
-        atKeysFile.apkamPublicKey!, atKeysFile.apkamPrivateKey!);
-    final atChopsKeys = AtChopsKeys.create(atEncryptionKeyPair, atPkamKeyPair);
-    if (atKeysFile.apkamSymmetricKey != null) {
-      atChopsKeys.apkamSymmetricKey = AESKey(atKeysFile.apkamSymmetricKey!);
-    }
-    atChopsKeys.selfEncryptionKey =
-        AESKey(atKeysFile.defaultSelfEncryptionKey!);
-    return AtChopsImpl(atChopsKeys);
   }
 
   ///method to read and return data from .atKeysFile
@@ -668,5 +645,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   AtLookUp? get atLookUp => _atLookUp;
 
   @override
+  @Deprecated('AtChops will be created in AtAuth')
   AtChops? atChops;
+
+  @override
+  AtAuth? atAuth;
 }
