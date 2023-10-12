@@ -79,7 +79,8 @@ class AtAuthImpl implements AtAuth {
       isPkamAuthenticated = pkamResponse.isSuccessful;
     } on Exception catch (e) {
       _logger.severe('Caught exception: $e');
-      throw AtAuthenticationException('Unable to authenticate- ${e.toString()}');
+      throw AtAuthenticationException(
+          'Unable to authenticate- ${e.toString()}');
     }
     _logger.finer(
         'PKAM auth result: ${isPkamAuthenticated ? 'success' : 'failed'}');
@@ -278,6 +279,10 @@ class AtAuthImpl implements AtAuth {
     if (atKeysFilePath == null || atKeysFilePath.isEmpty) {
       throw AtException(
           'atKeys filePath is empty. atKeysFile is required to authenticate');
+    }
+    if (!File(atKeysFilePath).existsSync()) {
+      throw AtException(
+          'provided keys file doesnot exists. Please check whether the file path $atKeysFilePath is valid');
     }
     String atAuthData = await File(atKeysFilePath).readAsString();
     Map<String, String> jsonData = <String, String>{};

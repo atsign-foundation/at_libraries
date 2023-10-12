@@ -7,7 +7,6 @@ class PkamAuthenticator {
   final AtLookUp _atLookup;
   PkamAuthenticator(this._atSign, this._atLookup);
 
-  @override
   Future<AtAuthResponse> authenticate({String? enrollmentId}) async {
     var authResult = AtAuthResponse(_atSign);
     try {

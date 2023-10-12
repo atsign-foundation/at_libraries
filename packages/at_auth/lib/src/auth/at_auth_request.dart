@@ -3,11 +3,11 @@ import 'package:at_commons/at_commons.dart';
 
 class AtAuthRequest {
   String atSign;
-  AtAuthRequest(this.atSign, this.rootDomain, this.rootPort);
+  AtAuthRequest(this.atSign);
   String? enrollmentId;
   AtAuthKeys? atAuthKeys;
-  String rootDomain;
-  int rootPort;
+  String rootDomain = 'root.atsign.org';
+  int rootPort = 64;
   PkamAuthMode authMode = PkamAuthMode.keysFile;
   String? atKeysFilePath;
 

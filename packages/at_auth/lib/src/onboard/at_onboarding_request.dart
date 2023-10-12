@@ -5,8 +5,8 @@ class AtOnboardingRequest {
   AtOnboardingRequest(this.atSign);
   PkamAuthMode authMode = PkamAuthMode.keysFile;
   bool enableEnrollment = false;
-  late String rootDomain;
-  late int rootPort;
+  String rootDomain = 'root.atsign.org';
+  int rootPort = 64;
   String? appName;
   String? deviceName;
 

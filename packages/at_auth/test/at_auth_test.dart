@@ -6,7 +6,6 @@ import 'package:at_lookup/at_lookup.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'package:at_auth/at_auth.dart';
-import 'package:at_utils/at_logger.dart';
 
 // Create a mock for AtLookUp
 class MockAtLookUp extends Mock implements AtLookupImpl {}
@@ -43,7 +42,7 @@ void main() {
           mockPkamAuthenticator.authenticate(
               enrollmentId: testEnrollmentId)).thenAnswer(
           (_) => Future.value(AtAuthResponse('@alice🛠')..isSuccessful = true));
-      final atAuthRequest = AtAuthRequest('@alice🛠', 'example.com', 64);
+      final atAuthRequest = AtAuthRequest('@alice🛠');
       atAuthRequest.enrollmentId = testEnrollmentId;
       atAuthRequest.atKeysFilePath = 'test/data/@alice🛠_key.atKeys';
 
@@ -60,7 +59,7 @@ void main() {
               enrollmentId: testEnrollmentId))
           .thenAnswer((_) =>
               Future.value(AtAuthResponse('@alice🛠')..isSuccessful = false));
-      final atAuthRequest = AtAuthRequest('@alice🛠', 'example.com', 64);
+      final atAuthRequest = AtAuthRequest('@alice🛠');
       atAuthRequest.enrollmentId = testEnrollmentId;
       atAuthRequest.atKeysFilePath = 'test/data/@alice🛠_key.atKeys';
 
@@ -70,6 +69,21 @@ void main() {
       expect(response.enrollmentId, testEnrollmentId);
     });
 
+    test('Test authenticate() invalid keys file path', () async {
+      when(() => mockAtLookUp.pkamAuthenticate(enrollmentId: testEnrollmentId))
+          .thenAnswer((_) => Future.value(true));
+      when(() =>
+          mockPkamAuthenticator.authenticate(
+              enrollmentId: testEnrollmentId)).thenAnswer(
+          (_) => Future.value(AtAuthResponse('@alice🛠')..isSuccessful = true));
+      final atAuthRequest = AtAuthRequest('@alice🛠');
+      atAuthRequest.enrollmentId = testEnrollmentId;
+      atAuthRequest.atKeysFilePath = 'test/data/hello/@alice🛠_key.atKeys';
+
+      expect(() async => await atAuth.authenticate(atAuthRequest),
+          throwsA(isA<AtException>()));
+    });
+
     test('Test authenticate() with atAuthKeys set', () async {
       when(() => mockAtLookUp.pkamAuthenticate(enrollmentId: testEnrollmentId))
           .thenAnswer((_) => Future.value(true));
@@ -77,7 +91,7 @@ void main() {
           mockPkamAuthenticator.authenticate(
               enrollmentId: testEnrollmentId)).thenAnswer(
           (_) => Future.value(AtAuthResponse('@alice🛠')..isSuccessful = true));
-      final atAuthRequest = AtAuthRequest('@alice🛠', 'example.com', 64);
+      final atAuthRequest = AtAuthRequest('@alice🛠');
       atAuthRequest.enrollmentId = testEnrollmentId;
       atAuthRequest.atAuthKeys = AtAuthKeys()
         ..apkamPublicKey = 'testApkamPublicKey'
@@ -102,7 +116,7 @@ void main() {
           mockPkamAuthenticator.authenticate(
               enrollmentId: testEnrollmentId)).thenAnswer(
           (_) => Future.value(AtAuthResponse('@alice🛠')..isSuccessful = true));
-      final atAuthRequest = AtAuthRequest('@alice🛠', 'example.com', 64);
+      final atAuthRequest = AtAuthRequest('@alice🛠');
       atAuthRequest.enrollmentId = testEnrollmentId;
       atAuthRequest.atAuthKeys = AtAuthKeys()
         ..apkamPublicKey = 'testApkamPublicKey'
@@ -120,7 +134,7 @@ void main() {
         () async {
       when(() => mockAtLookUp.pkamAuthenticate(enrollmentId: testEnrollmentId))
           .thenAnswer((_) => Future.value(true));
-      final atAuthRequest = AtAuthRequest('@alice🛠', 'example.com', 64);
+      final atAuthRequest = AtAuthRequest('@alice🛠');
       atAuthRequest.enrollmentId = testEnrollmentId;
 
       expect(() async => await atAuth.authenticate(atAuthRequest),
@@ -135,7 +149,7 @@ void main() {
       when(() => mockPkamAuthenticator.authenticate(
               enrollmentId: testEnrollmentId))
           .thenThrow(AtAuthenticationException('Unauthenticated'));
-      final atAuthRequest = AtAuthRequest('@alice🛠', 'example.com', 64);
+      final atAuthRequest = AtAuthRequest('@alice🛠');
       atAuthRequest.enrollmentId = testEnrollmentId;
       atAuthRequest.atKeysFilePath = 'test/data/@alice🛠_key.atKeys';
 

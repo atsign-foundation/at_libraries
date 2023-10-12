@@ -9,7 +9,6 @@ class CramAuthenticator {
 
   AtLookUp? atLookup;
 
-  @override
   Future<AtAuthResponse> authenticate() async {
     var authResult = AtAuthResponse(_atSign);
     try {
