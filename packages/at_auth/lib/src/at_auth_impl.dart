@@ -55,7 +55,7 @@ class AtAuthImpl implements AtAuth {
     }
     if (atAuthKeys == null) {
       throw AtAuthenticationException(
-          'AtAuthKeys is not set in the request/cannot be read from provided keysfile');
+          'keys either were not provided in the AtAuthRequest, or could not be read from provided keys file');
     }
     var pkamPrivateKey = atAuthKeys.apkamPrivateKey;
 
@@ -125,7 +125,7 @@ class AtAuthImpl implements AtAuth {
       // update pkam public key to server if enrollment is not set in preference
       _logger.finer('Updating PkamPublicKey to remote secondary');
       final pkamPublicKey = atAuthKeys.apkamPublicKey;
-      String updateCommand = 'update:$AT_PKAM_PUBLIC_KEY $pkamPublicKey\n';
+      String updateCommand = 'update:${AtConstants.atPkamPublicKey} $pkamPublicKey\n';
       String? pkamUpdateResult =
           await atLookUp!.executeCommand(updateCommand, auth: false);
       _logger.finer('PkamPublicKey update result: $pkamUpdateResult');
@@ -169,7 +169,7 @@ class AtAuthImpl implements AtAuth {
     _logger.info('Encryption public key update result $encryptKeyUpdateResult');
     // deleting cram secret from the keystore as cram auth is complete
     DeleteVerbBuilder deleteBuilder = DeleteVerbBuilder()
-      ..atKey = AT_CRAM_SECRET;
+      ..atKey = AtConstants.atCramSecret;
     String? deleteResponse = await atLookUp!.executeVerb(deleteBuilder);
     _logger.info('Cram secret delete response : $deleteResponse');
     atOnboardingResponse.isSuccessful = true;
@@ -228,7 +228,7 @@ class AtAuthImpl implements AtAuth {
     enrollResult = enrollResult.replaceFirst('data:', '');
     _logger.finer('enrollResult: $enrollResult');
     var enrollResultJson = jsonDecode(enrollResult);
-    var enrollmentIdFromServer = enrollResultJson[enrollmentId];
+    var enrollmentIdFromServer = enrollResultJson[AtConstants.enrollmentId];
     var enrollmentStatus = enrollResultJson['status'];
     if (enrollmentStatus != 'approved') {
       throw AtAuthenticationException(
@@ -269,7 +269,7 @@ class AtAuthImpl implements AtAuth {
           .result;
     }
     securityKeys.apkamSymmetricKey = jsonData[auth_constants.apkamSymmetricKey];
-    securityKeys.enrollmentId = jsonData[enrollmentId];
+    securityKeys.enrollmentId = jsonData[AtConstants.enrollmentId];
     return securityKeys;
   }
 
@@ -282,7 +282,7 @@ class AtAuthImpl implements AtAuth {
     }
     if (!File(atKeysFilePath).existsSync()) {
       throw AtException(
-          'provided keys file doesnot exists. Please check whether the file path $atKeysFilePath is valid');
+          'provided keys file does not exist. Please check whether the file path $atKeysFilePath is valid');
     }
     String atAuthData = await File(atKeysFilePath).readAsString();
     Map<String, String> jsonData = <String, String>{};

@@ -32,12 +32,12 @@ void main() {
 
     test('authenticate() should throw UnAuthenticatedException on failure',
         () async {
-      when(() => mockAtLookup.pkamAuthenticate(enrollmentId: enrollmentId))
+      when(() => mockAtLookup.pkamAuthenticate(enrollmentId: AtConstants.enrollmentId))
           .thenThrow(UnAuthenticatedException('Unauthenticated'));
 
       expect(
           () async =>
-              await pkamAuthenticator.authenticate(enrollmentId: enrollmentId),
+              await pkamAuthenticator.authenticate(enrollmentId: AtConstants.enrollmentId),
           throwsA(isA<UnAuthenticatedException>()));
     });
   });
