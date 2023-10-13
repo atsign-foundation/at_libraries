@@ -10,16 +10,8 @@ environment:
 dependencies:
   at_commons: ^3.0.55
   at_lookup: ^3.0.40
-  at_chops: ^1.0.4
+  at_chops: ^1.0.5
   at_utils: ^3.0.15
-
-#TODO replace with published version
-dependency_overrides:
-  at_chops:
-    git:
-      url: https://github.com/atsign-foundation/at_libraries
-      path: packages/at_chops
-      ref: at_chops_changes_at_auth
 
 dev_dependencies:
   lints: ^2.0.0
