@@ -8,7 +8,7 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
-  at_commons: ^3.0.55
+  at_commons: ^3.0.56
   at_lookup: ^3.0.40
   at_chops: ^1.0.5
   at_utils: ^3.0.15

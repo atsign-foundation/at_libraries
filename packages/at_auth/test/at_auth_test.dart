@@ -254,6 +254,5 @@ void main() {
           await atAuth.onboard(atOnboardingRequest, testCramSecret);
       expect(response.isSuccessful, true);
     });
-
   });
 }
