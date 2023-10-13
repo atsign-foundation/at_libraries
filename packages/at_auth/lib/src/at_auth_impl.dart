@@ -125,7 +125,8 @@ class AtAuthImpl implements AtAuth {
       // update pkam public key to server if enrollment is not set in preference
       _logger.finer('Updating PkamPublicKey to remote secondary');
       final pkamPublicKey = atAuthKeys.apkamPublicKey;
-      String updateCommand = 'update:${AtConstants.atPkamPublicKey} $pkamPublicKey\n';
+      String updateCommand =
+          'update:${AtConstants.atPkamPublicKey} $pkamPublicKey\n';
       String? pkamUpdateResult =
           await atLookUp!.executeCommand(updateCommand, auth: false);
       _logger.finer('PkamPublicKey update result: $pkamUpdateResult');

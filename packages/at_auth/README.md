@@ -31,3 +31,6 @@ final atAuthRequest = AtAuthRequest('@alice')
 final atAuthResponse = await atAuth.authenticate(atAuthRequest);
 ```
 
+## Example
+
+For examples please refer to [examples](https://pub.dev/packages/at_auth/example)
