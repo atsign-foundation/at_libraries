@@ -133,7 +133,7 @@ class AtAuthImpl implements AtAuth {
 
     //3. Close connection to server
     try {
-      (atLookUp as AtLookupImpl).close();
+      await (atLookUp as AtLookupImpl).close();
     } on Exception catch (e) {
       _logger.severe('error while closing connection to server: $e');
     }
