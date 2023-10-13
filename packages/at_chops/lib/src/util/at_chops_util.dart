@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:at_chops/src/algorithm/at_iv.dart';
 import 'package:at_chops/src/key/at_key_pair.dart';
 import 'package:at_chops/src/key/impl/aes_key.dart';
@@ -10,9 +12,17 @@ import 'package:encrypt/encrypt.dart';
 class AtChopsUtil {
   /// Generates a random initialisation vector from a given length
   /// Length must be 0 to 16
-  /// #TODO explain about implications of changing length
-  static InitialisationVector generateIV(int length) {
+  static InitialisationVector generateRandomIV(int length) {
     final iv = IV.fromSecureRandom(length);
+    return InitialisationVector(iv.bytes);
+  }
+
+  static InitialisationVector generateIVLegacy() {
+    return InitialisationVector(IV(Uint8List(16)).bytes);
+  }
+
+  static InitialisationVector generateIVFromBase64String(String ivBase64) {
+    final iv = IV.fromBase64(ivBase64);
     return InitialisationVector(iv.bytes);
   }
 

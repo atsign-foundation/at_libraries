@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:at_chops/at_chops.dart';
 import 'package:at_chops/src/algorithm/at_algorithm.dart';
-import 'package:at_chops/src/algorithm/default_signing_algo.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:crypton/crypton.dart';
@@ -41,9 +40,9 @@ void main() {
     test('Test symmetric encrypt/decrypt bytes with initialisation vector', () {
       String data = 'Hello World';
       final aesKey = AtChopsUtil.generateSymmetricKey(EncryptionKeyType.aes256);
-      final atChopsKeys = AtChopsKeys.createSymmetric(aesKey);
+      final atChopsKeys = AtChopsKeys()..selfEncryptionKey = aesKey;
       final atChops = AtChopsImpl(atChopsKeys);
-      final iv = AtChopsUtil.generateIV(16);
+      final iv = AtChopsUtil.generateRandomIV(16);
 
       final encryptionResult = atChops.encryptBytes(
           utf8.encode(data) as Uint8List, EncryptionKeyType.aes256,
@@ -71,9 +70,9 @@ void main() {
     test('Test symmetric encrypt/decrypt bytes with emoji char', () {
       String data = 'Hello World🛠';
       final aesKey = AtChopsUtil.generateSymmetricKey(EncryptionKeyType.aes256);
-      final atChopsKeys = AtChopsKeys.createSymmetric(aesKey);
+      final atChopsKeys = AtChopsKeys()..selfEncryptionKey = aesKey;
       final atChops = AtChopsImpl(atChopsKeys);
-      final iv = AtChopsUtil.generateIV(16);
+      final iv = AtChopsUtil.generateRandomIV(16);
 
       final encryptionResult = atChops.encryptBytes(
           utf8.encode(data) as Uint8List, EncryptionKeyType.aes256,
@@ -101,9 +100,9 @@ void main() {
     test('Test symmetric encrypt/decrypt bytes with special chars', () {
       String data = 'Hello World🛠';
       final aesKey = AtChopsUtil.generateSymmetricKey(EncryptionKeyType.aes256);
-      final atChopsKeys = AtChopsKeys.createSymmetric(aesKey);
+      final atChopsKeys = AtChopsKeys()..selfEncryptionKey = aesKey;
       final atChops = AtChopsImpl(atChopsKeys);
-      final iv = AtChopsUtil.generateIV(16);
+      final iv = AtChopsUtil.generateRandomIV(16);
 
       final encryptionResult = atChops.encryptBytes(
           utf8.encode(data) as Uint8List, EncryptionKeyType.aes256,
@@ -132,9 +131,9 @@ void main() {
         () {
       String data = 'Hello World';
       final aesKey = AtChopsUtil.generateSymmetricKey(EncryptionKeyType.aes256);
-      final atChopsKeys = AtChopsKeys.createSymmetric(aesKey);
+      final atChopsKeys = AtChopsKeys()..selfEncryptionKey = aesKey;
       final atChops = AtChopsImpl(atChopsKeys);
-      final iv = AtChopsUtil.generateIV(16);
+      final iv = AtChopsUtil.generateRandomIV(16);
 
       final encryptionResult =
           atChops.encryptString(data, EncryptionKeyType.aes256, iv: iv);
@@ -161,9 +160,9 @@ void main() {
     test('Test symmetric encrypt/decrypt string with special chars', () {
       String data = 'Hello``*+%';
       final aesKey = AtChopsUtil.generateSymmetricKey(EncryptionKeyType.aes256);
-      final atChopsKeys = AtChopsKeys.createSymmetric(aesKey);
+      final atChopsKeys = AtChopsKeys()..selfEncryptionKey = aesKey;
       final atChops = AtChopsImpl(atChopsKeys);
-      final iv = AtChopsUtil.generateIV(16);
+      final iv = AtChopsUtil.generateRandomIV(16);
 
       final encryptionResult =
           atChops.encryptString(data, EncryptionKeyType.aes256, iv: iv);
@@ -190,9 +189,9 @@ void main() {
     test('Test symmetric encrypt/decrypt string with emoji', () {
       String data = 'Hello World🛠';
       final aesKey = AtChopsUtil.generateSymmetricKey(EncryptionKeyType.aes256);
-      final atChopsKeys = AtChopsKeys.createSymmetric(aesKey);
+      final atChopsKeys = AtChopsKeys()..selfEncryptionKey = aesKey;
       final atChops = AtChopsImpl(atChopsKeys);
-      final iv = AtChopsUtil.generateIV(16);
+      final iv = AtChopsUtil.generateRandomIV(16);
 
       final encryptionResult =
           atChops.encryptString(data, EncryptionKeyType.aes256, iv: iv);

@@ -29,6 +29,7 @@ class AESEncryptionAlgo implements SymmetricEncryptionAlgorithm {
     if (ivBytes != null) {
       return IV(ivBytes);
     }
-    return null;
+    // From the bad old days when we weren't setting IVs
+    return IV(Uint8List(16));
   }
 }
