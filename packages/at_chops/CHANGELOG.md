@@ -1,3 +1,6 @@
+## 1.0.5
+- feat: Changes for at_auth package
+- chore: fixed analyzer issues
 ## 1.0.4
 - feat: Deprecated symmetric key pair in AtChopsKeys and introduced selfEncryptionKey and apkamSymmetricKey
 - chore: Upgrade at_commons to 3.0.53 and at_util to 3.0.15
