@@ -427,11 +427,12 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   @override
   Future<bool> authenticate({String? enrollmentId}) async {
     atAuth ??= AtAuthImpl();
-    var atAuthRequest = AtAuthRequest(_atSign,
-        atOnboardingPreference.rootDomain, atOnboardingPreference.rootPort)
+    var atAuthRequest = AtAuthRequest(_atSign)
       ..enrollmentId = enrollmentId
       ..atKeysFilePath = atOnboardingPreference.atKeysFilePath
-      ..authMode = atOnboardingPreference.authMode;
+      ..authMode = atOnboardingPreference.authMode
+    ..rootDomain= atOnboardingPreference.rootDomain
+        ..rootPort=atOnboardingPreference.rootPort;
     var atAuthResponse = await atAuth!.authenticate(atAuthRequest);
     logger.finer('Auth response: $atAuthResponse');
     if (atAuthResponse.isSuccessful &&

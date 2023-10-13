@@ -27,17 +27,18 @@ dependencies:
    http: ^0.13.6
    at_chops: ^1.0.4
 
+#TODO replace with published version
 dependency_overrides:
   at_auth:
     git:
       url: https://github.com/atsign-foundation/at_libraries
       path: packages/at_auth
-      ref: at_auth_new_package
+      ref: at_auth_new
   at_chops:
     git:
       url: https://github.com/atsign-foundation/at_libraries
       path: packages/at_chops
-      ref: at_auth_new_package
+      ref: at_chops_changes_at_auth
 
 dev_dependencies:
   lints: ^2.1.0
