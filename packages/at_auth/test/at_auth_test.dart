@@ -241,5 +241,28 @@ void main() {
       expect(response.isSuccessful, true);
     });
 
+    test('Test onboard - pkam authenticate is false', () async {
+      when(() => mockAtLookUp.authenticate_cram(testCramSecret))
+          .thenAnswer((_) => Future.value(true));
+      when(() => mockAtLookUp.executeCommand(any()))
+          .thenAnswer((_) => Future.value('data:1'));
+      when(() => mockAtLookUp.executeVerb(any()))
+          .thenAnswer((_) => Future.value('data:2'));
+
+      when(() => mockAtLookUp.close()).thenAnswer((_) async => {});
+      when(() => mockPkamAuthenticator.authenticate()).thenAnswer((_) =>
+          Future.value(AtAuthResponse('@alice🛠')..isSuccessful = false));
+
+      final atOnboardingRequest = AtOnboardingRequest('@alice🛠')
+        ..rootDomain = 'test.atsign.com'
+        ..rootPort = 64
+        ..enableEnrollment = false
+        ..appName = 'wavi'
+        ..deviceName = 'iphone';
+
+      expect(
+          () async => await atAuth.onboard(atOnboardingRequest, testCramSecret),
+          throwsA(isA<AtAuthenticationException>()));
+    });
   });
 }
