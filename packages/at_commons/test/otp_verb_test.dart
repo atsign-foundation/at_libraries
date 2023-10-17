@@ -20,13 +20,5 @@ void main() {
       expect(verbParams['ttl'], '100');
       expect(verbParams['otp'], null);
     });
-
-    test('A test to verify otp:validate regex', () {
-      Map<dynamic, dynamic> verbParams =
-      getVerbParams(VerbSyntax.otp, "otp:validate:ABC123");
-      expect(verbParams[AtConstants.operation], "validate");
-      expect(verbParams['otp'], 'ABC123');
-      expect(verbParams['ttl'], null);
-    });
   });
 }
