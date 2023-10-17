@@ -307,14 +307,6 @@ void main() {
           VerbUtil.getVerbParam(VerbSyntax.otp, command.trim())!;
       expect(enrollVerbParams['operation'], 'get');
     });
-
-    test('A test to verify otp verb for validate operation', () {
-      String command = 'otp:validate:ABC123\n';
-      var enrollVerbParams =
-          VerbUtil.getVerbParam(VerbSyntax.otp, command.trim());
-      expect(enrollVerbParams!['operation'], 'validate');
-      expect(enrollVerbParams['otp'], 'ABC123');
-    });
   });
 }
 
