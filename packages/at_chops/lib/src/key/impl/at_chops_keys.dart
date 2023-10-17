@@ -17,7 +17,7 @@ class AtChopsKeys {
   SymmetricKey? get symmetricKey => selfEncryptionKey;
 
   @Deprecated('Use selfEncryptionKey')
-  void set symmetricKey(SymmetricKey? sk) => selfEncryptionKey = sk;
+  set symmetricKey(SymmetricKey? sk) => selfEncryptionKey = sk;
 
   /// Default self encryption key
   SymmetricKey? selfEncryptionKey;

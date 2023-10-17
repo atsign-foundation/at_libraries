@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:at_chops/at_chops.dart';
 import 'package:at_chops/src/algorithm/algo_type.dart';
 import 'package:at_chops/src/algorithm/at_algorithm.dart';
 import 'package:at_chops/src/algorithm/default_signing_algo.dart';
