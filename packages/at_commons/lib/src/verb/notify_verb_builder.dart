@@ -28,7 +28,7 @@ class NotifyVerbBuilder extends MetadataUsingVerbBuilder {
   MessageTypeEnum? messageType;
 
   /// The notifier of the notification. Defaults to system.
-  String notifier = SYSTEM;
+  String notifier = AtConstants.system;
 
   /// Latest N notifications to notify. Defaults to 1
   int? latestN;

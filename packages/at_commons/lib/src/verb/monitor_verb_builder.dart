@@ -90,15 +90,18 @@ class MonitorVerbBuilder implements VerbBuilder {
     }
 
     var builder = MonitorVerbBuilder();
-    builder.strict = verbParams[MONITOR_STRICT_MODE] == MONITOR_STRICT_MODE;
+    builder.strict = verbParams[AtConstants.monitorStrictMode] ==
+        AtConstants.monitorStrictMode;
     builder.selfNotificationsEnabled =
-        verbParams[MONITOR_SELF_NOTIFICATIONS] == MONITOR_SELF_NOTIFICATIONS;
-    builder.multiplexed =
-        verbParams[MONITOR_MULTIPLEXED_MODE] == MONITOR_MULTIPLEXED_MODE;
-    builder.regex = verbParams[MONITOR_REGEX];
-    builder.lastNotificationTime = verbParams[EPOCH_MILLIS] == null
-        ? null
-        : int.parse(verbParams[EPOCH_MILLIS]!);
+        verbParams[AtConstants.monitorSelfNotifications] ==
+            AtConstants.monitorSelfNotifications;
+    builder.multiplexed = verbParams[AtConstants.monitorMultiplexedMode] ==
+        AtConstants.monitorMultiplexedMode;
+    builder.regex = verbParams[AtConstants.monitorRegex];
+    builder.lastNotificationTime =
+        verbParams[AtConstants.epochMilliseconds] == null
+            ? null
+            : int.parse(verbParams[AtConstants.epochMilliseconds]!);
 
     return builder;
   }

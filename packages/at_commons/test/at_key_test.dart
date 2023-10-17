@@ -115,15 +115,15 @@ void main() {
     });
 
     test('Test to verify pkam private key', () {
-      var atKey = AtKey.fromString(AT_PKAM_PRIVATE_KEY);
-      expect(atKey.key, AT_PKAM_PRIVATE_KEY);
-      expect(atKey.toString(), AT_PKAM_PRIVATE_KEY);
+      var atKey = AtKey.fromString(AtConstants.atPkamPrivateKey);
+      expect(atKey.key, AtConstants.atPkamPrivateKey);
+      expect(atKey.toString(), AtConstants.atPkamPrivateKey);
     });
 
     test('Test to verify pkam private key', () {
-      var atKey = AtKey.fromString(AT_PKAM_PUBLIC_KEY);
-      expect(atKey.key, AT_PKAM_PUBLIC_KEY);
-      expect(atKey.toString(), AT_PKAM_PUBLIC_KEY);
+      var atKey = AtKey.fromString(AtConstants.atPkamPublicKey);
+      expect(atKey.key, AtConstants.atPkamPublicKey);
+      expect(atKey.toString(), AtConstants.atPkamPublicKey);
     });
 
     test('Test to verify key with namespace', () {
@@ -249,15 +249,15 @@ void main() {
     });
 
     test('Test to verify pkam private key', () {
-      var atKey = AtKey.fromString(AT_PKAM_PRIVATE_KEY);
-      expect(atKey.key, AT_PKAM_PRIVATE_KEY);
-      expect(atKey.toString(), AT_PKAM_PRIVATE_KEY);
+      var atKey = AtKey.fromString(AtConstants.atPkamPrivateKey);
+      expect(atKey.key, AtConstants.atPkamPrivateKey);
+      expect(atKey.toString(), AtConstants.atPkamPrivateKey);
     });
 
     test('Test to verify pkam private key', () {
-      var atKey = AtKey.fromString(AT_PKAM_PUBLIC_KEY);
-      expect(atKey.key, AT_PKAM_PUBLIC_KEY);
-      expect(atKey.toString(), AT_PKAM_PUBLIC_KEY);
+      var atKey = AtKey.fromString(AtConstants.atPkamPublicKey);
+      expect(atKey.key, AtConstants.atPkamPublicKey);
+      expect(atKey.toString(), AtConstants.atPkamPublicKey);
     });
 
     test('Test to verify key with namespace', () {

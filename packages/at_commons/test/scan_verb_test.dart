@@ -9,22 +9,22 @@ void main() {
     test('test to validate scan verb for showHidden set to true', () {
       var command = 'scan:showHidden:true';
       var verbParams = getVerbParams(VerbSyntax.scan, command);
-      expect(verbParams[showHidden], 'true');
+      expect(verbParams[AtConstants.showHidden], 'true');
     });
 
     test('test to validate scan verb for showHidden set to false', () {
       var command = 'scan:showHidden:false';
       var verbParams = getVerbParams(VerbSyntax.scan, command);
-      expect(verbParams[showHidden], 'false');
+      expect(verbParams[AtConstants.showHidden], 'false');
     });
 
     test('test to validate scan verb', () {
       var command = 'scan:showHidden:true:@alice:page:1 .wavi';
       var verbParams = getVerbParams(VerbSyntax.scan, command);
-      expect(verbParams[showHidden], 'true');
-      expect(verbParams[PAGE], '1');
-      expect(verbParams[FOR_AT_SIGN], '@alice');
-      expect(verbParams[AT_REGEX], '.wavi');
+      expect(verbParams[AtConstants.showHidden], 'true');
+      expect(verbParams[AtConstants.page], '1');
+      expect(verbParams[AtConstants.forAtSign], '@alice');
+      expect(verbParams[AtConstants.regex], '.wavi');
     });
   });
 
@@ -37,9 +37,9 @@ void main() {
 
       var verbParams =
           getVerbParams(VerbSyntax.scan, scanVerbBuilder.buildCommand().trim());
-      expect(verbParams[showHidden], 'true');
-      expect(verbParams[FOR_AT_SIGN], '@alice');
-      expect(verbParams[AT_REGEX], '.wavi');
+      expect(verbParams[AtConstants.showHidden], 'true');
+      expect(verbParams[AtConstants.forAtSign], '@alice');
+      expect(verbParams[AtConstants.regex], '.wavi');
     });
 
     test(
@@ -52,9 +52,9 @@ void main() {
 
       var verbParams =
           getVerbParams(VerbSyntax.scan, scanVerbBuilder.buildCommand().trim());
-      expect(verbParams[showHidden], null);
-      expect(verbParams[FOR_AT_SIGN], '@alice');
-      expect(verbParams[AT_REGEX], '.wavi');
+      expect(verbParams[AtConstants.showHidden], null);
+      expect(verbParams[AtConstants.forAtSign], '@alice');
+      expect(verbParams[AtConstants.regex], '.wavi');
     });
 
     test(
@@ -66,9 +66,9 @@ void main() {
 
       var verbParams =
           getVerbParams(VerbSyntax.scan, scanVerbBuilder.buildCommand().trim());
-      expect(verbParams[showHidden], null);
-      expect(verbParams[FOR_AT_SIGN], '@alice');
-      expect(verbParams[AT_REGEX], '.wavi');
+      expect(verbParams[AtConstants.showHidden], null);
+      expect(verbParams[AtConstants.forAtSign], '@alice');
+      expect(verbParams[AtConstants.regex], '.wavi');
     });
   });
 }

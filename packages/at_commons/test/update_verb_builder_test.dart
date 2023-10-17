@@ -55,15 +55,16 @@ void main() {
           '\n');
       var updateVerbParams =
           getVerbParams(VerbSyntax.update, updateCommand.trim());
-      expect(updateVerbParams[AT_KEY], 'email.wavi');
-      expect(updateVerbParams[AT_SIGN], 'alice');
-      expect(updateVerbParams[FOR_AT_SIGN], 'bob');
-      expect(updateVerbParams[SHARED_WITH_PUBLIC_KEY_CHECK_SUM], pubKeyCS);
-      expect(updateVerbParams[SHARED_KEY_ENCRYPTED], ske);
-      expect(updateVerbParams[SHARED_KEY_ENCRYPTED_ENCRYPTING_KEY_NAME],
-          skeEncKeyName);
+      expect(updateVerbParams[AtConstants.atKey], 'email.wavi');
+      expect(updateVerbParams[AtConstants.atSign], 'alice');
+      expect(updateVerbParams[AtConstants.forAtSign], 'bob');
       expect(
-          updateVerbParams[SHARED_KEY_ENCRYPTED_ENCRYPTING_ALGO], skeEncAlgo);
+          updateVerbParams[AtConstants.sharedWithPublicKeyCheckSum], pubKeyCS);
+      expect(updateVerbParams[AtConstants.sharedKeyEncrypted], ske);
+      expect(updateVerbParams[AtConstants.sharedKeyEncryptedEncryptingKeyName],
+          skeEncKeyName);
+      expect(updateVerbParams[AtConstants.sharedKeyEncryptedEncryptingAlgo],
+          skeEncAlgo);
     });
 
     test('verify local key command', () {
@@ -144,14 +145,17 @@ void main() {
           '\n');
       var updateMetaVerbParams =
           getVerbParams(VerbSyntax.update_meta, updateMetaCommand.trim());
-      expect(updateMetaVerbParams[AT_KEY], 'cabbages_and_kings.wonderland');
-      expect(updateMetaVerbParams[AT_SIGN], 'walrus');
-      expect(updateMetaVerbParams[FOR_AT_SIGN], 'carpenter');
-      expect(updateMetaVerbParams[SHARED_WITH_PUBLIC_KEY_CHECK_SUM], pubKeyCS);
-      expect(updateMetaVerbParams[SHARED_KEY_ENCRYPTED], ske);
-      expect(updateMetaVerbParams[SHARED_KEY_ENCRYPTED_ENCRYPTING_KEY_NAME],
+      expect(updateMetaVerbParams[AtConstants.atKey],
+          'cabbages_and_kings.wonderland');
+      expect(updateMetaVerbParams[AtConstants.atSign], 'walrus');
+      expect(updateMetaVerbParams[AtConstants.forAtSign], 'carpenter');
+      expect(updateMetaVerbParams[AtConstants.sharedWithPublicKeyCheckSum],
+          pubKeyCS);
+      expect(updateMetaVerbParams[AtConstants.sharedKeyEncrypted], ske);
+      expect(
+          updateMetaVerbParams[AtConstants.sharedKeyEncryptedEncryptingKeyName],
           skeEncKeyName);
-      expect(updateMetaVerbParams[SHARED_KEY_ENCRYPTED_ENCRYPTING_ALGO],
+      expect(updateMetaVerbParams[AtConstants.sharedKeyEncryptedEncryptingAlgo],
           skeEncAlgo);
     });
   });
@@ -192,14 +196,14 @@ void main() {
           ':encAlgo:$encAlgo'
           ':@bob:kryz.kryz_9850@alice {"stationName":"KRYZ","frequency":"98.5 Mhz"}';
       var updateVerbParams = getVerbParams(VerbSyntax.update, updateCommand);
-      expect(updateVerbParams[AT_TTL], '-1');
-      expect(updateVerbParams[AT_TTR], '-1');
-      expect(updateVerbParams[AT_KEY], 'kryz.kryz_9850');
-      expect(updateVerbParams[AT_SIGN], 'alice');
-      expect(updateVerbParams[FOR_AT_SIGN], 'bob');
-      expect(updateVerbParams[ENCRYPTING_KEY_NAME], encKeyName);
-      expect(updateVerbParams[ENCRYPTING_ALGO], encAlgo);
-      expect(updateVerbParams[IV_OR_NONCE], null);
+      expect(updateVerbParams[AtConstants.ttl], '-1');
+      expect(updateVerbParams[AtConstants.ttr], '-1');
+      expect(updateVerbParams[AtConstants.atKey], 'kryz.kryz_9850');
+      expect(updateVerbParams[AtConstants.atSign], 'alice');
+      expect(updateVerbParams[AtConstants.forAtSign], 'bob');
+      expect(updateVerbParams[AtConstants.encryptingKeyName], encKeyName);
+      expect(updateVerbParams[AtConstants.encryptingAlgo], encAlgo);
+      expect(updateVerbParams[AtConstants.ivOrNonce], null);
     });
     test(
         'Validate the update:meta command when encKeyName, encAlgo and ivNonce are set',
@@ -215,52 +219,52 @@ void main() {
           ':ivNonce:$ivNonce';
       var updateMetaVerbParams =
           getVerbParams(VerbSyntax.update_meta, updateMetaCommand);
-      expect(updateMetaVerbParams[AT_TTL], '-1');
-      expect(updateMetaVerbParams[AT_TTR], '-1');
-      expect(updateMetaVerbParams[AT_KEY], 'kryz.kryz_9850');
-      expect(updateMetaVerbParams[AT_SIGN], 'alice');
-      expect(updateMetaVerbParams[FOR_AT_SIGN], 'bob');
-      expect(updateMetaVerbParams[ENCRYPTING_KEY_NAME], encKeyName);
-      expect(updateMetaVerbParams[ENCRYPTING_ALGO], encAlgo);
-      expect(updateMetaVerbParams[IV_OR_NONCE], ivNonce);
+      expect(updateMetaVerbParams[AtConstants.ttl], '-1');
+      expect(updateMetaVerbParams[AtConstants.ttr], '-1');
+      expect(updateMetaVerbParams[AtConstants.atKey], 'kryz.kryz_9850');
+      expect(updateMetaVerbParams[AtConstants.atSign], 'alice');
+      expect(updateMetaVerbParams[AtConstants.forAtSign], 'bob');
+      expect(updateMetaVerbParams[AtConstants.encryptingKeyName], encKeyName);
+      expect(updateMetaVerbParams[AtConstants.encryptingAlgo], encAlgo);
+      expect(updateMetaVerbParams[AtConstants.ivOrNonce], ivNonce);
     });
     test('validate update command with negative ttl and ttr', () {
       final updateCommand =
           'update:ttl:-1:ttr:-1:dataSignature:abc:isBinary:false:isEncrypted:false:public:kryz.kryz_9850@kryz_9850 {"stationName":"KRYZ","frequency":"98.5 Mhz"}';
       var actualVerbParams = getVerbParams(VerbSyntax.update, updateCommand);
-      expect(actualVerbParams[AT_TTL], '-1');
-      expect(actualVerbParams[AT_TTR], '-1');
-      expect(actualVerbParams[AT_KEY], 'kryz.kryz_9850');
-      expect(actualVerbParams[AT_SIGN], 'kryz_9850');
+      expect(actualVerbParams[AtConstants.ttl], '-1');
+      expect(actualVerbParams[AtConstants.ttr], '-1');
+      expect(actualVerbParams[AtConstants.atKey], 'kryz.kryz_9850');
+      expect(actualVerbParams[AtConstants.atSign], 'kryz_9850');
     });
     test('validate update command with negative ttl and ttb', () {
       final updateCommand =
           'update:ttl:-1:ttb:-1:dataSignature:abc:isBinary:false:isEncrypted:false:public:kryz.kryz_9850@kryz_9850 {"stationName":"KRYZ","frequency":"98.5 Mhz"}';
       var actualVerbParams = getVerbParams(VerbSyntax.update, updateCommand);
-      expect(actualVerbParams[AT_TTL], '-1');
-      expect(actualVerbParams[AT_TTB], '-1');
-      expect(actualVerbParams[AT_KEY], 'kryz.kryz_9850');
-      expect(actualVerbParams[AT_SIGN], 'kryz_9850');
+      expect(actualVerbParams[AtConstants.ttl], '-1');
+      expect(actualVerbParams[AtConstants.ttb], '-1');
+      expect(actualVerbParams[AtConstants.atKey], 'kryz.kryz_9850');
+      expect(actualVerbParams[AtConstants.atSign], 'kryz_9850');
     });
     test('validate update meta command with negative ttl and ttr', () {
       final updateCommand =
           'update:meta:public:kryz.kryz_9850@kryz_9850:ttl:-1:ttr:-1';
       var actualVerbParams =
           getVerbParams(VerbSyntax.update_meta, updateCommand);
-      expect(actualVerbParams[AT_TTL], '-1');
-      expect(actualVerbParams[AT_TTR], '-1');
-      expect(actualVerbParams[AT_KEY], 'kryz.kryz_9850');
-      expect(actualVerbParams[AT_SIGN], 'kryz_9850');
+      expect(actualVerbParams[AtConstants.ttl], '-1');
+      expect(actualVerbParams[AtConstants.ttr], '-1');
+      expect(actualVerbParams[AtConstants.atKey], 'kryz.kryz_9850');
+      expect(actualVerbParams[AtConstants.atSign], 'kryz_9850');
     });
     test('validate update meta command with negative ttl and ttb', () {
       final updateCommand =
           'update:meta:public:kryz.kryz_9850@kryz_9850:ttl:-1:ttb:-1';
       var actualVerbParams =
           getVerbParams(VerbSyntax.update_meta, updateCommand);
-      expect(actualVerbParams[AT_TTL], '-1');
-      expect(actualVerbParams[AT_TTB], '-1');
-      expect(actualVerbParams[AT_KEY], 'kryz.kryz_9850');
-      expect(actualVerbParams[AT_SIGN], 'kryz_9850');
+      expect(actualVerbParams[AtConstants.ttl], '-1');
+      expect(actualVerbParams[AtConstants.ttb], '-1');
+      expect(actualVerbParams[AtConstants.atKey], 'kryz.kryz_9850');
+      expect(actualVerbParams[AtConstants.atSign], 'kryz_9850');
     });
   });
 
@@ -485,7 +489,7 @@ void main() {
       UpdateVerbBuilder roundTripUpdateMetaTest({String? sharedWith}) {
         var initialBuilder =
             createBuilderWithAllMetadata(sharedWith: sharedWith);
-        initialBuilder.operation = UPDATE_META;
+        initialBuilder.operation = AtConstants.updateMeta;
 
         // When the update:meta command is built, it will NOT include the value, so
         // we'll make two assertions: (1) builder after round-tripping via buildCommandForMeta()

@@ -317,4 +317,3 @@ const String defaultSelfEncryptionKey = AtConstants.defaultSelfEncryptionKey;
 
 @Deprecated('Use AtConstants.enrollParams instead')
 const String enrollParams = AtConstants.enrollParams;
-

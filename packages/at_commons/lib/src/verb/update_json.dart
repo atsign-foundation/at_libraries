@@ -17,8 +17,8 @@ class UpdateParams {
 
   static UpdateParams fromJson(Map dataMap) {
     var updateParams = UpdateParams();
-    updateParams.atKey = dataMap[AT_KEY];
-    updateParams.value = dataMap[AT_VALUE];
+    updateParams.atKey = dataMap[AtConstants.atKey];
+    updateParams.value = dataMap[AtConstants.atValue];
     updateParams.sharedBy = dataMap['sharedBy'];
     updateParams.sharedWith = dataMap['sharedWith'];
     updateParams.metadata = Metadata.fromJson(dataMap['metadata']);

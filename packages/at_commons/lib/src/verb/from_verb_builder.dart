@@ -14,7 +14,7 @@ class FromVerbBuilder implements VerbBuilder {
     var command = 'from:$atSign';
     if (clientConfig.isNotEmpty) {
       var clientConfigStr = jsonEncode(clientConfig);
-      command += ':$CLIENT_CONFIG:$clientConfigStr';
+      command += ':${AtConstants.clientConfig}:$clientConfigStr';
     }
     command += '\n';
     return command;

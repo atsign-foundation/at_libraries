@@ -42,7 +42,7 @@ class ScanVerbBuilder implements VerbBuilder {
   String buildCommand() {
     var scanCommand = 'scan';
     if (showHiddenKeys) {
-      scanCommand += ':$showHidden:true';
+      scanCommand += ':${AtConstants.showHidden}:true';
     }
     if (sharedBy != null) {
       scanCommand += ':${VerbUtil.formatAtSign(sharedBy)}';

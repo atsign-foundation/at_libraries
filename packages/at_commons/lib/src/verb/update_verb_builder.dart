@@ -98,57 +98,61 @@ class UpdateVerbBuilder extends MetadataUsingVerbBuilder {
     }
     var builder = UpdateVerbBuilder();
     HashMap<String, String?>? verbParams;
-    if (command.contains(UPDATE_META)) {
+    if (command.contains(AtConstants.updateMeta)) {
       verbParams = VerbUtil.getVerbParam(VerbSyntax.update_meta, command);
-      builder.operation = UPDATE_META;
+      builder.operation = AtConstants.updateMeta;
     } else {
       verbParams = VerbUtil.getVerbParam(VerbSyntax.update, command);
     }
     if (verbParams == null) {
       return null;
     }
-    builder.isPublic = verbParams[PUBLIC_SCOPE_PARAM] == 'public';
-    builder.sharedWith = VerbUtil.formatAtSign(verbParams[FOR_AT_SIGN]);
-    builder.sharedBy = VerbUtil.formatAtSign(verbParams[AT_SIGN]);
-    builder.atKey = verbParams[AT_KEY];
-    builder.value = verbParams[AT_VALUE];
+    builder.isPublic = verbParams[AtConstants.publicScopeParam] == 'public';
+    builder.sharedWith =
+        VerbUtil.formatAtSign(verbParams[AtConstants.forAtSign]);
+    builder.sharedBy = VerbUtil.formatAtSign(verbParams[AtConstants.atSign]);
+    builder.atKey = verbParams[AtConstants.atKey];
+    builder.value = verbParams[AtConstants.atValue];
     if (builder.value is String) {
       builder.value = VerbUtil.replaceNewline(builder.value);
     }
-    if (verbParams[AT_TTL] != null) {
-      builder.ttl = int.parse(verbParams[AT_TTL]!);
+    if (verbParams[AtConstants.ttl] != null) {
+      builder.ttl = int.parse(verbParams[AtConstants.ttl]!);
     }
-    if (verbParams[AT_TTB] != null) {
-      builder.ttb = int.parse(verbParams[AT_TTB]!);
+    if (verbParams[AtConstants.ttb] != null) {
+      builder.ttb = int.parse(verbParams[AtConstants.ttb]!);
     }
-    if (verbParams[AT_TTR] != null) {
-      builder.ttr = int.parse(verbParams[AT_TTR]!);
+    if (verbParams[AtConstants.ttr] != null) {
+      builder.ttr = int.parse(verbParams[AtConstants.ttr]!);
     }
-    if (verbParams[CCD] != null) {
-      builder.ccd = _getBoolVerbParams(verbParams[CCD]!);
-    }
-
-    builder.dataSignature = verbParams[PUBLIC_DATA_SIGNATURE];
-
-    if (verbParams[IS_BINARY] != null) {
-      builder.isBinary = _getBoolVerbParams(verbParams[IS_BINARY]!);
-    }
-    if (verbParams[IS_ENCRYPTED] != null) {
-      builder.isEncrypted = _getBoolVerbParams(verbParams[IS_ENCRYPTED]!);
+    if (verbParams[AtConstants.ccd] != null) {
+      builder.ccd = _getBoolVerbParams(verbParams[AtConstants.ccd]!);
     }
 
-    builder.sharedKeyEncrypted = verbParams[SHARED_KEY_ENCRYPTED];
-    builder.pubKeyChecksum = verbParams[SHARED_WITH_PUBLIC_KEY_CHECK_SUM];
-    builder.sharedKeyStatus = verbParams[SHARED_KEY_STATUS];
-    builder.encoding = verbParams[ENCODING];
-    builder.encKeyName = verbParams[ENCRYPTING_KEY_NAME];
-    builder.encAlgo = verbParams[ENCRYPTING_ALGO];
-    builder.ivNonce = verbParams[IV_OR_NONCE];
+    builder.dataSignature = verbParams[AtConstants.publicDataSignature];
+
+    if (verbParams[AtConstants.isBinary] != null) {
+      builder.isBinary = _getBoolVerbParams(verbParams[AtConstants.isBinary]!);
+    }
+    if (verbParams[AtConstants.isEncrypted] != null) {
+      builder.isEncrypted =
+          _getBoolVerbParams(verbParams[AtConstants.isEncrypted]!);
+    }
+
+    builder.sharedKeyEncrypted = verbParams[AtConstants.sharedKeyEncrypted];
+    builder.pubKeyChecksum =
+        verbParams[AtConstants.sharedWithPublicKeyCheckSum];
+    builder.sharedKeyStatus = verbParams[AtConstants.sharedKeyStatus];
+    builder.encoding = verbParams[AtConstants.encoding];
+    builder.encKeyName = verbParams[AtConstants.encryptingKeyName];
+    builder.encAlgo = verbParams[AtConstants.encryptingAlgo];
+    builder.ivNonce = verbParams[AtConstants.ivOrNonce];
     builder.skeEncKeyName =
-        verbParams[SHARED_KEY_ENCRYPTED_ENCRYPTING_KEY_NAME];
-    builder.skeEncAlgo = verbParams[SHARED_KEY_ENCRYPTED_ENCRYPTING_ALGO];
+        verbParams[AtConstants.sharedKeyEncryptedEncryptingKeyName];
+    builder.skeEncAlgo =
+        verbParams[AtConstants.sharedKeyEncryptedEncryptingAlgo];
 
-    builder.value = verbParams[VALUE];
+    builder.value = verbParams[AtConstants.value];
 
     return builder;
   }

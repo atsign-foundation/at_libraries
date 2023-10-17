@@ -37,7 +37,7 @@ class DeleteVerbBuilder extends AbstractVerbBuilder {
   static DeleteVerbBuilder getBuilder(String command) {
     var builder = DeleteVerbBuilder();
     var verbParams = VerbUtil.getVerbParam(VerbSyntax.delete, command)!;
-    builder.atKey = verbParams[AT_KEY];
+    builder.atKey = verbParams[AtConstants.atKey];
     return builder;
   }
 
