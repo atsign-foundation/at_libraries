@@ -15,7 +15,7 @@ void main() {
 
     test('A test to verify otp:get regex with TTL', () {
       Map<dynamic, dynamic> verbParams =
-      getVerbParams(VerbSyntax.otp, "otp:get:ttl:100");
+          getVerbParams(VerbSyntax.otp, "otp:get:ttl:100");
       expect(verbParams[AtConstants.operation], "get");
       expect(verbParams['ttl'], '100');
       expect(verbParams['otp'], null);

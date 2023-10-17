@@ -9,11 +9,12 @@ import 'syntax_test.dart';
 void main() {
   group('A group of positive tests to validate the from regex', () {
     test('validating regex when atSign and client config are populated', () {
-      var command =
-          'from:@alice:$CLIENT_CONFIG:${jsonEncode({'version': '3.2.0'})}';
+      var command = 'from:@alice:${AtConstants.clientConfig}:${jsonEncode({
+            'version': '3.2.0'
+          })}';
       var actualVerbParams = getVerbParams(VerbSyntax.from, command);
       expect(actualVerbParams['atSign'], '@alice');
-      expect(actualVerbParams[CLIENT_CONFIG], '{"version":"3.2.0"}');
+      expect(actualVerbParams[AtConstants.clientConfig], '{"version":"3.2.0"}');
     });
 
     test('validating regex when only atSign is populated', () {

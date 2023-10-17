@@ -111,19 +111,19 @@ class ReservedEntityValidation extends Validation {
 
   /// Returns the [ReservedKey] enum for given key.
   ReservedKey _reservedKey(String key) {
-    if (key == _getEntityFromConstant(AT_ENCRYPTION_SHARED_KEY)) {
+    if (key == _getEntityFromConstant(AtConstants.atEncryptionSharedKey)) {
       return ReservedKey.encryptionSharedKey;
     }
-    if (key == _getEntityFromConstant(AT_ENCRYPTION_PUBLIC_KEY)) {
+    if (key == _getEntityFromConstant(AtConstants.atEncryptionPublicKey)) {
       return ReservedKey.encryptionPublicKey;
     }
-    if (key == _getEntityFromConstant(AT_ENCRYPTION_PRIVATE_KEY)) {
+    if (key == _getEntityFromConstant(AtConstants.atEncryptionPrivateKey)) {
       return ReservedKey.encryptionPrivateKey;
     }
-    if (key == _getEntityFromConstant(AT_PKAM_PUBLIC_KEY)) {
+    if (key == _getEntityFromConstant(AtConstants.atPkamPublicKey)) {
       return ReservedKey.pkamPublicKey;
     }
-    if (key == _getEntityFromConstant(AT_SIGNING_PRIVATE_KEY)) {
+    if (key == _getEntityFromConstant(AtConstants.atSigningPrivateKey)) {
       return ReservedKey.signingPrivateKey;
     }
     return ReservedKey.nonReservedKey;

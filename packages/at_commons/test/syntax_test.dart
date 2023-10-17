@@ -10,26 +10,28 @@ void main() {
       var command =
           'notify:update:priority:low:strategy:all:latestN:1:sharedKeyEnc:GxIjM8e/nsga3:pubKeyCS:5d52f6f2868:@bob:phone.wavi@alice:989745456';
       var verbParams = getVerbParams(VerbSyntax.notify, command);
-      expect(verbParams[OPERATION], 'update');
-      expect(verbParams[SHARED_KEY_ENCRYPTED], 'GxIjM8e/nsga3');
-      expect(verbParams[SHARED_WITH_PUBLIC_KEY_CHECK_SUM], '5d52f6f2868');
-      expect(verbParams[PRIORITY], 'low');
-      expect(verbParams[LATEST_N], '1');
-      expect(verbParams[VALUE], '989745456');
-      expect(verbParams[STRATEGY], 'all');
+      expect(verbParams[AtConstants.operation], 'update');
+      expect(verbParams[AtConstants.sharedKeyEncrypted], 'GxIjM8e/nsga3');
+      expect(
+          verbParams[AtConstants.sharedWithPublicKeyCheckSum], '5d52f6f2868');
+      expect(verbParams[AtConstants.priority], 'low');
+      expect(verbParams[AtConstants.latestN], '1');
+      expect(verbParams[AtConstants.value], '989745456');
+      expect(verbParams[AtConstants.strategy], 'all');
     });
 
     test('Test to verify notify verb with delete operation', () {
       var command =
           'notify:delete:priority:low:strategy:all:latestN:1:sharedKeyEnc:GxIjM8e/nsga3:pubKeyCS:5d52f6f2868:@bob:phone.wavi@alice:989745456';
       var verbParams = getVerbParams(VerbSyntax.notify, command);
-      expect(verbParams[OPERATION], 'delete');
-      expect(verbParams[SHARED_KEY_ENCRYPTED], 'GxIjM8e/nsga3');
-      expect(verbParams[SHARED_WITH_PUBLIC_KEY_CHECK_SUM], '5d52f6f2868');
-      expect(verbParams[PRIORITY], 'low');
-      expect(verbParams[LATEST_N], '1');
-      expect(verbParams[VALUE], '989745456');
-      expect(verbParams[STRATEGY], 'all');
+      expect(verbParams[AtConstants.operation], 'delete');
+      expect(verbParams[AtConstants.sharedKeyEncrypted], 'GxIjM8e/nsga3');
+      expect(
+          verbParams[AtConstants.sharedWithPublicKeyCheckSum], '5d52f6f2868');
+      expect(verbParams[AtConstants.priority], 'low');
+      expect(verbParams[AtConstants.latestN], '1');
+      expect(verbParams[AtConstants.value], '989745456');
+      expect(verbParams[AtConstants.strategy], 'all');
     });
   });
 
@@ -37,7 +39,7 @@ void main() {
     test('Valid id sent to notify delete', () {
       var command = 'notify:remove:abcd-1234';
       var verbParams = getVerbParams(VerbSyntax.notifyRemove, command);
-      expect(verbParams[ID], 'abcd-1234');
+      expect(verbParams[AtConstants.id], 'abcd-1234');
     });
 
     test('id not sent to notify delete', () {
@@ -53,32 +55,32 @@ void main() {
     test('pkam regex without signing algo', () {
       var command = 'pkam:abcd1234';
       var verbParams = getVerbParams(VerbSyntax.pkam, command);
-      expect(verbParams[AT_PKAM_SIGNATURE], 'abcd1234');
+      expect(verbParams[AtConstants.atPkamSignature], 'abcd1234');
     });
     test('pkam regex with rsa2048 signing algo and sha256 hashing algo', () {
       var command = 'pkam:signingAlgo:rsa2048:hashingAlgo:sha256:abcd1234';
       var verbParams = getVerbParams(VerbSyntax.pkam, command);
-      expect(verbParams[AT_PKAM_SIGNING_ALGO], 'rsa2048');
-      expect(verbParams[AT_PKAM_HASHING_ALGO], 'sha256');
-      expect(verbParams[AT_PKAM_SIGNATURE], 'abcd1234');
+      expect(verbParams[AtConstants.atPkamSigningAlgo], 'rsa2048');
+      expect(verbParams[AtConstants.atPkamHashingAlgo], 'sha256');
+      expect(verbParams[AtConstants.atPkamSignature], 'abcd1234');
     });
     test('pkam regex with ecc signing algo and sha256 hashing algo', () {
       var command =
           'pkam:signingAlgo:ecc_secp256r1:hashingAlgo:sha256:abcd1234';
       var verbParams = getVerbParams(VerbSyntax.pkam, command);
-      expect(verbParams[AT_PKAM_SIGNING_ALGO], 'ecc_secp256r1');
-      expect(verbParams[AT_PKAM_HASHING_ALGO], 'sha256');
-      expect(verbParams[AT_PKAM_SIGNATURE], 'abcd1234');
+      expect(verbParams[AtConstants.atPkamSigningAlgo], 'ecc_secp256r1');
+      expect(verbParams[AtConstants.atPkamHashingAlgo], 'sha256');
+      expect(verbParams[AtConstants.atPkamSignature], 'abcd1234');
     });
     test('pkam regex with invalid signing algo', () {
       var command = 'pkam:signingAlgo:ecc:abcd1234';
       var verbParams = getVerbParams(VerbSyntax.pkam, command);
-      expect(verbParams[AT_PKAM_SIGNING_ALGO], isNull);
+      expect(verbParams[AtConstants.atPkamSigningAlgo], isNull);
     });
     test('pkam regex with invalid hashing algo', () {
       var command = 'pkam:hashingAlgo:md5:abcd1234';
       var verbParams = getVerbParams(VerbSyntax.pkam, command);
-      expect(verbParams[AT_PKAM_HASHING_ALGO], isNull);
+      expect(verbParams[AtConstants.atPkamHashingAlgo], isNull);
     });
   });
   group('A group of positive tests to verify keys verb regex', () {
@@ -86,83 +88,83 @@ void main() {
       var command =
           'keys:put:public:namespace:__global:keyType:rsa2048:keyName:encryption_123-a abcd1234';
       var verbParams = getVerbParams(VerbSyntax.keys, command);
-      expect(verbParams[keyType], 'rsa2048');
-      expect(verbParams[visibility], 'public');
-      expect(verbParams[keyValue], 'abcd1234');
-      expect(verbParams[namespace], '__global');
-      expect(verbParams[AT_OPERATION], 'put');
-      expect(verbParams[keyName], 'encryption_123-a');
+      expect(verbParams[AtConstants.keyType], 'rsa2048');
+      expect(verbParams[AtConstants.visibility], 'public');
+      expect(verbParams[AtConstants.keyValue], 'abcd1234');
+      expect(verbParams[AtConstants.namespace], '__global');
+      expect(verbParams[AtConstants.atOperation], 'put');
+      expect(verbParams[AtConstants.keyName], 'encryption_123-a');
     });
 
     test('keys verb - put private key', () {
       var command =
           'keys:put:private:namespace:__private:keyType:aes:keyName:secretKey abcd1234';
       var verbParams = getVerbParams(VerbSyntax.keys, command);
-      expect(verbParams[keyType], 'aes');
-      expect(verbParams[visibility], 'private');
-      expect(verbParams[keyValue], 'abcd1234');
-      expect(verbParams[namespace], '__private');
-      expect(verbParams[AT_OPERATION], 'put');
-      expect(verbParams[keyName], 'secretKey');
+      expect(verbParams[AtConstants.keyType], 'aes');
+      expect(verbParams[AtConstants.visibility], 'private');
+      expect(verbParams[AtConstants.keyValue], 'abcd1234');
+      expect(verbParams[AtConstants.namespace], '__private');
+      expect(verbParams[AtConstants.atOperation], 'put');
+      expect(verbParams[AtConstants.keyName], 'secretKey');
     });
 
     test('keys verb - put private key with app and device name', () {
       var command =
           'keys:put:private:namespace:__private:appName:wavi:deviceName:pixel:keyType:aes:keyName:secretKey abcd1234';
       var verbParams = getVerbParams(VerbSyntax.keys, command);
-      expect(verbParams[keyType], 'aes');
-      expect(verbParams[visibility], 'private');
-      expect(verbParams[keyValue], 'abcd1234');
-      expect(verbParams[namespace], '__private');
-      expect(verbParams[AT_OPERATION], 'put');
-      expect(verbParams[keyName], 'secretKey');
-      expect(verbParams[APP_NAME], 'wavi');
-      expect(verbParams[deviceName], 'pixel');
+      expect(verbParams[AtConstants.keyType], 'aes');
+      expect(verbParams[AtConstants.visibility], 'private');
+      expect(verbParams[AtConstants.keyValue], 'abcd1234');
+      expect(verbParams[AtConstants.namespace], '__private');
+      expect(verbParams[AtConstants.atOperation], 'put');
+      expect(verbParams[AtConstants.keyName], 'secretKey');
+      expect(verbParams[AtConstants.appName], 'wavi');
+      expect(verbParams[AtConstants.deviceName], 'pixel');
     });
 
     test('keys verb - put self key with encryption key name', () {
       var command =
           'keys:put:self:namespace:__global:keyType:aes256:encryptionKeyName:encryption_123-a:keyName:mykey zcsfsdff';
       var verbParams = getVerbParams(VerbSyntax.keys, command);
-      expect(verbParams[keyType], 'aes256');
-      expect(verbParams[visibility], 'self');
-      expect(verbParams[keyValue], 'zcsfsdff');
-      expect(verbParams[namespace], '__global');
-      expect(verbParams[AT_OPERATION], 'put');
-      expect(verbParams[keyName], 'mykey');
-      expect(verbParams[encryptionKeyName], 'encryption_123-a');
+      expect(verbParams[AtConstants.keyType], 'aes256');
+      expect(verbParams[AtConstants.visibility], 'self');
+      expect(verbParams[AtConstants.keyValue], 'zcsfsdff');
+      expect(verbParams[AtConstants.namespace], '__global');
+      expect(verbParams[AtConstants.atOperation], 'put');
+      expect(verbParams[AtConstants.keyName], 'mykey');
+      expect(verbParams[AtConstants.encryptionKeyName], 'encryption_123-a');
     });
 
     test('keys verb - get private keys', () {
       var command = 'keys:get:private';
       var verbParams = getVerbParams(VerbSyntax.keys, command);
-      expect(verbParams[visibility], 'private');
+      expect(verbParams[AtConstants.visibility], 'private');
     });
 
     test('keys verb - get self keys', () {
       var command = 'keys:get:self';
       var verbParams = getVerbParams(VerbSyntax.keys, command);
-      expect(verbParams[visibility], 'self');
+      expect(verbParams[AtConstants.visibility], 'self');
     });
 
     test('keys verb - get public keys', () {
       var command = 'keys:get:public';
       var verbParams = getVerbParams(VerbSyntax.keys, command);
-      expect(verbParams[visibility], 'public');
+      expect(verbParams[AtConstants.visibility], 'public');
     });
 
     test('keys verb - get key by name', () {
       var command = 'keys:get:keyName:firstKey';
       var verbParams = getVerbParams(VerbSyntax.keys, command);
-      expect(verbParams[AT_OPERATION], 'get');
-      expect(verbParams[keyName], 'firstKey');
+      expect(verbParams[AtConstants.atOperation], 'get');
+      expect(verbParams[AtConstants.keyName], 'firstKey');
     });
 
     test('keys verb - get key by name with emoji', () {
       var command = 'keys:get:keyName:firstKey🛠';
       var verbParams = getVerbParams(VerbSyntax.keys, command);
-      expect(verbParams[AT_OPERATION], 'get');
-      expect(verbParams[keyName], 'firstKey🛠');
+      expect(verbParams[AtConstants.atOperation], 'get');
+      expect(verbParams[AtConstants.keyName], 'firstKey🛠');
     });
   });
 
@@ -181,45 +183,47 @@ void main() {
     test('monitor verb syntax - no additional params', () {
       var command = 'monitor';
       var verbParams = getVerbParams(VerbSyntax.monitor, command);
-      expect(verbParams[MONITOR_STRICT_MODE], null);
-      expect(verbParams[MONITOR_MULTIPLEXED_MODE], null);
-      expect(verbParams[MONITOR_REGEX], null);
-      expect(verbParams[EPOCH_MILLIS], null);
+      expect(verbParams[AtConstants.monitorStrictMode], null);
+      expect(verbParams[AtConstants.monitorMultiplexedMode], null);
+      expect(verbParams[AtConstants.monitorRegex], null);
+      expect(verbParams[AtConstants.epochMilliseconds], null);
     });
     test('monitor verb syntax - strict mode', () {
       var command = 'monitor:strict';
       var verbParams = getVerbParams(VerbSyntax.monitor, command);
-      expect(verbParams[MONITOR_STRICT_MODE], 'strict');
+      expect(verbParams[AtConstants.monitorStrictMode], 'strict');
     });
     test('monitor verb syntax - multiplexed mode', () {
       var command = 'monitor:multiplexed';
       var verbParams = getVerbParams(VerbSyntax.monitor, command);
-      expect(verbParams[MONITOR_MULTIPLEXED_MODE], 'multiplexed');
+      expect(verbParams[AtConstants.monitorMultiplexedMode], 'multiplexed');
     });
     test('monitor verb syntax - with last notification time', () {
       var command = 'monitor:1234';
       var verbParams = getVerbParams(VerbSyntax.monitor, command);
-      expect(verbParams[EPOCH_MILLIS], '1234');
+      expect(verbParams[AtConstants.epochMilliseconds], '1234');
     });
     test('monitor verb syntax - with regex', () {
       var command = 'monitor .wavi';
       var verbParams = getVerbParams(VerbSyntax.monitor, command);
-      expect(verbParams[MONITOR_REGEX], '.wavi');
+      expect(verbParams[AtConstants.monitorRegex], '.wavi');
     });
     test('monitor verb syntax - self notification enabled', () {
       var command = 'monitor:selfNotifications';
       var verbParams = getVerbParams(VerbSyntax.monitor, command);
       print(verbParams);
-      expect(verbParams[MONITOR_SELF_NOTIFICATIONS], 'selfNotifications');
+      expect(verbParams[AtConstants.monitorSelfNotifications],
+          'selfNotifications');
     });
 
     test('monitor verb syntax - multiple params', () {
       var command = 'monitor:strict:selfNotifications:multiplexed .wavi';
       var verbParams = getVerbParams(VerbSyntax.monitor, command);
-      expect(verbParams[MONITOR_STRICT_MODE], 'strict');
-      expect(verbParams[MONITOR_MULTIPLEXED_MODE], 'multiplexed');
-      expect(verbParams[MONITOR_SELF_NOTIFICATIONS], 'selfNotifications');
-      expect(verbParams[MONITOR_REGEX], '.wavi');
+      expect(verbParams[AtConstants.monitorStrictMode], 'strict');
+      expect(verbParams[AtConstants.monitorMultiplexedMode], 'multiplexed');
+      expect(verbParams[AtConstants.monitorSelfNotifications],
+          'selfNotifications');
+      expect(verbParams[AtConstants.monitorRegex], '.wavi');
     });
   });
 

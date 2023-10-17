@@ -262,12 +262,12 @@ class AtKey {
   static AtKey fromString(String key) {
     var atKey = AtKey();
     var metaData = Metadata();
-    if (key.startsWith(AT_PKAM_PRIVATE_KEY) ||
-        key.startsWith(AT_PKAM_PUBLIC_KEY)) {
+    if (key.startsWith(AtConstants.atPkamPrivateKey) ||
+        key.startsWith(AtConstants.atPkamPublicKey)) {
       atKey.key = key;
       atKey.metadata = metaData;
       return atKey;
-    } else if (key.startsWith(AT_ENCRYPTION_PRIVATE_KEY)) {
+    } else if (key.startsWith(AtConstants.atEncryptionPrivateKey)) {
       atKey.key = key.split('@')[0];
       atKey.sharedBy = '@${key.split('@')[1]}';
       atKey.metadata = metaData;
@@ -289,7 +289,7 @@ class AtKey {
         metaData.isPublic = true;
       } else if (keyParts[0] == 'local') {
         atKey.isLocal = true;
-      } else if (keyParts[0] == CACHED) {
+      } else if (keyParts[0] == AtConstants.cached) {
         metaData.isCached = true;
         if (keyParts[1] == 'public') {
           metaData.isPublic = true;
@@ -303,7 +303,7 @@ class AtKey {
       }
 
       List<String> keyArr = [];
-      if (keyParts[0] == CACHED) {
+      if (keyParts[0] == AtConstants.cached) {
         //cached:@alice:phone@bob
         keyArr = keyParts[2].split('@'); //phone@bob ==> 'phone', 'bob'
       } else {
@@ -578,10 +578,10 @@ class Metadata {
       sb.write(':ccd:$ccd');
     }
     if (dataSignature.isNotNullOrEmpty) {
-      sb.write(':$PUBLIC_DATA_SIGNATURE:$dataSignature');
+      sb.write(':${AtConstants.publicDataSignature}:$dataSignature');
     }
     if (sharedKeyStatus.isNotNullOrEmpty) {
-      sb.write(':$SHARED_KEY_STATUS:$sharedKeyStatus');
+      sb.write(':${AtConstants.sharedKeyStatus}:$sharedKeyStatus');
     }
     if (isBinary != null) {
       sb.write(':isBinary:$isBinary');
@@ -590,28 +590,29 @@ class Metadata {
       sb.write(':isEncrypted:$isEncrypted');
     }
     if (sharedKeyEnc.isNotNullOrEmpty) {
-      sb.write(':$SHARED_KEY_ENCRYPTED:$sharedKeyEnc');
+      sb.write(':${AtConstants.sharedKeyEncrypted}:$sharedKeyEnc');
     }
     if (pubKeyCS.isNotNullOrEmpty) {
-      sb.write(':$SHARED_WITH_PUBLIC_KEY_CHECK_SUM:$pubKeyCS');
+      sb.write(':${AtConstants.sharedWithPublicKeyCheckSum}:$pubKeyCS');
     }
     if (encoding.isNotNullOrEmpty) {
-      sb.write(':$ENCODING:$encoding');
+      sb.write(':${AtConstants.encoding}:$encoding');
     }
     if (encKeyName.isNotNullOrEmpty) {
-      sb.write(':$ENCRYPTING_KEY_NAME:$encKeyName');
+      sb.write(':${AtConstants.encryptingKeyName}:$encKeyName');
     }
     if (encAlgo.isNotNullOrEmpty) {
-      sb.write(':$ENCRYPTING_ALGO:$encAlgo');
+      sb.write(':${AtConstants.encryptingAlgo}:$encAlgo');
     }
     if (ivNonce.isNotNullOrEmpty) {
-      sb.write(':$IV_OR_NONCE:$ivNonce');
+      sb.write(':${AtConstants.ivOrNonce}:$ivNonce');
     }
     if (skeEncKeyName.isNotNullOrEmpty) {
-      sb.write(':$SHARED_KEY_ENCRYPTED_ENCRYPTING_KEY_NAME:$skeEncKeyName');
+      sb.write(
+          ':${AtConstants.sharedKeyEncryptedEncryptingKeyName}:$skeEncKeyName');
     }
     if (skeEncAlgo.isNotNullOrEmpty) {
-      sb.write(':$SHARED_KEY_ENCRYPTED_ENCRYPTING_ALGO:$skeEncAlgo');
+      sb.write(':${AtConstants.sharedKeyEncryptedEncryptingAlgo}:$skeEncAlgo');
     }
     return sb.toString();
   }
@@ -628,61 +629,61 @@ class Metadata {
       map['refreshAt'] = refreshAt?.toUtc().toString();
     }
     if (fullJson || createdAt != null) {
-      map[CREATED_AT] = createdAt?.toUtc().toString();
+      map[AtConstants.createdAt] = createdAt?.toUtc().toString();
     }
     if (fullJson || updatedAt != null) {
-      map[UPDATED_AT] = updatedAt?.toUtc().toString();
+      map[AtConstants.updatedAt] = updatedAt?.toUtc().toString();
     }
     if (fullJson || isPublic != null) {
       map['isPublic'] = isPublic;
     }
     if (fullJson || ttl != null) {
-      map[AT_TTL] = ttl;
+      map[AtConstants.ttl] = ttl;
     }
     if (fullJson || ttb != null) {
-      map[AT_TTB] = ttb;
+      map[AtConstants.ttb] = ttb;
     }
     if (fullJson || ttr != null) {
-      map[AT_TTR] = ttr;
+      map[AtConstants.ttr] = ttr;
     }
     if (fullJson || ccd != null) {
-      map[CCD] = ccd;
+      map[AtConstants.ccd] = ccd;
     }
     if (fullJson || isBinary != null) {
-      map[IS_BINARY] = isBinary;
+      map[AtConstants.isBinary] = isBinary;
     }
     if (fullJson || isEncrypted != null) {
-      map[IS_ENCRYPTED] = isEncrypted;
+      map[AtConstants.isEncrypted] = isEncrypted;
     }
     if (fullJson || dataSignature != null) {
-      map[PUBLIC_DATA_SIGNATURE] = dataSignature;
+      map[AtConstants.publicDataSignature] = dataSignature;
     }
     if (fullJson || sharedKeyStatus != null) {
-      map[SHARED_KEY_STATUS] = sharedKeyStatus;
+      map[AtConstants.sharedKeyStatus] = sharedKeyStatus;
     }
     if (fullJson || sharedKeyEnc != null) {
-      map[SHARED_KEY_ENCRYPTED] = sharedKeyEnc;
+      map[AtConstants.sharedKeyEncrypted] = sharedKeyEnc;
     }
     if (fullJson || pubKeyCS != null) {
-      map[SHARED_WITH_PUBLIC_KEY_CHECK_SUM] = pubKeyCS;
+      map[AtConstants.sharedWithPublicKeyCheckSum] = pubKeyCS;
     }
     if (fullJson || encoding != null) {
-      map[ENCODING] = encoding;
+      map[AtConstants.encoding] = encoding;
     }
     if (fullJson || encKeyName != null) {
-      map[ENCRYPTING_KEY_NAME] = encKeyName;
+      map[AtConstants.encryptingKeyName] = encKeyName;
     }
     if (fullJson || encAlgo != null) {
-      map[ENCRYPTING_ALGO] = encAlgo;
+      map[AtConstants.encryptingAlgo] = encAlgo;
     }
     if (fullJson || ivNonce != null) {
-      map[IV_OR_NONCE] = ivNonce;
+      map[AtConstants.ivOrNonce] = ivNonce;
     }
     if (fullJson || skeEncKeyName != null) {
-      map[SHARED_KEY_ENCRYPTED_ENCRYPTING_KEY_NAME] = skeEncKeyName;
+      map[AtConstants.sharedKeyEncryptedEncryptingKeyName] = skeEncKeyName;
     }
     if (fullJson || skeEncAlgo != null) {
-      map[SHARED_KEY_ENCRYPTED_ENCRYPTING_ALGO] = skeEncAlgo;
+      map[AtConstants.sharedKeyEncryptedEncryptingAlgo] = skeEncAlgo;
     }
     return map;
   }
@@ -702,43 +703,44 @@ class Metadata {
         (json['availableAt'] == null || json['availableAt'] == 'null')
             ? null
             : DateTime.parse(json['availableAt']);
-    metaData.createdAt =
-        (json[CREATED_AT] == null || json[CREATED_AT] == 'null')
-            ? null
-            : DateTime.parse(json[CREATED_AT]);
-    metaData.updatedAt =
-        (json[UPDATED_AT] == null || json[UPDATED_AT] == 'null')
-            ? null
-            : DateTime.parse(json[UPDATED_AT]);
-    metaData.ttl = (json[AT_TTL] is String)
-        ? int.parse(json[AT_TTL])
-        : (json[AT_TTL] == null)
+    metaData.createdAt = (json[AtConstants.createdAt] == null ||
+            json[AtConstants.createdAt] == 'null')
+        ? null
+        : DateTime.parse(json[AtConstants.createdAt]);
+    metaData.updatedAt = (json[AtConstants.updatedAt] == null ||
+            json[AtConstants.updatedAt] == 'null')
+        ? null
+        : DateTime.parse(json[AtConstants.updatedAt]);
+    metaData.ttl = (json[AtConstants.ttl] is String)
+        ? int.parse(json[AtConstants.ttl])
+        : (json[AtConstants.ttl] == null)
             ? 0
-            : json[AT_TTL];
-    metaData.ttb = (json[AT_TTB] is String)
-        ? int.parse(json[AT_TTB])
-        : (json[AT_TTB] == null)
+            : json[AtConstants.ttl];
+    metaData.ttb = (json[AtConstants.ttb] is String)
+        ? int.parse(json[AtConstants.ttb])
+        : (json[AtConstants.ttb] == null)
             ? 0
-            : json[AT_TTB];
-    metaData.ttr = (json[AT_TTR] is String)
-        ? int.parse(json[AT_TTR])
-        : (json[AT_TTR] == null)
+            : json[AtConstants.ttb];
+    metaData.ttr = (json[AtConstants.ttr] is String)
+        ? int.parse(json[AtConstants.ttr])
+        : (json[AtConstants.ttr] == null)
             ? 0
-            : json[AT_TTR];
-    metaData.ccd = json[CCD];
-    metaData.isBinary = json[IS_BINARY];
-    metaData.isEncrypted = json[IS_ENCRYPTED];
-    metaData.isPublic = json[IS_PUBLIC];
-    metaData.dataSignature = json[PUBLIC_DATA_SIGNATURE];
-    metaData.sharedKeyStatus = json[SHARED_KEY_STATUS];
-    metaData.sharedKeyEnc = json[SHARED_KEY_ENCRYPTED];
-    metaData.pubKeyCS = json[SHARED_WITH_PUBLIC_KEY_CHECK_SUM];
-    metaData.encoding = json[ENCODING];
-    metaData.encKeyName = json[ENCRYPTING_KEY_NAME];
-    metaData.encAlgo = json[ENCRYPTING_ALGO];
-    metaData.ivNonce = json[IV_OR_NONCE];
-    metaData.skeEncKeyName = json[SHARED_KEY_ENCRYPTED_ENCRYPTING_KEY_NAME];
-    metaData.skeEncAlgo = json[SHARED_KEY_ENCRYPTED_ENCRYPTING_ALGO];
+            : json[AtConstants.ttr];
+    metaData.ccd = json[AtConstants.ccd];
+    metaData.isBinary = json[AtConstants.isBinary];
+    metaData.isEncrypted = json[AtConstants.isEncrypted];
+    metaData.isPublic = json[AtConstants.isPublic];
+    metaData.dataSignature = json[AtConstants.publicDataSignature];
+    metaData.sharedKeyStatus = json[AtConstants.sharedKeyStatus];
+    metaData.sharedKeyEnc = json[AtConstants.sharedKeyEncrypted];
+    metaData.pubKeyCS = json[AtConstants.sharedWithPublicKeyCheckSum];
+    metaData.encoding = json[AtConstants.encoding];
+    metaData.encKeyName = json[AtConstants.encryptingKeyName];
+    metaData.encAlgo = json[AtConstants.encryptingAlgo];
+    metaData.ivNonce = json[AtConstants.ivOrNonce];
+    metaData.skeEncKeyName =
+        json[AtConstants.sharedKeyEncryptedEncryptingKeyName];
+    metaData.skeEncAlgo = json[AtConstants.sharedKeyEncryptedEncryptingAlgo];
 
     return metaData;
   }
