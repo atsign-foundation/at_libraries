@@ -1,3 +1,6 @@
+## 3.0.41
+- feat: introduce methods cramAuthenticate and close into the AtLookup interface
+- deprecate: authenticate_cram() from AtLookupImpl. [cramAuthenticate should be used instead]
 ## 3.0.40
 - feat: make `SecondaryUrlFinder` (atServer address lookup) resilient to 
   transient failures to reach an atDirectory
