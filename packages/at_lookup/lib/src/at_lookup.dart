@@ -39,7 +39,7 @@ abstract class AtLookUp {
 
   /// Generates digest using from verb response and [secret] and performs a
   /// CRAM authentication to secondary server
-  Future<bool> cramAuthenticate(var secret);
+  Future<bool> cramAuthenticate(String secret);
 
   /// Terminates the underlying connection to the atServer
   /// used by this instance of AtLookup

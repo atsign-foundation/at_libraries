@@ -493,11 +493,7 @@ class AtLookupImpl implements AtLookUp {
   final Mutex _cramAuthenticationMutex = Mutex();
 
   @override
-  Future<bool> cramAuthenticate(var secret) async {
-    secret ??= cramSecret;
-    if (secret == null) {
-      throw UnAuthenticatedException('Cram secret not passed');
-    }
+  Future<bool> cramAuthenticate(String secret) async {
     await createConnection();
     try {
       await _cramAuthenticationMutex.acquire();
@@ -534,8 +530,13 @@ class AtLookupImpl implements AtLookUp {
 
   @Deprecated('use AtLookup().cramAuthenticate()')
   // ignore: non_constant_identifier_names
-  Future<bool> authenticate_cram(var secret) async =>
-      await cramAuthenticate(secret);
+  Future<bool> authenticate_cram(var secret) async {
+    secret ??= cramSecret;
+    if (secret == null) {
+      throw UnAuthenticatedException('Cram secret not passed');
+    }
+    return await cramAuthenticate(secret);
+  }
 
   Future<String> _plookup(PLookupVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
@@ -576,7 +577,7 @@ class AtLookupImpl implements AtLookUp {
           logger.finer('calling pkam without atchops');
           await authenticate(privateKey);
         } else if (cramSecret != null) {
-          await cramAuthenticate(cramSecret);
+          await cramAuthenticate(cramSecret!);
         } else {
           throw UnAuthenticatedException(
               'Unable to perform atLookup auth. Private key/cram secret is not set');
