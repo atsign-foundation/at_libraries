@@ -9,10 +9,6 @@ environment:
 dependencies:
   at_onboarding_cli:
     path: ../../packages/at_onboarding_cli
-  at_commons: ^3.0.44
-  at_utils: ^3.0.12
-  at_lookup: ^3.0.36
-  at_client: ^3.0.58
 
 dev_dependencies:
   lints: ^1.0.0
