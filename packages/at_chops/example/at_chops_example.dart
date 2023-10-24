@@ -52,16 +52,19 @@ void main(List<String> args) async {
   // Using signString() and verifyString()
   final digest = 'sample pkam digest';
   //2.1 sign the digest using [atPkamKeyPair.privateKey]
+
   final signingResult =
       // ignore: deprecated_member_use_from_same_package
-      atChops.signString(digest, SigningKeyType.signingSha256);
+      atChops.signBytes(
+          utf8.encode(digest) as Uint8List, SigningKeyType.signingSha256);
+  print(signingResult);
 
   //2.2 verify the signature using [atPkamKeyPair.publicKey]
-  final verificationResult = atChops.verifySignatureString(
-      // ignore: deprecated_member_use_from_same_package
-      digest,
+  final verificationResult = atChops.verifySignatureBytes(
+      utf8.encode(digest) as Uint8List,
       signingResult.result,
-      SigningKeyType.signingSha256);
+      SigningKeyType
+          .signingSha256); // ignore: deprecated_member_use_from_same_package
   assert(verificationResult.result, true);
 
   // 3 - Signing and data verification using asymmetric key pair
@@ -77,7 +80,7 @@ void main(List<String> args) async {
   // 3.2 sign the data
   final dataSigningResult = atChops.sign(signingInput);
 
-  // 3.3 create verificaitn input and set signing and hashing algo type
+  // 3.3 create verification input and set signing and hashing algo type
   AtSigningVerificationInput? verificationInput = AtSigningVerificationInput(
       dataToSign,
       base64Decode(dataSigningResult.result),
