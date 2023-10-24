@@ -1,3 +1,12 @@
+## 1.3.2
+- build[deps]: Upgraded the following packages:
+    - at_commons to v3.0.57
+    - at_client to v3.0.66
+    - at_lookup to v3.0.40
+    - at_utils to v3.0.15
+    - at_chops to v1.0.5
+    - crypton to v2.2.1
+    - encrypt to v5.0.3
 ## 1.3.1
 - build: require at_client 3.0.65 or above
 ## 1.3.0
