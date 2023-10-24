@@ -33,6 +33,11 @@ dependency_overrides:
       url: https://github.com/atsign-foundation/at_client_sdk.git
       path: packages/at_client
       ref: dep_upgrades
+  at_chops:
+    git:
+      url: https://github.com/atsign-foundation/at_libraries.git
+      path: packages/at_chops
+      ref: at_chops_dep_upgrade
 
 dev_dependencies:
   lints: ^2.1.0
