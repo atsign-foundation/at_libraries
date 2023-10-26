@@ -202,11 +202,11 @@ Future<void> _notificationCallback(
   final encryptedApkamSymmetricKey =
       jsonDecode(notification.value!)['encryptedApkamSymmetricKey'];
   var encryptionPrivateKey =
-      await atClient.getLocalSecondary()!.getEncryptionPrivateKey()!;
+      await atClient.getLocalSecondary()!.getEncryptionPrivateKey();
   var selfEncryptionKey =
       await atClient.getLocalSecondary()!.getEncryptionSelfKey();
   final apkamSymmetricKey = EncryptionUtil.decryptKey(
-      encryptedApkamSymmetricKey, encryptionPrivateKey);
+      encryptedApkamSymmetricKey, encryptionPrivateKey!);
   var encryptedDefaultPrivateEncKey =
       EncryptionUtil.encryptValue(encryptionPrivateKey, apkamSymmetricKey);
   var encryptedDefaultSelfEncKey =
@@ -262,8 +262,7 @@ AtOnboardingPreference getPreferenceForAuth(String atSign) {
         '${Platform.environment['HOME']}/.atsign/keys/${atSign}_key.atKeys'
     ..appName = 'wavi'
     ..deviceName = 'pixel'
-    ..rootDomain = 'vip.ve.atsign.zone'
-    ..useAtChops = true;
+    ..rootDomain = 'vip.ve.atsign.zone';
 
   return atOnboardingPreference;
 }
@@ -278,8 +277,8 @@ AtOnboardingPreference getPreferenceForEnroll(String atSign) {
     ..appName = 'buzz'
     ..deviceName = 'iphone'
     ..rootDomain = 'vip.ve.atsign.zone'
-    ..apkamAuthRetryDurationMins = 1
-    ..useAtChops = true;
+    ..apkamAuthRetryDurationMins = 1;
+
   return atOnboardingPreference;
 }
 
