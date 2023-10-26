@@ -24,9 +24,17 @@ dependencies:
    at_chops: ^1.0.5
    at_client: ^3.0.66
    at_commons: ^3.0.57
-   at_lookup: ^3.0.40
+   at_lookup: ^3.0.41
    at_server_status: ^1.0.3
    at_utils: ^3.0.15
+
+#TODO replace with published version
+dependency_overrides:
+  at_client:
+    git:
+      url: https://github.com/atsign-foundation/at_client_sdk
+      path: packages/at_client
+      ref: trunk
 
 dev_dependencies:
   lints: ^2.1.0
