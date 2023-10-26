@@ -8,7 +8,7 @@ import 'package:http/http.dart';
 import 'package:http/io_client.dart';
 
 ///class containing utilities to perform registration of a free atsign
-class OnboardingUtil {
+class RegistrarApiUtil {
   IOClient? _ioClient;
 
   void _createClient() {
@@ -174,7 +174,7 @@ class OnboardingUtil {
     throw at_client.InvalidDataException(jsonDecodedBody['message']);
   }
 
-  /// calls utility methods from [OnboardingUtil] that
+  /// calls utility methods from [RegistrarApiUtil] that
   /// 1) send verification code to the registered email
   /// 2) fetch the CRAM key from registrar using the verification code
   Future<String> getCramUsingOtp(String atsign, String registrarUrl) async {
