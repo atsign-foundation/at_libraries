@@ -15,10 +15,10 @@ dependencies:
   at_utils: ^3.0.15
   at_commons: ^3.0.57
   mutex: ^3.0.0
-  mocktail: ^0.3.0
   meta: ^1.8.0
   at_chops: ^1.0.5
 
 dev_dependencies:
+  mocktail: ^1.0.1
   lints: ^1.0.1
   test: ^1.17.1
