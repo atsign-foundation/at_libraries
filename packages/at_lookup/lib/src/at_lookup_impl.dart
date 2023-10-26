@@ -333,7 +333,7 @@ class AtLookupImpl implements AtLookUp {
 
   Future<String> _update(UpdateVerbBuilder builder) async {
     String atCommand;
-    if (builder.operation == UPDATE_META) {
+    if (builder.operation == AtConstants.updateMeta) {
       atCommand = builder.buildCommandForMeta();
     } else {
       atCommand = builder.buildCommand();
@@ -492,14 +492,8 @@ class AtLookupImpl implements AtLookUp {
 
   final Mutex _cramAuthenticationMutex = Mutex();
 
-  /// Generates digest using from verb response and [secret] and performs a CRAM authentication to
-  /// secondary server
-  // ignore: non_constant_identifier_names
-  Future<bool> authenticate_cram(var secret) async {
-    secret ??= cramSecret;
-    if (secret == null) {
-      throw UnAuthenticatedException('Cram secret not passed');
-    }
+  @override
+  Future<bool> cramAuthenticate(String secret) async {
     await createConnection();
     try {
       await _cramAuthenticationMutex.acquire();
@@ -532,6 +526,16 @@ class AtLookupImpl implements AtLookUp {
     } finally {
       _cramAuthenticationMutex.release();
     }
+  }
+
+  @Deprecated('use AtLookup().cramAuthenticate()')
+  // ignore: non_constant_identifier_names
+  Future<bool> authenticate_cram(var secret) async {
+    secret ??= cramSecret;
+    if (secret == null) {
+      throw UnAuthenticatedException('Cram secret not passed');
+    }
+    return await cramAuthenticate(secret);
   }
 
   Future<String> _plookup(PLookupVerbBuilder builder) async {
@@ -573,7 +577,7 @@ class AtLookupImpl implements AtLookUp {
           logger.finer('calling pkam without atchops');
           await authenticate(privateKey);
         } else if (cramSecret != null) {
-          await authenticate_cram(cramSecret);
+          await cramAuthenticate(cramSecret!);
         } else {
           throw UnAuthenticatedException(
               'Unable to perform atLookup auth. Private key/cram secret is not set');
@@ -622,6 +626,7 @@ class AtLookupImpl implements AtLookUp {
     return _connection!.isInValid();
   }
 
+  @override
   Future<void> close() async {
     await _connection!.close();
   }
