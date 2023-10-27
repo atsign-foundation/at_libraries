@@ -11,7 +11,7 @@ Future<void> main(List<String> args) async {
     ..appName = 'buzz'
     ..deviceName = 'iphone'
     ..rootDomain = 'vip.ve.atsign.zone'
-    ..apkamAuthRetryDurationMins = 3;
+    ..apkamAuthRetryDurationMins = 1;
   AtOnboardingService? onboardingService =
       AtOnboardingServiceImpl(atSign, atOnboardingPreference);
   Map<String, String> namespaces = {"buzz": "rw"};
