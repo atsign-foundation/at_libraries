@@ -1,4 +1,3 @@
-
 import 'package:args/args.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_utils/at_logger.dart';
@@ -27,7 +26,7 @@ Future<void> main(List<String> args) async {
   await onboardingService.close();
 }
 
-ArgParser getArgParser(){
+ArgParser getArgParser() {
   return ArgParser()
     ..addOption('atsign',
         abbr: 'a', help: 'the atsign you would like to auth with')
