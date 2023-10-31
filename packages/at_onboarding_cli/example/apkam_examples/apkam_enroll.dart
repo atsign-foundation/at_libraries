@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:args/args.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_utils/at_logger.dart';

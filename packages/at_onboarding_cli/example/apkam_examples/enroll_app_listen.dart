@@ -52,7 +52,7 @@ Future<void> _notificationCallback(AtNotification notification,
   print('Approve enrollmentId $enrollmentId?');
   String? approveResponse = stdin.readLineSync();
   print('approved?: $approveResponse');
-  var enrollRequest;
+  String enrollRequest;
   var enrollParamsJson = {};
   enrollParamsJson['enrollmentId'] = enrollmentId;
   if (approveResponse == 'yes') {
