@@ -1,25 +1,31 @@
 import 'dart:convert';
 
+import 'package:args/args.dart';
 import 'package:at_auth/at_auth.dart';
 import 'package:at_chops/at_chops.dart';
 import 'package:at_client/at_client.dart';
 import 'dart:io';
 import 'package:at_auth/src/auth_constants.dart' as auth_constants;
 
-import 'atsign_preference.dart';
+import '../util/atsign_preference.dart';
+import '../util/custom_arg_parser.dart';
 
-/// dart enroll_app_listen.dart <atsign> <path_to_key_file>
-void main(List<String> arguments) async {
-  var aliceAtSign = arguments[0];
+/// Please run the following command to execute this file properly
+/// dart enroll_app_listen.dart -a <atsign> -k <path_to_key_file>
+void main(List<String> args) async {
+  final argResults = CustomArgParser(getArgParser()).parse(args);
+
+  var atsign = argResults['atsign'];
   try {
-    var atAuthKeys = _decryptAtKeysFile(await _readAtKeysFile(arguments[1]));
+    var atAuthKeys =
+        _decryptAtKeysFile(await _readAtKeysFile(argResults['atKeysPath']));
     var atChops = _createAtChops(atAuthKeys);
     final atClientManager = await AtClientManager.getInstance()
         .setCurrentAtSign(
-            aliceAtSign,
+            atsign,
             'wavi',
             AtSignPreference.getAlicePreference(
-                aliceAtSign, atAuthKeys.enrollmentId!),
+                atsign, atAuthKeys.enrollmentId!),
             atChops: atChops,
             enrollmentId: atAuthKeys.enrollmentId);
 
@@ -134,4 +140,12 @@ AtChops _createAtChops(AtAuthKeys atKeysFile) {
   }
   atChopsKeys.selfEncryptionKey = AESKey(atKeysFile.defaultSelfEncryptionKey!);
   return AtChopsImpl(atChopsKeys);
+}
+
+ArgParser getArgParser() {
+  return ArgParser()
+    ..addOption('atsign',
+        abbr: 'a', help: 'the atsign you would like to auth with')
+    ..addOption('atKeysPath', abbr: 'k', help: 'location of your .atKeys file')
+    ..addFlag('help', abbr: 'h', help: 'Usage instructions', negatable: false);
 }
