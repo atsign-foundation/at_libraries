@@ -16,7 +16,7 @@ dependencies:
    args: ^2.4.1
    crypton: ^2.0.3
    encrypt: ^5.0.1
-   http: ^0.13.6
+   http: ^1.0.0
    image: ^4.0.17
    path: ^1.8.1
    zxing2: ^0.2.0
