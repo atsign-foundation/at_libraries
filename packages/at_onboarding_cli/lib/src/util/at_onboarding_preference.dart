@@ -34,5 +34,9 @@ class AtOnboardingPreference extends AtClientPreference {
 
   int apkamAuthRetryDurationMins = 30;
 
+  /// This enables apkamEnabledAuthentication. Creates default enrollmentId with
+  /// super user access.
+  ///
+  /// Disabled by default. Set to true to enable
   bool enableEnrollmentDuringOnboard = false;
 }
