@@ -33,6 +33,7 @@ Use cases for at_onboarding_cli:\
     2) Onboarding (Activation)\
     3) activate_cli\
     4) register_cli
+    5) APKAM enrollments
 
 - Set `AtOnboardingPreference` to your preferred settings. These preferences will be used to configure the `AtOnboardingService`. 
     
@@ -144,6 +145,9 @@ dart run bin/register.dart -e email@email.com
    5) Enter verification code sent to the provided email when prompted
    6) register_cli fetches the cramkey and the automatically calls activate_cli to activate the fetched atsign
    7) You can find your .atKeysFile in directory at_onboarding_cli/keys after successful activation
+
+### APKAM Enrollments
+- Please refer to examples/readme.md in the github repository for at_onboarding_cli
 
 ## Open source usage and contributions
 

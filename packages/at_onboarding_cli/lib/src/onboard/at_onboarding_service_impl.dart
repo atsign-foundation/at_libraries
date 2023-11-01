@@ -620,8 +620,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
     _atLookUp = null;
     atClient = null;
-    logger.info(
-        'Closing current instance of at_onboarding_cli (exit code: $exitCode)');
+    logger.info('Closing current instance of at_onboarding_cli (exit code: 0)');
+    exit(0);
   }
 
   @override
