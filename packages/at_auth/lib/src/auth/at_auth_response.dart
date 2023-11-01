@@ -1,8 +1,12 @@
+import 'package:at_auth/at_auth.dart';
+
 class AtAuthResponse {
   String atSign;
-  AtAuthResponse(this.atSign);
   bool isSuccessful = false;
   String? enrollmentId;
+  AtAuthKeys? atAuthKeys;
+
+  AtAuthResponse(this.atSign);
 
   @override
   String toString() {

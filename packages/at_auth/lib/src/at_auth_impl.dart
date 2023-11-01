@@ -37,7 +37,8 @@ class AtAuthImpl implements AtAuth {
   @override
   Future<AtAuthResponse> authenticate(AtAuthRequest atAuthRequest) async {
     if (atAuthRequest.atKeysFilePath == null &&
-        atAuthRequest.atAuthKeys == null) {
+        atAuthRequest.atAuthKeys == null &&
+        atAuthRequest.encryptedKeysMap == null) {
       throw AtAuthenticationException(
           'Keyfile path or atAuthKeys object has to be set in atAuthRequest');
     }
@@ -49,7 +50,9 @@ class AtAuthImpl implements AtAuth {
       atAuthKeys = _decryptAtKeysFile(
           await _readAtKeysFile(atAuthRequest.atKeysFilePath),
           atAuthRequest.authMode);
-      enrollmentIdFromRequest ??= atAuthKeys.enrollmentId;
+    } else if (atAuthRequest.encryptedKeysMap != null) {
+      atAuthKeys = _decryptAtKeysFile(
+          atAuthRequest.encryptedKeysMap!, PkamAuthMode.keysFile);
     } else {
       atAuthKeys = atAuthRequest.atAuthKeys;
     }
@@ -57,6 +60,7 @@ class AtAuthImpl implements AtAuth {
       throw AtAuthenticationException(
           'keys either were not provided in the AtAuthRequest, or could not be read from provided keys file');
     }
+    enrollmentIdFromRequest ??= atAuthKeys.enrollmentId;
     var pkamPrivateKey = atAuthKeys.apkamPrivateKey;
 
     if (atAuthRequest.authMode == PkamAuthMode.keysFile &&
@@ -86,7 +90,8 @@ class AtAuthImpl implements AtAuth {
         'PKAM auth result: ${isPkamAuthenticated ? 'success' : 'failed'}');
     return AtAuthResponse(atAuthRequest.atSign)
       ..isSuccessful = isPkamAuthenticated
-      ..enrollmentId = enrollmentIdFromRequest;
+      ..enrollmentId = enrollmentIdFromRequest
+      ..atAuthKeys = atAuthKeys;
   }
 
   @override
@@ -239,7 +244,7 @@ class AtAuthImpl implements AtAuth {
   }
 
   AtAuthKeys _decryptAtKeysFile(
-      Map<String, String> jsonData, PkamAuthMode authMode) {
+      Map<String, dynamic> jsonData, PkamAuthMode authMode) {
     var securityKeys = AtAuthKeys();
     String decryptionKey = jsonData[auth_constants.defaultSelfEncryptionKey]!;
     var atChops =
