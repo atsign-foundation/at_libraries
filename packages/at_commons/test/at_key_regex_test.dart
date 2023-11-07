@@ -1,3 +1,4 @@
+import 'package:at_commons/at_commons.dart';
 import 'package:at_commons/src/keystore/key_type.dart';
 import 'package:at_commons/src/utils/at_key_regex_utils.dart';
 import 'package:test/test.dart';
@@ -226,17 +227,61 @@ void main() {
       }
     });
 
-    test('A test to validate reserved key type', () {
+    test('A positive test to validate reserved key type', () {
       var keyTypeList = [];
-
+      // keys with atsign
+      keyTypeList.add('${AtConstants.atBlocklist}@☎️_0002');
+      keyTypeList.add('@bob:${AtConstants.atEncryptionSharedKey}@alice');
+      keyTypeList.add('@allen:${AtConstants.atSigningPrivateKey}@allen');
+      keyTypeList.add('${AtConstants.atEncryptionPublicKey}@owner');
       keyTypeList.add('public:signing_publickey@alice');
       keyTypeList.add('public:signing_publickey@☎️_0002');
+      // keys without atsign
+      keyTypeList.add(AtConstants.atPkamPublicKey);
+      keyTypeList.add(AtConstants.atPkamPrivateKey);
+      keyTypeList.add(AtConstants.atEncryptionPrivateKey);
+      keyTypeList.add(AtConstants.atEncryptionSelfKey);
+      keyTypeList.add(AtConstants.atCramSecret);
+      keyTypeList.add(AtConstants.atCramSecretDeleted);
+      keyTypeList.add(AtConstants.atSigningKeypairGenerated);
+      keyTypeList.add(AtConstants.commitLogCompactionKey);
+      keyTypeList.add(AtConstants.accessLogCompactionKey);
+      keyTypeList.add(AtConstants.notificationCompactionKey);
+      keyTypeList.add('configkey');
 
       for (var key in keyTypeList) {
         var type = RegexUtil.keyType(key, false);
+        print('$key -> $type');
         expect(type == KeyType.reservedKey, true);
       }
+      print('\n\n\n');
+      print(Regexes(false).reservedKey);
     });
+
+    test('Validate no false positives for reserved key type', () {
+      var keyTypeList = [];
+      var fails = [];
+
+      keyTypeList.add('public:publickey');
+      keyTypeList.add('public:signing_publickey');
+
+      for (var key in keyTypeList) {
+        var type = RegexUtil.keyType(key, false);
+        if (type != KeyType.invalidKey) {
+          fails.add('got $type for $key - expected KeyType.invalidKey');
+        }
+      }
+      expect(fails, []);
+    });
+
+    // test('Validate appropriate parts of key are identified correctly', (){
+    //   String key = '${AtConstants.atSigningPublicKey}@owner';
+    //
+    //   var type = RegexUtil.keyType(key, false);
+    //   // expect(type, KeyType.reservedKey);
+    //   RegExp regex = RegExp(Regexes(false).reservedKey);
+    //   print(regex.stringMatch(key));
+    // });
   });
 
   group('Public or private key regex match tests', () {
