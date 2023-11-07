@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:at_commons/src/keystore/key_type.dart';
+import 'package:at_commons/src/at_constants.dart';
 
 abstract class Regexes {
   static const charsInNamespace = r'([\w])+';
@@ -8,19 +9,29 @@ abstract class Regexes {
   static const charsInEntity = r'''[\w\.\-_'*"]''';
   static const allowedEmoji =
       r'''((\u00a9|\u00ae|[\u2000-\u3300]|[\ufe00-\ufe0f]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]))''';
-  static const _charsInReservedKey =
-      r'(shared_key|publickey|privatekey|self_encryption_key'
-      r'|commitLogCompactionStats|accessLogCompactionStats'
-      r'|notificationCompactionStats|signing_privatekey|signing_publickey'
-      r'|signing_keypair_generated|at_pkam_privatekey|at_pkam_publickey'
-      r'|at_secret_deleted|at_secret'
-      r'|configkey'
-      r'|_[\w-]+|)';
+
+  static const _reservedKeysWithoutAtsignSuffix =
+      r'((?<=privatekey:)(at_pkam_publickey|at_pkam_privatekey'
+      r'|privatekey|self_encryption_key'
+      r'|at_secret|at_secret_deleted'
+      r'|signing_keypair_generated|commitLogCompactionStats'
+      r'|accessLogCompactionStats'
+      r'|notificationCompactionStats))|configkey';
+
+  /// The following reserved keys are suffixed by the atsign. [ownershipFragment] at the
+  /// end represents the atsign
+  static const _reservedKeysWithAtsignSuffix = r'((?<=private:)blocklist'
+      r'|(?<=public:)signing_publickey'
+      '|(?<=$ownershipFragmentWithoutNamedGroup:)signing_privatekey'
+      '|${sharedWithFragment}shared_key}'
+      '|(?<=public:)publickey)$ownershipFragment';
 
   static const String namespaceFragment =
       '''\\.(?<namespace>$charsInNamespace)''';
   static const String ownershipFragment =
       '''@(?<owner>($charsInAtSign|$allowedEmoji){1,55})''';
+  static const String ownershipFragmentWithoutNamedGroup =
+      '''@($charsInAtSign|$allowedEmoji){1,55}''';
   static const String sharedWithFragment =
       '''((?<sharedWith>($charsInAtSign|$allowedEmoji){1,55}):)''';
   static const String entityFragment =
@@ -39,7 +50,7 @@ abstract class Regexes {
   static const String cachedPublicKeyStartFragment =
       '''(?<visibility>(cached:public:){1})$entityFragment''';
   static const String reservedKeyFragment =
-      '''(((@(?<sharedWith>($charsInAtSign|$allowedEmoji){1,55}))|public|privatekey):)?(?<atKey>$_charsInReservedKey)(@(?<owner>($charsInAtSign|$allowedEmoji){1,55}))?''';
+      '''(?<atKey>$_reservedKeysWithoutAtsignSuffix|$_reservedKeysWithAtsignSuffix)''';
   static const String localKeyFragment =
       '''(?<visibility>(local:){1})$entityFragment''';
 
