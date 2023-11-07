@@ -1,5 +1,8 @@
-## 1.3.1
+## 1.4.0
+- feat: support for APKAM based authentication
 - build: require at_client 3.0.65 or above
+- build(deps): Upgrade at_client dependency to v3.0.67
+- build(deps): Upgrade http dependency to v1.0.0
 ## 1.3.0
 - feat: Introduced verification-code based activation of atsigns
 - fix: deprecate qr_code based activation
