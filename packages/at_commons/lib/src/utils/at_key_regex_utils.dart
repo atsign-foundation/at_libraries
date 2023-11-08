@@ -11,19 +11,19 @@ abstract class Regexes {
       r'''((\u00a9|\u00ae|[\u2000-\u3300]|[\ufe00-\ufe0f]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]))''';
 
   static const _reservedKeysWithoutAtsignSuffix =
-      r'((?<=privatekey:)(at_pkam_publickey|at_pkam_privatekey'
+      r'(((?<=privatekey:)(at_pkam_publickey|at_pkam_privatekey'
       r'|privatekey|self_encryption_key'
       r'|at_secret|at_secret_deleted'
       r'|signing_keypair_generated|commitLogCompactionStats'
       r'|accessLogCompactionStats'
-      r'|notificationCompactionStats))|configkey';
+      r'|notificationCompactionStats))$|configkey$)';
 
   /// The following reserved keys are suffixed by the atsign. [ownershipFragment] at the
   /// end represents the atsign
   static const _reservedKeysWithAtsignSuffix = r'((?<=private:)blocklist'
-      r'|(?<=public:)signing_publickey'
+      '|(?<=public:)signing_publickey'
       '|(?<=$ownershipFragmentWithoutNamedGroup:)signing_privatekey'
-      '|${sharedWithFragment}shared_key}'
+      '|@${sharedWithFragment}shared_key'
       '|(?<=public:)publickey)$ownershipFragment';
 
   static const String namespaceFragment =
@@ -165,11 +165,9 @@ class RegexUtil {
   /// Returns a first matching key type after matching the key against regexes for each of the key type
   static KeyType keyType(String key, bool enforceNamespace) {
     Regexes regexes = Regexes(enforceNamespace);
-
-    if (matchAll(regexes.reservedKey, key)) {
+    if (isPartialMatch(regexes.reservedKey, key)) {
       return KeyType.reservedKey;
     }
-
     // matches the key with public key regex.
     if (matchAll(regexes.publicKey, key)) {
       return KeyType.publicKey;
@@ -210,6 +208,11 @@ class RegexUtil {
     var regExp = RegExp(regex, caseSensitive: false);
     return regExp.hasMatch(input) &&
         regExp.stringMatch(input)!.length == input.length;
+  }
+
+  static bool isPartialMatch(String regex, String input) {
+    RegExp regExp = RegExp(regex);
+    return regExp.hasMatch(input);
   }
 
   /// Returns a [Map] containing named groups and the matched values in the input
