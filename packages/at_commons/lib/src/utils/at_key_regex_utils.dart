@@ -1,7 +1,6 @@
 import 'dart:collection';
 
 import 'package:at_commons/src/keystore/key_type.dart';
-import 'package:at_commons/src/at_constants.dart';
 
 abstract class Regexes {
   static const charsInNamespace = r'([\w])+';
@@ -23,8 +22,8 @@ abstract class Regexes {
   static const _reservedKeysWithAtsignSuffix = r'((?<=private:)blocklist'
       '|(?<=public:)signing_publickey'
       '|(?<=$ownershipFragmentWithoutNamedGroup:)signing_privatekey'
-      '|@${sharedWithFragment}shared_key'
-      '|(?<=public:)publickey)$ownershipFragment';
+      '|(?<=$sharedWithFragment)shared_key'
+      '|(?<=public:)publickey)(?=$ownershipFragment)';
 
   static const String namespaceFragment =
       '''\\.(?<namespace>$charsInNamespace)''';
@@ -50,7 +49,7 @@ abstract class Regexes {
   static const String cachedPublicKeyStartFragment =
       '''(?<visibility>(cached:public:){1})$entityFragment''';
   static const String reservedKeyFragment =
-      '''(?<atKey>$_reservedKeysWithoutAtsignSuffix|$_reservedKeysWithAtsignSuffix)''';
+      '''(?<atKey>($_reservedKeysWithoutAtsignSuffix|$_reservedKeysWithAtsignSuffix))''';
   static const String localKeyFragment =
       '''(?<visibility>(local:){1})$entityFragment''';
 
@@ -211,7 +210,7 @@ class RegexUtil {
   }
 
   static bool isPartialMatch(String regex, String input) {
-    RegExp regExp = RegExp(regex);
+    RegExp regExp = RegExp(regex, caseSensitive: false);
     return regExp.hasMatch(input);
   }
 
@@ -232,6 +231,9 @@ class RegexUtil {
             () => (f.namedGroup(name) != null) ? f.namedGroup(name)! : '');
       }
     }
+    // if(paramsMap['owner'] != ''){
+    //   paramsMap['atKey'] = paramsMap['atKey']!.replaceFirst('@${paramsMap['owner']!}', '');
+    // }
     return paramsMap;
   }
 }

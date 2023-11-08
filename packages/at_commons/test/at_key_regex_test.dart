@@ -254,14 +254,15 @@ void main() {
       for (var key in keyTypeList) {
         var type = RegexUtil.keyType(key, false);
         print('$key -> $type');
-        // expect(type == KeyType.reservedKey, true);
+        expect(type == KeyType.reservedKey, true);
       }
     });
 
     test('Validate no false positives for reserved keys with atsign', () {
       var keyTypeList = [];
       var fails = [];
-
+      // these keys are supposed to have atsigns at the end
+      // to test a negative case, the @atsign at the end has been removed
       keyTypeList.add('public:publickey');
       keyTypeList.add('public:signing_publickey');
       keyTypeList.add(AtConstants.atBlocklist);
@@ -282,6 +283,9 @@ void main() {
 
     test('Validate no false positives for reserved keys without atsign', (){
       var keysList = [];
+      // the following keys are not supposed to have an atsign at the end
+      // for the sake of testing a negative case, atsigns have been appended
+      // to the keys
       keysList.add('${AtConstants.atPkamPublicKey}@alice123');
       keysList.add('${AtConstants.atPkamPrivateKey}@alice123');
       keysList.add('${AtConstants.atEncryptionPrivateKey}@alice123');
