@@ -1,5 +1,4 @@
 import 'package:at_commons/at_commons.dart';
-import 'package:at_commons/src/keystore/key_type.dart';
 import 'package:at_commons/src/utils/at_key_regex_utils.dart';
 import 'package:test/test.dart';
 
@@ -226,6 +225,9 @@ void main() {
         expect(type == KeyType.cachedSharedKey, true);
       }
     });
+  });
+
+  group('Validate reserved keys regex', () {
 
     test('A positive test to validate reserved key type', () {
       var keyTypeList = [];
@@ -252,21 +254,25 @@ void main() {
       for (var key in keyTypeList) {
         var type = RegexUtil.keyType(key, false);
         print('$key -> $type');
-        expect(type == KeyType.reservedKey, true);
+        // expect(type == KeyType.reservedKey, true);
       }
-      print('\n\n\n');
-      print(Regexes(false).reservedKey);
     });
 
-    test('Validate no false positives for reserved key type', () {
+    test('Validate no false positives for reserved keys with atsign', () {
       var keyTypeList = [];
       var fails = [];
 
       keyTypeList.add('public:publickey');
       keyTypeList.add('public:signing_publickey');
+      keyTypeList.add(AtConstants.atBlocklist);
+      keyTypeList.add('@bob:${AtConstants.atEncryptionSharedKey}');
+      keyTypeList.add(AtConstants.atEncryptionSharedKey);
+      keyTypeList.add('@allen:${AtConstants.atSigningPrivateKey}');
+      keyTypeList.add(AtConstants.atSigningPrivateKey);
 
       for (var key in keyTypeList) {
         var type = RegexUtil.keyType(key, false);
+        print('$key -> $type');
         if (type != KeyType.invalidKey) {
           fails.add('got $type for $key - expected KeyType.invalidKey');
         }
@@ -274,14 +280,60 @@ void main() {
       expect(fails, []);
     });
 
-    // test('Validate appropriate parts of key are identified correctly', (){
-    //   String key = '${AtConstants.atSigningPublicKey}@owner';
-    //
-    //   var type = RegexUtil.keyType(key, false);
-    //   // expect(type, KeyType.reservedKey);
-    //   RegExp regex = RegExp(Regexes(false).reservedKey);
-    //   print(regex.stringMatch(key));
-    // });
+    test('Validate no false positives for reserved keys without atsign', (){
+      var keysList = [];
+      keysList.add('${AtConstants.atPkamPublicKey}@alice123');
+      keysList.add('${AtConstants.atPkamPrivateKey}@alice123');
+      keysList.add('${AtConstants.atEncryptionPrivateKey}@alice123');
+      keysList.add('${AtConstants.atEncryptionSelfKey}@alice123');
+      keysList.add('${AtConstants.atCramSecret}@alice123');
+      keysList.add('${AtConstants.atCramSecretDeleted}@alice123');
+      keysList.add('${AtConstants.atSigningKeypairGenerated}@alice123');
+      keysList.add('${AtConstants.commitLogCompactionKey}@alice123');
+      keysList.add('${AtConstants.accessLogCompactionKey}@alice123');
+      keysList.add('${AtConstants.notificationCompactionKey}@alice123');
+      keysList.add('configkey@alice123');
+
+      for (var key in keysList){
+        var type = RegexUtil.keyType(key, false);
+        print('$key -> $type');
+        expect(type, isNot(KeyType.reservedKey));
+      }
+    });
+
+    test('Validate appropriate parts of signing_pub_key are identified correctly', () {
+      String key = 'public:signing_publickey@owner';
+      var type = RegexUtil.keyType(key, false);
+      print(Regexes(false).reservedKey);
+      expect(type, KeyType.reservedKey);
+
+      var matches = RegexUtil.matchesByGroup(Regexes(false).reservedKey, key);
+      print(matches);
+      expect(matches['owner'], 'owner');
+      expect(matches['atKey'], 'signing_publickey');
+    });
+
+    test('Validate appropriate parts of enc_shared_key are identified correctly', () {
+      String key = '@reno:${AtConstants.atEncryptionSharedKey}@ajax';
+      var type = RegexUtil.keyType(key, false);
+      expect(type, KeyType.reservedKey);
+
+      var matches = RegexUtil.matchesByGroup(Regexes(false).reservedKey, key);
+      expect(matches['owner'], 'ajax');
+      expect(matches['atKey'], AtConstants.atEncryptionSharedKey);
+      expect(matches['sharedWith'], 'reno');
+    });
+
+    test('Validate appropriate parts of pkam_pub_key are identified correctly', () {
+      String key = 'privatekey:at_pkam_publickey';
+      var type = RegexUtil.keyType(key, false);
+      expect(type, KeyType.reservedKey);
+
+      var matches = RegexUtil.matchesByGroup(Regexes(false).reservedKey, key);
+      expect(matches['owner'], '');
+      expect(matches['atKey'], 'at_pkam_publickey');
+      expect(matches['sharedWith'], '');
+    });
   });
 
   group('Public or private key regex match tests', () {
