@@ -5,7 +5,7 @@ import 'package:at_cli_commons/src/service_factories.dart';
 import 'package:at_cli_commons/src/utils.dart';
 import 'package:at_client/at_client.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
-import 'package:at_utils/at_logger.dart';
+import 'package:at_utils/at_utils.dart';
 import 'package:chalkdart/chalk.dart';
 import 'package:logging/logging.dart';
 import 'package:version/version.dart';
@@ -76,7 +76,7 @@ class CLIBase {
     return cliBase;
   }
 
-  final String atSign;
+  late final String atSign;
   final String nameSpace;
   final String rootDomain;
   final String? homeDir;
@@ -112,7 +112,7 @@ class CLIBase {
   /// ```
   /// Throws an [IllegalArgumentException] if the parameters fail validation.
   CLIBase(
-      {required this.atSign,
+      {required String atSign,
       required this.nameSpace,
       required this.rootDomain,
       this.homeDir,
@@ -122,6 +122,7 @@ class CLIBase {
       this.downloadDir,
       this.cramSecret,
       this.syncDisabled = false}) {
+    this.atSign = AtUtils.fixAtSign(atSign);
     if (homeDir == null) {
       if (atKeysFilePath == null) {
         throw IllegalArgumentException(
@@ -138,10 +139,10 @@ class CLIBase {
     }
 
     atKeysFilePathToUse =
-        atKeysFilePath ?? '$homeDir/.atsign/keys/${atSign}_key.atKeys';
+        atKeysFilePath ?? '$homeDir/.atsign/keys/${this.atSign}_key.atKeys';
     localStoragePathToUse =
-        storageDir ?? '$homeDir/.$nameSpace/$atSign/storage';
-    downloadPathToUse = downloadDir ?? '$homeDir/.$nameSpace/$atSign/files';
+        storageDir ?? '$homeDir/.$nameSpace/${this.atSign}/storage';
+    downloadPathToUse = downloadDir ?? '$homeDir/.$nameSpace/${this.atSign}/files';
 
     AtSignLogger.defaultLoggingHandler = AtSignLogger.stdErrLoggingHandler;
 
@@ -173,7 +174,6 @@ class CLIBase {
       ..rootDomain = rootDomain
       ..fetchOfflineNotifications = true
       ..atKeysFilePath = atKeysFilePathToUse
-      ..useAtChops = true
       ..cramSecret = cramSecret
       ..atProtocolEmitted = Version(2, 0, 0);
 
