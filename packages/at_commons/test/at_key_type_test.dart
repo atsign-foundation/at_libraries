@@ -1,4 +1,5 @@
 import 'package:at_commons/at_commons.dart';
+import 'package:at_commons/src/utils/at_key_regex_utils.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -112,45 +113,84 @@ void main() {
       expect(keyType, equals(KeyType.reservedKey));
     });
 
-    test('Test reserved key type for public session key', () {
-      var keyType = AtKey.getKeyType(
-          'public:_a29464d0-1f2d-4216-b903-031963bc4ab3@alice');
-      expect(keyType, equals(KeyType.reservedKey));
-    });
-
     test('Test reserved key type for latest notification id', () {
       var keyType = AtKey.getKeyType('_latestNotificationIdv2');
       expect(keyType, equals(KeyType.reservedKey));
     });
 
-    test('Test reserved key type for signing public key', () {
-      var keyType = AtKey.getKeyType('public:signing_publickey@colin');
-      expect(keyType, equals(KeyType.reservedKey));
+    test('A positive test to validate reserved key type', () {
+      var keyTypeList = [];
+      // keys with atsign
+      keyTypeList.add('${AtConstants.atBlocklist}@☎️_0002');
+      keyTypeList.add('@bob:${AtConstants.atEncryptionSharedKey}@alice');
+      keyTypeList.add('@allen:${AtConstants.atSigningPrivateKey}@allen');
+      keyTypeList.add('${AtConstants.atEncryptionPublicKey}@owner');
+      keyTypeList.add('public:signing_publickey@alice');
+      keyTypeList.add('public:signing_publickey@☎️_0002');
+      // keys without atsign
+      keyTypeList.add(AtConstants.atPkamPublicKey);
+      keyTypeList.add(AtConstants.atPkamPrivateKey);
+      keyTypeList.add(AtConstants.atEncryptionPrivateKey);
+      keyTypeList.add(AtConstants.atEncryptionSelfKey);
+      keyTypeList.add(AtConstants.atCramSecret);
+      keyTypeList.add(AtConstants.atCramSecretDeleted);
+      keyTypeList.add(AtConstants.atSigningKeypairGenerated);
+      keyTypeList.add(AtConstants.commitLogCompactionKey);
+      keyTypeList.add(AtConstants.accessLogCompactionKey);
+      keyTypeList.add(AtConstants.notificationCompactionKey);
+      keyTypeList.add('configkey');
+
+      for (var key in keyTypeList) {
+        var type = RegexUtil.keyType(key, false);
+        print('$key -> $type');
+        expect(type == KeyType.reservedKey, true);
+      }
     });
 
-    test('Test reserved key type for commit log compaction key', () {
-      var keyType = AtKey.getKeyType('privatekey:commitLogCompactionStats');
-      expect(keyType, equals(KeyType.reservedKey));
+    test('Validate no false positives for reserved keys with atsign', () {
+      var keyTypeList = [];
+      var fails = [];
+      // these keys are supposed to have atsigns at the end
+      // to test a negative case, the @atsign at the end has been removed
+      keyTypeList.add('public:publickey');
+      keyTypeList.add('public:signing_publickey');
+      keyTypeList.add(AtConstants.atBlocklist);
+      keyTypeList.add('@bob:${AtConstants.atEncryptionSharedKey}');
+      keyTypeList.add(AtConstants.atEncryptionSharedKey);
+      keyTypeList.add('@allen:${AtConstants.atSigningPrivateKey}');
+      keyTypeList.add(AtConstants.atSigningPrivateKey);
+
+      for (var key in keyTypeList) {
+        var type = RegexUtil.keyType(key, false);
+        if (type != KeyType.invalidKey) {
+          fails.add('got $type for $key - expected KeyType.invalidKey');
+        }
+      }
+      expect(fails, []);
     });
 
-    test('Test reserved key type for access log compaction key', () {
-      var keyType = AtKey.getKeyType('privatekey:accessLogCompactionStats');
-      expect(keyType, equals(KeyType.reservedKey));
-    });
+    test('Validate no false positives for reserved keys without atsign', (){
+      var keysList = [];
+      // the following keys are not supposed to have an atsign at the end
+      // for the sake of testing a negative case, atsigns have been appended
+      // to the keys
+      keysList.add('${AtConstants.atPkamPublicKey}@alice123');
+      keysList.add('${AtConstants.atPkamPrivateKey}@alice123');
+      keysList.add('${AtConstants.atEncryptionPrivateKey}@alice123');
+      keysList.add('${AtConstants.atEncryptionSelfKey}@alice123');
+      keysList.add('${AtConstants.atCramSecret}@alice123');
+      keysList.add('${AtConstants.atCramSecretDeleted}@alice123');
+      keysList.add('${AtConstants.atSigningKeypairGenerated}@alice123');
+      keysList.add('${AtConstants.commitLogCompactionKey}@alice123');
+      keysList.add('${AtConstants.accessLogCompactionKey}@alice123');
+      keysList.add('${AtConstants.notificationCompactionKey}@alice123');
+      keysList.add('configkey@alice123');
 
-    test('Test reserved key type for cram secret deleted', () {
-      var keyType = AtKey.getKeyType('privatekey:at_secret_deleted');
-      expect(keyType, equals(KeyType.reservedKey));
-    });
-
-    test('Test reserved key type for cram secret', () {
-      var keyType = AtKey.getKeyType('privatekey:at_secret');
-      expect(keyType, equals(KeyType.reservedKey));
-    });
-
-    test('Test reserved key type for config key (blocklist/allowlist)', () {
-      var keyType = AtKey.getKeyType('configkey');
-      expect(keyType, equals(KeyType.reservedKey));
+      for (var key in keysList){
+        var type = RegexUtil.keyType(key, false);
+        print('$key -> $type');
+        expect(type, isNot(KeyType.reservedKey));
+      }
     });
   });
 }
