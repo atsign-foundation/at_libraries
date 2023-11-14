@@ -1,3 +1,6 @@
+## 1.0.6
+- fix: Pass optional parameter "keyName" to encryptBytes and decryptBytes
+- fix: Export "at_key_pair.dart" file
 ## 1.0.5
 - feat: Changes for at_auth package
 - chore: fixed analyzer issues
