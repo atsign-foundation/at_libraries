@@ -11,19 +11,21 @@ abstract class Regexes {
 
   static const _reservedKeysWithoutAtsignSuffix =
       r'(((?<=privatekey:)(at_pkam_publickey|at_pkam_privatekey'
-      r'|privatekey|self_encryption_key'
-      r'|at_secret|at_secret_deleted'
-      r'|signing_keypair_generated|commitLogCompactionStats'
-      r'|accessLogCompactionStats'
-      r'|notificationCompactionStats))$|configkey$)';
+      '|privatekey|self_encryption_key'
+      '|at_secret|at_secret_deleted'
+      '|signing_keypair_generated|commitLogCompactionStats'
+      '|accessLogCompactionStats'
+      '|notificationCompactionStats)\$)|configkey\$|(?:^_($charsInEntity)+)\$)';
+  // the last part of the above regex is to match internal keys such as
+  // _latestNotificationId (keys that start with an underscore)
 
-  /// The following reserved keys are suffixed by the atsign. [ownershipFragment] at the
-  /// end represents the atsign
-  static const _reservedKeysWithAtsignSuffix = r'((?<=private:)blocklist'
+  /// The following reserved keys are suffixed by the atsign. [ownershipFragment]
+  /// at the end represents the atsign
+  static const _reservedKeysWithAtsignSuffix = r'(((?<=private:)blocklist'
       '|(?<=public:)signing_publickey'
       '|(?<=$ownershipFragmentWithoutNamedGroup:)signing_privatekey'
       '|(?<=$sharedWithFragment)shared_key'
-      '|(?<=public:)publickey)(?=$ownershipFragment)';
+      '|(?<=public:)publickey)(?=$ownershipFragment))';
 
   static const String namespaceFragment =
       '''\\.(?<namespace>$charsInNamespace)''';
@@ -201,14 +203,15 @@ class RegexUtil {
     return KeyType.invalidKey;
   }
 
-  /// Matches a regex against the input.
-  /// Returns a true if the regex is matched and a false otherwise
+  /// Matches a regex against the input
+  /// Returns a true if the regex is matched to the ENTIRE string, false otherwise
   static bool matchAll(String regex, String input) {
     var regExp = RegExp(regex, caseSensitive: false);
     return regExp.hasMatch(input) &&
         regExp.stringMatch(input)!.length == input.length;
   }
 
+  /// Checks if the the [input] is a partial match to the [regex]
   static bool isPartialMatch(String regex, String input) {
     RegExp regExp = RegExp(regex, caseSensitive: false);
     return regExp.hasMatch(input);
@@ -231,9 +234,6 @@ class RegexUtil {
             () => (f.namedGroup(name) != null) ? f.namedGroup(name)! : '');
       }
     }
-    // if(paramsMap['owner'] != ''){
-    //   paramsMap['atKey'] = paramsMap['atKey']!.replaceFirst('@${paramsMap['owner']!}', '');
-    // }
     return paramsMap;
   }
 }
