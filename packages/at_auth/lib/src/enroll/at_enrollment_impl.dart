@@ -118,9 +118,6 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
     var enrollJson = jsonDecode(enrollResult);
     var enrollmentIdFromServer = enrollJson[AtConstants.enrollmentId];
 
-    // Close the connection after enrollment operation is completed.
-    await (atLookUp as AtLookupImpl).close();
-
     return EnrollResponse(enrollmentIdFromServer,
         getEnrollStatusFromString(enrollJson['status']));
   }
@@ -173,8 +170,6 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
     AtEnrollmentResponse enrollmentResponse = AtEnrollmentResponse(
         enrollmentJsonMap['enrollmentId'],
         _convertEnrollmentStatusToEnum(enrollmentJsonMap['status']));
-    // Close the connection after enrollment operation is completed.
-    await (atLookUp as AtLookupImpl).close();
     return enrollmentResponse;
   }
 
@@ -206,8 +201,6 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
     var enrollmentJsonMap = jsonDecode(enrollResponse!);
     AtEnrollmentResponse enrollmentResponse = AtEnrollmentResponse(
         enrollmentJsonMap['enrollmentId'], enrollmentJsonMap['status']);
-    // Close the connection after enrollment operation is completed.
-    await (atLookUp as AtLookupImpl).close();
     return enrollmentResponse;
   }
 }
