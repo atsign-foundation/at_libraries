@@ -3,6 +3,12 @@ import 'package:at_commons/at_commons.dart';
 
 /// Represents an authentication request of an atSign.
 class AtAuthRequest {
+  /// The atSign for authentication
+  String atSign;
+
+  /// Constructor that takes an @sign as a parameter
+  AtAuthRequest(this.atSign);
+
   PkamAuthMode authMode = PkamAuthMode.keysFile;
 
   /// The default host of the root server
@@ -10,9 +16,6 @@ class AtAuthRequest {
 
   /// The default port of the root server
   int rootPort = 64;
-
-  /// The atSign for authentication
-  String atSign;
 
   /// The enrollmentId for APKAM authentication
   String? enrollmentId;
@@ -28,7 +31,4 @@ class AtAuthRequest {
 
   /// public key id from secure element if [authMode] is [PkamAuthMode.sim]
   String? publicKeyId;
-
-  /// Constructor that takes an @sign as a parameter
-  AtAuthRequest(this.atSign);
 }

@@ -20,7 +20,7 @@ void main() {
   });
 
   test(
-      'A test to verify submitting enrollment to server and generate atKeys for enrolled device',
+      'A test to verify submitting enrollment to server and verify enrollment status is pending',
       () async {
     String atSign = '@alice🛠';
     AtEnrollmentImpl atEnrollmentServiceImpl = AtEnrollmentImpl(atSign);
@@ -96,6 +96,46 @@ void main() {
             atEnrollmentRequest, mockAtLookUp, atPkamKeyPair, symmetricKey);
     expect(enrollmentSubmissionResponse.enrollmentId, '123');
     expect(enrollmentSubmissionResponse.enrollStatus, EnrollStatus.pending);
+  });
+
+  group('A group of test related to AtEnrollmentBuilder', () {
+    test('A test to verify generation of enrollment request', () {
+      AtEnrollmentRequestBuilder atEnrollmentRequestBuilder =
+          AtEnrollmentRequest.request()
+            ..setAppName('wavi')
+            ..setDeviceName('pixel')
+            ..setOtp('ABC123')
+            ..setNamespaces({'wavi': 'rw'});
+      AtEnrollmentRequest atEnrollmentRequest =
+          atEnrollmentRequestBuilder.build();
+
+      expect(atEnrollmentRequest.appName, 'wavi');
+      expect(atEnrollmentRequest.deviceName, 'pixel');
+      expect(atEnrollmentRequest.otp, 'ABC123');
+      expect(atEnrollmentRequest.namespaces, {'wavi': 'rw'});
+    });
+
+    test('A test to verify generation of enrollment approval request', () {
+      AtEnrollmentRequestBuilder atEnrollmentRequestBuilder =
+          AtEnrollmentRequest.approve()
+            ..setEnrollmentId('ABC-123-ID')
+            ..setEncryptedAPKAMSymmetricKey('dummy-apkam-symmetric-key');
+      AtEnrollmentRequest atEnrollmentRequest =
+          atEnrollmentRequestBuilder.build();
+
+      expect(atEnrollmentRequest.enrollmentId, 'ABC-123-ID');
+      expect(atEnrollmentRequest.encryptedAPKAMSymmetricKey,
+          'dummy-apkam-symmetric-key');
+    });
+
+    test('A test to verify generation of enrollment deny request', () {
+      AtEnrollmentRequestBuilder atEnrollmentRequestBuilder =
+          AtEnrollmentRequest.deny()..setEnrollmentId('ABC-123-ID');
+      AtEnrollmentRequest atEnrollmentRequest =
+          atEnrollmentRequestBuilder.build();
+
+      expect(atEnrollmentRequest.enrollmentId, 'ABC-123-ID');
+    });
   });
 }
 
