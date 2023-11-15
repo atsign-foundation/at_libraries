@@ -34,7 +34,6 @@ class AtLookupImpl implements AtLookUp {
 
   late int _rootPort;
 
-  String? privateKey;
 
   String? cramSecret;
 
@@ -55,7 +54,7 @@ class AtLookupImpl implements AtLookUp {
   AtChops? _atChops;
 
   AtLookupImpl(String atSign, String rootDomain, int rootPort,
-      {this.privateKey,
+      {
       this.cramSecret,
       SecondaryAddressFinder? secondaryAddressFinder,
       SecureSocketConfig? secureSocketConfig,
@@ -573,14 +572,11 @@ class AtLookupImpl implements AtLookUp {
         if (_atChops != null) {
           logger.finer('calling pkam using atchops');
           await pkamAuthenticate(enrollmentId: enrollmentId);
-        } else if (privateKey != null) {
-          logger.finer('calling pkam without atchops');
-          await authenticate(privateKey);
         } else if (cramSecret != null) {
           await cramAuthenticate(cramSecret!);
         } else {
           throw UnAuthenticatedException(
-              'Unable to perform atLookup auth. Private key/cram secret is not set');
+              'Unable to perform atLookup auth. atChops object is not set');
         }
       }
       try {
