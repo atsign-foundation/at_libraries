@@ -160,7 +160,7 @@ void main() {
   group('AtAuthImpl onboarding tests', () {
     var testCramSecret = 'cram123';
     test('Test onboard - authenticate_cram returns true', () async {
-      when(() => mockAtLookUp.authenticate_cram(testCramSecret))
+      when(() => mockAtLookUp.cramAuthenticate(testCramSecret))
           .thenAnswer((_) => Future.value(true));
       when(() => mockAtLookUp.executeCommand(any()))
           .thenAnswer((_) => Future.value('data:1'));
@@ -181,7 +181,7 @@ void main() {
       expect(response.isSuccessful, true);
     });
     test('Test onboard - authenticate_cram returns false', () async {
-      when(() => mockAtLookUp.authenticate_cram(testCramSecret))
+      when(() => mockAtLookUp.cramAuthenticate(testCramSecret))
           .thenAnswer((_) => Future.value(false));
       when(() => mockAtLookUp.executeCommand(any()))
           .thenAnswer((_) => Future.value('data:1'));
@@ -202,7 +202,7 @@ void main() {
     });
 
     test('Test onboard - enable enrollment', () async {
-      when(() => mockAtLookUp.authenticate_cram(testCramSecret))
+      when(() => mockAtLookUp.cramAuthenticate(testCramSecret))
           .thenAnswer((_) => Future.value(true));
       var mockEnrollResponse =
           'data:{"enrollmentId":"abc123","status":"approved"}';
@@ -232,7 +232,7 @@ void main() {
     });
 
     test('Test onboard - enable enrollment set to false', () async {
-      when(() => mockAtLookUp.authenticate_cram(testCramSecret))
+      when(() => mockAtLookUp.cramAuthenticate(testCramSecret))
           .thenAnswer((_) => Future.value(true));
       when(() => mockAtLookUp.executeCommand(any()))
           .thenAnswer((_) => Future.value('data:1'));
