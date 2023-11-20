@@ -15,7 +15,7 @@ abstract class Regexes {
       '|at_secret|at_secret_deleted'
       '|signing_keypair_generated|commitLogCompactionStats'
       '|accessLogCompactionStats'
-      '|notificationCompactionStats)\$)|configkey\$|(?:^_($charsInEntity)+)\$)';
+      '|notificationCompactionStats)\$)|^(configkey)\$|(?:^_($charsInEntity)+)\$)';
   // the last part of the above regex is to match internal keys such as
   // _latestNotificationId (keys that start with an underscore)
 
@@ -24,7 +24,7 @@ abstract class Regexes {
   static const _reservedKeysWithAtsignSuffix = r'(((?<=private:)blocklist'
       '|(?<=public:)signing_publickey'
       '|(?<=$ownershipFragmentWithoutNamedGroup:)signing_privatekey'
-      '|(?<=$sharedWithFragment)shared_key'
+      '|(?<=^@($sharedWithFragment))shared_key'
       '|(?<=public:)publickey)(?=$ownershipFragment))';
 
   static const String namespaceFragment =

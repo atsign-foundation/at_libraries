@@ -35,6 +35,7 @@ void main() {
       expect(keyType, equals(KeyType.localKey));
     });
   });
+
   group('A group of tests to check invalid key types', () {
     test('Test public key type without namespace', () {
       var keyType =
@@ -93,33 +94,9 @@ void main() {
   });
 
   group('A group of tests to check reserved key types', () {
-    test('Test reserved key type for shared_key', () {
-      var keyType = AtKey.getKeyType('@bob:shared_key@alice');
-      expect(keyType, equals(KeyType.reservedKey));
-    });
-
-    test('Test reserved key type for encryption publickey', () {
-      var keyType = AtKey.getKeyType('public:publickey@alice');
-      expect(keyType, equals(KeyType.reservedKey));
-    });
-
-    test('Test reserved key type for self encryption key', () {
-      var keyType = AtKey.getKeyType('privatekey:self_encryption_key');
-      expect(keyType, equals(KeyType.reservedKey));
-    });
-
-    test('Test reserved key type for signing private key', () {
-      var keyType = AtKey.getKeyType('@alice:signing_privatekey@alice');
-      expect(keyType, equals(KeyType.reservedKey));
-    });
-
-    test('Test reserved key type for latest notification id', () {
-      var keyType = AtKey.getKeyType('_latestNotificationIdv2');
-      expect(keyType, equals(KeyType.reservedKey));
-    });
-
     test('A positive test to validate reserved key type', () {
       var keyTypeList = [];
+      var fails = [];
       // keys with atsign
       keyTypeList.add('${AtConstants.atBlocklist}@☎️_0002');
       keyTypeList.add('@bob:${AtConstants.atEncryptionSharedKey}@alice');
@@ -139,18 +116,22 @@ void main() {
       keyTypeList.add(AtConstants.accessLogCompactionKey);
       keyTypeList.add(AtConstants.notificationCompactionKey);
       keyTypeList.add('configkey');
+      keyTypeList.add('_latestNotificationIdv2');
 
       for (var key in keyTypeList) {
         var type = RegexUtil.keyType(key, false);
-        print('$key -> $type');
-        expect(type == KeyType.reservedKey, true);
+        print(key);
+        if(type != KeyType.reservedKey){
+          fails.add('$key classified as $type - actually a reserved key');
+        }
       }
+      expect(fails, []);
     });
 
     test('Validate no false positives for reserved keys with atsign', () {
       var keyTypeList = [];
       var fails = [];
-      // these keys are supposed to have atsigns at the end
+      // these keys are supposed to have an atsign at the end
       // to test a negative case, the @atsign at the end has been removed
       keyTypeList.add('public:publickey');
       keyTypeList.add('public:signing_publickey');
@@ -162,15 +143,16 @@ void main() {
 
       for (var key in keyTypeList) {
         var type = RegexUtil.keyType(key, false);
-        if (type != KeyType.invalidKey) {
-          fails.add('got $type for $key - expected KeyType.invalidKey');
+        if (type == KeyType.reservedKey) {
+          fails.add('got $type for $key - which is not a reserved key');
         }
       }
       expect(fails, []);
     });
 
-    test('Validate no false positives for reserved keys without atsign', (){
+    test('Validate no false positives for reserved keys without atsign', () {
       var keysList = [];
+      var fails = [];
       // the following keys are not supposed to have an atsign at the end
       // for the sake of testing a negative case, atsigns have been appended
       // to the keys
@@ -185,12 +167,62 @@ void main() {
       keysList.add('${AtConstants.accessLogCompactionKey}@alice123');
       keysList.add('${AtConstants.notificationCompactionKey}@alice123');
       keysList.add('configkey@alice123');
+      keysList.add('_latestNotificationIdv2@client');
 
-      for (var key in keysList){
+      for (var key in keysList) {
         var type = RegexUtil.keyType(key, false);
-        print('$key -> $type');
-        expect(type, isNot(KeyType.reservedKey));
+        if (type == KeyType.reservedKey) {
+          fails.add('got $type for $key - which is not a reserved key');
+        }
       }
+      expect(fails, []);
+    });
+
+    test('Validate no false positives for reserved keys with incorrect visibility', (){
+      var keysList = [];
+      var fails = [];
+      // negative test to validate that e.g. only public:publickey@owner is a
+      // reserved key. @owner:publickey@owner is NOT a reserved key
+      keysList.add('public:blocklist@☎️_0002');
+      keysList.add('public:shared_key@alice');
+      keysList.add('public:signing_privatekey@allen');
+      keysList.add('☎️@owner:publickey@owner');
+      keysList.add('@alice:signing_publickey@alice');
+      keysList.add('@☎️_0002:signing_publickey@☎️_0002');
+      keysList.add('public:at_pkam_publickey');
+      keysList.add('public:at_pkam_privatekey');
+      keysList.add('public:privatekey');
+      keysList.add('public:self_encryption_key');
+      keysList.add('public:at_secret');
+      keysList.add('public:at_secret_deleted');
+      keysList.add('public:signing_keypair_generated');
+      keysList.add('public:commitLogCompactionStats');
+      keysList.add('public:accessLogCompactionStats');
+      keysList.add('public:notificationCompactionStats');
+      keysList.add('privatekey:configkey');
+      keysList.add('privatekey:_latestNotificationIdv2');
+
+      for (var key in keysList) {
+        var type = RegexUtil.keyType(key, false);
+        if (type == KeyType.reservedKey) {
+          fails.add('got $type for $key - which is not a reserved key');
+        }
+      }
+      expect(fails, []);
+    });
+
+    test('Ensure public hidden keys should NOT be classified as reserved keys', (){
+      var keyType = AtKey.getKeyType('public:__secretKey@cia', //double underscore after 'public:'
+          enforceNameSpace: false);
+      expect(keyType, isNot(KeyType.reservedKey));
+      expect(keyType, KeyType.publicKey);
+    });
+
+    test('Ensure underscore keys should NOT be classified as reserved keys', (){
+      var keyType = AtKey.getKeyType('public:_secretKey@test',
+          enforceNameSpace: false);
+      expect(keyType, isNot(KeyType.reservedKey));
+      expect(keyType, KeyType.publicKey);
     });
   });
 }

@@ -232,11 +232,9 @@ void main() {
     test('Validate appropriate parts of signing_pub_key are identified correctly', () {
       String key = 'public:signing_publickey@owner';
       var type = RegexUtil.keyType(key, false);
-      print(Regexes(false).reservedKey);
       expect(type, KeyType.reservedKey);
 
       var matches = RegexUtil.matchesByGroup(Regexes(false).reservedKey, key);
-      print(matches);
       expect(matches['owner'], 'owner');
       expect(matches['atKey'], 'signing_publickey');
     });
@@ -260,6 +258,17 @@ void main() {
       var matches = RegexUtil.matchesByGroup(Regexes(false).reservedKey, key);
       expect(matches['owner'], '');
       expect(matches['atKey'], 'at_pkam_publickey');
+      expect(matches['sharedWith'], '');
+    });
+
+    test('Validate appropriate parts of _latestNotificationId are identified correctly', () {
+      String key = '_latestNotificationId';
+      var type = RegexUtil.keyType(key, false);
+      expect(type, KeyType.reservedKey);
+
+      var matches = RegexUtil.matchesByGroup(Regexes(false).reservedKey, key);
+      expect(matches['owner'], '');
+      expect(matches['atKey'], '_latestNotificationId');
       expect(matches['sharedWith'], '');
     });
   });
