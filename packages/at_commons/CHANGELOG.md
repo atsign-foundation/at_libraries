@@ -1,3 +1,5 @@
+## 4.0.0
+- fix: Improved regex for Reserved keys (Internal keys used by the server)
 ## 3.0.57
 - feat: Introduced TTL(Time to Live) for OTP verb to configure OTP expiry
 ## 3.0.56
