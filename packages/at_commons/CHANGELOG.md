@@ -1,3 +1,5 @@
+## 3.0.58
+- fix: Add "put" operation to OTP verb to store semi-permanent pass codes
 ## 3.0.57
 - feat: Introduced TTL(Time to Live) for OTP verb to configure OTP expiry
 ## 3.0.56
