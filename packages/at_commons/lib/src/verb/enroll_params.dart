@@ -8,7 +8,9 @@ class EnrollParams {
   String? deviceName;
   Map<String, String>? namespaces;
   String? otp;
+  @Deprecated('use encryptedDefaultEncryptionPrivateKey')
   String? encryptedDefaultEncryptedPrivateKey;
+  String? encryptedDefaultEncryptionPrivateKey;
   String? encryptedDefaultSelfEncryptionKey;
   String? encryptedAPKAMSymmetricKey;
   String? apkamPublicKey;
