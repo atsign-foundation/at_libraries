@@ -13,11 +13,11 @@ void main() {
         ..apkamPublicKey = 'abcd1234'
         ..enrollmentId = '1234'
         ..encryptedAPKAMSymmetricKey = 'dummy_pkam_sym_key'
-        ..encryptedDefaultEncryptedPrivateKey = 'dummy_encrypted_private_key'
+        ..encryptedDefaultEncryptionPrivateKey = 'dummy_encrypted_private_key'
         ..encryptedDefaultSelfEncryptionKey = 'dummy_self_encryption_key';
       var command = enrollVerbBuilder.buildCommand();
       expect(command,
-          'enroll:request:{"enrollmentId":"1234","appName":"wavi","deviceName":"pixel","namespaces":{"wavi":"rw","__manage":"r"},"encryptedDefaultEncryptedPrivateKey":"dummy_encrypted_private_key","encryptedDefaultSelfEncryptionKey":"dummy_self_encryption_key","encryptedAPKAMSymmetricKey":"dummy_pkam_sym_key","apkamPublicKey":"abcd1234"}\n');
+          'enroll:request:{"enrollmentId":"1234","appName":"wavi","deviceName":"pixel","namespaces":{"wavi":"rw","__manage":"r"},"encryptedDefaultEncryptionPrivateKey":"dummy_encrypted_private_key","encryptedDefaultSelfEncryptionKey":"dummy_self_encryption_key","encryptedAPKAMSymmetricKey":"dummy_pkam_sym_key","apkamPublicKey":"abcd1234"}\n');
     });
 
     test('A test to verify enroll approve operation', () {
@@ -29,11 +29,11 @@ void main() {
         ..namespaces = {'wavi': 'rw'}
         ..apkamPublicKey = 'abcd1234'
         ..encryptedAPKAMSymmetricKey = 'dummy_pkam_sym_key'
-        ..encryptedDefaultEncryptedPrivateKey = 'dummy_encrypted_private_key'
+        ..encryptedDefaultEncryptionPrivateKey = 'dummy_encrypted_private_key'
         ..encryptedDefaultSelfEncryptionKey = 'dummy_self_encryption_key';
       var command = enrollVerbBuilder.buildCommand();
       expect(command,
-          'enroll:approve:{"enrollmentId":"123","appName":"wavi","deviceName":"pixel","namespaces":{"wavi":"rw"},"encryptedDefaultEncryptedPrivateKey":"dummy_encrypted_private_key","encryptedDefaultSelfEncryptionKey":"dummy_self_encryption_key","encryptedAPKAMSymmetricKey":"dummy_pkam_sym_key","apkamPublicKey":"abcd1234"}\n');
+          'enroll:approve:{"enrollmentId":"123","appName":"wavi","deviceName":"pixel","namespaces":{"wavi":"rw"},"encryptedDefaultEncryptionPrivateKey":"dummy_encrypted_private_key","encryptedDefaultSelfEncryptionKey":"dummy_self_encryption_key","encryptedAPKAMSymmetricKey":"dummy_pkam_sym_key","apkamPublicKey":"abcd1234"}\n');
     });
 
     test('A test to verify enroll deny operation', () {

@@ -1,3 +1,6 @@
+## 3.0.58
+- fix: Deprecate encryptedDefaultEncryptedPrivateKey in EnrollParams and introduce encryptedDefaultEncryptedPrivateKey for readability
+- fix: Replace encryptedDefaultEncryptedPrivateKey with encryptedDefaultEncryptionPrivateKey in EnrollVerbBuilder
 ## 3.0.57
 - feat: Introduced TTL(Time to Live) for OTP verb to configure OTP expiry
 ## 3.0.56
