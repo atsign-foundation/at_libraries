@@ -20,6 +20,7 @@ class AtConstants {
   static const String atSigningPublicKey = 'public:signing_publickey';
   static const String atCramSecret = 'privatekey:at_secret';
   static const String atCramSecretDeleted = 'privatekey:at_secret_deleted';
+  static const String atBlocklist = 'private:blocklist'; // contains @atsign postfix
   static const String atSigningKeypairGenerated =
       'privatekey:signing_keypair_generated';
   static const String statId = 'statId';

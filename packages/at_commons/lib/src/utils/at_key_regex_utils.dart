@@ -8,19 +8,31 @@ abstract class Regexes {
   static const charsInEntity = r'''[\w\.\-_'*"]''';
   static const allowedEmoji =
       r'''((\u00a9|\u00ae|[\u2000-\u3300]|[\ufe00-\ufe0f]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]))''';
-  static const _charsInReservedKey =
-      r'(shared_key|publickey|privatekey|self_encryption_key'
-      r'|commitLogCompactionStats|accessLogCompactionStats'
-      r'|notificationCompactionStats|signing_privatekey|signing_publickey'
-      r'|signing_keypair_generated|at_pkam_privatekey|at_pkam_publickey'
-      r'|at_secret_deleted|at_secret'
-      r'|configkey'
-      r'|_[\w-]+|)';
+
+  static const _reservedKeysWithoutAtsignSuffix =
+      r'(((?<=privatekey:)(at_pkam_publickey|at_pkam_privatekey'
+      '|privatekey|self_encryption_key'
+      '|at_secret|at_secret_deleted'
+      '|signing_keypair_generated|commitLogCompactionStats'
+      '|accessLogCompactionStats'
+      '|notificationCompactionStats)\$)|^(configkey)\$|(?:^_($charsInEntity)+)\$)';
+  // the last part of the above regex is to match internal keys such as
+  // _latestNotificationId (keys that start with an underscore)
+
+  /// The following reserved keys are suffixed by the atsign. [ownershipFragment]
+  /// at the end represents the atsign
+  static const _reservedKeysWithAtsignSuffix = r'(((?<=private:)blocklist'
+      '|(?<=public:)signing_publickey'
+      '|(?<=$ownershipFragmentWithoutNamedGroup:)signing_privatekey'
+      '|(?<=^@($sharedWithFragment))shared_key'
+      '|(?<=public:)publickey)(?=$ownershipFragment))';
 
   static const String namespaceFragment =
       '''\\.(?<namespace>$charsInNamespace)''';
   static const String ownershipFragment =
       '''@(?<owner>($charsInAtSign|$allowedEmoji){1,55})''';
+  static const String ownershipFragmentWithoutNamedGroup =
+      '''@($charsInAtSign|$allowedEmoji){1,55}''';
   static const String sharedWithFragment =
       '''((?<sharedWith>($charsInAtSign|$allowedEmoji){1,55}):)''';
   static const String entityFragment =
@@ -39,7 +51,7 @@ abstract class Regexes {
   static const String cachedPublicKeyStartFragment =
       '''(?<visibility>(cached:public:){1})$entityFragment''';
   static const String reservedKeyFragment =
-      '''(((@(?<sharedWith>($charsInAtSign|$allowedEmoji){1,55}))|public|privatekey):)?(?<atKey>$_charsInReservedKey)(@(?<owner>($charsInAtSign|$allowedEmoji){1,55}))?''';
+      '''(?<atKey>($_reservedKeysWithoutAtsignSuffix|$_reservedKeysWithAtsignSuffix))''';
   static const String localKeyFragment =
       '''(?<visibility>(local:){1})$entityFragment''';
 
@@ -154,11 +166,9 @@ class RegexUtil {
   /// Returns a first matching key type after matching the key against regexes for each of the key type
   static KeyType keyType(String key, bool enforceNamespace) {
     Regexes regexes = Regexes(enforceNamespace);
-
-    if (matchAll(regexes.reservedKey, key)) {
+    if (isPartialMatch(regexes.reservedKey, key)) {
       return KeyType.reservedKey;
     }
-
     // matches the key with public key regex.
     if (matchAll(regexes.publicKey, key)) {
       return KeyType.publicKey;
@@ -193,12 +203,18 @@ class RegexUtil {
     return KeyType.invalidKey;
   }
 
-  /// Matches a regex against the input.
-  /// Returns a true if the regex is matched and a false otherwise
+  /// Matches a regex against the input
+  /// Returns a true if the regex is matched to the ENTIRE string, false otherwise
   static bool matchAll(String regex, String input) {
     var regExp = RegExp(regex, caseSensitive: false);
     return regExp.hasMatch(input) &&
         regExp.stringMatch(input)!.length == input.length;
+  }
+
+  /// Checks if the the [input] is a partial match to the [regex]
+  static bool isPartialMatch(String regex, String input) {
+    RegExp regExp = RegExp(regex, caseSensitive: false);
+    return regExp.hasMatch(input);
   }
 
   /// Returns a [Map] containing named groups and the matched values in the input
