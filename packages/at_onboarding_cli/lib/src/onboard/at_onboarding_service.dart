@@ -21,7 +21,7 @@ abstract class AtOnboardingService {
   /// namespaces - key-value pair of namespace-access of the requesting client e.g {"wavi":"rw","contacts":"r"}
   /// pkamRetryIntervalMins - optional param which specifies interval in mins for pkam retry for this enrollment.
   /// The passed value will override the value in [AtOnboardingPreference]
-  Future<EnrollResponse> enroll(String appName, String deviceName, String otp,
+  Future<AtEnrollmentResponse> enroll(String appName, String deviceName, String otp,
       Map<String, String> namespaces,
       {int? pkamRetryIntervalMins});
 
