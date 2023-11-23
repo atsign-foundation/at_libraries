@@ -6,7 +6,7 @@ void main() {
   group('A group of tests related to enroll verb', () {
     test('A test to verify enroll request params', () {
       String command =
-          'enroll:request:{"enrollmentId":"1234","appName":"wavi","deviceName":"pixel","namespaces":{"wavi":"rw","__manage":"r"},"encryptedDefaultEncryptedPrivateKey":"dummy_encrypted_private_key","encryptedDefaultSelfEncryptionKey":"dummy_self_encryption_key","encryptedAPKAMSymmetricKey":"dummy_pkam_sym_key","apkamPublicKey":"abcd1234"}';
+          'enroll:request:{"enrollmentId":"1234","appName":"wavi","deviceName":"pixel","namespaces":{"wavi":"rw","__manage":"r"},"encryptedDefaultEncryptionPrivateKey":"dummy_encrypted_private_key","encryptedDefaultSelfEncryptionKey":"dummy_self_encryption_key","encryptedAPKAMSymmetricKey":"dummy_pkam_sym_key","apkamPublicKey":"abcd1234"}';
       command = command.replaceAll('enroll:request:', '');
       var enrollParams = jsonDecode(command);
       expect(enrollParams['enrollmentId'], '1234');
@@ -14,7 +14,7 @@ void main() {
       expect(enrollParams['deviceName'], 'pixel');
       expect(enrollParams['namespaces']['wavi'], 'rw');
       expect(enrollParams['namespaces']['__manage'], 'r');
-      expect(enrollParams['encryptedDefaultEncryptedPrivateKey'],
+      expect(enrollParams['encryptedDefaultEncryptionPrivateKey'],
           'dummy_encrypted_private_key');
       expect(enrollParams['encryptedDefaultSelfEncryptionKey'],
           'dummy_self_encryption_key');
@@ -24,14 +24,14 @@ void main() {
 
     test('A test to verify enroll approve params', () {
       String command =
-          'enroll:approve:{"enrollmentId":"123","appName":"wavi","deviceName":"pixel","namespaces":{"wavi":"rw"},"encryptedDefaultEncryptedPrivateKey":"dummy_encrypted_private_key","encryptedDefaultSelfEncryptionKey":"dummy_self_encryption_key","encryptedAPKAMSymmetricKey":"dummy_pkam_sym_key","apkamPublicKey":"abcd1234"}';
+          'enroll:approve:{"enrollmentId":"123","appName":"wavi","deviceName":"pixel","namespaces":{"wavi":"rw"},"encryptedDefaultEncryptionPrivateKey":"dummy_encrypted_private_key","encryptedDefaultSelfEncryptionKey":"dummy_self_encryption_key","encryptedAPKAMSymmetricKey":"dummy_pkam_sym_key","apkamPublicKey":"abcd1234"}';
       command = command.replaceAll('enroll:approve:', '');
       var enrollParams = jsonDecode(command);
       expect(enrollParams['enrollmentId'], '123');
       expect(enrollParams['appName'], 'wavi');
       expect(enrollParams['deviceName'], 'pixel');
       expect(enrollParams['namespaces']['wavi'], 'rw');
-      expect(enrollParams['encryptedDefaultEncryptedPrivateKey'],
+      expect(enrollParams['encryptedDefaultEncryptionPrivateKey'],
           'dummy_encrypted_private_key');
       expect(enrollParams['encryptedDefaultSelfEncryptionKey'],
           'dummy_self_encryption_key');
@@ -63,7 +63,7 @@ void main() {
         ..apkamPublicKey = 'abcd1234'
         ..enrollmentId = '1234'
         ..encryptedAPKAMSymmetricKey = 'dummy_pkam_sym_key'
-        ..encryptedDefaultEncryptedPrivateKey = 'dummy_encrypted_private_key'
+        ..encryptedDefaultEncryptionPrivateKey = 'dummy_encrypted_private_key'
         ..encryptedDefaultSelfEncryptionKey = 'dummy_self_encryption_key';
 
       Map<String, dynamic> enrollParamsMap = enrollParams.toJson();
@@ -74,7 +74,7 @@ void main() {
       expect(enrollParamsMap['enrollmentId'], '1234');
       expect(
           enrollParamsMap['encryptedAPKAMSymmetricKey'], 'dummy_pkam_sym_key');
-      expect(enrollParamsMap['encryptedDefaultEncryptedPrivateKey'],
+      expect(enrollParamsMap['encryptedDefaultEncryptionPrivateKey'],
           'dummy_encrypted_private_key');
       expect(enrollParamsMap['encryptedDefaultSelfEncryptionKey'],
           'dummy_self_encryption_key');
@@ -88,7 +88,7 @@ void main() {
       enrollParamsMap['apkamPublicKey'] = 'abcd1234';
       enrollParamsMap['enrollmentId'] = '1234';
       enrollParamsMap['encryptedAPKAMSymmetricKey'] = 'dummy_pkam_sym_key';
-      enrollParamsMap['encryptedDefaultEncryptedPrivateKey'] =
+      enrollParamsMap['encryptedDefaultEncryptionPrivateKey'] =
           'dummy_encrypted_private_key';
       enrollParamsMap['encryptedDefaultSelfEncryptionKey'] =
           'dummy_self_encryption_key';
@@ -100,7 +100,7 @@ void main() {
       expect(enrollParams.apkamPublicKey, 'abcd1234');
       expect(enrollParams.enrollmentId, '1234');
       expect(enrollParams.encryptedAPKAMSymmetricKey, 'dummy_pkam_sym_key');
-      expect(enrollParams.encryptedDefaultEncryptedPrivateKey,
+      expect(enrollParams.encryptedDefaultEncryptionPrivateKey,
           'dummy_encrypted_private_key');
       expect(enrollParams.encryptedDefaultSelfEncryptionKey,
           'dummy_self_encryption_key');
