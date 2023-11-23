@@ -19,4 +19,9 @@ class AtEnrollmentResponse {
   /// The [enrollStatus] represents the status of the enrollment operation.
   /// The [atAuthKeys] are optional authentication keys associated with the enrollment.
   AtEnrollmentResponse(this.enrollmentId, this.enrollStatus);
+
+  @override
+  String toString() {
+    return 'AtEnrollmentResponse{enrollmentId: $enrollmentId, enrollStatus: $enrollStatus}';
+  }
 }
