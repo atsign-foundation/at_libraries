@@ -20,7 +20,7 @@ void main() {
     });
 
     test('authenticate() should return a successful AtAuthResponse', () async {
-      when(() => mockAtLookup.authenticate_cram(cramSecret))
+      when(() => mockAtLookup.cramAuthenticate(cramSecret))
           .thenAnswer((_) async => true);
 
       final result = await cramAuthenticator.authenticate();
@@ -31,7 +31,7 @@ void main() {
 
     test('authenticate() should throw UnAuthenticatedException on failure',
         () async {
-      when(() => mockAtLookup.authenticate_cram(cramSecret))
+      when(() => mockAtLookup.cramAuthenticate(cramSecret))
           .thenThrow(UnAuthenticatedException('Unauthenticated'));
 
       expect(() async => await cramAuthenticator.authenticate(),
