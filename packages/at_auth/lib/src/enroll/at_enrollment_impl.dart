@@ -3,8 +3,6 @@ import 'dart:convert';
 
 import 'package:at_auth/at_auth.dart';
 import 'package:at_auth/src/enroll/at_enrollment_notification_request.dart';
-import 'package:at_auth/src/enroll/at_initial_enrollment_request.dart';
-import 'package:at_auth/src/enroll/at_new_enrollment_request.dart';
 import 'package:at_chops/at_chops.dart';
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
@@ -42,9 +40,11 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
   Future<AtEnrollmentResponse> initialClientEnrollment(
       AtInitialEnrollmentRequest atInitialEnrollmentRequest,
       AtLookUp atLookUp) async {
+    _logger.finer('inside initialClientEnrollment');
     final atAuthKeys = atInitialEnrollmentRequest.atAuthKeys;
     var enrollVerbBuilder = createEnrollVerbBuilder(atInitialEnrollmentRequest);
     var enrollResult = await _executeEnrollCommand(enrollVerbBuilder, atLookUp);
+    _logger.finer('enrollResult: $enrollResult');
     var enrollJson = jsonDecode(enrollResult);
     var enrollmentIdFromServer = enrollJson[AtConstants.enrollmentId];
     var enrollStatus = getEnrollStatusFromString(enrollJson['status']);
@@ -207,7 +207,8 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
         ..encryptedDefaultEncryptionPrivateKey =
             request.encryptedDefaultEncryptionPrivateKey
         ..encryptedDefaultSelfEncryptionKey =
-            request.encryptedDefaultSelfEncryptionKey;
+            request.encryptedDefaultSelfEncryptionKey
+        ..apkamPublicKey = request.apkamPublicKey;
     } else if (request is AtNewEnrollmentRequest) {
       enrollVerbBuilder
         ..otp = request.otp

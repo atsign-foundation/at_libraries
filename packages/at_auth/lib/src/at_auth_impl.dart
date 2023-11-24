@@ -223,6 +223,7 @@ class AtAuthImpl implements AtAuth {
             encryptionAlgorithm: symmetricEncryptionAlgo,
             iv: AtChopsUtil.generateIVLegacy())
         .result;
+    _logger.finer('apkamPublicKey: ${atAuthKeys.apkamPublicKey}');
     var enrollRequestBuilder = AtInitialEnrollmentRequestBuilder()
       ..setAppName(atOnboardingRequest.appName)
       ..setDeviceName(atOnboardingRequest.deviceName)
@@ -230,7 +231,8 @@ class AtAuthImpl implements AtAuth {
           encryptedDefaultEncryptionPrivateKey)
       ..setEncryptedDefaultSelfEncryptionKey(encryptedDefaultSelfEncryptionKey)
       ..setApkamPublicKey(atAuthKeys.apkamPublicKey)
-      ..setAtAuthKeys(atAuthKeys);
+      ..setAtAuthKeys(atAuthKeys)
+      ..setEnrollOperationEnum(EnrollOperationEnum.request);
     atEnrollmentBase ??= AtEnrollmentImpl(atOnboardingRequest.atSign);
     AtEnrollmentResponse enrollmentResponse;
     try {

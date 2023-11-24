@@ -6,7 +6,7 @@ class AtEnrollmentRequest {
   final String? _appName;
   final String? _deviceName;
   final Map<String, String>? _namespaces;
-  final EnrollOperationEnum _enrollOperationEnum;
+  EnrollOperationEnum _enrollOperationEnum = EnrollOperationEnum.request;
 
   final String? _enrollmentId;
 
@@ -97,7 +97,7 @@ class AtEnrollmentRequestBuilder {
   String? _appName;
   String? _deviceName;
   Map<String, String> _namespaces = {};
-  late EnrollOperationEnum _enrollmentOperationEnum;
+  EnrollOperationEnum _enrollmentOperationEnum = EnrollOperationEnum.request;
   String? _enrollmentId;
   String? _apkamPublicKey;
   AtAuthKeys? _atAuthKeys;
@@ -124,6 +124,12 @@ class AtEnrollmentRequestBuilder {
 
   AtEnrollmentRequestBuilder setApkamPublicKey(String? apkamPublicKey) {
     _apkamPublicKey = apkamPublicKey;
+    return this;
+  }
+
+  AtEnrollmentRequestBuilder setEnrollOperationEnum(
+      EnrollOperationEnum enrollOperationEnum) {
+    _enrollmentOperationEnum = enrollOperationEnum;
     return this;
   }
 

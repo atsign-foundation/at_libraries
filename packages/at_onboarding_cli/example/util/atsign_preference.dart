@@ -14,9 +14,6 @@ class AtSignPreference {
         HomeDirectoryUtil.getCommitLogPath(atSign, enrollmentId: enrollmentId);
     preference.isLocalStoreRequired = true;
     preference.rootDomain = 'vip.ve.atsign.zone';
-    var hashFile = AtUtils.getShaForAtSign(atSign);
-    preference.keyStoreSecret =
-        _getKeyStoreSecret('${preference.hiveStoragePath}/$hashFile.hash');
     return preference;
   }
 
