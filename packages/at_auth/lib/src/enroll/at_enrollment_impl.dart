@@ -193,7 +193,6 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
   }
 
   @visibleForTesting
-
   /// Creates a verb builder instance based on the [request] type
   EnrollVerbBuilder createEnrollVerbBuilder(
     AtEnrollmentRequest request, {
