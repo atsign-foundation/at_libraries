@@ -1,5 +1,6 @@
 import 'package:at_auth/src/enroll/at_enrollment_request.dart';
 
+/// Class for attributes required specifically for new enrollment requests from client.
 class AtNewEnrollmentRequest extends AtEnrollmentRequest {
   String _otp;
 
@@ -19,7 +20,7 @@ class AtNewEnrollmentRequestBuilder extends AtEnrollmentRequestBuilder {
     return this;
   }
 
-  /// Builds and returns an instance of [AtInitialEnrollmentRequest].
+  /// Builds and returns an instance of [AtNewEnrollmentRequest].
   AtNewEnrollmentRequest build() {
     return AtNewEnrollmentRequest.builder(this);
   }

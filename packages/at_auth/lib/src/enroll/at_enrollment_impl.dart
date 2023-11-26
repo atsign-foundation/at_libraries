@@ -25,10 +25,10 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
       AtEnrollmentRequest atEnrollmentRequest, AtLookUp atLookUp) async {
     switch (atEnrollmentRequest.runtimeType) {
       case AtInitialEnrollmentRequest:
-        return await initialClientEnrollment(
+        return await _initialClientEnrollment(
             atEnrollmentRequest as AtInitialEnrollmentRequest, atLookUp);
       case AtNewEnrollmentRequest:
-        return await newClientEnrollment(
+        return await _newClientEnrollment(
             atEnrollmentRequest as AtNewEnrollmentRequest, atLookUp);
       default:
         throw AtEnrollmentException(
@@ -36,8 +36,7 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
     }
   }
 
-  @visibleForTesting
-  Future<AtEnrollmentResponse> initialClientEnrollment(
+  Future<AtEnrollmentResponse> _initialClientEnrollment(
       AtInitialEnrollmentRequest atInitialEnrollmentRequest,
       AtLookUp atLookUp) async {
     _logger.finer('inside initialClientEnrollment');
@@ -53,8 +52,7 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
       ..atAuthKeys = atAuthKeys;
   }
 
-  @visibleForTesting
-  Future<AtEnrollmentResponse> newClientEnrollment(
+  Future<AtEnrollmentResponse> _newClientEnrollment(
       AtNewEnrollmentRequest atNewEnrollmentRequest, AtLookUp atLookUp) async {
     _logger.info('Generating APKAM encryption keypair and APKAM symmetric key');
     AtPkamKeyPair atPkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
@@ -112,8 +110,11 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
       AtEnrollmentRequest atEnrollmentRequest, AtLookUp atLookUp) {
     switch (atEnrollmentRequest.enrollOperationEnum) {
       case EnrollOperationEnum.approve:
-        return _handleApproveOperation(
-            atEnrollmentRequest as AtEnrollmentNotificationRequest, atLookUp);
+        if (atEnrollmentRequest is! AtEnrollmentNotificationRequest) {
+          throw AtEnrollmentException(
+              'Invalid atEnrollmentRequest type: $atEnrollmentRequest. Please pass AtEnrollmentNotificationRequest');
+        }
+        return _handleApproveOperation(atEnrollmentRequest, atLookUp);
       case EnrollOperationEnum.deny:
         return _handleDenyOperation(atEnrollmentRequest, atLookUp);
       default:
@@ -192,6 +193,8 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
   }
 
   @visibleForTesting
+
+  /// Creates a verb builder instance based on the [request] type
   EnrollVerbBuilder createEnrollVerbBuilder(
     AtEnrollmentRequest request, {
     AtPkamKeyPair? atPkamKeyPair,

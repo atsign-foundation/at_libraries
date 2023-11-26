@@ -81,22 +81,20 @@ void main() {
     when(() => (mockAtLookUp as AtLookupImpl).close())
         .thenAnswer((_) async => ());
 
-    // AtEnrollmentRequest atEnrollmentRequest = (AtEnrollmentRequest.request()
-    //       ..setAppName('wavi')
-    //       ..setDeviceName('pixel')
-    //       ..setOtp('12345')
-    //       ..setNamespaces({'wavi': 'rw'}))
-    //     .build();
+    AtNewEnrollmentRequestBuilder atNewEnrollmentRequestBuilder =
+        AtNewEnrollmentRequestBuilder()
+          ..setAppName('wavi')
+          ..setDeviceName('pixel')
+          ..setNamespaces({'wavi': 'rw'})
+          ..setOtp('A123FE')
+          ..setApkamPublicKey('testApkamPublicKey');
+    AtNewEnrollmentRequest atNewEnrollmentRequest =
+        atNewEnrollmentRequestBuilder.build();
 
-    AtPkamKeyPair atPkamKeyPair =
-        AtPkamKeyPair.create(apkamPublicKey, apkamPrivateKey);
-    SymmetricKey symmetricKey = AESKey(apkamSymmetricKey);
-
-    // AtEnrollmentResponse enrollmentSubmissionResponse =
-    //     await atEnrollmentServiceImpl.enrollInternal(
-    //         atEnrollmentRequest, mockAtLookUp, atPkamKeyPair, symmetricKey);
-    // expect(enrollmentSubmissionResponse.enrollmentId, '123');
-    // expect(enrollmentSubmissionResponse.enrollStatus, EnrollStatus.pending);
+    AtEnrollmentResponse atEnrollmentResponse = await atEnrollmentServiceImpl
+        .submitEnrollment(atNewEnrollmentRequest, mockAtLookUp);
+    expect(atEnrollmentResponse.enrollmentId, '123');
+    expect(atEnrollmentResponse.enrollStatus, EnrollStatus.pending);
   });
 
   group('A group of test related to AtEnrollmentBuilder', () {
@@ -220,6 +218,58 @@ void main() {
           atEnrollmentRequestBuilder.build();
 
       expect(atEnrollmentRequest.enrollmentId, 'ABC-123-ID');
+    });
+  });
+  group('Group of tests to check createEnrollVerbBuilder method', () {
+    test(
+        'A test to verify  createEnrollVerbBuilder for AtInitialEnrollmentRequest',
+        () {
+      var enrollmentImpl = AtEnrollmentImpl('@alice');
+      AtInitialEnrollmentRequest request = (AtInitialEnrollmentRequestBuilder()
+            ..setAppName('TestApp')
+            ..setDeviceName('TestDevice')
+            ..setNamespaces({"wavi": "rw"})
+            ..setEncryptedDefaultEncryptionPrivateKey('encryptedPrivateKey')
+            ..setEncryptedDefaultSelfEncryptionKey('encryptedSelfEncryptionKey')
+            ..setApkamPublicKey('apkamPublicKey'))
+          .build();
+
+      var result = enrollmentImpl.createEnrollVerbBuilder(request);
+
+      expect(result.appName, equals('TestApp'));
+      expect(result.deviceName, equals('TestDevice'));
+      expect(result.namespaces, equals({'wavi': 'rw'}));
+      expect(result.encryptedDefaultEncryptionPrivateKey,
+          equals('encryptedPrivateKey'));
+      expect(result.encryptedDefaultSelfEncryptionKey,
+          equals('encryptedSelfEncryptionKey'));
+      expect(result.apkamPublicKey, equals('apkamPublicKey'));
+      expect(result.otp, isNull);
+      expect(result.encryptedAPKAMSymmetricKey, isNull);
+    });
+
+    test('A test for  createEnrollVerbBuilder for AtNewEnrollmentRequest', () {
+      var request = (AtNewEnrollmentRequestBuilder()
+            ..setAppName('TestApp')
+            ..setDeviceName('TestDevice')
+            ..setNamespaces({"wavi": "rw", "contact": "r"})
+            ..setOtp('A1CFG3')
+            ..setApkamPublicKey('apkamPublicKey'))
+          .build();
+
+      var enrollmentImpl = AtEnrollmentImpl('@alice');
+      AtPkamKeyPair atPkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
+      var result = enrollmentImpl.createEnrollVerbBuilder(request,
+          atPkamKeyPair: atPkamKeyPair);
+
+      // Assert
+      expect(result.appName, equals('TestApp'));
+      expect(result.deviceName, equals('TestDevice'));
+      expect(result.namespaces, equals({"wavi": "rw", "contact": "r"}));
+      expect(result.otp, equals('A1CFG3'));
+      expect(result.apkamPublicKey, isNotNull);
+      expect(result.encryptedDefaultEncryptionPrivateKey, isNull);
+      expect(result.encryptedDefaultSelfEncryptionKey, isNull);
     });
   });
 }

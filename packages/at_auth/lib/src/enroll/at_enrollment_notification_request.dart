@@ -1,5 +1,8 @@
 import 'package:at_auth/src/enroll/at_enrollment_request.dart';
 
+/// In APKAM approval flow, use this class from a privileged client to set attributes required for enrollment approval.
+/// Once a notification is received on the privileged client which can approve enrollment notifications from new devices,
+/// use [AtEnrollmentNotificationRequestBuilder] to create [AtEnrollmentNotificationRequest]
 class AtEnrollmentNotificationRequest extends AtEnrollmentRequest {
   String _encryptedApkamSymmetricKey;
 

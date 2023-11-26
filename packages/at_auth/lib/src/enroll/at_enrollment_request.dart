@@ -1,7 +1,8 @@
 import 'package:at_auth/at_auth.dart';
 import 'package:at_commons/at_commons.dart';
 
-/// Represents an enrollment request for APKAM.
+/// Base class containing common attributes for enrollment requests either from first onboarding client with enrollment enabled
+/// or a new client requesting enrollment.
 class AtEnrollmentRequest {
   final String? _appName;
   final String? _deviceName;
