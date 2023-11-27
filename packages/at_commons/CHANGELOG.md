@@ -1,5 +1,5 @@
 ## 4.0.0
-- fix: Improved regex for Reserved keys (Internal keys used by the server)
+- [Breaking Change] fix: Updated regex for Reserved keys (Internal keys used by the server)
 - fix: Add "put" operation to OTP verb to store semi-permanent pass codes
 ## 3.0.58
 - fix: Deprecate encryptedDefaultEncryptedPrivateKey in EnrollParams and introduce encryptedDefaultEncryptedPrivateKey for readability
