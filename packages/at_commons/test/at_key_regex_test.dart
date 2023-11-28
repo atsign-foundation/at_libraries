@@ -228,8 +228,9 @@ void main() {
   });
 
   group('Validate reserved keys regex', () {
-
-    test('Validate appropriate parts of signing_pub_key are identified correctly', () {
+    test(
+        'Validate appropriate parts of signing_pub_key are identified correctly',
+        () {
       String key = 'public:signing_publickey@owner';
       var type = RegexUtil.keyType(key, false);
       expect(type, KeyType.reservedKey);
@@ -239,7 +240,9 @@ void main() {
       expect(matches['atKey'], 'signing_publickey');
     });
 
-    test('Validate appropriate parts of enc_shared_key are identified correctly', () {
+    test(
+        'Validate appropriate parts of enc_shared_key are identified correctly',
+        () {
       String key = '@reno:${AtConstants.atEncryptionSharedKey}@ajax';
       var type = RegexUtil.keyType(key, false);
       expect(type, KeyType.reservedKey);
@@ -250,7 +253,8 @@ void main() {
       expect(matches['sharedWith'], 'reno');
     });
 
-    test('Validate appropriate parts of pkam_pub_key are identified correctly', () {
+    test('Validate appropriate parts of pkam_pub_key are identified correctly',
+        () {
       String key = 'privatekey:at_pkam_publickey';
       var type = RegexUtil.keyType(key, false);
       expect(type, KeyType.reservedKey);
@@ -261,7 +265,9 @@ void main() {
       expect(matches['sharedWith'], '');
     });
 
-    test('Validate appropriate parts of _latestNotificationId are identified correctly', () {
+    test(
+        'Validate appropriate parts of _latestNotificationId are identified correctly',
+        () {
       String key = '_latestNotificationId';
       var type = RegexUtil.keyType(key, false);
       expect(type, KeyType.reservedKey);

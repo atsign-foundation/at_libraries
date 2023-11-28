@@ -121,7 +121,7 @@ void main() {
       for (var key in keyTypeList) {
         var type = RegexUtil.keyType(key, false);
         print(key);
-        if(type != KeyType.reservedKey){
+        if (type != KeyType.reservedKey) {
           fails.add('$key classified as $type - actually a reserved key');
         }
       }
@@ -178,7 +178,9 @@ void main() {
       expect(fails, []);
     });
 
-    test('Validate no false positives for reserved keys with incorrect visibility', (){
+    test(
+        'Validate no false positives for reserved keys with incorrect visibility',
+        () {
       var keysList = [];
       var fails = [];
       // negative test to validate that e.g. only public:publickey@owner is a
@@ -211,16 +213,19 @@ void main() {
       expect(fails, []);
     });
 
-    test('Ensure public hidden keys should NOT be classified as reserved keys', (){
-      var keyType = AtKey.getKeyType('public:__secretKey@cia', //double underscore after 'public:'
+    test('Ensure public hidden keys should NOT be classified as reserved keys',
+        () {
+      var keyType = AtKey.getKeyType(
+          'public:__secretKey@cia', //double underscore after 'public:'
           enforceNameSpace: false);
       expect(keyType, isNot(KeyType.reservedKey));
       expect(keyType, KeyType.publicKey);
     });
 
-    test('Ensure underscore keys should NOT be classified as reserved keys', (){
-      var keyType = AtKey.getKeyType('public:_secretKey@test',
-          enforceNameSpace: false);
+    test('Ensure underscore keys should NOT be classified as reserved keys',
+        () {
+      var keyType =
+          AtKey.getKeyType('public:_secretKey@test', enforceNameSpace: false);
       expect(keyType, isNot(KeyType.reservedKey));
       expect(keyType, KeyType.publicKey);
     });

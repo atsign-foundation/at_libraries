@@ -1,5 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // dart run build_runner build to generate this file
+
 part of 'enroll_params.dart';
 
 // **************************************************************************
@@ -14,8 +15,6 @@ EnrollParams _$EnrollParamsFromJson(Map<String, dynamic> json) => EnrollParams()
     (k, e) => MapEntry(k, e as String),
   )
   ..otp = json['otp'] as String?
-  ..encryptedDefaultEncryptedPrivateKey =
-      json['encryptedDefaultEncryptedPrivateKey'] as String?
   ..encryptedDefaultEncryptionPrivateKey =
       json['encryptedDefaultEncryptionPrivateKey'] as String?
   ..encryptedDefaultSelfEncryptionKey =
@@ -30,8 +29,6 @@ Map<String, dynamic> _$EnrollParamsToJson(EnrollParams instance) =>
       'deviceName': instance.deviceName,
       'namespaces': instance.namespaces,
       'otp': instance.otp,
-      'encryptedDefaultEncryptedPrivateKey':
-          instance.encryptedDefaultEncryptedPrivateKey,
       'encryptedDefaultEncryptionPrivateKey':
           instance.encryptedDefaultEncryptionPrivateKey,
       'encryptedDefaultSelfEncryptionKey':
