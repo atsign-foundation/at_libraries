@@ -31,3 +31,4 @@ export 'package:at_commons/src/verb/enroll_params.dart';
 export 'package:at_commons/src/enroll/enrollment.dart';
 @experimental
 export 'package:at_commons/src/telemetry/at_telemetry.dart';
+export 'package:at_commons/src/utils/string_utils.dart';

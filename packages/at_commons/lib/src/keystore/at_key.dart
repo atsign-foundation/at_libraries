@@ -11,11 +11,11 @@ class AtKey {
   /// The 'identifier' part of an atProtocol key name. For example if the key is
   /// `@bob:city.address.my_app@alice` then the [key] would be `city.address` and
   /// the [namespace] would be `my_app`
-  String? key;
+  late String key;
   String? _sharedWith;
   String? _sharedBy;
   String? _namespace;
-  Metadata? metadata;
+  Metadata metadata = Metadata();
   bool isRef = false;
 
   @override
@@ -72,7 +72,11 @@ class AtKey {
   /// The 'owner' part of an atProtocol key name. For example if the key is
   /// `@bob:city.address.my_app@alice` then [sharedBy] is `@alice`
   set sharedBy(String? sharedByAtSign) {
-    assertStartsWithAtIfNotEmpty(sharedByAtSign);
+    if (sharedByAtSign != null &&
+        sharedByAtSign.isNotEmpty &&
+        (!sharedByAtSign.startsWith('@'))) {
+      sharedByAtSign = '@$sharedByAtSign';
+    }
     _sharedBy = sharedByAtSign?.toLowerCase();
   }
 
@@ -83,9 +87,13 @@ class AtKey {
   /// The 'recipient' part of an atProtocol key name. For example if the key is
   /// `@bob:city.address.my_app@alice` then [sharedWith] is `@bob`
   set sharedWith(String? sharedWithAtSign) {
-    assertStartsWithAtIfNotEmpty(sharedWithAtSign);
+    if (sharedWithAtSign != null &&
+        sharedWithAtSign.isNotEmpty &&
+        (!sharedWithAtSign.startsWith('@'))) {
+      sharedWithAtSign = '@$sharedWithAtSign';
+    }
     if (sharedWithAtSign.isNotNullOrEmpty &&
-        (isLocal == true || metadata?.isPublic == true)) {
+        (isLocal == true || metadata.isPublic == true)) {
       throw InvalidAtKeyException(
           'isLocal or isPublic cannot be true when sharedWith is set');
     }
@@ -106,35 +114,28 @@ class AtKey {
       throw InvalidAtKeyException('Key cannot be null or empty');
     }
     //enforcing lower-case on AtKey.key
-    key = key?.toLowerCase();
+    key = key.toLowerCase();
     // If metadata.isPublic is true and metadata.isCached is true,
     // return cached public key
-    if (key!.startsWith('cached:public:') ||
-        (metadata != null &&
-            (metadata!.isPublic != null && metadata!.isPublic!) &&
-            (metadata!.isCached))) {
+    if (key.startsWith('cached:public:') ||
+        (metadata.isPublic) && (metadata.isCached)) {
       return 'cached:public:$key${_dotNamespaceIfPresent()}$_sharedBy';
     }
 
     // If metadata.isPublic is true, return public key
-    if (key!.startsWith('public:') ||
-        (metadata != null &&
-            metadata!.isPublic != null &&
-            metadata!.isPublic!)) {
+    if (key.startsWith('public:') || (metadata.isPublic)) {
       return 'public:$key${_dotNamespaceIfPresent()}$_sharedBy';
     }
 
     //If metadata.isCached is true, return shared cached key
-    if (key!.startsWith('cached:') ||
-        (metadata != null && metadata!.isCached)) {
+    if (key.startsWith('cached:') || (metadata.isCached)) {
       return 'cached:$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy';
     }
 
     // If key starts with privatekey:, return private key
-    if ((metadata != null && metadata!.isHidden) ||
-        key!.startsWith('privatekey:')) {
-      if (key!.startsWith('privatekey:')) {
-        return '$key'.toLowerCase();
+    if (metadata.isHidden || key.startsWith('privatekey:')) {
+      if (key.startsWith('privatekey:')) {
+        return key.toLowerCase();
       }
       return 'privatekey:$key${_dotNamespaceIfPresent()}'.toLowerCase();
     }
@@ -319,11 +320,11 @@ class AtKey {
       }
     }
     //remove namespace
-    if (atKey.key != null && atKey.key!.contains('.')) {
-      var namespaceIndex = atKey.key!.lastIndexOf('.');
+    if (atKey.key.contains('.')) {
+      var namespaceIndex = atKey.key.lastIndexOf('.');
       if (namespaceIndex > -1) {
-        atKey.namespace = atKey.key!.substring(namespaceIndex + 1);
-        atKey.key = atKey.key!.substring(0, namespaceIndex);
+        atKey.namespace = atKey.key.substring(namespaceIndex + 1);
+        atKey.key = atKey.key.substring(0, namespaceIndex);
       }
     } else {
       metaData.namespaceAware = false;
@@ -343,7 +344,7 @@ class AtKey {
 class PublicKey extends AtKey {
   PublicKey() {
     super.metadata = Metadata();
-    super.metadata!.isPublic = true;
+    super.metadata.isPublic = true;
   }
 
   @override
@@ -356,7 +357,7 @@ class PublicKey extends AtKey {
 class SelfKey extends AtKey {
   SelfKey() {
     super.metadata = Metadata();
-    super.metadata?.isPublic = false;
+    super.metadata.isPublic = false;
   }
 
   @override
@@ -413,9 +414,8 @@ class LocalKey extends AtKey {
 }
 
 class Metadata {
-  @visibleForTesting
-
   /// When set to `false`, the Map produced by toJson will not include fields whose values are null
+  @visibleForTesting
   bool fullJson = true;
 
   /// Time in milliseconds after which the [AtKey] expires.
@@ -459,7 +459,7 @@ class Metadata {
 
   /// if [isPublic] is true, then [atKey] is accessible by all atSigns.
   /// if [isPublic] is false, then [atKey] is only accessible by either [sharedWith] or [sharedBy]
-  bool? isPublic = false;
+  bool isPublic = false;
 
   /// When set to true, implies the key is a HiddenKey
   bool isHidden = false;
@@ -473,10 +473,10 @@ class Metadata {
 
   /// Determines whether a value is stored as binary data
   /// If value of the key is blob (images, videos etc), the binary data is encoded to text and [isBinary] is set to true.
-  bool? isBinary = false;
+  bool isBinary = false;
 
   /// Is the value encrypted, or not
-  bool? isEncrypted;
+  bool isEncrypted = false;
 
   /// When set to true, indicates the key is a cached key
   bool isCached = false;
@@ -583,10 +583,10 @@ class Metadata {
     if (sharedKeyStatus.isNotNullOrEmpty) {
       sb.write(':${AtConstants.sharedKeyStatus}:$sharedKeyStatus');
     }
-    if (isBinary != null) {
+    if (isBinary) {
       sb.write(':isBinary:$isBinary');
     }
-    if (isEncrypted != null) {
+    if (isEncrypted) {
       sb.write(':isEncrypted:$isEncrypted');
     }
     if (sharedKeyEnc.isNotNullOrEmpty) {
@@ -634,7 +634,7 @@ class Metadata {
     if (fullJson || updatedAt != null) {
       map[AtConstants.updatedAt] = updatedAt?.toUtc().toString();
     }
-    if (fullJson || isPublic != null) {
+    if (fullJson || isPublic) {
       map['isPublic'] = isPublic;
     }
     if (fullJson || ttl != null) {
@@ -649,10 +649,10 @@ class Metadata {
     if (fullJson || ccd != null) {
       map[AtConstants.ccd] = ccd;
     }
-    if (fullJson || isBinary != null) {
+    if (fullJson || isBinary) {
       map[AtConstants.isBinary] = isBinary;
     }
-    if (fullJson || isEncrypted != null) {
+    if (fullJson || isEncrypted) {
       map[AtConstants.isEncrypted] = isEncrypted;
     }
     if (fullJson || dataSignature != null) {

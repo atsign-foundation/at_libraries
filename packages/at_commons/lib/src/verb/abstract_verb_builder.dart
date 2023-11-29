@@ -1,13 +1,12 @@
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
-import 'package:at_commons/src/utils/string_utils.dart';
 
 /// An abstract class implementing the [VerbBuilder].
 /// Class contains the implementation for validating the key data and building
 /// the key (common for all verb builder) from the verb builder instances.
 abstract class AbstractVerbBuilder implements VerbBuilder {
   /// Represents the AtKey instance to populate the verb builder data
-  AtKey atKeyObj = AtKey()..metadata = Metadata();
+  AtKey atKey = AtKey()..metadata = Metadata();
 
   /// Validates the [AtKey]
   ///
@@ -25,21 +24,20 @@ abstract class AbstractVerbBuilder implements VerbBuilder {
   ///
   /// * When [AtKey.key] contains @ or : characters
   void validateKey() {
-    if (atKeyObj.metadata?.isCached == true && atKeyObj.isLocal == true) {
+    if (atKey.metadata.isCached == true && atKey.isLocal == true) {
       throw InvalidAtKeyException('Cached key cannot be a local key');
     }
-    if (atKeyObj.isLocal == true &&
-        (atKeyObj.metadata?.isPublic == true ||
-            atKeyObj.sharedWith.isNotNullOrEmpty)) {
+    if (atKey.isLocal == true &&
+        (atKey.metadata.isPublic == true ||
+            atKey.sharedWith.isNotNullOrEmpty)) {
       throw InvalidAtKeyException(
           'When isLocal is set to true, cannot set isPublic to true or set a non-null sharedWith');
     }
-    if (atKeyObj.metadata?.isPublic == true &&
-        atKeyObj.sharedWith.isNotNullOrEmpty) {
+    if (atKey.metadata.isPublic == true && atKey.sharedWith.isNotNullOrEmpty) {
       throw InvalidAtKeyException(
           'When isPublic is set to true, sharedWith cannot be populated');
     }
-    if (atKeyObj.key.isNullOrEmpty) {
+    if (atKey.key.isNullOrEmpty) {
       throw InvalidAtKeyException('Key cannot be null or empty');
     }
   }

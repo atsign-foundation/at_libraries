@@ -13,19 +13,17 @@ class PkamVerbBuilder implements VerbBuilder {
 
   @override
   String buildCommand() {
-    var command = 'pkam';
+    StringBuffer serverCommandBuffer = StringBuffer('pkam');
     if (signingAlgo != null && signingAlgo!.isNotEmpty) {
-      command += ':signingAlgo:$signingAlgo';
+      serverCommandBuffer.write(':signingAlgo:$signingAlgo');
     }
     if (hashingAlgo != null && hashingAlgo!.isNotEmpty) {
-      command += ':hashingAlgo:$hashingAlgo';
+      serverCommandBuffer.write(':hashingAlgo:$hashingAlgo');
     }
     if (enrollmentlId != null && enrollmentlId!.isNotEmpty) {
-      command += ':enrollmentId:$enrollmentlId';
+      serverCommandBuffer.write(':enrollmentId:$enrollmentlId');
     }
-    command += ':$signature';
-    command += '\n';
-    return command;
+    return (serverCommandBuffer..write(':$signature\n')).toString();
   }
 
   @override

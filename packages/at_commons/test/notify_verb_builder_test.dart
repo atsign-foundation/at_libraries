@@ -10,9 +10,9 @@ void main() {
       var notifyVerbBuilder = NotifyVerbBuilder()
         ..id = '123'
         ..value = 'alice@gmail.com'
-        ..isPublic = true
-        ..atKey = 'email'
-        ..sharedBy = 'alice'
+        ..atKey.metadata.isPublic = true
+        ..atKey.key = 'email'
+        ..atKey.sharedBy = '@alice'
         ..ttln = 100;
       var command = notifyVerbBuilder.buildCommand();
       expect(command,
@@ -32,10 +32,10 @@ void main() {
       var notifyVerbBuilder = NotifyVerbBuilder()
         ..id = '123'
         ..value = 'alice@gmail.com'
-        ..isPublic = true
-        ..atKey = 'email'
-        ..sharedBy = 'alice'
-        ..ttl = 1000;
+        ..atKey.metadata.isPublic = true
+        ..atKey.key = 'email'
+        ..atKey.sharedBy = '@alice'
+        ..atKey.metadata.ttl = 1000;
       var command = notifyVerbBuilder.buildCommand();
       expect(command,
           'notify:id:123:notifier:SYSTEM:ttl:1000:public:email@alice:alice@gmail.com\n');
@@ -54,11 +54,11 @@ void main() {
       var notifyVerbBuilder = NotifyVerbBuilder()
         ..id = '123'
         ..value = 'alice@atsign.com'
-        ..atKey = 'email'
-        ..sharedBy = 'alice'
-        ..sharedWith = 'bob'
-        ..pubKeyChecksum = '123'
-        ..sharedKeyEncrypted = 'abc'
+        ..atKey.key = 'email'
+        ..atKey.sharedBy = '@alice'
+        ..atKey.sharedWith = '@bob'
+        ..atKey.metadata.pubKeyCS = '123'
+        ..atKey.metadata.sharedKeyEnc = 'abc'
         ..ttln = 100;
       var command = notifyVerbBuilder.buildCommand();
       expect(command,
@@ -79,12 +79,12 @@ void main() {
       var notifyVerbBuilder = NotifyVerbBuilder()
         ..id = '123'
         ..value = 'alice@atsign.com'
-        ..atKey = 'email'
-        ..sharedBy = 'alice'
-        ..sharedWith = 'bob'
-        ..pubKeyChecksum = '123'
-        ..sharedKeyEncrypted = 'abc'
-        ..isTextMessageEncrypted = true;
+        ..atKey.key = 'email'
+        ..atKey.sharedBy = '@alice'
+        ..atKey.sharedWith = '@bob'
+        ..atKey.metadata.pubKeyCS = '123'
+        ..atKey.metadata.sharedKeyEnc = 'abc'
+        ..atKey.metadata.isEncrypted = true;
       var command = notifyVerbBuilder.buildCommand();
       expect(command,
           'notify:id:123:notifier:SYSTEM:isEncrypted:true:sharedKeyEnc:abc:pubKeyCS:123:@bob:email@alice:alice@atsign.com\n');
@@ -106,16 +106,16 @@ void main() {
       var notifyVerbBuilder = NotifyVerbBuilder()
         ..id = '123'
         ..value = 'alice@atsign.com'
-        ..atKey = 'email'
-        ..sharedBy = 'alice'
-        ..sharedWith = 'bob'
-        ..pubKeyChecksum = '123'
-        ..sharedKeyEncrypted = 'abc'
-        ..encKeyName = 'ekn'
-        ..encAlgo = 'ea'
-        ..ivNonce = 'ivn'
-        ..skeEncKeyName = 'ske_ekn'
-        ..skeEncAlgo = 'ske_ea';
+        ..atKey.key = 'email'
+        ..atKey.sharedBy = '@alice'
+        ..atKey.sharedWith = '@bob'
+        ..atKey.metadata.pubKeyCS = '123'
+        ..atKey.metadata.sharedKeyEnc = 'abc'
+        ..atKey.metadata.encKeyName = 'ekn'
+        ..atKey.metadata.encAlgo = 'ea'
+        ..atKey.metadata.ivNonce = 'ivn'
+        ..atKey.metadata.skeEncKeyName = 'ske_ekn'
+        ..atKey.metadata.skeEncAlgo = 'ske_ea';
       var command = notifyVerbBuilder.buildCommand();
       expect(
           command,
@@ -152,10 +152,10 @@ void main() {
       test('Test to verify all notify fields in the verb builder', () {
         var verbHandler = NotifyVerbBuilder()
           ..id = 'abc-123'
-          ..atKey = 'phone'
-          ..sharedWith = '@alice'
-          ..sharedBy = '@bob'
-          ..isTextMessageEncrypted = true;
+          ..atKey.key = 'phone'
+          ..atKey.sharedWith = '@alice'
+          ..atKey.sharedBy = '@bob'
+          ..atKey.metadata.isEncrypted = true;
 
         var notifyCommand = verbHandler.buildCommand();
         var verbParams = getVerbParams(VerbSyntax.notify, notifyCommand.trim());
@@ -168,9 +168,9 @@ void main() {
       //  2. IsEncrypted flag is not set by default.
       test('Test to verify default notification id is generated', () {
         var verbHandler = NotifyVerbBuilder()
-          ..atKey = 'phone'
-          ..sharedWith = '@alice'
-          ..sharedBy = '@bob';
+          ..atKey.key = 'phone'
+          ..atKey.sharedWith = '@alice'
+          ..atKey.sharedBy = '@bob';
 
         var notifyCommand = verbHandler.buildCommand();
         var verbParams = getVerbParams(VerbSyntax.notify, notifyCommand.trim());
@@ -180,9 +180,9 @@ void main() {
       test('Test to verify custom set notification id to verb builder', () {
         var verbHandler = NotifyVerbBuilder()
           ..id = 'abc-123'
-          ..atKey = 'phone'
-          ..sharedWith = '@alice'
-          ..sharedBy = '@bob';
+          ..atKey.key = 'phone'
+          ..atKey.sharedWith = '@alice'
+          ..atKey.sharedBy = '@bob';
 
         var notifyCommand = verbHandler.buildCommand();
         var verbParams = getVerbParams(VerbSyntax.notify, notifyCommand.trim());
