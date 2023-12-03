@@ -1,3 +1,6 @@
+## 1.0.4
+- fix: handle malformed atsigns (no leading `@`) in CLIBase constructor
+- build: updated dependencies
 ## 1.0.3
 - Added `example/` package, moved code samples from `bin/` to `example/`
 ## 1.0.2
