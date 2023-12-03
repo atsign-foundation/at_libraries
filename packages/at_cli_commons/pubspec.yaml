@@ -10,14 +10,14 @@ environment:
 
 dependencies:
   args: ^2.4.2
-  at_client: ^3.0.62
-  at_onboarding_cli: ^1.3.0
+  at_client: ^3.0.68
+  at_onboarding_cli: ^1.4.0
   at_utils: ^3.0.15
   chalkdart: ^2.0.9
   version: ^3.0.2
   logging: ^1.2.0
-  meta: ^1.9.1
+  meta: ^1.11.0
 
 dev_dependencies:
-  lints: ^2.1.1
-  test: ^1.24.4
+  lints: ^3.0.0
+  test: ^1.24.9
