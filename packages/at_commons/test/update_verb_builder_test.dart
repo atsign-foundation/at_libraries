@@ -390,7 +390,7 @@ void main() {
       var ccd = false;
       var ttr = 1000;
       var dataSignature = 'someDataSignature';
-      var sharedKeyStatus = SharedKeyStatus.LOCAL_UPDATED.name;
+      var sharedKeyStatus = SharedKeyStatus.localUpdated.name;
       var sharedKeyEncrypted = 'xyz123abc456';
       var pubKeyChecksum = 'the_checksum';
       var encoding = 'some_encoding';

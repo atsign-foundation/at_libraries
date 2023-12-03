@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:at_auth/at_auth.dart';
 import 'package:at_auth/src/at_auth_base.dart';
 import 'package:at_auth/src/auth/cram_authenticator.dart';
 import 'package:at_auth/src/auth/pkam_authenticator.dart';
+import 'package:at_auth/src/enroll/at_enrollment_base.dart';
 import 'package:at_auth/src/keys/at_auth_keys.dart';
 import 'package:at_auth/src/onboard/at_onboarding_request.dart';
 import 'package:at_auth/src/onboard/at_onboarding_response.dart';
@@ -26,18 +28,22 @@ class AtAuthImpl implements AtAuth {
 
   PkamAuthenticator? pkamAuthenticator;
 
+  AtEnrollmentBase? atEnrollmentBase;
+
   AtLookUp? atLookUp;
 
   AtAuthImpl(
       {this.atLookUp,
       this.atChops,
       this.cramAuthenticator,
-      this.pkamAuthenticator});
+      this.pkamAuthenticator,
+      this.atEnrollmentBase});
 
   @override
   Future<AtAuthResponse> authenticate(AtAuthRequest atAuthRequest) async {
     if (atAuthRequest.atKeysFilePath == null &&
-        atAuthRequest.atAuthKeys == null) {
+        atAuthRequest.atAuthKeys == null &&
+        atAuthRequest.encryptedKeysMap == null) {
       throw AtAuthenticationException(
           'Keyfile path or atAuthKeys object has to be set in atAuthRequest');
     }
@@ -49,7 +55,9 @@ class AtAuthImpl implements AtAuth {
       atAuthKeys = _decryptAtKeysFile(
           await _readAtKeysFile(atAuthRequest.atKeysFilePath),
           atAuthRequest.authMode);
-      enrollmentIdFromRequest ??= atAuthKeys.enrollmentId;
+    } else if (atAuthRequest.encryptedKeysMap != null) {
+      atAuthKeys = _decryptAtKeysFile(
+          atAuthRequest.encryptedKeysMap!, PkamAuthMode.keysFile);
     } else {
       atAuthKeys = atAuthRequest.atAuthKeys;
     }
@@ -57,6 +65,7 @@ class AtAuthImpl implements AtAuth {
       throw AtAuthenticationException(
           'keys either were not provided in the AtAuthRequest, or could not be read from provided keys file');
     }
+    enrollmentIdFromRequest ??= atAuthKeys.enrollmentId;
     var pkamPrivateKey = atAuthKeys.apkamPrivateKey;
 
     if (atAuthRequest.authMode == PkamAuthMode.keysFile &&
@@ -86,7 +95,8 @@ class AtAuthImpl implements AtAuth {
         'PKAM auth result: ${isPkamAuthenticated ? 'success' : 'failed'}');
     return AtAuthResponse(atAuthRequest.atSign)
       ..isSuccessful = isPkamAuthenticated
-      ..enrollmentId = enrollmentIdFromRequest;
+      ..enrollmentId = enrollmentIdFromRequest
+      ..atAuthKeys = atAuthKeys;
   }
 
   @override
@@ -198,40 +208,39 @@ class AtAuthImpl implements AtAuth {
       AtOnboardingRequest atOnboardingRequest,
       AtAuthKeys atAuthKeys,
       AtLookUp atLookup) async {
-    var enrollBuilder = EnrollVerbBuilder()
-      ..appName = atOnboardingRequest.appName
-      ..deviceName = atOnboardingRequest.deviceName;
-
     var symmetricEncryptionAlgo =
         AESEncryptionAlgo(AESKey(atAuthKeys.apkamSymmetricKey!));
-    enrollBuilder.encryptedDefaultEncryptedPrivateKey = atChops!
+    var encryptedDefaultEncryptionPrivateKey = atChops!
         .encryptString(
             atAuthKeys.defaultEncryptionPrivateKey!, EncryptionKeyType.aes256,
             encryptionAlgorithm: symmetricEncryptionAlgo,
             iv: AtChopsUtil.generateIVLegacy())
         .result;
-
-    enrollBuilder.encryptedDefaultSelfEncryptionKey = atChops!
+    var encryptedDefaultSelfEncryptionKey = atChops!
         .encryptString(
             atAuthKeys.defaultSelfEncryptionKey!, EncryptionKeyType.aes256,
             encryptionAlgorithm: symmetricEncryptionAlgo,
             iv: AtChopsUtil.generateIVLegacy())
         .result;
-    enrollBuilder.apkamPublicKey = atAuthKeys.apkamPublicKey;
-
-    var enrollResult = await atLookup
-        .executeCommand(enrollBuilder.buildCommand(), auth: false);
-    if (enrollResult == null || enrollResult.isEmpty) {
-      throw AtAuthenticationException('Enrollment response is null or empty');
-    } else if (enrollResult.startsWith('error:')) {
-      throw AtAuthenticationException('Enrollment error:$enrollResult');
+    var enrollRequestBuilder = AtEnrollmentRequest.request()
+      ..setAppName(atOnboardingRequest.appName)
+      ..setDeviceName(atOnboardingRequest.deviceName)
+      ..setEncryptedDefaultEncryptionPrivateKey(
+          encryptedDefaultEncryptionPrivateKey)
+      ..setEncryptedDefaultSelfEncryptionKey(encryptedDefaultSelfEncryptionKey)
+      ..setApkamPublicKey(atAuthKeys.apkamPublicKey);
+    atEnrollmentBase ??= AtEnrollmentImpl(atOnboardingRequest.atSign);
+    AtEnrollmentResponse enrollmentResponse;
+    try {
+      enrollmentResponse = await atEnrollmentBase!
+          .submitEnrollment(enrollRequestBuilder.build(), atLookUp!);
+    } on AtEnrollmentException catch (e) {
+      throw AtAuthenticationException('Enrollment error:${e.toString}');
     }
-    enrollResult = enrollResult.replaceFirst('data:', '');
-    _logger.finer('enrollResult: $enrollResult');
-    var enrollResultJson = jsonDecode(enrollResult);
-    var enrollmentIdFromServer = enrollResultJson[AtConstants.enrollmentId];
-    var enrollmentStatus = enrollResultJson['status'];
-    if (enrollmentStatus != 'approved') {
+    _logger.finer('enrollment response: ${enrollmentResponse.toString()}');
+    var enrollmentIdFromServer = enrollmentResponse.enrollmentId;
+    var enrollmentStatus = enrollmentResponse.enrollStatus;
+    if (enrollmentStatus != EnrollStatus.approved) {
       throw AtAuthenticationException(
           'initial enrollment is not approved. Status from server: $enrollmentStatus');
     }
@@ -239,7 +248,7 @@ class AtAuthImpl implements AtAuth {
   }
 
   AtAuthKeys _decryptAtKeysFile(
-      Map<String, String> jsonData, PkamAuthMode authMode) {
+      Map<String, dynamic> jsonData, PkamAuthMode authMode) {
     var securityKeys = AtAuthKeys();
     String decryptionKey = jsonData[auth_constants.defaultSelfEncryptionKey]!;
     var atChops =
