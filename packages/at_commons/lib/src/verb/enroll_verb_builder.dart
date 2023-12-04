@@ -28,7 +28,10 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
 
   Map<String, String>? namespaces;
 
+  @Deprecated('Use encryptedDefaultEncryptionPrivateKey')
   String? encryptedDefaultEncryptedPrivateKey;
+
+  String? encryptedDefaultEncryptionPrivateKey;
   String? encryptedDefaultSelfEncryptionKey;
   String? encryptedAPKAMSymmetricKey;
 
@@ -45,8 +48,8 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
           ..apkamPublicKey = apkamPublicKey
           ..otp = otp
           ..namespaces = namespaces
-          ..encryptedDefaultEncryptedPrivateKey =
-              encryptedDefaultEncryptedPrivateKey
+          ..encryptedDefaultEncryptionPrivateKey =
+              encryptedDefaultEncryptionPrivateKey
           ..encryptedDefaultSelfEncryptionKey =
               encryptedDefaultSelfEncryptionKey
           ..encryptedAPKAMSymmetricKey = encryptedAPKAMSymmetricKey)
