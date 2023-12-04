@@ -58,7 +58,8 @@ class AtAuthImpl implements AtAuth {
     }
     if (atAuthKeys == null) {
       throw AtAuthenticationException(
-          'keys either were not provided in the AtAuthRequest, or could not be read from provided keys file');
+          'keys either were not provided in the AtAuthRequest,'
+              ' or could not be read from provided keys file');
     }
     enrollmentIdFromRequest ??= atAuthKeys.enrollmentId;
     var pkamPrivateKey = atAuthKeys.apkamPrivateKey;
@@ -81,10 +82,12 @@ class AtAuthImpl implements AtAuth {
       var pkamResponse = (await pkamAuthenticator!
           .authenticate(enrollmentId: enrollmentIdFromRequest));
       isPkamAuthenticated = pkamResponse.isSuccessful;
-    } on Exception catch (e) {
-      _logger.severe('Caught exception: $e');
+    } on AtException catch (e) {
+      _logger.severe('Caught $e');
       throw AtAuthenticationException(
-          'Unable to authenticate- ${e.toString()}');
+          'Unable to authenticate | Cause: ${e.message}');
+    } on Exception catch (e) {
+      throw AtAuthenticationException('Unable to authenticate | Cause: $e');
     }
     _logger.finer(
         'PKAM auth result: ${isPkamAuthenticated ? 'success' : 'failed'}');
@@ -108,7 +111,7 @@ class AtAuthImpl implements AtAuth {
     if (!cramAuthResult.isSuccessful) {
       throw AtAuthenticationException(
           'Cram authentication failed. Please check the cram key'
-          ' and try again \n(or) contact support@atsign.com');
+          ' and try again (or) contact support@atsign.com');
     }
     //2. generate key pairs
     var atAuthKeys = _generateKeyPairs(atOnboardingRequest.authMode,
@@ -122,7 +125,8 @@ class AtAuthImpl implements AtAuth {
     //3. update pkam public key through enrollment or manually based on app preference
     String? enrollmentIdFromServer;
     if (atOnboardingRequest.enableEnrollment) {
-      // server will update the apkam public key during enrollment.So don't have to manually update in this scenario.
+      // server will update the apkam public key during enrollment.
+      // So don't have to manually update in this scenario.
       enrollmentIdFromServer = await _sendOnboardingEnrollment(
           atOnboardingRequest, atAuthKeys, atLookUp!);
       atAuthKeys.enrollmentId = enrollmentIdFromServer;
@@ -137,20 +141,20 @@ class AtAuthImpl implements AtAuth {
       _logger.finer('PkamPublicKey update result: $pkamUpdateResult');
     }
 
-    //3. Close connection to server
+    //4. Close connection to server
     try {
       await (atLookUp as AtLookupImpl).close();
     } on Exception catch (e) {
       _logger.severe('error while closing connection to server: $e');
     }
 
-    //4. Init _atLookUp again and attempt pkam auth
+    //5. Init _atLookUp again and attempt pkam auth
     // atLookUp = AtLookupImpl(atOnboardingRequest.atSign,
     //     atOnboardingRequest.rootDomain, atOnboardingRequest.rootPort);
     atLookUp!.atChops = atChops;
 
     var isPkamAuthenticated = false;
-    //5. Do pkam auth
+    //6. Do pkam auth
     pkamAuthenticator ??=
         PkamAuthenticator(atOnboardingRequest.atSign, atLookUp!);
     try {
@@ -164,7 +168,8 @@ class AtAuthImpl implements AtAuth {
       throw AtAuthenticationException('Pkam auth returned false');
     }
 
-    //5. If Pkam auth is success, update encryption public key to secondary and delete cram key from server
+    //7. If Pkam auth is success, update encryption public key to secondary
+    // and delete cram key from server
     final encryptionPublicKey = atAuthKeys.defaultEncryptionPublicKey;
     UpdateVerbBuilder updateBuilder = UpdateVerbBuilder()
       ..atKey = 'publickey'
@@ -173,7 +178,8 @@ class AtAuthImpl implements AtAuth {
       ..sharedBy = atOnboardingRequest.atSign;
     String? encryptKeyUpdateResult = await atLookUp!.executeVerb(updateBuilder);
     _logger.info('Encryption public key update result $encryptKeyUpdateResult');
-    // deleting cram secret from the keystore as cram auth is complete
+
+    //8.  Delete cram secret from the keystore as cram auth is complete
     DeleteVerbBuilder deleteBuilder = DeleteVerbBuilder()
       ..atKey = AtConstants.atCramSecret;
     String? deleteResponse = await atLookUp!.executeVerb(deleteBuilder);
