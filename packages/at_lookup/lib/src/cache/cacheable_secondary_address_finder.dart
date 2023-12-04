@@ -166,7 +166,7 @@ class SecondaryUrlFinder {
         _logger.severe('AtLookup.findSecondary for $atSign failed with $e'
             ' : ${retryDelaysMillis.length + 1} failures, giving up');
         if (e is RootServerConnectivityException) {
-          throw AtConnectException(
+          throw RootServerConnectivityException(
               'Unable to establish connection with root server.'
               ' Please check your internet connection and try again');
         }
