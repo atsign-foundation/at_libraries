@@ -13,11 +13,15 @@ class MockAtLookUp extends Mock implements AtLookupImpl {}
 // Create a mock for AtChops
 class MockAtChops extends Mock implements AtChops {}
 
+class MockAtEnrollment extends Mock implements AtEnrollmentBase {}
+
 class MockPkamAuthenticator extends Mock implements PkamAuthenticator {}
 
 class FakeUpdateVerbBuilder extends Fake implements UpdateVerbBuilder {}
 
 class FakeDeleteVerbBuilder extends Fake implements DeleteVerbBuilder {}
+
+class FakeEnrollRequest extends Fake implements AtEnrollmentRequest {}
 
 class FakeVerbBuilder extends Fake implements VerbBuilder {}
 
@@ -25,14 +29,19 @@ void main() {
   late AtAuthImpl atAuth;
   late MockAtLookUp mockAtLookUp;
   late MockPkamAuthenticator mockPkamAuthenticator;
+  late AtEnrollmentBase mockAtEnrollment;
   final String testEnrollmentId = '352b78c8-4b6f-4d07-a9cf-5466512ffa44';
 
   setUp(() {
     mockAtLookUp = MockAtLookUp();
     mockPkamAuthenticator = MockPkamAuthenticator();
+    mockAtEnrollment = MockAtEnrollment();
     atAuth = AtAuthImpl(
-        atLookUp: mockAtLookUp, pkamAuthenticator: mockPkamAuthenticator);
+        atLookUp: mockAtLookUp,
+        pkamAuthenticator: mockPkamAuthenticator,
+        atEnrollmentBase: mockAtEnrollment);
     registerFallbackValue(FakeVerbBuilder());
+    registerFallbackValue(FakeEnrollRequest());
   });
   group('AtAuthImpl authentication tests', () {
     test('Test authenticate() true with keys file', () async {
@@ -204,10 +213,6 @@ void main() {
     test('Test onboard - enable enrollment', () async {
       when(() => mockAtLookUp.cramAuthenticate(testCramSecret))
           .thenAnswer((_) => Future.value(true));
-      var mockEnrollResponse =
-          'data:{"enrollmentId":"abc123","status":"approved"}';
-      when(() => mockAtLookUp.executeCommand(any(that: startsWith('enroll:'))))
-          .thenAnswer((_) => Future.value(mockEnrollResponse));
       when(() => mockAtLookUp.executeVerb(any()))
           .thenAnswer((_) => Future.value('data:2'));
 
@@ -215,7 +220,10 @@ void main() {
       when(() => mockPkamAuthenticator.authenticate(enrollmentId: "abc123"))
           .thenAnswer((_) =>
               Future.value(AtAuthResponse('@alice🛠')..isSuccessful = true));
-
+      final mockEnrollmentResponse =
+          AtEnrollmentResponse("abc123", EnrollStatus.approved);
+      when(() => mockAtEnrollment.submitEnrollment(any(), mockAtLookUp))
+          .thenAnswer((_) => Future.value(mockEnrollmentResponse));
       final atOnboardingRequest = AtOnboardingRequest('@alice🛠')
         ..rootDomain = 'test.atsign.com'
         ..rootPort = 64

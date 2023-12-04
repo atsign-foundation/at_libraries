@@ -1,4 +1,4 @@
-import 'package:at_commons/src/keystore/key_type.dart';
+import 'package:at_commons/at_commons.dart';
 import 'package:at_commons/src/utils/at_key_regex_utils.dart';
 import 'package:test/test.dart';
 
@@ -225,17 +225,57 @@ void main() {
         expect(type == KeyType.cachedSharedKey, true);
       }
     });
+  });
 
-    test('A test to validate reserved key type', () {
-      var keyTypeList = [];
+  group('Validate reserved keys regex', () {
+    test(
+        'Validate appropriate parts of signing_pub_key are identified correctly',
+        () {
+      String key = 'public:signing_publickey@owner';
+      var type = RegexUtil.keyType(key, false);
+      expect(type, KeyType.reservedKey);
 
-      keyTypeList.add('public:signing_publickey@alice');
-      keyTypeList.add('public:signing_publickey@☎️_0002');
+      var matches = RegexUtil.matchesByGroup(Regexes(false).reservedKey, key);
+      expect(matches['owner'], 'owner');
+      expect(matches['atKey'], 'signing_publickey');
+    });
 
-      for (var key in keyTypeList) {
-        var type = RegexUtil.keyType(key, false);
-        expect(type == KeyType.reservedKey, true);
-      }
+    test(
+        'Validate appropriate parts of enc_shared_key are identified correctly',
+        () {
+      String key = '@reno:${AtConstants.atEncryptionSharedKey}@ajax';
+      var type = RegexUtil.keyType(key, false);
+      expect(type, KeyType.reservedKey);
+
+      var matches = RegexUtil.matchesByGroup(Regexes(false).reservedKey, key);
+      expect(matches['owner'], 'ajax');
+      expect(matches['atKey'], AtConstants.atEncryptionSharedKey);
+      expect(matches['sharedWith'], 'reno');
+    });
+
+    test('Validate appropriate parts of pkam_pub_key are identified correctly',
+        () {
+      String key = 'privatekey:at_pkam_publickey';
+      var type = RegexUtil.keyType(key, false);
+      expect(type, KeyType.reservedKey);
+
+      var matches = RegexUtil.matchesByGroup(Regexes(false).reservedKey, key);
+      expect(matches['owner'], '');
+      expect(matches['atKey'], 'at_pkam_publickey');
+      expect(matches['sharedWith'], '');
+    });
+
+    test(
+        'Validate appropriate parts of _latestNotificationId are identified correctly',
+        () {
+      String key = '_latestNotificationId';
+      var type = RegexUtil.keyType(key, false);
+      expect(type, KeyType.reservedKey);
+
+      var matches = RegexUtil.matchesByGroup(Regexes(false).reservedKey, key);
+      expect(matches['owner'], '');
+      expect(matches['atKey'], '_latestNotificationId');
+      expect(matches['sharedWith'], '');
     });
   });
 

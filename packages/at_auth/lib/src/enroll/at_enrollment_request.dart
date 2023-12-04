@@ -9,8 +9,11 @@ class AtEnrollmentRequest {
   final EnrollOperationEnum _enrollOperationEnum;
 
   final String? _enrollmentId;
+  final String? _apkamPublicKey;
   final String? _encryptedAPKAMSymmetricKey;
 
+  final String? _encryptedDefaultEncryptionPrivateKey;
+  final String? _encryptedDefaultSelfEncryptionKey;
   String? get appName => _appName;
 
   String? get deviceName => _deviceName;
@@ -25,6 +28,14 @@ class AtEnrollmentRequest {
 
   String? get encryptedAPKAMSymmetricKey => _encryptedAPKAMSymmetricKey;
 
+  String? get encryptedDefaultEncryptionPrivateKey =>
+      _encryptedDefaultEncryptionPrivateKey;
+
+  String? get encryptedDefaultSelfEncryptionKey =>
+      _encryptedDefaultSelfEncryptionKey;
+
+  String? get apkamPublicKey => _apkamPublicKey;
+
   AtEnrollmentRequest._builder(
       AtEnrollmentRequestBuilder atEnrollmentRequestBuilder)
       : _appName = atEnrollmentRequestBuilder._appName,
@@ -35,7 +46,12 @@ class AtEnrollmentRequest {
             atEnrollmentRequestBuilder._enrollmentOperationEnum,
         _enrollmentId = atEnrollmentRequestBuilder._enrollmentId,
         _encryptedAPKAMSymmetricKey =
-            atEnrollmentRequestBuilder._encryptedAPKAMSymmetricKey;
+            atEnrollmentRequestBuilder._encryptedAPKAMSymmetricKey,
+        _encryptedDefaultEncryptionPrivateKey =
+            atEnrollmentRequestBuilder._encryptedDefaultEncryptionPrivateKey,
+        _encryptedDefaultSelfEncryptionKey =
+            atEnrollmentRequestBuilder._encryptedDefaultSelfEncryptionKey,
+        _apkamPublicKey = atEnrollmentRequestBuilder._apkamPublicKey;
 
   /// Creates an [AtEnrollmentRequestBuilder] for building enrollment requests.
   ///
@@ -99,13 +115,16 @@ class AtEnrollmentRequestBuilder {
   late EnrollOperationEnum _enrollmentOperationEnum;
   String? _enrollmentId;
   String? _encryptedAPKAMSymmetricKey;
+  String? _encryptedDefaultEncryptionPrivateKey;
+  String? _encryptedDefaultSelfEncryptionKey;
+  String? _apkamPublicKey;
 
-  AtEnrollmentRequestBuilder setAppName(String appName) {
+  AtEnrollmentRequestBuilder setAppName(String? appName) {
     _appName = appName;
     return this;
   }
 
-  AtEnrollmentRequestBuilder setDeviceName(String deviceName) {
+  AtEnrollmentRequestBuilder setDeviceName(String? deviceName) {
     _deviceName = deviceName;
     return this;
   }
@@ -115,19 +134,37 @@ class AtEnrollmentRequestBuilder {
     return this;
   }
 
-  AtEnrollmentRequestBuilder setOtp(String otp) {
+  AtEnrollmentRequestBuilder setOtp(String? otp) {
     _otp = otp;
     return this;
   }
 
-  AtEnrollmentRequestBuilder setEnrollmentId(String enrollmentId) {
+  AtEnrollmentRequestBuilder setEnrollmentId(String? enrollmentId) {
     _enrollmentId = enrollmentId;
     return this;
   }
 
   AtEnrollmentRequestBuilder setEncryptedAPKAMSymmetricKey(
-      String encryptedAPKAMSymmetricKey) {
+      String? encryptedAPKAMSymmetricKey) {
     _encryptedAPKAMSymmetricKey = encryptedAPKAMSymmetricKey;
+    return this;
+  }
+
+  AtEnrollmentRequestBuilder setEncryptedDefaultEncryptionPrivateKey(
+      String? encryptedDefaultEncryptionPrivateKey) {
+    _encryptedDefaultEncryptionPrivateKey =
+        encryptedDefaultEncryptionPrivateKey;
+    return this;
+  }
+
+  AtEnrollmentRequestBuilder setEncryptedDefaultSelfEncryptionKey(
+      String? encryptedDefaultSelfEncryptionKey) {
+    _encryptedDefaultSelfEncryptionKey = encryptedDefaultSelfEncryptionKey;
+    return this;
+  }
+
+  AtEnrollmentRequestBuilder setApkamPublicKey(String? apkamPublicKey) {
+    _apkamPublicKey = apkamPublicKey;
     return this;
   }
 
