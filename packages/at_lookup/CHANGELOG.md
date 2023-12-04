@@ -1,3 +1,5 @@
+## 3.0.42
+- fix: removed private key reference from at_lookup_impl
 ## 3.0.41
 - feat: introduce methods cramAuthenticate and close into the AtLookup interface
 - deprecate: authenticate_cram() from AtLookupImpl. [cramAuthenticate should be used instead]
