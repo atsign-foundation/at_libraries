@@ -34,6 +34,8 @@ class AtLookupImpl implements AtLookUp {
 
   late int _rootPort;
 
+  @Deprecated("privateKey reference is no longer used")
+  String? privateKey;
 
   String? cramSecret;
 
@@ -54,7 +56,7 @@ class AtLookupImpl implements AtLookUp {
   AtChops? _atChops;
 
   AtLookupImpl(String atSign, String rootDomain, int rootPort,
-      {
+      {this.privateKey,
       this.cramSecret,
       SecondaryAddressFinder? secondaryAddressFinder,
       SecureSocketConfig? secureSocketConfig,
