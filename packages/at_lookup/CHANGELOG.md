@@ -1,3 +1,5 @@
+## 3.0.43
+- fix: revert removing private key reference from at_lookup_impl
 ## 3.0.42
 - fix: more informative exception messages
 - fix: removed private key reference from at_lookup_impl
