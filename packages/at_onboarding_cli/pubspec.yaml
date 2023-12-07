@@ -20,11 +20,11 @@ dependencies:
    image: ^4.0.17
    path: ^1.8.1
    zxing2: ^0.2.0
-   at_auth: ^1.0.1
+   at_auth: ^1.0.3
    at_chops: ^1.0.6
    at_client: ^3.0.69
    at_commons: ^3.0.58
-   at_lookup: ^3.0.41
+   at_lookup: ^3.0.43
    at_server_status: ^1.0.3
    at_utils: ^3.0.15
 
