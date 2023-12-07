@@ -1,6 +1,6 @@
 name: at_onboarding_cli
 description: Dart tool to authenticate, onboard and perform complex operations on atSign seccondaries from command-line-interface.
-version: 1.4.0
+version: 1.4.1
 repository: https://github.com/atsign-foundation/at_libraries
 homepage: https://atsign.com
 documentation: https://docs.atsign.com/
@@ -20,18 +20,20 @@ dependencies:
    image: ^4.0.17
    path: ^1.8.1
    zxing2: ^0.2.0
-   at_auth: ^1.0.0
-   at_chops: ^1.0.5
-   at_client: ^3.0.67
+   at_auth: ^1.0.2
+   at_chops: ^1.0.6
+   at_client: ^3.0.69
    at_commons: ^3.0.58
-   at_lookup: ^3.0.41
+   at_lookup: ^3.0.42
    at_server_status: ^1.0.3
    at_utils: ^3.0.15
 
 dependency_overrides:
   at_auth:
-    path: ../at_auth
-
+    git:
+      url: https://github.com/atsign-foundation/at_libraries
+      path: packages/at_auth
+      ref: trunk
 
 dev_dependencies:
   lints: ^2.1.0
