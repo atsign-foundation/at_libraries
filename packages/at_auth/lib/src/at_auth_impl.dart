@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:at_auth/at_auth.dart';
 import 'package:at_auth/src/at_auth_base.dart';
 import 'package:at_auth/src/auth/cram_authenticator.dart';
 import 'package:at_auth/src/auth/pkam_authenticator.dart';
 import 'package:at_auth/src/enroll/at_enrollment_base.dart';
+import 'package:at_auth/src/enroll/at_enrollment_impl.dart';
+import 'package:at_auth/src/enroll/at_enrollment_response.dart';
 import 'package:at_auth/src/enroll/at_initial_enrollment_request.dart';
 import 'package:at_auth/src/keys/at_auth_keys.dart';
 import 'package:at_auth/src/onboard/at_onboarding_request.dart';
@@ -65,7 +66,7 @@ class AtAuthImpl implements AtAuth {
     if (atAuthKeys == null) {
       throw AtAuthenticationException(
           'keys either were not provided in the AtAuthRequest,'
-              ' or could not be read from provided keys file');
+          ' or could not be read from provided keys file');
     }
     enrollmentIdFromRequest ??= atAuthKeys.enrollmentId;
     var pkamPrivateKey = atAuthKeys.apkamPrivateKey;
