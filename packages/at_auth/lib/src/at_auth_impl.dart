@@ -6,6 +6,7 @@ import 'package:at_auth/src/at_auth_base.dart';
 import 'package:at_auth/src/auth/cram_authenticator.dart';
 import 'package:at_auth/src/auth/pkam_authenticator.dart';
 import 'package:at_auth/src/enroll/at_enrollment_base.dart';
+import 'package:at_auth/src/enroll/at_initial_enrollment_request.dart';
 import 'package:at_auth/src/keys/at_auth_keys.dart';
 import 'package:at_auth/src/onboard/at_onboarding_request.dart';
 import 'package:at_auth/src/onboard/at_onboarding_response.dart';
@@ -228,13 +229,16 @@ class AtAuthImpl implements AtAuth {
             encryptionAlgorithm: symmetricEncryptionAlgo,
             iv: AtChopsUtil.generateIVLegacy())
         .result;
-    var enrollRequestBuilder = AtEnrollmentRequest.request()
+    _logger.finer('apkamPublicKey: ${atAuthKeys.apkamPublicKey}');
+    var enrollRequestBuilder = AtInitialEnrollmentRequestBuilder()
       ..setAppName(atOnboardingRequest.appName)
       ..setDeviceName(atOnboardingRequest.deviceName)
       ..setEncryptedDefaultEncryptionPrivateKey(
           encryptedDefaultEncryptionPrivateKey)
       ..setEncryptedDefaultSelfEncryptionKey(encryptedDefaultSelfEncryptionKey)
-      ..setApkamPublicKey(atAuthKeys.apkamPublicKey);
+      ..setApkamPublicKey(atAuthKeys.apkamPublicKey)
+      ..setAtAuthKeys(atAuthKeys)
+      ..setEnrollOperationEnum(EnrollOperationEnum.request);
     atEnrollmentBase ??= AtEnrollmentImpl(atOnboardingRequest.atSign);
     AtEnrollmentResponse enrollmentResponse;
     try {

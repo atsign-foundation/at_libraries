@@ -1,24 +1,23 @@
+import 'package:at_auth/at_auth.dart';
 import 'package:at_commons/at_commons.dart';
 
-/// Represents an enrollment request for APKAM.
+/// Base class containing common attributes for enrollment requests either from first onboarding client with enrollment enabled
+/// or a new client requesting enrollment.
 class AtEnrollmentRequest {
   final String? _appName;
   final String? _deviceName;
-  final String? _otp;
   final Map<String, String>? _namespaces;
-  final EnrollOperationEnum _enrollOperationEnum;
+  EnrollOperationEnum _enrollOperationEnum = EnrollOperationEnum.request;
 
   final String? _enrollmentId;
-  final String? _apkamPublicKey;
-  final String? _encryptedAPKAMSymmetricKey;
 
-  final String? _encryptedDefaultEncryptionPrivateKey;
-  final String? _encryptedDefaultSelfEncryptionKey;
+  final String? _apkamPublicKey;
+
+  String? get apkamPublicKey => _apkamPublicKey;
+
   String? get appName => _appName;
 
   String? get deviceName => _deviceName;
-
-  String? get otp => _otp;
 
   Map<String, String>? get namespaces => _namespaces;
 
@@ -26,32 +25,20 @@ class AtEnrollmentRequest {
 
   String? get enrollmentId => _enrollmentId;
 
-  String? get encryptedAPKAMSymmetricKey => _encryptedAPKAMSymmetricKey;
+  final AtAuthKeys? _atAuthKeys;
 
-  String? get encryptedDefaultEncryptionPrivateKey =>
-      _encryptedDefaultEncryptionPrivateKey;
+  AtAuthKeys? get atAuthKeys => _atAuthKeys;
 
-  String? get encryptedDefaultSelfEncryptionKey =>
-      _encryptedDefaultSelfEncryptionKey;
-
-  String? get apkamPublicKey => _apkamPublicKey;
-
-  AtEnrollmentRequest._builder(
+  AtEnrollmentRequest.builder(
       AtEnrollmentRequestBuilder atEnrollmentRequestBuilder)
       : _appName = atEnrollmentRequestBuilder._appName,
         _deviceName = atEnrollmentRequestBuilder._deviceName,
         _namespaces = atEnrollmentRequestBuilder._namespaces,
-        _otp = atEnrollmentRequestBuilder._otp,
         _enrollOperationEnum =
             atEnrollmentRequestBuilder._enrollmentOperationEnum,
         _enrollmentId = atEnrollmentRequestBuilder._enrollmentId,
-        _encryptedAPKAMSymmetricKey =
-            atEnrollmentRequestBuilder._encryptedAPKAMSymmetricKey,
-        _encryptedDefaultEncryptionPrivateKey =
-            atEnrollmentRequestBuilder._encryptedDefaultEncryptionPrivateKey,
-        _encryptedDefaultSelfEncryptionKey =
-            atEnrollmentRequestBuilder._encryptedDefaultSelfEncryptionKey,
-        _apkamPublicKey = atEnrollmentRequestBuilder._apkamPublicKey;
+        _apkamPublicKey = atEnrollmentRequestBuilder._apkamPublicKey,
+        _atAuthKeys = atEnrollmentRequestBuilder._atAuthKeys;
 
   /// Creates an [AtEnrollmentRequestBuilder] for building enrollment requests.
   ///
@@ -111,13 +98,10 @@ class AtEnrollmentRequestBuilder {
   String? _appName;
   String? _deviceName;
   Map<String, String> _namespaces = {};
-  String? _otp;
-  late EnrollOperationEnum _enrollmentOperationEnum;
+  EnrollOperationEnum _enrollmentOperationEnum = EnrollOperationEnum.request;
   String? _enrollmentId;
-  String? _encryptedAPKAMSymmetricKey;
-  String? _encryptedDefaultEncryptionPrivateKey;
-  String? _encryptedDefaultSelfEncryptionKey;
   String? _apkamPublicKey;
+  AtAuthKeys? _atAuthKeys;
 
   AtEnrollmentRequestBuilder setAppName(String? appName) {
     _appName = appName;
@@ -134,32 +118,8 @@ class AtEnrollmentRequestBuilder {
     return this;
   }
 
-  AtEnrollmentRequestBuilder setOtp(String? otp) {
-    _otp = otp;
-    return this;
-  }
-
   AtEnrollmentRequestBuilder setEnrollmentId(String? enrollmentId) {
     _enrollmentId = enrollmentId;
-    return this;
-  }
-
-  AtEnrollmentRequestBuilder setEncryptedAPKAMSymmetricKey(
-      String? encryptedAPKAMSymmetricKey) {
-    _encryptedAPKAMSymmetricKey = encryptedAPKAMSymmetricKey;
-    return this;
-  }
-
-  AtEnrollmentRequestBuilder setEncryptedDefaultEncryptionPrivateKey(
-      String? encryptedDefaultEncryptionPrivateKey) {
-    _encryptedDefaultEncryptionPrivateKey =
-        encryptedDefaultEncryptionPrivateKey;
-    return this;
-  }
-
-  AtEnrollmentRequestBuilder setEncryptedDefaultSelfEncryptionKey(
-      String? encryptedDefaultSelfEncryptionKey) {
-    _encryptedDefaultSelfEncryptionKey = encryptedDefaultSelfEncryptionKey;
     return this;
   }
 
@@ -168,8 +128,19 @@ class AtEnrollmentRequestBuilder {
     return this;
   }
 
+  AtEnrollmentRequestBuilder setEnrollOperationEnum(
+      EnrollOperationEnum enrollOperationEnum) {
+    _enrollmentOperationEnum = enrollOperationEnum;
+    return this;
+  }
+
+  AtEnrollmentRequestBuilder setAtAuthKeys(AtAuthKeys? atAuthKeys) {
+    _atAuthKeys = atAuthKeys;
+    return this;
+  }
+
   /// Builds and returns an instance of [AtEnrollmentRequest].
   AtEnrollmentRequest build() {
-    return AtEnrollmentRequest._builder(this);
+    return AtEnrollmentRequest.builder(this);
   }
 }

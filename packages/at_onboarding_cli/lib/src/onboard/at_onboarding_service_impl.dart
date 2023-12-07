@@ -10,7 +10,6 @@ import 'package:at_auth/at_auth.dart';
 import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 import 'package:at_server_status/at_server_status.dart';
 import 'package:at_utils/at_utils.dart';
-import 'package:at_commons/at_builders.dart';
 import 'package:at_onboarding_cli/src/factory/service_factories.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
@@ -41,11 +40,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   /// a [DefaultAtServiceFactory]
   AtServiceFactory? atServiceFactory;
 
+  AtEnrollmentBase? _atEnrollmentBase;
+
   AtOnboardingServiceImpl(atsign, this.atOnboardingPreference,
       {this.atServiceFactory, String? enrollmentId}) {
     // performs atSign format checks on the atSign
     _atSign = AtUtils.fixAtSign(atsign);
-
+    _atEnrollmentBase ??= AtEnrollmentImpl(_atSign);
     // set default LocalStorage paths for this instance
     atOnboardingPreference.commitLogPath ??=
         HomeDirectoryUtil.getCommitLogPath(_atSign, enrollmentId: enrollmentId);
@@ -137,8 +138,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }
 
   @override
-  Future<EnrollResponse> enroll(String appName, String deviceName, String otp,
-      Map<String, String> namespaces,
+  Future<AtEnrollmentResponse> enroll(String appName, String deviceName,
+      String otp, Map<String, String> namespaces,
       {int? pkamRetryIntervalMins}) async {
     if (appName == null || deviceName == null) {
       throw AtEnrollmentException(
@@ -146,50 +147,26 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
     pkamRetryIntervalMins ??= atOnboardingPreference.apkamAuthRetryDurationMins;
     final Duration retryInterval = Duration(minutes: pkamRetryIntervalMins);
-    logger.info('Generating apkam encryption keypair and apkam symmetric key');
-    //1. Generate new apkam key pair and apkam symmetric key
-    var apkamKeyPair = generateRsaKeypair();
-    var apkamSymmetricKey = generateAESKey();
 
     AtLookupImpl atLookUpImpl = AtLookupImpl(_atSign,
         atOnboardingPreference.rootDomain, atOnboardingPreference.rootPort);
 
-    //2. Retrieve default encryption public key and encrypt apkam symmetric key
-    var defaultEncryptionPublicKey =
-        await _retrieveEncryptionPublicKey(atLookUpImpl);
-    var encryptedApkamSymmetricKey = EncryptionUtil.encryptKey(
-        apkamSymmetricKey, defaultEncryptionPublicKey);
-
-    //3. Send enroll request to server
-    var enrollmentResponse = await _sendEnrollRequest(
-        appName,
-        deviceName,
-        otp,
-        namespaces,
-        apkamKeyPair.publicKey.toString(),
-        encryptedApkamSymmetricKey,
-        atLookUpImpl);
+    //2. Send enroll request to server
+    AtEnrollmentResponse enrollmentResponse = await _sendEnrollRequest(
+        appName, deviceName, otp, namespaces, atLookUpImpl);
     logger.finer('EnrollmentResponse from server: $enrollmentResponse');
-
-    //4. Create at chops instance
-    var atChopsKeys = AtChopsKeys.create(
-        null,
-        AtPkamKeyPair.create(apkamKeyPair.publicKey.toString(),
-            apkamKeyPair.privateKey.toString()));
-    atLookUpImpl.atChops = AtChopsImpl(atChopsKeys);
 
     // Pkam auth will be attempted asynchronously until enrollment is approved/denied
     _attemptPkamAuthAsync(
-        atLookUpImpl,
-        enrollmentResponse.enrollmentId,
-        retryInterval,
-        apkamSymmetricKey,
-        defaultEncryptionPublicKey,
-        apkamKeyPair);
+        atLookUpImpl, enrollmentResponse.enrollmentId, retryInterval);
 
     // Upon successful pkam auth, callback _listenToPkamSuccessStream will  be invoked
-    _listenToPkamSuccessStream(atLookUpImpl, apkamSymmetricKey,
-        defaultEncryptionPublicKey, apkamKeyPair);
+    _listenToPkamSuccessStream(
+        atLookUpImpl,
+        enrollmentResponse.atAuthKeys!.apkamSymmetricKey!,
+        enrollmentResponse.atAuthKeys!.defaultEncryptionPublicKey!,
+        enrollmentResponse.atAuthKeys!.apkamPublicKey!,
+        enrollmentResponse.atAuthKeys!.apkamPrivateKey!);
 
     return enrollmentResponse;
   }
@@ -198,7 +175,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       AtLookupImpl atLookUpImpl,
       String apkamSymmetricKey,
       String defaultEncryptionPublicKey,
-      RSAKeypair apkamKeyPair) {
+      String apkamPublicKey,
+      String apkamPrivateKey) {
     _onPkamSuccess.listen((enrollmentIdFromServer) async {
       logger.finer('_listenToPkamSuccessStream invoked');
       var decryptedEncryptionPrivateKey = EncryptionUtil.decryptValue(
@@ -215,8 +193,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         ..defaultEncryptionPublicKey = defaultEncryptionPublicKey
         ..apkamSymmetricKey = apkamSymmetricKey
         ..defaultSelfEncryptionKey = decryptedSelfEncryptionKey
-        ..apkamPublicKey = apkamKeyPair.publicKey.toString()
-        ..apkamPrivateKey = apkamKeyPair.privateKey.toString();
+        ..apkamPublicKey = apkamPublicKey
+        ..apkamPrivateKey = apkamPrivateKey;
       logger.finer('Generating keys file for $enrollmentIdFromServer');
       await _generateAtKeysFile(enrollmentIdFromServer, atAuthKeys);
     });
@@ -267,13 +245,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     return selfEncryptionKeyFromServer;
   }
 
-  Future<void> _attemptPkamAuthAsync(
-      AtLookupImpl atLookUpImpl,
-      String enrollmentIdFromServer,
-      Duration retryInterval,
-      String apkamSymmetricKey,
-      String defaultEncryptionPublicKey,
-      RSAKeypair apkamKeyPair) async {
+  Future<void> _attemptPkamAuthAsync(AtLookupImpl atLookUpImpl,
+      String enrollmentIdFromServer, Duration retryInterval) async {
     // Pkam auth will be retried until server approves/denies/expires the enrollment
     while (true) {
       logger.finer('Attempting pkam for $enrollmentIdFromServer');
@@ -311,35 +284,22 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     return false;
   }
 
-  Future<EnrollResponse> _sendEnrollRequest(
+  Future<AtEnrollmentResponse> _sendEnrollRequest(
       String appName,
       String deviceName,
       String otp,
       Map<String, String> namespaces,
-      String apkamPublicKey,
-      String encryptedApkamSymmetricKey,
       AtLookupImpl atLookUpImpl) async {
-    var enrollVerbBuilder = EnrollVerbBuilder()
-      ..appName = appName
-      ..deviceName = deviceName
-      ..namespaces = namespaces
-      ..otp = otp
-      ..apkamPublicKey = apkamPublicKey
-      ..encryptedAPKAMSymmetricKey = encryptedApkamSymmetricKey;
-    var enrollResult =
-        await atLookUpImpl.executeCommand(enrollVerbBuilder.buildCommand());
-    if (enrollResult == null ||
-        enrollResult.isEmpty ||
-        enrollResult.startsWith('error:')) {
-      throw AtEnrollmentException(
-          'Enrollment response from server: $enrollResult');
-    }
-    enrollResult = enrollResult.replaceFirst('data:', '');
-    var enrollJson = jsonDecode(enrollResult);
-    var enrollmentIdFromServer = enrollJson[AtConstants.enrollmentId];
-    logger.finer('enrollmentIdFromServer: $enrollmentIdFromServer');
-    return EnrollResponse(enrollmentIdFromServer,
-        getEnrollStatusFromString(enrollJson['status']));
+    var newClientEnrollmentRequest = (AtNewEnrollmentRequestBuilder()
+          ..setAppName(appName)
+          ..setDeviceName(deviceName)
+          ..setNamespaces(namespaces)
+          ..setOtp(otp)
+          ..setEnrollOperationEnum(EnrollOperationEnum.request))
+        .build();
+    logger.finer('calling at_enrollment_impl submit enrollment');
+    return await _atEnrollmentBase!
+        .submitEnrollment(newClientEnrollmentRequest, atLookUpImpl);
   }
 
   ///write newly created encryption keypairs into atKeys file
@@ -487,19 +447,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     atAuthKeys.apkamSymmetricKey = jsonData[AuthKeyType.apkamSymmetricKey];
     atAuthKeys.enrollmentId = jsonData[AtConstants.enrollmentId];
     return atAuthKeys;
-  }
-
-  Future<String> _retrieveEncryptionPublicKey(AtLookUp atLookupImpl) async {
-    var lookupVerbBuilder = LookupVerbBuilder()
-      ..atKey = 'publickey'
-      ..sharedBy = _atSign;
-    var lookupResult = await atLookupImpl.executeVerb(lookupVerbBuilder);
-    if (lookupResult == null || lookupResult.isEmpty) {
-      throw AtEnrollmentException(
-          'Unable to lookup encryption public key. Server response is null/empty');
-    }
-    var defaultEncryptionPublicKey = lookupResult.replaceFirst('data:', '');
-    return defaultEncryptionPublicKey;
   }
 
   ///generates random RSA keypair
