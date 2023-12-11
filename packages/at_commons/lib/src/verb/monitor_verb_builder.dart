@@ -9,9 +9,6 @@ import 'package:at_commons/src/verb/verb_util.dart';
 /// Monitor builder generates a command that streams incoming notifications from the secondary server to
 /// the current client. See also [VerbSyntax.monitor]
 class MonitorVerbBuilder implements VerbBuilder {
-  @Deprecated('not used')
-  bool auth = true;
-
   String? _regex;
 
   /// The regular expression to be used when building the monitor command.
@@ -20,6 +17,7 @@ class MonitorVerbBuilder implements VerbBuilder {
   /// then other 'control' notifications (e.g. the statsNotification) which don't necessarily
   /// match the [regex] will also be sent
   String? get regex => _regex;
+
   set regex(String? r) {
     if (r != null && r.trim().isEmpty) {
       r = null;

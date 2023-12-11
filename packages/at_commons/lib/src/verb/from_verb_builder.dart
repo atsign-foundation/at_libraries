@@ -14,7 +14,8 @@ class FromVerbBuilder implements VerbBuilder {
     StringBuffer serverCommandBuffer = StringBuffer('from:$atSign');
     if (clientConfig.isNotEmpty) {
       var clientConfigStr = jsonEncode(clientConfig);
-      serverCommandBuffer.write(':${AtConstants.clientConfig}:$clientConfigStr');
+      serverCommandBuffer
+          .write(':${AtConstants.clientConfig}:$clientConfigStr');
     }
     serverCommandBuffer.write('\n');
     return serverCommandBuffer.toString();
