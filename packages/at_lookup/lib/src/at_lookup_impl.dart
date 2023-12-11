@@ -5,7 +5,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:at_chops/at_chops.dart';
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
@@ -14,6 +13,7 @@ import 'package:at_utils/at_logger.dart';
 import 'package:crypto/crypto.dart';
 import 'package:crypton/crypton.dart';
 import 'package:mutex/mutex.dart';
+import 'package:at_chops/at_chops.dart';
 
 class AtLookupImpl implements AtLookUp {
   final logger = AtSignLogger('AtLookup');
@@ -34,7 +34,7 @@ class AtLookupImpl implements AtLookUp {
 
   late int _rootPort;
 
-  @Deprecated("use atChops")
+  @Deprecated("privateKey reference is no longer used")
   String? privateKey;
 
   String? cramSecret;
@@ -94,10 +94,11 @@ class AtLookupImpl implements AtLookUp {
   Future<bool> delete(String key,
       {String? sharedWith, bool isPublic = false}) async {
     var builder = DeleteVerbBuilder()
-      ..isPublic = isPublic
-      ..sharedWith = sharedWith
-      ..atKey = key
-      ..sharedBy = _currentAtSign;
+      ..atKey = (AtKey()
+        ..key = key
+        ..sharedWith = sharedWith
+        ..sharedBy = _currentAtSign
+        ..metadata = (Metadata()..isPublic = isPublic));
     var deleteResult = await executeVerb(builder);
     return deleteResult.isNotEmpty; //replace with call back
   }
@@ -108,18 +109,21 @@ class AtLookupImpl implements AtLookUp {
     LLookupVerbBuilder builder;
     if (sharedWith != null) {
       builder = LLookupVerbBuilder()
-        ..isPublic = isPublic
-        ..sharedWith = sharedWith
-        ..atKey = key
-        ..sharedBy = _currentAtSign;
+        ..atKey = (AtKey()
+          ..key = key
+          ..sharedBy = _currentAtSign
+          ..sharedWith = sharedWith
+          ..metadata = (Metadata()..isPublic = isPublic));
     } else if (isPublic && sharedBy == null && sharedWith == null) {
       builder = LLookupVerbBuilder()
-        ..atKey = 'public:' + key
-        ..sharedBy = _currentAtSign;
+        ..atKey = (AtKey()
+          ..key = 'public:$key'
+          ..sharedBy = _currentAtSign);
     } else {
       builder = LLookupVerbBuilder()
-        ..atKey = key
-        ..sharedBy = _currentAtSign;
+        ..atKey = (AtKey()
+          ..key = key
+          ..sharedBy = _currentAtSign);
     }
     var llookupResult = await executeVerb(builder);
     llookupResult = VerbUtil.getFormattedValue(llookupResult);
@@ -132,8 +136,9 @@ class AtLookupImpl implements AtLookUp {
       bool verifyData = false,
       bool metadata = false}) async {
     var builder = LookupVerbBuilder()
-      ..atKey = key
-      ..sharedBy = sharedBy
+      ..atKey = (AtKey()
+        ..key = key
+        ..sharedBy = sharedBy)
       ..auth = auth
       ..operation = metadata == true ? 'all' : null;
     if (verifyData == false) {
@@ -144,8 +149,9 @@ class AtLookupImpl implements AtLookUp {
     //verify data signature if verifyData is set to true
     try {
       builder = LookupVerbBuilder()
-        ..atKey = key
-        ..sharedBy = sharedBy
+        ..atKey = (AtKey()
+          ..key = key
+          ..sharedBy = sharedBy)
         ..auth = false
         ..operation = 'all';
       String? lookupResult = await executeVerb(builder);
@@ -158,8 +164,9 @@ class AtLookupImpl implements AtLookUp {
         publicKeyResult = await plookup('publickey', sharedBy);
       } else {
         var publicKeyLookUpBuilder = LookupVerbBuilder()
-          ..atKey = 'publickey'
-          ..sharedBy = sharedBy;
+          ..atKey = (AtKey()
+            ..key = 'publickey'
+            ..sharedBy = sharedBy);
         publicKeyResult = await executeVerb(publicKeyLookUpBuilder);
       }
       publicKeyResult = publicKeyResult.replaceFirst('data:', '');
@@ -171,7 +178,7 @@ class AtLookupImpl implements AtLookUp {
       value = VerbUtil.getFormattedValue(value);
       logger.finer('value: $value dataSignature:$dataSignature');
       var isDataValid = publicKey.verifySHA256Signature(
-          utf8.encode(value) as Uint8List, base64Decode(dataSignature));
+          utf8.encode(value), base64Decode(dataSignature));
       logger.finer('data verify result: $isDataValid');
       return 'data:$value';
     } on Exception catch (e) {
@@ -184,8 +191,9 @@ class AtLookupImpl implements AtLookUp {
   @override
   Future<String> plookup(String key, String sharedBy) async {
     var builder = PLookupVerbBuilder()
-      ..atKey = key
-      ..sharedBy = sharedBy;
+      ..atKey = (AtKey()
+        ..key = key
+        ..sharedBy = sharedBy);
     var plookupResult = await executeVerb(builder);
     plookupResult = VerbUtil.getFormattedValue(plookupResult);
     return plookupResult;
@@ -213,17 +221,15 @@ class AtLookupImpl implements AtLookUp {
   Future<bool> update(String key, String value,
       {String? sharedWith, Metadata? metadata}) async {
     var builder = UpdateVerbBuilder()
-      ..atKey = key
-      ..sharedBy = _currentAtSign
-      ..sharedWith = sharedWith
+      ..atKey = (AtKey()
+        ..key = key
+        ..sharedBy = _currentAtSign
+        ..sharedWith = sharedWith)
       ..value = value;
     if (metadata != null) {
-      builder.ttl = metadata.ttl;
-      builder.ttb = metadata.ttb;
-      builder.ttr = metadata.ttr;
-      builder.isPublic = metadata.isPublic!;
+      builder.atKey.metadata = metadata;
       if (metadata.isHidden) {
-        builder.atKey = '_' + key;
+        builder.atKey.key = '_' + key;
       }
     }
     var putResult = await executeVerb(builder);
@@ -425,7 +431,7 @@ class AtLookupImpl implements AtLookUp {
         logger.finer('fromResponse $fromResponse');
         var key = RSAPrivateKey.fromString(privateKey);
         var sha256signature =
-             key.createSHA256Signature(utf8.encode(fromResponse) as Uint8List);
+            key.createSHA256Signature(utf8.encode(fromResponse) as Uint8List);
         var signature = base64Encode(sha256signature);
         logger.finer('Sending command pkam:$signature');
         await _sendCommand('pkam:$signature\n');
@@ -574,14 +580,11 @@ class AtLookupImpl implements AtLookUp {
         if (_atChops != null) {
           logger.finer('calling pkam using atchops');
           await pkamAuthenticate(enrollmentId: enrollmentId);
-        } else if (privateKey != null) {
-          logger.finer('calling pkam without atchops');
-          await authenticate(privateKey);
         } else if (cramSecret != null) {
           await cramAuthenticate(cramSecret!);
         } else {
           throw UnAuthenticatedException(
-              'Unable to perform atLookup auth. Private key/cram secret is not set');
+              'Unable to perform atLookup auth. atChops object is not set');
         }
       }
       try {
