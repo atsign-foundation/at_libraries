@@ -2,7 +2,7 @@ import 'dart:collection';
 import 'dart:convert';
 
 import 'package:at_commons/at_commons.dart';
-import 'package:at_commons/src/verb/metadata_using_verb_builder.dart';
+import 'package:at_commons/src/verb/abstract_verb_builder.dart';
 
 /// Update builder generates a command to update [value] for a key [atKey] in the secondary server of [sharedBy].
 /// Use [getBuilder] method if you want to convert command to a builder.
@@ -39,16 +39,10 @@ import 'package:at_commons/src/verb/metadata_using_verb_builder.dart';
 ///                      ..sharedBy = '@bob'
 ///                      ..value = jsonEncode(myPrefObj)
 ///```
-class UpdateVerbBuilder extends MetadataUsingVerbBuilder {
+class UpdateVerbBuilder extends AbstractVerbBuilder {
   /// Value of the key typically in string format. Images, files, etc.,
   /// must be converted to unicode string before storing.
   dynamic value;
-
-  /// See [AtKey.isLocal]
-  bool get isLocal => atKeyObj.isLocal;
-
-  /// See [AtKey.isLocal]
-  set isLocal(bool b) => atKeyObj.isLocal = b;
 
   String? operation;
 
@@ -61,14 +55,14 @@ class UpdateVerbBuilder extends MetadataUsingVerbBuilder {
       var updateParams = UpdateParams()
         ..atKey = atKeyName
         ..value = value
-        ..sharedBy = sharedBy
-        ..sharedWith = sharedWith
-        ..metadata = metadata;
+        ..sharedBy = atKey.sharedBy
+        ..sharedWith = atKey.sharedWith
+        ..metadata = atKey.metadata;
       var json = updateParams.toJson();
       var command = 'update:json:${jsonEncode(json)}\n';
       return command;
     } else {
-      var metadataFragment = atKeyObj.metadata!.toAtProtocolFragment();
+      var metadataFragment = atKey.metadata.toAtProtocolFragment();
       var command = 'update$metadataFragment:$atKeyName $value\n';
       return command;
     }
@@ -81,12 +75,12 @@ class UpdateVerbBuilder extends MetadataUsingVerbBuilder {
   /// then we return the string representation of the key.
   String buildKey() {
     validateKey();
-    return super.atKeyObj.toString();
+    return super.atKey.toString();
   }
 
   String buildCommandForMeta() {
     String atKeyName = buildKey();
-    var metadataFragment = atKeyObj.metadata!.toAtProtocolFragment();
+    var metadataFragment = atKey.metadata.toAtProtocolFragment();
     var command = 'update:meta:$atKeyName$metadataFragment\n';
     return command;
   }
@@ -107,49 +101,57 @@ class UpdateVerbBuilder extends MetadataUsingVerbBuilder {
     if (verbParams == null) {
       return null;
     }
-    builder.isPublic = verbParams[AtConstants.publicScopeParam] == 'public';
-    builder.sharedWith =
+    builder.atKey.metadata.isPublic =
+        verbParams[AtConstants.publicScopeParam] == 'public';
+    builder.atKey.sharedWith =
         VerbUtil.formatAtSign(verbParams[AtConstants.forAtSign]);
-    builder.sharedBy = VerbUtil.formatAtSign(verbParams[AtConstants.atSign]);
-    builder.atKey = verbParams[AtConstants.atKey];
+    builder.atKey.sharedBy =
+        VerbUtil.formatAtSign(verbParams[AtConstants.atSign]);
+    builder.atKey.key = verbParams[AtConstants.atKey]!;
     builder.value = verbParams[AtConstants.atValue];
     if (builder.value is String) {
       builder.value = VerbUtil.replaceNewline(builder.value);
     }
     if (verbParams[AtConstants.ttl] != null) {
-      builder.ttl = int.parse(verbParams[AtConstants.ttl]!);
+      builder.atKey.metadata.ttl = int.parse(verbParams[AtConstants.ttl]!);
     }
     if (verbParams[AtConstants.ttb] != null) {
-      builder.ttb = int.parse(verbParams[AtConstants.ttb]!);
+      builder.atKey.metadata.ttb = int.parse(verbParams[AtConstants.ttb]!);
     }
     if (verbParams[AtConstants.ttr] != null) {
-      builder.ttr = int.parse(verbParams[AtConstants.ttr]!);
+      builder.atKey.metadata.ttr = int.parse(verbParams[AtConstants.ttr]!);
     }
     if (verbParams[AtConstants.ccd] != null) {
-      builder.ccd = _getBoolVerbParams(verbParams[AtConstants.ccd]!);
+      builder.atKey.metadata.ccd =
+          _getBoolVerbParams(verbParams[AtConstants.ccd]!);
     }
 
-    builder.dataSignature = verbParams[AtConstants.publicDataSignature];
+    builder.atKey.metadata.dataSignature =
+        verbParams[AtConstants.publicDataSignature];
 
     if (verbParams[AtConstants.isBinary] != null) {
-      builder.isBinary = _getBoolVerbParams(verbParams[AtConstants.isBinary]!);
+      builder.atKey.metadata.isBinary =
+          _getBoolVerbParams(verbParams[AtConstants.isBinary]!);
     }
     if (verbParams[AtConstants.isEncrypted] != null) {
-      builder.isEncrypted =
+      builder.atKey.metadata.isEncrypted =
           _getBoolVerbParams(verbParams[AtConstants.isEncrypted]!);
     }
 
-    builder.sharedKeyEncrypted = verbParams[AtConstants.sharedKeyEncrypted];
-    builder.pubKeyChecksum =
+    builder.atKey.metadata.sharedKeyEnc =
+        verbParams[AtConstants.sharedKeyEncrypted];
+    builder.atKey.metadata.pubKeyCS =
         verbParams[AtConstants.sharedWithPublicKeyCheckSum];
-    builder.sharedKeyStatus = verbParams[AtConstants.sharedKeyStatus];
-    builder.encoding = verbParams[AtConstants.encoding];
-    builder.encKeyName = verbParams[AtConstants.encryptingKeyName];
-    builder.encAlgo = verbParams[AtConstants.encryptingAlgo];
-    builder.ivNonce = verbParams[AtConstants.ivOrNonce];
-    builder.skeEncKeyName =
+    builder.atKey.metadata.sharedKeyStatus =
+        verbParams[AtConstants.sharedKeyStatus];
+    builder.atKey.metadata.encoding = verbParams[AtConstants.encoding];
+    builder.atKey.metadata.encKeyName =
+        verbParams[AtConstants.encryptingKeyName];
+    builder.atKey.metadata.encAlgo = verbParams[AtConstants.encryptingAlgo];
+    builder.atKey.metadata.ivNonce = verbParams[AtConstants.ivOrNonce];
+    builder.atKey.metadata.skeEncKeyName =
         verbParams[AtConstants.sharedKeyEncryptedEncryptingKeyName];
-    builder.skeEncAlgo =
+    builder.atKey.metadata.skeEncAlgo =
         verbParams[AtConstants.sharedKeyEncryptedEncryptingAlgo];
 
     builder.value = verbParams[AtConstants.value];
@@ -160,8 +162,8 @@ class UpdateVerbBuilder extends MetadataUsingVerbBuilder {
   @override
   bool checkParams() {
     var isValid = true;
-    if ((atKey == null || value == null) ||
-        (isPublic == true && sharedWith != null)) {
+    if ((atKey.key.isEmpty || value == null) ||
+        (atKey.metadata.isPublic == true && atKey.sharedWith != null)) {
       isValid = false;
     }
     return isValid;
@@ -179,55 +181,56 @@ class UpdateVerbBuilder extends MetadataUsingVerbBuilder {
       identical(this, other) ||
       other is UpdateVerbBuilder &&
           runtimeType == other.runtimeType &&
-          atKey == other.atKey &&
+          atKey.key == other.atKey.key &&
           value == other.value &&
-          sharedWith == other.sharedWith &&
-          sharedBy == other.sharedBy &&
-          isPublic == other.isPublic &&
-          isBinary == other.isBinary &&
-          isEncrypted == other.isEncrypted &&
+          atKey.sharedWith == other.atKey.sharedWith &&
+          atKey.sharedBy == other.atKey.sharedBy &&
+          atKey.metadata.isPublic == other.atKey.metadata.isPublic &&
+          atKey.metadata.isBinary == other.atKey.metadata.isBinary &&
+          atKey.metadata.isEncrypted == other.atKey.metadata.isEncrypted &&
           operation == other.operation &&
           isJson == other.isJson &&
-          isLocal == other.isLocal &&
-          ttl == other.ttl &&
-          ttb == other.ttb &&
-          ttr == other.ttr &&
-          ccd == other.ccd &&
-          dataSignature == other.dataSignature &&
-          sharedKeyStatus == other.sharedKeyStatus &&
-          sharedKeyEncrypted == other.sharedKeyEncrypted &&
-          pubKeyChecksum == other.pubKeyChecksum &&
-          encoding == other.encoding &&
-          encKeyName == other.encKeyName &&
-          encAlgo == other.encAlgo &&
-          ivNonce == other.ivNonce &&
-          skeEncKeyName == other.skeEncKeyName &&
-          skeEncAlgo == other.skeEncAlgo;
+          atKey.isLocal == other.atKey.isLocal &&
+          atKey.metadata.ttl == other.atKey.metadata.ttl &&
+          atKey.metadata.ttb == other.atKey.metadata.ttb &&
+          atKey.metadata.ttr == other.atKey.metadata.ttr &&
+          atKey.metadata.ccd == other.atKey.metadata.ccd &&
+          atKey.metadata.dataSignature == other.atKey.metadata.dataSignature &&
+          atKey.metadata.sharedKeyStatus ==
+              other.atKey.metadata.sharedKeyStatus &&
+          atKey.metadata.sharedKeyEnc == other.atKey.metadata.sharedKeyEnc &&
+          atKey.metadata.pubKeyCS == other.atKey.metadata.pubKeyCS &&
+          atKey.metadata.encoding == other.atKey.metadata.encoding &&
+          atKey.metadata.encKeyName == other.atKey.metadata.encKeyName &&
+          atKey.metadata.encAlgo == other.atKey.metadata.encAlgo &&
+          atKey.metadata.ivNonce == other.atKey.metadata.ivNonce &&
+          atKey.metadata.skeEncKeyName == other.atKey.metadata.skeEncKeyName &&
+          atKey.metadata.skeEncAlgo == other.atKey.metadata.skeEncAlgo;
 
   @override
   int get hashCode =>
-      atKey.hashCode ^
+      atKey.key.hashCode ^
       value.hashCode ^
-      sharedWith.hashCode ^
-      sharedBy.hashCode ^
-      isPublic.hashCode ^
-      isBinary.hashCode ^
-      isEncrypted.hashCode ^
+      atKey.sharedWith.hashCode ^
+      atKey.sharedBy.hashCode ^
+      atKey.metadata.isPublic.hashCode ^
+      atKey.metadata.isBinary.hashCode ^
+      atKey.metadata.isEncrypted.hashCode ^
       operation.hashCode ^
       isJson.hashCode ^
-      isLocal.hashCode ^
-      ttl.hashCode ^
-      ttb.hashCode ^
-      ttr.hashCode ^
-      ccd.hashCode ^
-      dataSignature.hashCode ^
-      sharedKeyStatus.hashCode ^
-      sharedKeyEncrypted.hashCode ^
-      pubKeyChecksum.hashCode ^
-      encoding.hashCode ^
-      encKeyName.hashCode ^
-      encAlgo.hashCode ^
-      ivNonce.hashCode ^
-      skeEncKeyName.hashCode ^
-      skeEncAlgo.hashCode;
+      atKey.isLocal.hashCode ^
+      atKey.metadata.ttl.hashCode ^
+      atKey.metadata.ttb.hashCode ^
+      atKey.metadata.ttr.hashCode ^
+      atKey.metadata.ccd.hashCode ^
+      atKey.metadata.dataSignature.hashCode ^
+      atKey.metadata.sharedKeyStatus.hashCode ^
+      atKey.metadata.sharedKeyEnc.hashCode ^
+      atKey.metadata.pubKeyCS.hashCode ^
+      atKey.metadata.encoding.hashCode ^
+      atKey.metadata.encKeyName.hashCode ^
+      atKey.metadata.encAlgo.hashCode ^
+      atKey.metadata.ivNonce.hashCode ^
+      atKey.metadata.skeEncKeyName.hashCode ^
+      atKey.metadata.skeEncAlgo.hashCode;
 }

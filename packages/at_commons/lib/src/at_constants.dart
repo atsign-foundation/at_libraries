@@ -28,7 +28,6 @@ class AtConstants {
   static const String ttr = 'ttr';
   static const String ttlNotification = 'ttln';
   static const String fromCommitSequence = 'from_commit_seq';
-  static const String atOperation = 'operation';
   static const String atValueReference = 'atsign://';
   static const String regex = 'regex';
   static const String configNew = 'configNew';

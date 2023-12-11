@@ -11,27 +11,25 @@ class ConfigVerbBuilder implements VerbBuilder {
   String? configType;
   String? operation;
   List<String>? atSigns;
+
   @override
   String buildCommand() {
-    var command = 'config:';
-    command += '$configType:';
+    StringBuffer serverCommandBuffer = StringBuffer('config:$configType:');
     if (operation == 'show') {
-      command += operation!;
+      serverCommandBuffer.write(operation!);
     } else {
-      command += '$operation:';
+      serverCommandBuffer.write('$operation:');
     }
     if (atSigns != null && atSigns!.isNotEmpty) {
       for (var atSign in atSigns!) {
-        command += '${VerbUtil.formatAtSign(atSign)}';
+        serverCommandBuffer.write('${VerbUtil.formatAtSign(atSign)}');
       }
     }
-
-    return '${command.trim()}\n';
+    return '${serverCommandBuffer.toString().trim()}\n';
   }
 
   @override
   bool checkParams() {
-    // TODO: implement checkParams
-    return true;
+    return (configType != null && operation != null);
   }
 }

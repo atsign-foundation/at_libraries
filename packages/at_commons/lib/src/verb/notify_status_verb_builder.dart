@@ -1,3 +1,5 @@
+import 'package:at_commons/src/exception/at_exceptions.dart';
+import 'package:at_commons/src/utils/string_utils.dart';
 import 'package:at_commons/src/verb/verb_builder.dart';
 
 class NotifyStatusVerbBuilder implements VerbBuilder {
@@ -6,19 +8,16 @@ class NotifyStatusVerbBuilder implements VerbBuilder {
 
   @override
   String buildCommand() {
-    var command = 'notify:status:';
-    if (notificationId != null) {
-      command += '$notificationId\n';
+    StringBuffer serverCommandBuffer = StringBuffer('notify:status:');
+    if (notificationId.isNullOrEmpty) {
+      throw InvalidAtKeyException('NotificationId cannot be null or empty');
     }
-    return command;
+    serverCommandBuffer.write('$notificationId\n');
+    return serverCommandBuffer.toString();
   }
 
   @override
   bool checkParams() {
-    var isValid = true;
-    if (notificationId == null) {
-      isValid = false;
-    }
-    return isValid;
+    return notificationId.isNotNullOrEmpty;
   }
 }
