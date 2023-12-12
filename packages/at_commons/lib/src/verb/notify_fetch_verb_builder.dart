@@ -1,4 +1,4 @@
-import 'package:at_commons/at_commons.dart';
+import 'package:at_commons/src/exception/at_exceptions.dart';
 import 'package:at_commons/src/verb/verb_builder.dart';
 
 /// NotifyFetchVerbBuilder generated the command to fetches the notification
@@ -18,7 +18,7 @@ class NotifyFetchVerbBuilder implements VerbBuilder {
 
   @override
   String buildCommand() {
-    var command = 'notify:fetch:';
+    StringBuffer serverCommandBuffer = StringBuffer('notify:fetch:');
     try {
       if (notificationId.isEmpty) {
         throw InvalidSyntaxException(
@@ -28,8 +28,8 @@ class NotifyFetchVerbBuilder implements VerbBuilder {
       throw InvalidSyntaxException(
           'Notification-id is not set. Notification-id is mandatory');
     }
-    command += '$notificationId\n';
-    return command;
+    serverCommandBuffer.write('$notificationId\n');
+    return serverCommandBuffer.toString();
   }
 
   @override

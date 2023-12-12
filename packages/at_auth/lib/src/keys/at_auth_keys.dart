@@ -12,6 +12,8 @@ class AtAuthKeys {
   String? apkamSymmetricKey;
   String? enrollmentId;
 
+  AtAuthKeys();
+
   Map<String, String?> toMap() {
     var keysMap = <String, String?>{};
     keysMap[auth_constants.apkamPrivateKey] = apkamPrivateKey;
@@ -25,4 +27,28 @@ class AtAuthKeys {
     keysMap[auth_constants.apkamEnrollmentId] = enrollmentId;
     return keysMap;
   }
+
+  Map<String, String?> toJson() {
+    return <String, String?>{
+      auth_constants.apkamPrivateKey: apkamPrivateKey,
+      auth_constants.apkamPublicKey: apkamPublicKey,
+      auth_constants.defaultEncryptionPrivateKey: defaultEncryptionPrivateKey,
+      auth_constants.defaultEncryptionPublicKey: defaultEncryptionPublicKey,
+      auth_constants.defaultSelfEncryptionKey: defaultSelfEncryptionKey,
+      auth_constants.apkamSymmetricKey: apkamSymmetricKey,
+      auth_constants.apkamEnrollmentId: enrollmentId
+    };
+  }
+
+  AtAuthKeys.fromJson(Map json)
+      : apkamPrivateKey = json[auth_constants.apkamPrivateKey],
+        apkamPublicKey = json[auth_constants.apkamPublicKey],
+        defaultEncryptionPrivateKey =
+            json[auth_constants.defaultEncryptionPrivateKey],
+        defaultEncryptionPublicKey =
+            json[auth_constants.defaultEncryptionPublicKey],
+        defaultSelfEncryptionKey =
+            json[auth_constants.defaultSelfEncryptionKey],
+        apkamSymmetricKey = json[auth_constants.apkamSymmetricKey],
+        enrollmentId = json[auth_constants.apkamEnrollmentId];
 }

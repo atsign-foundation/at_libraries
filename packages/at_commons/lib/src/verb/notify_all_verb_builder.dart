@@ -1,10 +1,8 @@
-import 'package:at_commons/at_commons.dart';
-import 'package:at_commons/src/verb/verb_builder.dart';
+import 'package:at_commons/src/verb/abstract_verb_builder.dart';
+import 'package:at_commons/src/verb/operation_enum.dart';
+import 'package:at_commons/src/verb/verb_util.dart';
 
-class NotifyAllVerbBuilder implements VerbBuilder {
-  /// Key that represents a user's information. e.g phone, location, email etc.,
-  String? atKey;
-
+class NotifyAllVerbBuilder extends AbstractVerbBuilder {
   /// Value of the key typically in string format. Images, files, etc.,
   /// must be converted to unicode string before storing.
   dynamic value;
@@ -12,68 +10,48 @@ class NotifyAllVerbBuilder implements VerbBuilder {
   /// AtSign to whom [atKey] has to be shared.
   List? sharedWithList;
 
-  /// AtSign of the client user calling this builder.
-  String? sharedBy;
-
-  /// if [isPublic] is true, then [atKey] is accessible by all atSigns.
-  /// if [isPublic] is false, then [atKey] is accessible either by [sharedWith] or [sharedBy]
-  bool isPublic = false;
-
-  /// time in milliseconds after which [atKey] expires.
-  int? ttl;
-
-  /// time in milliseconds after which [atKey] becomes active.
-  int? ttb;
-
-  /// time in milliseconds to refresh [atKey].
-  int? ttr;
-
   OperationEnum? operation;
-
-  bool? ccd;
 
   @override
   String buildCommand() {
-    var command = 'notify:';
+    StringBuffer serverCommandBuffer = StringBuffer('notify:');
 
     if (operation != null) {
-      command += '${getOperationName(operation)}:';
+      serverCommandBuffer.write('${getOperationName(operation)}:');
     }
-    if (ttl != null) {
-      command += 'ttl:$ttl:';
+    if (atKey.metadata.ttl != null) {
+      serverCommandBuffer.write('ttl:${atKey.metadata.ttl}:');
     }
-    if (ttb != null) {
-      command += 'ttb:$ttb:';
+    if (atKey.metadata.ttb != null) {
+      serverCommandBuffer.write('ttb:${atKey.metadata.ttb}:');
     }
-    if (ttr != null) {
-      ccd ??= false;
-      command += 'ttr:$ttr:ccd:$ccd:';
+    if (atKey.metadata.ttr != null) {
+      atKey.metadata.ccd ??= false;
+      serverCommandBuffer
+          .write('ttr:${atKey.metadata.ttr}:ccd:${atKey.metadata.ccd}:');
     }
     if (sharedWithList != null && sharedWithList!.isNotEmpty) {
       var sharedWith = sharedWithList!.join(',');
-      command += '${VerbUtil.formatAtSign(sharedWith)}:';
+      serverCommandBuffer.write('${VerbUtil.formatAtSign(sharedWith)}:');
     }
-
-    if (isPublic) {
-      command += 'public:';
+    if (atKey.metadata.isPublic == true) {
+      serverCommandBuffer.write('public:');
     }
-    command += atKey!;
-
-    if (sharedBy != null) {
-      command += '${VerbUtil.formatAtSign(sharedBy)}';
+    serverCommandBuffer.write(atKey.toString());
+    if (atKey.sharedBy != null) {
+      serverCommandBuffer.write('${VerbUtil.formatAtSign(atKey.sharedBy)}');
     }
-
     if (value != null) {
-      command += ':$value';
+      serverCommandBuffer.write(':$value');
     }
-
-    return '$command\n';
+    return (serverCommandBuffer..write('\n')).toString();
   }
 
   @override
   bool checkParams() {
     var isValid = true;
-    if ((atKey == null) || (isPublic == true && sharedWithList != null)) {
+    if ((atKey.key.isNotEmpty) ||
+        (atKey.metadata.isPublic == true && sharedWithList != null)) {
       isValid = false;
     }
     return isValid;

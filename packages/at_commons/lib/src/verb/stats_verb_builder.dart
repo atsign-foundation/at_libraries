@@ -23,15 +23,14 @@ class StatsVerbBuilder implements VerbBuilder {
 
   @override
   String buildCommand() {
-    var statsCommand = 'stats';
+    StringBuffer serverCommandBuffer = StringBuffer('stats');
     if (statIds != null) {
-      statsCommand += ':$statIds';
+      serverCommandBuffer.write(':$statIds');
       if (regex != null) {
-        statsCommand += ':$regex';
+        serverCommandBuffer.write(':$regex');
       }
     }
-    statsCommand += '\n';
-    return statsCommand;
+    return (serverCommandBuffer..write('\n')).toString();
   }
 
   @override

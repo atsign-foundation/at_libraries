@@ -49,38 +49,19 @@ void main(List<String> args) async {
   assert(data == decryptionResult.result, true);
 
   // 2 - Signing and data verification using asymmetric key pair
-  // Using signString() and verifyString()
-  final digest = 'sample pkam digest';
-  //2.1 sign the digest using [atPkamKeyPair.privateKey]
-
-  final signingResult =
-      // ignore: deprecated_member_use_from_same_package
-      atChops.signBytes(
-          utf8.encode(digest) as Uint8List, SigningKeyType.signingSha256);
-  print(signingResult);
-
-  //2.2 verify the signature using [atPkamKeyPair.publicKey]
-  final verificationResult = atChops.verifySignatureBytes(
-      utf8.encode(digest) as Uint8List,
-      signingResult.result,
-      SigningKeyType
-          .signingSha256); // ignore: deprecated_member_use_from_same_package
-  assert(verificationResult.result, true);
-
-  // 3 - Signing and data verification using asymmetric key pair
   // Using sign() and verify()
   final dataToSign = 'sample data';
-  // 3.1 create signing input and set signing and hashing algo type
+  // 2.1 create signing input and set signing and hashing algo type
   AtSigningInput signingInput = AtSigningInput(dataToSign);
   signingInput.signingAlgoType = SigningAlgoType.rsa2048;
   signingInput.hashingAlgoType = HashingAlgoType.sha512;
   AtSigningAlgorithm signingAlgorithm =
       DefaultSigningAlgo(atEncryptionKeyPair, signingInput.hashingAlgoType);
   signingInput.signingAlgorithm = signingAlgorithm;
-  // 3.2 sign the data
+  // 2.2 sign the data
   final dataSigningResult = atChops.sign(signingInput);
 
-  // 3.3 create verification input and set signing and hashing algo type
+  // 2.3 create verification input and set signing and hashing algo type
   AtSigningVerificationInput? verificationInput = AtSigningVerificationInput(
       dataToSign,
       base64Decode(dataSigningResult.result),
@@ -90,8 +71,9 @@ void main(List<String> args) async {
   AtSigningAlgorithm verifyAlgorithm = DefaultSigningAlgo(
       atEncryptionKeyPair, verificationInput.hashingAlgoType);
   verificationInput.signingAlgorithm = verifyAlgorithm;
-  // 3.4 verify the signature
+  // 2.4 verify the signature
   AtSigningResult dataVerificationResult = atChops.verify(verificationInput);
+  print('Signing result: ${dataVerificationResult.result}');
   assert(dataVerificationResult.result, true);
 }
 

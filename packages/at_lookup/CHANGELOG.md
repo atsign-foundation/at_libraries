@@ -1,3 +1,12 @@
+## 3.0.43
+- fix: revert removing private key reference from at_lookup_impl
+## 3.0.42
+- fix: more informative exception messages
+- fix: removed private key reference from at_lookup_impl
+## 3.0.41
+- feat: introduce methods cramAuthenticate and close into the AtLookup interface
+- deprecate: authenticate_cram() from AtLookupImpl. [cramAuthenticate should be used instead]
+- build(deps): Upgrade at_commons to v3.0.57 and at_chops to v1.0.5
 ## 3.0.40
 - feat: make `SecondaryUrlFinder` (atServer address lookup) resilient to 
   transient failures to reach an atDirectory

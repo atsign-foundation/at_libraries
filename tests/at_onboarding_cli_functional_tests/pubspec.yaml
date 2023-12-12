@@ -9,18 +9,23 @@ environment:
 dependencies:
   at_onboarding_cli:
     path: ../../packages/at_onboarding_cli
+  at_auth: ^1.0.0
+  at_chops: ^1.0.5
+  at_client: ^3.0.69
+  at_commons: ^3.0.5
+  at_utils: ^3.0.15
+  at_lookup: ^3.0.43
 
 dependency_overrides:
-  at_client:
-    git:
-      url: https://github.com/atsign-foundation/at_client_sdk.git
-      path: packages/at_client
-      ref: dep_upgrades
   at_chops:
-    git:
-      url: https://github.com/atsign-foundation/at_libraries.git
-      path: packages/at_chops
-      ref: at_chops_dep_upgrade
+    path: ../../packages/at_chops
+  at_auth:
+    path: ../../packages/at_auth
+  at_client:
+      git:
+        url: https://github.com/atsign-foundation/at_client_sdk.git
+        path: packages/at_client
+        ref: dep_upgrades
 
 dev_dependencies:
   lints: ^1.0.0

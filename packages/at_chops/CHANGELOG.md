@@ -1,12 +1,15 @@
-## 1.0.6
+## 1.0.7
 - build[deps]: Upgraded the following packages:
-    - at_commons to v3.0.57
+    - at_commons to v3.0.58
     - crypton to v2.2.1
     - encrypt to v5.0.3
     - crypto to v3.0.3
     - ecdsa to v0.1.0
     - elliptic to v0.3.10
     - pointycastle to v3.7.3
+## 1.0.6
+- fix: Pass optional parameter "keyName" to encryptBytes and decryptBytes
+- fix: Export "at_key_pair.dart" file
 ## 1.0.5
 - feat: Changes for at_auth package
 - chore: fixed analyzer issues

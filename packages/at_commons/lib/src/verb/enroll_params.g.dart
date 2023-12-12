@@ -15,8 +15,8 @@ EnrollParams _$EnrollParamsFromJson(Map<String, dynamic> json) => EnrollParams()
     (k, e) => MapEntry(k, e as String),
   )
   ..otp = json['otp'] as String?
-  ..encryptedDefaultEncryptedPrivateKey =
-      json['encryptedDefaultEncryptedPrivateKey'] as String?
+  ..encryptedDefaultEncryptionPrivateKey =
+      json['encryptedDefaultEncryptionPrivateKey'] as String?
   ..encryptedDefaultSelfEncryptionKey =
       json['encryptedDefaultSelfEncryptionKey'] as String?
   ..encryptedAPKAMSymmetricKey = json['encryptedAPKAMSymmetricKey'] as String?
@@ -29,8 +29,8 @@ Map<String, dynamic> _$EnrollParamsToJson(EnrollParams instance) =>
       'deviceName': instance.deviceName,
       'namespaces': instance.namespaces,
       'otp': instance.otp,
-      'encryptedDefaultEncryptedPrivateKey':
-          instance.encryptedDefaultEncryptedPrivateKey,
+      'encryptedDefaultEncryptionPrivateKey':
+          instance.encryptedDefaultEncryptionPrivateKey,
       'encryptedDefaultSelfEncryptionKey':
           instance.encryptedDefaultSelfEncryptionKey,
       'encryptedAPKAMSymmetricKey': instance.encryptedAPKAMSymmetricKey,

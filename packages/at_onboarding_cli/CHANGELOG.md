@@ -1,14 +1,16 @@
-## 1.3.2
+## 1.4.2
 - build[deps]: Upgraded the following packages:
-    - at_commons to v3.0.57
-    - at_client to v3.0.66
-    - at_lookup to v3.0.40
-    - at_utils to v3.0.15
-    - at_chops to v1.0.5
+    - at_commons to v3.0.58
     - crypton to v2.2.1
     - encrypt to v5.0.3
-## 1.3.1
+## 1.4.1
+- feat: remove duplicate enrollment code and use at_auth
+- chore: upgrade at_auth to 1.0.3, at_chops to 1.0.6, at_client to 3.0.69,at_lookup to 3.0.43
+## 1.4.0
+- feat: support for APKAM based authentication
 - build: require at_client 3.0.65 or above
+- build(deps): Upgrade at_client dependency to v3.0.67
+- build(deps): Upgrade http dependency to v1.0.0
 ## 1.3.0
 - feat: Introduced verification-code based activation of atsigns
 - fix: deprecate qr_code based activation

@@ -27,19 +27,27 @@ class HomeDirectoryUtil {
     return path.join(homeDir!, '.atsign', 'keys', '${atsign}_key.atKeys');
   }
 
-  static String getStorageDirectory(String atsign) {
+  static String getStorageDirectory(String atsign, {String? enrollmentId}) {
     if (homeDir == null) {
       throw AtClientException.message('Could not find home directory');
+    }
+    if (enrollmentId != null) {
+      return path.join(homeDir!, '.atsign', 'at_onboarding_cli', 'storage',
+          atsign, enrollmentId);
     }
     return path.join(
         homeDir!, '.atsign', 'at_onboarding_cli', 'storage', atsign);
   }
 
-  static String getCommitLogPath(String atsign) {
-    return path.join(getStorageDirectory(atsign), 'commitLog');
+  static String getCommitLogPath(String atsign, {String? enrollmentId}) {
+    return path.join(
+        getStorageDirectory(atsign, enrollmentId: enrollmentId), 'commitLog');
   }
 
-  static String getHiveStoragePath(String atsign) {
-    return path.join(HomeDirectoryUtil.getStorageDirectory(atsign), 'hive');
+  static String getHiveStoragePath(String atsign, {String? enrollmentId}) {
+    return path.join(
+        HomeDirectoryUtil.getStorageDirectory(atsign,
+            enrollmentId: enrollmentId),
+        'hive');
   }
 }

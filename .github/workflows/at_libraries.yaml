@@ -32,6 +32,11 @@ jobs:
         with:
           sdk: stable
 
+      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+        with:
+          go-version: 'stable'
+          cache-dependency-path: tools/osv-scanner/go.sum
+
       - name: Install dependencies in ${{ matrix.package }}
         working-directory: packages/${{ matrix.package }}
         run: dart pub get
@@ -39,6 +44,15 @@ jobs:
       - name: Analyze project source in ${{ matrix.package }}
         working-directory: packages/${{ matrix.package }}
         run: dart analyze
+
+      # Runs osv-scanner to find any vulnerable Dart dependencies
+      # It needs to look at pubspec.lock files, which is why it's
+      # placed here, as the `dart pub get` above will create them
+      - name: Run osv-scanner
+        working-directory: packages/${{ matrix.package }}
+        run: |
+          go install github.com/google/osv-scanner/cmd/osv-scanner@6316373e47d7e3e4b4fd3630c4bbc10987738de6 # v1.4.3
+          osv-scanner --lockfile=./pubspec.lock
 
   build_and_test:
     runs-on: ubuntu-latest
@@ -58,6 +72,11 @@ jobs:
         with:
           sdk: stable
 
+      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+        with:
+          go-version: 'stable'
+          cache-dependency-path: tools/osv-scanner/go.sum
+
       - name: Install dependencies in ${{ matrix.package }}
         working-directory: packages/${{ matrix.package }}
         run: dart pub get
@@ -69,6 +88,15 @@ jobs:
       - name: run tests
         working-directory: packages/${{ matrix.package }}
         run: dart test --concurrency=1
+
+      # Runs osv-scanner to find any vulnerable Dart dependencies
+      # It needs to look at pubspec.lock files, which is why it's
+      # placed here, as the `dart pub get` above will create them
+      - name: Run osv-scanner
+        working-directory: packages/${{ matrix.package }}
+        run: |
+          go install github.com/google/osv-scanner/cmd/osv-scanner@6316373e47d7e3e4b4fd3630c4bbc10987738de6 # v1.4.3
+          osv-scanner --lockfile=./pubspec.lock
 
   functional_tests_at_onboarding_cli:
     runs-on: ubuntu-latest
@@ -101,12 +129,13 @@ jobs:
         working-directory: tests/${{ matrix.package }}
         run: dart run check_docker_readiness.dart
 
-      - name: run pkamLoad on docker-image
-        run: sudo docker exec at_onboarding_cli_functional_tests_virtualenv_1 supervisorctl start pkamLoad
+#      commented since onboarding tests throw atsign already activated exception
+#      - name: run pkamLoad on docker-image
+#        run: sudo docker exec at_onboarding_cli_functional_tests_virtualenv_1 supervisorctl start pkamLoad
 
-      - name: Check test environment readiness
-        working-directory: tests/${{ matrix.package }}
-        run: dart run check_test_env.dart
+#      - name: Check test environment readiness
+#        working-directory: tests/${{ matrix.package }}
+#        run: dart run check_test_env.dart
 
       - name: run tests
         working-directory: tests/${{ matrix.package }}

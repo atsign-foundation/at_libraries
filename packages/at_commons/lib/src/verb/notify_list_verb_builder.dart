@@ -7,17 +7,18 @@ class NotifyListVerbBuilder implements VerbBuilder {
 
   @override
   String buildCommand() {
-    var command = 'notify:list';
+    StringBuffer serverCommandBuffer = StringBuffer('notify:list');
+
     if (fromDate != null) {
-      command += ':$fromDate';
+      serverCommandBuffer.write(':$fromDate');
     }
     if (toDate != null) {
-      command += ':$toDate';
+      serverCommandBuffer.write(':$toDate');
     }
     if (regex != null) {
-      command += ':$regex';
+      serverCommandBuffer.write(':$regex');
     }
-    return command += '\n';
+    return (serverCommandBuffer..write('\n')).toString();
   }
 
   @override

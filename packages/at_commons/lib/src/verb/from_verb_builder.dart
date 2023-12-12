@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:at_commons/at_builders.dart';
-import 'package:at_commons/at_commons.dart';
+import 'package:at_commons/src/at_constants.dart';
 
 class FromVerbBuilder implements VerbBuilder {
   late String atSign;
@@ -11,13 +11,14 @@ class FromVerbBuilder implements VerbBuilder {
 
   @override
   String buildCommand() {
-    var command = 'from:$atSign';
+    StringBuffer serverCommandBuffer = StringBuffer('from:$atSign');
     if (clientConfig.isNotEmpty) {
       var clientConfigStr = jsonEncode(clientConfig);
-      command += ':${AtConstants.clientConfig}:$clientConfigStr';
+      serverCommandBuffer
+          .write(':${AtConstants.clientConfig}:$clientConfigStr');
     }
-    command += '\n';
-    return command;
+    serverCommandBuffer.write('\n');
+    return serverCommandBuffer.toString();
   }
 
   @override

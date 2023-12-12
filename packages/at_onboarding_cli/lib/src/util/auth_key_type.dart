@@ -4,4 +4,5 @@ class AuthKeyType {
   static const String encryptionPublicKey = 'aesEncryptPublicKey';
   static const String encryptionPrivateKey = 'aesEncryptPrivateKey';
   static const String selfEncryptionKey = 'selfEncryptionKey';
+  static const String apkamSymmetricKey = 'apkamSymmetricKey';
 }

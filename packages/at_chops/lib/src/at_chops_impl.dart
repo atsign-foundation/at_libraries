@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_cast
+
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -71,7 +73,7 @@ class AtChopsImpl extends AtChops {
     try {
       final decryptionResult = decryptBytes(
           base64Decode(data), encryptionKeyType,
-          encryptionAlgorithm: encryptionAlgorithm, iv: iv);
+          encryptionAlgorithm: encryptionAlgorithm, keyName: keyName, iv: iv);
       final atEncryptionResult = AtEncryptionResult()
         ..atEncryptionMetaData = decryptionResult.atEncryptionMetaData
         ..atEncryptionResultType = AtEncryptionResultType.string;
@@ -125,7 +127,7 @@ class AtChopsImpl extends AtChops {
       final utfEncodedData = utf8.encode(data);
       final encryptionResult = encryptBytes(
           Uint8List.fromList(utfEncodedData), encryptionKeyType,
-          encryptionAlgorithm: encryptionAlgorithm, iv: iv);
+          keyName: keyName, encryptionAlgorithm: encryptionAlgorithm, iv: iv);
       final atEncryptionResult = AtEncryptionResult()
         ..atEncryptionMetaData = encryptionResult.atEncryptionMetaData
         ..atEncryptionResultType = AtEncryptionResultType.string;

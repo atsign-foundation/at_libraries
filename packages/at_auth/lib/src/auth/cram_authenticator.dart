@@ -13,7 +13,7 @@ class CramAuthenticator {
     var authResult = AtAuthResponse(_atSign);
     try {
       bool cramResult =
-          await (atLookup as AtLookupImpl).authenticate_cram(_cramSecret);
+          await (atLookup as AtLookupImpl).cramAuthenticate(_cramSecret);
       authResult.isSuccessful = cramResult;
     } on UnAuthenticatedException catch (e) {
       throw UnAuthenticatedException(

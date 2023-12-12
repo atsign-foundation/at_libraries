@@ -13,9 +13,11 @@ class AtOnboardingPreference extends AtClientPreference {
   String? qrCodePath;
 
   /// signing algorithm to use for pkam authentication
+  @override
   SigningAlgoType signingAlgoType = SigningAlgoType.rsa2048;
 
   /// hashing algorithm to use for pkam authentication
+  @override
   HashingAlgoType hashingAlgoType = HashingAlgoType.sha256;
 
   PkamAuthMode authMode = PkamAuthMode.keysFile;
@@ -27,4 +29,16 @@ class AtOnboardingPreference extends AtClientPreference {
 
   /// the hostName of the registrar which will be used to activate the atsign
   String registrarUrl = RegistrarApiConstants.apiHostProd;
+
+  String? appName;
+
+  String? deviceName;
+
+  int apkamAuthRetryDurationMins = 30;
+
+  /// This enables apkamEnabledAuthentication. Creates default enrollmentId with
+  /// super user access.
+  ///
+  /// Disabled by default. Set to true to enable
+  bool enableEnrollmentDuringOnboard = false;
 }
