@@ -15,3 +15,4 @@ export 'src/enroll/at_enrollment_response.dart';
 export 'src/enroll/at_enrollment_request.dart';
 export 'src/enroll/at_initial_enrollment_request.dart';
 export 'src/enroll/at_new_enrollment_request.dart';
+export 'src/enroll/at_enrollment_notification_request.dart';
