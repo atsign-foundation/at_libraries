@@ -18,6 +18,12 @@ dependencies:
   logging: ^1.2.0
   meta: ^1.11.0
 
+dependency_overrides:
+  at_client:
+    git:
+      url: https://github.com/atsign-foundation/at_client_sdk.git
+      path: packages/at_client
+      ref: dep_upgrades
 dev_dependencies:
   lints: ^3.0.0
   test: ^1.24.9
