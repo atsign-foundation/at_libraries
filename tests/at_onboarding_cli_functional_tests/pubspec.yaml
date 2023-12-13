@@ -21,11 +21,7 @@ dependency_overrides:
     path: ../../packages/at_chops
   at_auth:
     path: ../../packages/at_auth
-  at_client:
-      git:
-        url: https://github.com/atsign-foundation/at_client_sdk.git
-        path: packages/at_client
-        ref: dep_upgrades
+  at_client: ^3.0.70
 
 dev_dependencies:
   lints: ^1.0.0
