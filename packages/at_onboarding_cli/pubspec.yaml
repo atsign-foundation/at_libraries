@@ -29,11 +29,7 @@ dependencies:
    at_utils: ^3.0.15
 
 dependency_overrides:
-  at_client:
-    git:
-      url: https://github.com/atsign-foundation/at_client_sdk.git
-      path: packages/at_client
-      ref: dep_upgrades
+  at_client: ^3.0.70
   at_chops:
     path: ../at_chops
 dev_dependencies:
