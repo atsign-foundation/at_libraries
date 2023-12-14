@@ -1,3 +1,5 @@
+## 3.0.16
+- fix: Uptake at_commons 4.0.0
 ## 3.0.15
 - fix: Replace "LoggingType" with "LoggingHandler" in "AtSignLogger" constructor to enable custom logging
 ## 3.0.14
