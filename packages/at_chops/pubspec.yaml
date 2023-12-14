@@ -15,8 +15,8 @@ dependencies:
   dart_periphery: ^0.9.3
   elliptic: ^0.3.8
   pointycastle: ^3.6.2
-  at_commons: ^3.0.53
-  at_utils: ^3.0.15
+  at_commons: ^4.0.0
+  at_utils: ^3.0.16
 
 dev_dependencies:
   lints: ^2.0.0
