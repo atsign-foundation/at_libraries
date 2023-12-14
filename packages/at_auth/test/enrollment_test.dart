@@ -94,7 +94,7 @@ void main() {
     AtEnrollmentResponse atEnrollmentResponse = await atEnrollmentServiceImpl
         .submitEnrollment(atNewEnrollmentRequest, mockAtLookUp);
     expect(atEnrollmentResponse.enrollmentId, '123');
-    expect(atEnrollmentResponse.enrollStatus, EnrollStatus.pending);
+    expect(atEnrollmentResponse.enrollStatus, EnrollmentStatus.pending);
   });
 
   group('A group of test related to AtEnrollmentBuilder', () {

@@ -8,7 +8,7 @@ class AtEnrollmentResponse {
   String enrollmentId;
 
   /// The status of the enrollment operation.
-  EnrollStatus enrollStatus;
+  EnrollmentStatus enrollStatus;
 
   /// Optional authentication keys associated with the enrollment.
   AtAuthKeys? atAuthKeys;
