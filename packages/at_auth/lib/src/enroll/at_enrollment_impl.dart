@@ -94,8 +94,9 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
 
   Future<String> _getDefaultEncryptionPublicKey(AtLookUp atLookupImpl) async {
     var lookupVerbBuilder = LookupVerbBuilder()
-      ..atKey = 'publickey'
-      ..sharedBy = _atSign;
+      ..atKey = (AtKey()
+        ..key = 'publickey'
+        ..sharedBy = _atSign);
     String? lookupResult = await atLookupImpl.executeVerb(lookupVerbBuilder);
     if (lookupResult == null || lookupResult.isEmpty) {
       throw AtEnrollmentException(
@@ -164,15 +165,15 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
   _convertEnrollmentStatusToEnum(String enrollmentStatus) {
     switch (enrollmentStatus) {
       case 'approved':
-        return EnrollStatus.approved;
+        return EnrollmentStatus.approved;
       case 'denied:':
-        return EnrollStatus.denied;
+        return EnrollmentStatus.denied;
       case 'expired':
-        return EnrollStatus.expired;
+        return EnrollmentStatus.expired;
       case 'revoked':
-        return EnrollStatus.revoked;
+        return EnrollmentStatus.revoked;
       case 'pending':
-        return EnrollStatus.pending;
+        return EnrollmentStatus.pending;
       default:
         throw AtEnrollmentException(
             '$enrollmentStatus is not a valid enrollment status');
