@@ -57,8 +57,8 @@ void main() {
       AtLookUp? atLookUp = atOnboardingService.atLookUp;
       AtKey key = AtKey();
       key.key = 'testKey1';
-      await atLookUp?.update(key.key!, 'value1');
-      String? response = await atLookUp?.llookup(key.key!);
+      await atLookUp?.update(key.key, 'value1');
+      String? response = await atLookUp?.llookup(key.key);
       expect('data:value1', response);
     });
 

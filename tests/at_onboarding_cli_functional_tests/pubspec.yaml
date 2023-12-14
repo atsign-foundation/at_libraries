@@ -19,9 +19,26 @@ dependencies:
 dependency_overrides:
   at_chops:
     path: ../../packages/at_chops
+  at_client:
+    git:
+      url: https://github.com/atsign-foundation/at_client_sdk.git 
+      path: packages/at_client
+      ref: uptake_commons_4.0.0
   at_auth:
-    path: ../../packages/at_auth
-  at_client: ^3.0.70
+    git:
+      url: https://github.com/atsign-foundation/at_libraries.git
+      path: packages/at_auth
+      ref: uptake_commons_into_auth
+  at_lookup:
+    git:
+      url: https://github.com/atsign-foundation/at_libraries.git
+      path: packages/at_lookup
+      ref: uptake_commons_changes_into_lookup 
+  at_persistence_secondary_server:
+    git:
+      url: https://github.com/atsign-foundation/at_server.git
+      path: packages/at_persistence_secondary_server
+      ref: uptake_commons_4.0.0
   at_commons: ^4.0.0
 
 dev_dependencies:
