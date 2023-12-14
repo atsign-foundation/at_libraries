@@ -22,14 +22,15 @@ dependencies:
    zxing2: ^0.2.0
    at_auth: ^1.0.3
    at_chops: ^1.0.6
-   at_client: ^3.0.69
-   at_commons: ^3.0.58
+   at_client: ^3.0.70
+   at_commons: ^4.0.0
    at_lookup: ^3.0.43
    at_server_status: ^1.0.3
-   at_utils: ^3.0.15
+   at_utils: ^3.0.16
 
 dependency_overrides:
   at_client: ^3.0.70
+  at_commons: ^4.0.0
   at_chops:
     path: ../at_chops
 dev_dependencies:
