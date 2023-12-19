@@ -1,6 +1,7 @@
 ## 1.0.7
 - build[deps]: Upgraded the following packages:
-    - at_commons to v3.0.58
+    - at_commons to v4.0.0
+    - at_utils to v3.0.16
     - crypton to v2.2.1
     - encrypt to v5.0.3
     - crypto to v3.0.3
