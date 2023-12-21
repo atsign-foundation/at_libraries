@@ -431,6 +431,7 @@ class AtLookupImpl implements AtLookUp {
         logger.finer('fromResponse $fromResponse');
         var key = RSAPrivateKey.fromString(privateKey);
         var sha256signature =
+            // ignore: unnecessary_cast
             key.createSHA256Signature(utf8.encode(fromResponse) as Uint8List);
         var signature = base64Encode(sha256signature);
         logger.finer('Sending command pkam:$signature');
