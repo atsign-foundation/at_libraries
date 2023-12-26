@@ -1,4 +1,4 @@
-// ignore_for_file: unused_field
+// ignore_for_file: unused_field, deprecated_member_use_from_same_package
 
 import 'dart:async';
 import 'dart:convert';
@@ -581,6 +581,9 @@ class AtLookupImpl implements AtLookUp {
         if (_atChops != null) {
           logger.finer('calling pkam using atchops');
           await pkamAuthenticate(enrollmentId: enrollmentId);
+        } else if (privateKey != null) {
+          logger.finer('calling pkam without atchops');
+          await authenticate(privateKey);
         } else if (cramSecret != null) {
           await cramAuthenticate(cramSecret!);
         } else {
