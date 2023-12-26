@@ -1,3 +1,8 @@
+## 3.0.44
+- build[deps]: Upgraded the following packages:
+    - at_commons to v4.0.0
+    - at_utils to v3.0.16
+    - at_chops to v1.0.7
 ## 3.0.43
 - fix: revert removing private key reference from at_lookup_impl
 ## 3.0.42
