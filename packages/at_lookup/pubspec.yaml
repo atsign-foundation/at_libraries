@@ -1,6 +1,6 @@
 name: at_lookup
 description: A Dart library that contains the core commands that can be used with a secondary server (scan, update, lookup, llookup, plookup, etc.)
-version: 3.0.43
+version: 3.0.44
 repository: https://github.com/atsign-foundation/at_libraries
 homepage: https://atsign.com
 documentation: https://docs.atsign.com/
@@ -12,13 +12,13 @@ dependencies:
   path: ^1.8.0
   crypton: ^2.0.1
   crypto: ^3.0.1
-  at_utils: ^3.0.15
-  at_commons: ^3.0.57
+  at_utils: ^3.0.16
+  at_commons: ^4.0.0
   mutex: ^3.0.0
   meta: ^1.8.0
-  at_chops: ^1.0.5
+  at_chops: ^1.0.7
 
 dev_dependencies:
   mocktail: ^1.0.1
   lints: ^1.0.1
-  test: ^1.17.1
+  test: ^1.24.9
