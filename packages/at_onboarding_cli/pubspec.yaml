@@ -21,16 +21,17 @@ dependencies:
    path: ^1.8.1
    zxing2: ^0.2.0
    at_auth: ^1.0.3
-   at_chops: ^1.0.7
+   at_chops: ^1.0.6
    at_client: ^3.0.69
-   at_commons: ^4.0.0
-   at_lookup: ^3.0.44
+   at_commons: ^3.0.58
+   at_lookup: ^3.0.43
    at_server_status: ^1.0.3
-   at_utils: ^3.0.16
+   at_utils: ^3.0.15
 
 dependency_overrides: 
   at_auth:
-    path: /home/shaikirfan/Desktop/uptake_Commons_into_at_auth/at_libraries/packages/at_auth
+    path: ../at_auth
+  at_commons: ^4.0.0
 dev_dependencies:
   lints: ^2.1.0
   test: ^1.24.2
