@@ -208,6 +208,7 @@ enum Intent {
   validateAtSign,
   remoteVerbExecution,
   notifyData,
+  encryptData,
   decryptData,
   fetchEncryptionPublicKey,
   fetchEncryptionPrivateKey,
