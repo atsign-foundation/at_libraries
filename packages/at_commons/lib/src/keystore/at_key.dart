@@ -1,4 +1,5 @@
 import 'package:at_commons/src/keystore/at_key_builder_impl.dart';
+import 'package:at_commons/src/keystore/public_key_hash.dart';
 import 'package:at_commons/src/utils/at_key_regex_utils.dart';
 import 'package:at_commons/src/utils/string_utils.dart';
 import 'package:meta/meta.dart';
@@ -489,7 +490,10 @@ class Metadata {
 
   /// Stores the checksum of the encryption public key used to encrypt the [sharedKeyEnc]. We use this
   /// to verify that the encryption key-pair used to encrypt and decrypt the value are same
+  @Deprecated('use PublicKeyCheckSumObject')
   String? pubKeyCS;
+
+  PublicKeyHash? publicKeyHash;
 
   /// If the [AtValue] is public data (i.e. it is not encrypted) and contains one or more new line (\n) characters,
   /// then the data will be encoded, and the encoding will be set to type of encoding (e.g. "base64")
@@ -553,7 +557,7 @@ class Metadata {
         ', refreshAt : ${refreshAt?.toUtc().toString()}, createdAt : ${createdAt?.toUtc().toString()}'
         ', updatedAt : ${updatedAt?.toUtc().toString()}, isBinary : $isBinary, isEncrypted : $isEncrypted'
         ', isCached : $isCached, dataSignature: $dataSignature, sharedKeyStatus: $sharedKeyStatus'
-        ', encryptedSharedKey: $sharedKeyEnc, pubKeyCheckSum: $pubKeyCS, encoding: $encoding'
+        ', encryptedSharedKey: $sharedKeyEnc, pubKeyHash: $publicKeyHash, encoding: $encoding'
         ', encKeyName: $encKeyName, encAlgo: $encAlgo, ivNonce: $ivNonce'
         ', skeEncKeyName: $skeEncKeyName, skeEncAlgo: $skeEncAlgo}';
   }

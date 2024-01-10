@@ -4,6 +4,6 @@ import 'package:crypto/crypto.dart';
 class DefaultHash implements AtHashingAlgorithm {
   @override
   String hash(List<int> data) {
-    return md5.convert(data).toString();
+    return sha512.convert(data).toString();
   }
 }
