@@ -26,8 +26,11 @@ abstract class SymmetricEncryptionAlgorithm extends AtEncryptionAlgorithm {
 
 /// Interface for asymmetric encryption algorithms. Check [DefaultEncryptionAlgo] for sample implementation.
 abstract class ASymmetricEncryptionAlgorithm extends AtEncryptionAlgorithm {
+  /// Encrypt [plainData] with [atPublicKey.publicKey] if passed. Otherwise use default encryption public key set in at_chops instance
   @override
   Uint8List encrypt(Uint8List plainData, {AtPublicKey? atPublicKey});
+
+  /// Decrypt [plainData] with [atPublicKey.privateKey] if passed. Otherwise use default encryption private key set in at_chops instance
   @override
   Uint8List decrypt(Uint8List encryptedData, {AtPrivateKey? atPrivateKey});
 }
