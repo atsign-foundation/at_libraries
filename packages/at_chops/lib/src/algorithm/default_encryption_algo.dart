@@ -8,28 +8,32 @@ import 'package:at_commons/at_commons.dart';
 import 'package:crypton/crypton.dart';
 
 class DefaultEncryptionAlgo implements ASymmetricEncryptionAlgorithm {
-  final AtEncryptionKeyPair _encryptionKeypair;
-  DefaultEncryptionAlgo(this._encryptionKeypair);
-
+  AtEncryptionKeyPair? _encryptionKeypair;
+  DefaultEncryptionAlgo.fromKeyPair(this._encryptionKeypair);
+  DefaultEncryptionAlgo();
   @override
   Uint8List encrypt(Uint8List plainData, {AtPublicKey? atPublicKey}) {
-    //#TODO encrypt using atPublicKey if passed
-    if (_encryptionKeypair.atPublicKey.publicKey.isEmpty) {
-      throw AtEncryptionException('encryption public key is empty');
+    if ((_encryptionKeypair == null ||
+            _encryptionKeypair!.atPublicKey.publicKey.isEmpty) &&
+        (atPublicKey == null || atPublicKey.publicKey.isEmpty)) {
+      throw AtEncryptionException('EncryptionKeypair/public key not set');
     }
-    final rsaPublicKey =
-        RSAPublicKey.fromString(_encryptionKeypair.atPublicKey.publicKey);
+    var publicKeyString = atPublicKey?.publicKey;
+    publicKeyString ??= _encryptionKeypair!.atPublicKey.publicKey;
+    final rsaPublicKey = RSAPublicKey.fromString(publicKeyString);
     return rsaPublicKey.encryptData(plainData);
   }
 
   @override
   Uint8List decrypt(Uint8List encryptedData, {AtPrivateKey? atPrivateKey}) {
-    //#TODO decrypt using atPrivateKey if passed
-    if (_encryptionKeypair.atPrivateKey.privateKey.isEmpty) {
-      throw AtDecryptionException('decryption private key is empty');
+    if ((_encryptionKeypair == null ||
+            _encryptionKeypair!.atPrivateKey.privateKey.isEmpty) &&
+        (atPrivateKey == null || atPrivateKey.privateKey.isEmpty)) {
+      throw AtDecryptionException('EncryptionKeypair/public key not set');
     }
-    final rsaPrivateKey =
-        RSAPrivateKey.fromString(_encryptionKeypair.atPrivateKey.privateKey);
+    var privateKeyString = atPrivateKey?.privateKey;
+    privateKeyString ??= _encryptionKeypair!.atPrivateKey.privateKey;
+    final rsaPrivateKey = RSAPrivateKey.fromString(privateKeyString);
     return rsaPrivateKey.decryptData(encryptedData);
   }
 }

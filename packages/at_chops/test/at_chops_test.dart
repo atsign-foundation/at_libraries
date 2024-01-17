@@ -45,7 +45,9 @@ void main() {
       final iv = AtChopsUtil.generateRandomIV(16);
 
       final encryptionResult = atChops.encryptBytes(
-          utf8.encode(data) as Uint8List, EncryptionKeyType.aes256,
+          // ignore: unnecessary_cast
+          utf8.encode(data) as Uint8List,
+          EncryptionKeyType.aes256,
           iv: iv);
       expect(encryptionResult.atEncryptionMetaData, isNotNull);
       expect(encryptionResult.result, isNotEmpty);
@@ -75,7 +77,9 @@ void main() {
       final iv = AtChopsUtil.generateRandomIV(16);
 
       final encryptionResult = atChops.encryptBytes(
-          utf8.encode(data) as Uint8List, EncryptionKeyType.aes256,
+          // ignore: unnecessary_cast
+          utf8.encode(data) as Uint8List,
+          EncryptionKeyType.aes256,
           iv: iv);
       expect(encryptionResult.atEncryptionMetaData, isNotNull);
       expect(encryptionResult.result, isNotEmpty);
@@ -105,7 +109,9 @@ void main() {
       final iv = AtChopsUtil.generateRandomIV(16);
 
       final encryptionResult = atChops.encryptBytes(
-          utf8.encode(data) as Uint8List, EncryptionKeyType.aes256,
+          // ignore: unnecessary_cast
+          utf8.encode(data) as Uint8List,
+          EncryptionKeyType.aes256,
           iv: iv);
       expect(encryptionResult.atEncryptionMetaData, isNotNull);
       expect(encryptionResult.result, isNotEmpty);
@@ -217,133 +223,6 @@ void main() {
   });
 
   group('A group of tests for data signing and verification', () {
-    test('Test pkam signing and verification', () {
-      String data = 'Hello World';
-      final atPkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
-      final atChopsKeys = AtChopsKeys.create(null, atPkamKeyPair);
-      final atChops = AtChopsImpl(atChopsKeys);
-
-      final signingResult = atChops.signBytes(
-          Uint8List.fromList(data.codeUnits),
-          // ignore: deprecated_member_use_from_same_package
-          SigningKeyType.pkamSha256);
-      expect(signingResult.atSigningMetaData, isNotNull);
-      expect(signingResult.result, isNotEmpty);
-      expect(signingResult.atSigningResultType, AtSigningResultType.bytes);
-      expect(signingResult.atSigningMetaData.signingAlgoType,
-          SigningAlgoType.rsa2048);
-      expect(signingResult.atSigningMetaData.hashingAlgoType,
-          HashingAlgoType.sha256);
-
-      final verificationResult = atChops.verifySignatureBytes(
-          Uint8List.fromList(data.codeUnits),
-          signingResult.result,
-          // ignore: deprecated_member_use_from_same_package
-          SigningKeyType.pkamSha256);
-      expect(verificationResult.atSigningMetaData, isNotNull);
-      expect(verificationResult.atSigningResultType, AtSigningResultType.bool);
-      expect(verificationResult.atSigningMetaData.signingAlgoType,
-          SigningAlgoType.rsa2048);
-      expect(verificationResult.atSigningMetaData.hashingAlgoType,
-          HashingAlgoType.sha256);
-      expect(verificationResult.result, true);
-    });
-
-    test('Test data signing and verification - emoji char', () {
-      String data = 'Hello World🛠';
-      final atEncryptionKeyPair = AtChopsUtil.generateAtEncryptionKeyPair();
-      final atChopsKeys = AtChopsKeys.create(atEncryptionKeyPair, null);
-      final atChops = AtChopsImpl(atChopsKeys);
-
-      final signingResult = atChops.signBytes(
-          Uint8List.fromList(data.codeUnits),
-          // ignore: deprecated_member_use_from_same_package
-          SigningKeyType.signingSha256);
-      expect(signingResult.atSigningMetaData, isNotNull);
-      expect(signingResult.result, isNotEmpty);
-      expect(signingResult.atSigningResultType, AtSigningResultType.bytes);
-      expect(signingResult.atSigningMetaData.signingAlgoType,
-          SigningAlgoType.rsa2048);
-      expect(signingResult.atSigningMetaData.hashingAlgoType,
-          HashingAlgoType.sha256);
-
-      final verificationResult = atChops.verifySignatureBytes(
-          Uint8List.fromList(data.codeUnits),
-          signingResult.result,
-          // ignore: deprecated_member_use_from_same_package
-          SigningKeyType.signingSha256);
-      expect(verificationResult.atSigningMetaData, isNotNull);
-      expect(verificationResult.atSigningResultType, AtSigningResultType.bool);
-      expect(verificationResult.atSigningMetaData.signingAlgoType,
-          SigningAlgoType.rsa2048);
-      expect(verificationResult.atSigningMetaData.hashingAlgoType,
-          HashingAlgoType.sha256);
-      expect(verificationResult.result, true);
-    });
-
-    test('Test data signing and verification - special char', () {
-      String data = 'Hello\' World!*``';
-      final atEncryptionKeyPair = AtChopsUtil.generateAtEncryptionKeyPair();
-      final atChopsKeys = AtChopsKeys.create(atEncryptionKeyPair, null);
-      final atChops = AtChopsImpl(atChopsKeys);
-
-      final signingResult = atChops.signBytes(
-          Uint8List.fromList(data.codeUnits),
-          // ignore: deprecated_member_use_from_same_package
-          SigningKeyType.signingSha256);
-      expect(signingResult.atSigningMetaData, isNotNull);
-      expect(signingResult.result, isNotEmpty);
-      expect(signingResult.atSigningResultType, AtSigningResultType.bytes);
-      expect(signingResult.atSigningMetaData.signingAlgoType,
-          SigningAlgoType.rsa2048);
-      expect(signingResult.atSigningMetaData.hashingAlgoType,
-          HashingAlgoType.sha256);
-
-      final verificationResult = atChops.verifySignatureBytes(
-          Uint8List.fromList(data.codeUnits),
-          signingResult.result,
-          // ignore: deprecated_member_use_from_same_package
-          SigningKeyType.signingSha256);
-      expect(verificationResult.atSigningMetaData, isNotNull);
-      expect(verificationResult.atSigningResultType, AtSigningResultType.bool);
-      expect(verificationResult.atSigningMetaData.signingAlgoType,
-          SigningAlgoType.rsa2048);
-      expect(verificationResult.atSigningMetaData.hashingAlgoType,
-          HashingAlgoType.sha256);
-      expect(verificationResult.result, true);
-    });
-
-    test('Test data signing and verification - string data type', () {
-      String data = 'Hello World🛠';
-      final atEncryptionKeyPair = AtChopsUtil.generateAtEncryptionKeyPair();
-      final atChopsKeys = AtChopsKeys.create(atEncryptionKeyPair, null);
-      final atChops = AtChopsImpl(atChopsKeys);
-
-      final signingResult =
-          // ignore: deprecated_member_use_from_same_package
-          atChops.signString(data, SigningKeyType.signingSha256);
-      expect(signingResult.atSigningMetaData, isNotNull);
-      expect(signingResult.result, isNotEmpty);
-      expect(signingResult.atSigningResultType, AtSigningResultType.string);
-      expect(signingResult.atSigningMetaData.signingAlgoType,
-          SigningAlgoType.rsa2048);
-      expect(signingResult.atSigningMetaData.hashingAlgoType,
-          HashingAlgoType.sha256);
-
-      final verificationResult = atChops.verifySignatureString(
-          data,
-          signingResult.result,
-          // ignore: deprecated_member_use_from_same_package
-          SigningKeyType.signingSha256);
-      expect(verificationResult.atSigningMetaData, isNotNull);
-      expect(verificationResult.atSigningResultType, AtSigningResultType.bool);
-      expect(verificationResult.atSigningMetaData.signingAlgoType,
-          SigningAlgoType.rsa2048);
-      expect(verificationResult.atSigningMetaData.hashingAlgoType,
-          HashingAlgoType.sha256);
-      expect(verificationResult.result, true);
-    });
-
     test('Test sign() and verify() with default algorithms', () {
       final data = 'testData';
       final encryptionKeypair = AtChopsUtil.generateAtEncryptionKeyPair();
@@ -360,6 +239,7 @@ void main() {
       expect(
           signingResult.result,
           base64Encode(rsaPrivateKey
+              // ignore: unnecessary_cast
               .createSHA256Signature(utf8.encode(data) as Uint8List)));
       expect(signingResult.atSigningResultType, AtSigningResultType.bytes);
       expect(signingResult.atSigningMetaData.signingAlgoType,
@@ -403,6 +283,7 @@ void main() {
       expect(
           signingResult.result,
           base64Encode(rsaPrivateKey
+              // ignore: unnecessary_cast
               .createSHA256Signature(utf8.encode(data) as Uint8List)));
       expect(signingResult.atSigningResultType, AtSigningResultType.bytes);
       expect(signingResult.atSigningMetaData.signingAlgoType,
@@ -449,6 +330,7 @@ void main() {
       expect(
           signingResult.result,
           base64Encode(rsaPrivateKey
+              // ignore: unnecessary_cast
               .createSHA512Signature(utf8.encode(data) as Uint8List)));
       expect(signingResult.atSigningResultType, AtSigningResultType.bytes);
       expect(signingResult.atSigningMetaData.signingAlgoType,

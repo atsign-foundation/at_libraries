@@ -28,6 +28,7 @@ class AtChopsSecureElement extends AtChopsImpl {
 
   Uint8List _getBytes(dynamic data) {
     if (data is String) {
+      // ignore: unnecessary_cast
       return utf8.encode(data) as Uint8List;
     } else if (data is Uint8List) {
       return data;
