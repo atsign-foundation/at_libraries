@@ -21,3 +21,5 @@ export 'src/algorithm/default_signing_algo.dart';
 export 'src/algorithm/pkam_signing_algo.dart';
 export 'src/algorithm/ecc_signing_algo.dart';
 export 'src/key/at_key_pair.dart';
+export 'src/key/at_public_key.dart';
+export 'src/key/at_private_key.dart';

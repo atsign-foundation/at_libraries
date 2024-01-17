@@ -7,7 +7,7 @@ import 'external_signer.dart';
 
 class AtChopsSecureElement extends AtChopsImpl {
   late ExternalSigner externalSigner;
-  AtChopsSecureElement(AtChopsKeys atChopsKeys) : super(atChopsKeys);
+  AtChopsSecureElement(super.atChopsKeys);
 
   @override
   AtSigningResult sign(AtSigningInput signingInput) {

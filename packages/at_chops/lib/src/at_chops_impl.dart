@@ -14,7 +14,6 @@ import 'package:at_chops/src/algorithm/pkam_signing_algo.dart';
 import 'package:at_chops/src/at_chops_base.dart';
 import 'package:at_chops/src/key/at_key_pair.dart';
 import 'package:at_chops/src/key/impl/aes_key.dart';
-import 'package:at_chops/src/key/impl/at_chops_keys.dart';
 import 'package:at_chops/src/key/impl/at_encryption_key_pair.dart';
 import 'package:at_chops/src/key/key_names.dart';
 import 'package:at_chops/src/key/key_type.dart';
@@ -27,7 +26,7 @@ import 'package:at_commons/at_commons.dart';
 import 'package:at_utils/at_logger.dart';
 
 class AtChopsImpl extends AtChops {
-  AtChopsImpl(AtChopsKeys atChopsKeys) : super(atChopsKeys);
+  AtChopsImpl(super.atChopsKeys);
 
   final AtSignLogger _logger = AtSignLogger('AtChopsImpl');
 

@@ -12,10 +12,10 @@ class DefaultEncryptionAlgo implements ASymmetricEncryptionAlgorithm {
   DefaultEncryptionAlgo.fromKeyPair(this._encryptionKeypair);
   DefaultEncryptionAlgo();
   @override
-  Uint8List encrypt(Uint8List plainData, {AtPublicKey? atPublicKey}) {
+  Uint8List encrypt(Uint8List plainData) {
     if ((_encryptionKeypair == null ||
             _encryptionKeypair!.atPublicKey.publicKey.isEmpty) &&
-        (atPublicKey == null || atPublicKey.publicKey.isEmpty)) {
+        (atPublicKey == null || atPublicKey!.publicKey.isEmpty)) {
       throw AtEncryptionException('EncryptionKeypair/public key not set');
     }
     var publicKeyString = atPublicKey?.publicKey;
@@ -25,10 +25,10 @@ class DefaultEncryptionAlgo implements ASymmetricEncryptionAlgorithm {
   }
 
   @override
-  Uint8List decrypt(Uint8List encryptedData, {AtPrivateKey? atPrivateKey}) {
+  Uint8List decrypt(Uint8List encryptedData) {
     if ((_encryptionKeypair == null ||
             _encryptionKeypair!.atPrivateKey.privateKey.isEmpty) &&
-        (atPrivateKey == null || atPrivateKey.privateKey.isEmpty)) {
+        (atPrivateKey == null || atPrivateKey!.privateKey.isEmpty)) {
       throw AtDecryptionException('EncryptionKeypair/public key not set');
     }
     var privateKeyString = atPrivateKey?.privateKey;
@@ -36,4 +36,10 @@ class DefaultEncryptionAlgo implements ASymmetricEncryptionAlgorithm {
     final rsaPrivateKey = RSAPrivateKey.fromString(privateKeyString);
     return rsaPrivateKey.decryptData(encryptedData);
   }
+
+  @override
+  AtPrivateKey? atPrivateKey;
+
+  @override
+  AtPublicKey? atPublicKey;
 }
