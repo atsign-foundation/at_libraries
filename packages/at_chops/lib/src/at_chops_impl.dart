@@ -214,7 +214,6 @@ class AtChopsImpl extends AtChops {
         throw AtEncryptionException(
             'Cannot find encryption algorithm for encryption key type $encryptionKeyType');
     }
-    return null;
   }
 
   AtEncryptionKeyPair? _getEncryptionKeyPair(String? keyName) {
