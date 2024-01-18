@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:at_chops/src/algorithm/at_algorithm.dart';
 import 'package:at_chops/src/algorithm/at_iv.dart';
-import 'package:at_chops/src/algorithm/default_encryption_algo.dart';
+import 'package:at_chops/src/algorithm/rsa_encryption_algo.dart';
 import 'package:at_chops/src/algorithm/default_hashing_algo.dart';
 import 'package:at_chops/src/key/impl/at_chops_keys.dart';
 import 'package:at_chops/src/key/key_type.dart';
@@ -20,7 +20,7 @@ abstract class AtChops {
   AtChops(this._atChopsKeys);
 
   /// Encrypts the input bytes [data] using an [encryptionAlgorithm] and returns [AtEncryptionResult].
-  /// If [encryptionKeyType] is [EncryptionKeyType.rsa2048] then [encryptionAlgorithm] will be set to [DefaultEncryptionAlgo]
+  /// If [encryptionKeyType] is [EncryptionKeyType.rsa2048] then [encryptionAlgorithm] will be set to [RsaEncryptionAlgo]
   /// [keyName] specifies which key pair to use if user has multiple key pairs configured.
   /// If [keyName] is not passed default encryption/decryption keypair from .atKeys file will be used.
   AtEncryptionResult encryptBytes(
@@ -30,7 +30,7 @@ abstract class AtChops {
       InitialisationVector? iv});
 
   /// Encrypts the input string [data] using an [encryptionAlgorithm] and returns [AtEncryptionResult].
-  /// If [encryptionKeyType] is [EncryptionKeyType.rsa2048] then [encryptionAlgorithm] will be set to [DefaultEncryptionAlgo]
+  /// If [encryptionKeyType] is [EncryptionKeyType.rsa2048] then [encryptionAlgorithm] will be set to [RsaEncryptionAlgo]
   /// [keyName] specifies which key pair to use if user has multiple key pairs configured.
   /// If [keyName] is not passed default encryption/decryption keypair from .atKeys file will be used.
   AtEncryptionResult encryptString(
@@ -40,7 +40,7 @@ abstract class AtChops {
       InitialisationVector? iv});
 
   /// Decrypts the input bytes [data] using an [encryptionAlgorithm] and returns [AtEncryptionResult].
-  /// If [encryptionKeyType] is [EncryptionKeyType.rsa2048] then [encryptionAlgorithm] will be set to [DefaultEncryptionAlgo]
+  /// If [encryptionKeyType] is [EncryptionKeyType.rsa2048] then [encryptionAlgorithm] will be set to [RsaEncryptionAlgo]
   /// [keyName] specifies which key pair to use if user has multiple key pairs configured.
   /// If [keyName] is not passed default encryption/decryption keypair from .atKeys file will be used.
   AtEncryptionResult decryptBytes(
@@ -50,7 +50,7 @@ abstract class AtChops {
       InitialisationVector? iv});
 
   /// Decrypts the input string [data] using an [encryptionAlgorithm] and returns [AtEncryptionResult].
-  /// If [encryptionKeyType] is [EncryptionKeyType.rsa2048] then [encryptionAlgorithm] will be set to [DefaultEncryptionAlgo]
+  /// If [encryptionKeyType] is [EncryptionKeyType.rsa2048] then [encryptionAlgorithm] will be set to [RsaEncryptionAlgo]
   /// [keyName] specifies which key pair to use if user has multiple key pairs configured.
   /// If [keyName] is not passed default encryption/decryption keypair from .atKeys file will be used.
   AtEncryptionResult decryptString(

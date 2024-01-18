@@ -9,7 +9,7 @@ void main() {
       'A group of tests for encryption/decryption by passing public/private key',
       () {
     test('Test asymmetric encryption/decryption using rsa 2048', () {
-      var defaultEncryptionAlgo = DefaultEncryptionAlgo();
+      var defaultEncryptionAlgo = RsaEncryptionAlgo();
       var rsa2048KeyPair = AtChopsUtil.generateAtEncryptionKeyPair();
       var rsaPublicKey = rsa2048KeyPair.atPublicKey;
       var dataToEncrypt = 'Hello World12!@';
@@ -22,7 +22,7 @@ void main() {
       expect(utf8.decode(decryptedData), dataToEncrypt);
     });
     test('Test encrypt throws exception when passed public key is null', () {
-      var defaultEncryptionAlgo = DefaultEncryptionAlgo();
+      var defaultEncryptionAlgo = RsaEncryptionAlgo();
       var dataToEncrypt = 'Hello World12!@';
       AtPublicKey? publicKey;
       defaultEncryptionAlgo.atPublicKey = publicKey;
@@ -33,7 +33,7 @@ void main() {
               e.toString().contains('EncryptionKeypair/public key not set'))));
     });
     test('Test decrypt throws exception when passed private key is null', () {
-      var defaultEncryptionAlgo = DefaultEncryptionAlgo();
+      var defaultEncryptionAlgo = RsaEncryptionAlgo();
       var encryptedData = 'random data';
       AtPrivateKey? privateKey;
       defaultEncryptionAlgo.atPrivateKey = privateKey;
@@ -51,7 +51,7 @@ void main() {
     test('Test asymmetric encryption/decryption using rsa 2048 key pair', () {
       var rsa2048KeyPair = AtChopsUtil.generateAtEncryptionKeyPair();
       var defaultEncryptionAlgo =
-          DefaultEncryptionAlgo.fromKeyPair(rsa2048KeyPair);
+          RsaEncryptionAlgo.fromKeyPair(rsa2048KeyPair);
       var dataToEncrypt = 'Hello World12!@';
       var encryptedData =
           defaultEncryptionAlgo.encrypt(utf8.encode(dataToEncrypt));
@@ -59,7 +59,7 @@ void main() {
       expect(utf8.decode(decryptedData), dataToEncrypt);
     });
     test('Test encrypt throws exception when encryption keypair is null', () {
-      var defaultEncryptionAlgo = DefaultEncryptionAlgo.fromKeyPair(null);
+      var defaultEncryptionAlgo = RsaEncryptionAlgo.fromKeyPair(null);
       var dataToEncrypt = 'Hello World12!@';
       expect(
           () => defaultEncryptionAlgo.encrypt(utf8.encode(dataToEncrypt)),
@@ -68,7 +68,7 @@ void main() {
               e.toString().contains('EncryptionKeypair/public key not set'))));
     });
     test('Test decrypt throws exception when encryption keypair is null', () {
-      var defaultEncryptionAlgo = DefaultEncryptionAlgo.fromKeyPair(null);
+      var defaultEncryptionAlgo = RsaEncryptionAlgo.fromKeyPair(null);
       var encryptedData = 'random data';
       expect(
           () => defaultEncryptionAlgo.decrypt(utf8.encode(encryptedData)),

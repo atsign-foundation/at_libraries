@@ -28,11 +28,11 @@ abstract class ASymmetricEncryptionAlgorithm extends AtEncryptionAlgorithm {
   AtPublicKey? atPublicKey;
   AtPrivateKey? atPrivateKey;
 
-  /// Encrypt [plainData] with [atPublicKey.publicKey] if set. Otherwise use default encryption public key set in at_chops instance
+  /// Encrypt [plainData] with [atPublicKey.publicKey]
   @override
   Uint8List encrypt(Uint8List plainData);
 
-  /// Decrypt [plainData] with [atPrivateKey.privateKey] if set. Otherwise use default encryption private key set in at_chops instance
+  /// Decrypt [encryptedData] with [atPrivateKey.privateKey]
   @override
   Uint8List decrypt(Uint8List encryptedData);
 }

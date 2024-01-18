@@ -7,7 +7,7 @@ import 'package:at_chops/src/algorithm/aes_encryption_algo.dart';
 import 'package:at_chops/src/algorithm/algo_type.dart';
 import 'package:at_chops/src/algorithm/at_algorithm.dart';
 import 'package:at_chops/src/algorithm/at_iv.dart';
-import 'package:at_chops/src/algorithm/default_encryption_algo.dart';
+import 'package:at_chops/src/algorithm/rsa_encryption_algo.dart';
 import 'package:at_chops/src/algorithm/default_signing_algo.dart';
 import 'package:at_chops/src/algorithm/ecc_signing_algo.dart';
 import 'package:at_chops/src/algorithm/pkam_signing_algo.dart';
@@ -201,14 +201,11 @@ class AtChopsImpl extends AtChops {
       EncryptionKeyType encryptionKeyType, String? keyName) {
     switch (encryptionKeyType) {
       case EncryptionKeyType.rsa2048:
-        return DefaultEncryptionAlgo.fromKeyPair(
-            _getEncryptionKeyPair(keyName)!);
+        return RsaEncryptionAlgo.fromKeyPair(_getEncryptionKeyPair(keyName)!);
       case EncryptionKeyType.rsa4096:
-        // TODO: Handle this case.
-        break;
+        throw AtEncryptionException('EncryptionKeyType.rsa4096 not supported');
       case EncryptionKeyType.ecc:
-        // TODO: Handle this case.
-        break;
+        throw AtEncryptionException('EncryptionKeyType.ecc not supported');
       case EncryptionKeyType.aes128:
         return AESEncryptionAlgo(_getSymmetricKey(keyName)! as AESKey);
       case EncryptionKeyType.aes256:

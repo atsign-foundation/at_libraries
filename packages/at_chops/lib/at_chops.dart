@@ -16,7 +16,7 @@ export 'src/util/at_chops_util.dart';
 export 'src/algorithm/algo_type.dart';
 export 'src/algorithm/at_iv.dart';
 export 'src/algorithm/aes_encryption_algo.dart';
-export 'src/algorithm/default_encryption_algo.dart';
+export 'src/algorithm/rsa_encryption_algo.dart';
 export 'src/algorithm/default_signing_algo.dart';
 export 'src/algorithm/pkam_signing_algo.dart';
 export 'src/algorithm/ecc_signing_algo.dart';

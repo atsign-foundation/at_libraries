@@ -24,7 +24,7 @@ void main() {
       expect(encryptionResult.atEncryptionMetaData.encryptionKeyType,
           EncryptionKeyType.rsa2048);
       expect(encryptionResult.atEncryptionMetaData.atEncryptionAlgorithm,
-          'DefaultEncryptionAlgo');
+          'RsaEncryptionAlgo');
 
       final decryptionResult = atChops.decryptString(
           encryptionResult.result, EncryptionKeyType.rsa2048);
@@ -33,7 +33,7 @@ void main() {
       expect(decryptionResult.atEncryptionMetaData.encryptionKeyType,
           EncryptionKeyType.rsa2048);
       expect(decryptionResult.atEncryptionMetaData.atEncryptionAlgorithm,
-          'DefaultEncryptionAlgo');
+          'RsaEncryptionAlgo');
       expect(decryptionResult.result, data);
     });
 

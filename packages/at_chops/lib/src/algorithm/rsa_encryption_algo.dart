@@ -7,10 +7,10 @@ import 'package:at_chops/src/key/impl/at_encryption_key_pair.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:crypton/crypton.dart';
 
-class DefaultEncryptionAlgo implements ASymmetricEncryptionAlgorithm {
+class RsaEncryptionAlgo implements ASymmetricEncryptionAlgorithm {
   AtEncryptionKeyPair? _encryptionKeypair;
-  DefaultEncryptionAlgo.fromKeyPair(this._encryptionKeypair);
-  DefaultEncryptionAlgo();
+  RsaEncryptionAlgo.fromKeyPair(this._encryptionKeypair);
+  RsaEncryptionAlgo();
   @override
   Uint8List encrypt(Uint8List plainData) {
     if ((_encryptionKeypair == null ||
