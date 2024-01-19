@@ -18,6 +18,13 @@ dependencies:
   meta: ^1.8.0
   at_chops: ^1.0.7
 
+#TODO - replace with published version
+dependency_overrides:
+  at_chops:
+    git:
+      url: https://github.com/atsign-foundation/at_libraries
+      path: packages/at_chops
+      ref: pass_optional_key_params
 dev_dependencies:
   mocktail: ^1.0.1
   lints: ^1.0.1
