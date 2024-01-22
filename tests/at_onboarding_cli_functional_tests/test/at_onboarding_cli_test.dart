@@ -5,8 +5,11 @@ import 'package:at_client/at_client.dart';
 import 'package:at_demo_data/at_demo_data.dart' as at_demos;
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
+import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart' as activate_cli;
 import 'package:at_utils/at_utils.dart';
 import 'package:test/test.dart';
+
+import 'onboarding_service_impl_override.dart';
 
 final String atKeysFilePath = '${Platform.environment['HOME']}/.atsign/keys';
 Map<String, bool> keysCreatedMap = {};
@@ -19,7 +22,7 @@ void main() {
       return;
     }
     var atLookup = AtLookupImpl(atSign, 'vip.ve.atsign.zone', 64);
-    await atLookup.authenticate_cram(at_demos.cramKeyMap[atSign]);
+    await atLookup.cramAuthenticate(at_demos.cramKeyMap[atSign]!);
     var command =
         'update:privatekey:at_pkam_publickey ${at_demos.pkamPublicKeyMap[atSign]}\n';
     var response = await atLookup.executeCommand(command, auth: true);
