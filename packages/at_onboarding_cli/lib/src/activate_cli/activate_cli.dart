@@ -42,7 +42,7 @@ Future<void> main(List<String> arguments) async {
   await activate(argResults);
 }
 
-Future<void> activate(ArgResults argResults) async {
+Future<void> activate(ArgResults argResults, {AtOnboardingService? atOnboardingService}) async {
   stdout.writeln('[Information] Root server is ${argResults['rootServer']}');
   stdout.writeln(
       '[Information] Registrar url provided is ${argResults['registrarUrl']}');
@@ -53,7 +53,7 @@ Future<void> activate(ArgResults argResults) async {
     ..cramSecret =
         argResults.wasParsed('cramkey') ? argResults['cramkey'] : null;
   //onboard the atSign
-  AtOnboardingService atOnboardingService =
+  atOnboardingService ??=
       AtOnboardingServiceImpl(argResults['atsign'], atOnboardingPreference);
   stdout.writeln(
       '[Information] Activating your atSign. This may take up to 2 minutes.');
