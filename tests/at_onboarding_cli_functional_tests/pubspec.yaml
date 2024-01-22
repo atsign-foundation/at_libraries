@@ -16,10 +16,10 @@ dependencies:
   at_utils: ^3.0.15
   at_lookup: ^3.0.40
 
-dependency_overrides:
-  at_auth:
-    path: ../../packages/at_auth
-  at_commons: ^4.0.0
+# dependency_overrides:
+#   at_auth:
+#     path: ../../packages/at_auth
+#   at_commons: ^4.0.0
 
 dev_dependencies:
   lints: ^1.0.0
