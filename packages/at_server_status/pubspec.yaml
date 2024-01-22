@@ -6,7 +6,7 @@ documentation: https://docs.atsign.com/
 version: 1.0.4
 
 environment:
-  sdk: '>=2.12.0 <4.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   at_commons: ^4.0.0
