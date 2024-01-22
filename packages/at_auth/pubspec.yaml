@@ -16,17 +16,12 @@ dependencies:
   at_demo_data: ^1.0.3
   crypton: ^2.1.0
 
-# dependency_overrides:
-#   at_lookup:
-#     git:
-#       url: https://github.com/atsign-foundation/at_libraries.git
-#       path: packages/at_lookup
-#       ref: uptake_commons_changes_into_lookup
-#   at_chops:
-#     git:
-#       url: https://github.com/atsign-foundation/at_libraries.git
-#       path: packages/at_chops
-#       ref: uptake_commons_into_atchops
+dependency_overrides:
+  at_chops:
+    git:
+      url: https://github.com/atsign-foundation/at_libraries
+      path: packages/at_chops
+      ref: pass_optional_key_params
 
 dev_dependencies:
   lints: ^2.0.0
