@@ -175,7 +175,6 @@ void main() {
         '-r',
         'vip.ve.atsign.zone'
       ];
-      activate_cli.atOnboardingService = onboardingService;
       // perform activation of atSign
       await activate_cli.main(args);
 

@@ -6,8 +6,6 @@ import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 import 'package:at_utils/at_logger.dart';
 
-AtOnboardingService? atOnboardingService;
-
 Future<void> main(List<String> arguments) async {
   //defaults
   String rootServer = 'root.atsign.org';
@@ -55,12 +53,12 @@ Future<void> activate(ArgResults argResults) async {
     ..cramSecret =
         argResults.wasParsed('cramkey') ? argResults['cramkey'] : null;
   //onboard the atSign
-  atOnboardingService ??=
+  AtOnboardingService atOnboardingService =
       AtOnboardingServiceImpl(argResults['atsign'], atOnboardingPreference);
   stdout.writeln(
       '[Information] Activating your atSign. This may take up to 2 minutes.');
   try {
-    await atOnboardingService!.onboard();
+    await atOnboardingService.onboard();
   } on InvalidDataException catch (e) {
     stderr.writeln(
         '[Error] Activation failed. Invalid data provided by user. Please try again\nCause: ${e.message}');
@@ -74,6 +72,6 @@ Future<void> activate(ArgResults argResults) async {
         '[Error] Activation failed. It looks like something went wrong on our side.\n'
         'Please try again or contact support@atsign.com\nCause: $e');
   } finally {
-    await atOnboardingService!.close();
+    await atOnboardingService.close();
   }
 }
