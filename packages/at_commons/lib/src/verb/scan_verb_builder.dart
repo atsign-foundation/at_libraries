@@ -1,5 +1,6 @@
-import 'package:at_commons/at_commons.dart';
+import 'package:at_commons/src/at_constants.dart';
 import 'package:at_commons/src/verb/verb_builder.dart';
+import 'package:at_commons/src/verb/verb_util.dart';
 
 /// Scan verb builder generates a command to scan keys of current atSign(with ot without auth).
 /// If a [regex] is set, keys matching the regex are returned.
@@ -40,18 +41,18 @@ class ScanVerbBuilder implements VerbBuilder {
 
   @override
   String buildCommand() {
-    var scanCommand = 'scan';
+    StringBuffer serverCommandBuffer = StringBuffer('scan');
+
     if (showHiddenKeys) {
-      scanCommand += ':$showHidden:true';
+      serverCommandBuffer.write(':${AtConstants.showHidden}:true');
     }
     if (sharedBy != null) {
-      scanCommand += ':${VerbUtil.formatAtSign(sharedBy)}';
+      serverCommandBuffer.write(':${VerbUtil.formatAtSign(sharedBy)}');
     }
     if (regex != null) {
-      scanCommand += ' $regex';
+      serverCommandBuffer.write(' $regex');
     }
-    scanCommand += '\n';
-    return scanCommand;
+    return (serverCommandBuffer..write('\n')).toString();
   }
 
   @override

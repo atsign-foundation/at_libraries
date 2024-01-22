@@ -6,8 +6,8 @@ class KeyUtil {
   // 3. phone.buzz <pref namespace>Pref namespace
   static AtKey setNamespace(AtKey atKey) {
     // If key is fully qualified, remove the '@' and return the atKey.
-    if (KeyUtil.isFullyQualified(atKey.key!)) {
-      atKey.key = KeyUtil.getQualified(atKey.key!);
+    if (KeyUtil.isFullyQualified(atKey.key)) {
+      atKey.key = KeyUtil.getQualified(atKey.key);
       return atKey;
     }
     // If key does not have any namespace, append the namespace to the key.

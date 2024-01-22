@@ -11,19 +11,18 @@ class SyncVerbBuilder implements VerbBuilder {
 
   @override
   String buildCommand() {
-    var command = 'sync:';
+    StringBuffer serverCommandBuffer = StringBuffer('sync:');
     if (isPaginated) {
-      command += 'from:';
+      serverCommandBuffer.write('from:');
     }
-    command += '$commitId';
+    serverCommandBuffer.write('$commitId');
     if (isPaginated) {
-      command += ':limit:$limit';
+      serverCommandBuffer.write(':limit:$limit');
     }
     if (regex != null && regex!.isNotEmpty) {
-      command += ':$regex';
+      serverCommandBuffer.write(':$regex');
     }
-    command += '\n';
-    return command;
+    return (serverCommandBuffer..write('\n')).toString();
   }
 
   @override

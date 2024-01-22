@@ -9,9 +9,6 @@ import 'package:at_commons/src/verb/verb_util.dart';
 /// Monitor builder generates a command that streams incoming notifications from the secondary server to
 /// the current client. See also [VerbSyntax.monitor]
 class MonitorVerbBuilder implements VerbBuilder {
-  @Deprecated('not used')
-  bool auth = true;
-
   String? _regex;
 
   /// The regular expression to be used when building the monitor command.
@@ -20,6 +17,7 @@ class MonitorVerbBuilder implements VerbBuilder {
   /// then other 'control' notifications (e.g. the statsNotification) which don't necessarily
   /// match the [regex] will also be sent
   String? get regex => _regex;
+
   set regex(String? r) {
     if (r != null && r.trim().isEmpty) {
       r = null;
@@ -90,15 +88,18 @@ class MonitorVerbBuilder implements VerbBuilder {
     }
 
     var builder = MonitorVerbBuilder();
-    builder.strict = verbParams[MONITOR_STRICT_MODE] == MONITOR_STRICT_MODE;
+    builder.strict = verbParams[AtConstants.monitorStrictMode] ==
+        AtConstants.monitorStrictMode;
     builder.selfNotificationsEnabled =
-        verbParams[MONITOR_SELF_NOTIFICATIONS] == MONITOR_SELF_NOTIFICATIONS;
-    builder.multiplexed =
-        verbParams[MONITOR_MULTIPLEXED_MODE] == MONITOR_MULTIPLEXED_MODE;
-    builder.regex = verbParams[MONITOR_REGEX];
-    builder.lastNotificationTime = verbParams[EPOCH_MILLIS] == null
-        ? null
-        : int.parse(verbParams[EPOCH_MILLIS]!);
+        verbParams[AtConstants.monitorSelfNotifications] ==
+            AtConstants.monitorSelfNotifications;
+    builder.multiplexed = verbParams[AtConstants.monitorMultiplexedMode] ==
+        AtConstants.monitorMultiplexedMode;
+    builder.regex = verbParams[AtConstants.monitorRegex];
+    builder.lastNotificationTime =
+        verbParams[AtConstants.epochMilliseconds] == null
+            ? null
+            : int.parse(verbParams[AtConstants.epochMilliseconds]!);
 
     return builder;
   }

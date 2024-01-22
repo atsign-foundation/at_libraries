@@ -69,18 +69,6 @@ class HandShakeException extends AtConnectException {
   HandShakeException(message) : super(message);
 }
 
-/// Thrown when current server's inbound connection limit is reached
-@Deprecated('use at_server_exceptions.InboundConnectionLimitException')
-class InboundConnectionLimitException extends AtConnectException {
-  InboundConnectionLimitException(message) : super(message);
-}
-
-/// Thrown when current server's outbound connection limit is reached
-@Deprecated('use at_server_exceptions.OutboundConnectionLimitException')
-class OutboundConnectionLimitException extends AtConnectException {
-  OutboundConnectionLimitException(message) : super(message);
-}
-
 /// Thrown when trying to perform a verb execution which requires authentication
 class UnAuthenticatedException extends AtConnectException {
   UnAuthenticatedException(message) : super(message);
@@ -106,12 +94,6 @@ class AtIOException extends AtException {
   AtIOException(message) : super(message);
 }
 
-/// Exception thrown for critical issue during secondary or root server startup operation
-@Deprecated('use at_server_exceptions.AtServerException')
-class AtServerException extends AtException {
-  AtServerException(message) : super(message);
-}
-
 /// Exception thrown when an @ protocol verb has an invalid syntax.
 class InvalidSyntaxException extends AtException {
   InvalidSyntaxException(message) : super(message);
@@ -122,33 +104,9 @@ class InvalidAtSignException extends AtException {
   InvalidAtSignException(message) : super(message);
 }
 
-/// Thrown if the atsign is in block list.
-@Deprecated('use at_server_exceptions.BlockedConnectionException')
-class BlockedConnectionException extends AtException {
-  BlockedConnectionException(message) : super(message);
-}
-
 /// Exception thrown when data size passed to the socket is greater than configured buffer size
 class BufferOverFlowException extends AtException {
   BufferOverFlowException(message) : super(message);
-}
-
-/// Thrown when lookup fails after handshake
-@Deprecated('use at_server_exceptions.LookupException')
-class LookupException extends AtException {
-  LookupException(message) : super(message);
-}
-
-/// Thrown for any unhandled server exception
-@Deprecated('use at_server_exceptions.InternalServerException')
-class InternalServerException extends AtException {
-  InternalServerException(message) : super(message);
-}
-
-/// Thrown for any unhandled server error
-@Deprecated('use at_server_exceptions.InternalServerError')
-class InternalServerError extends AtException {
-  InternalServerError(message) : super(message);
 }
 
 /// Exception thrown when an atsign's secondary url cannot be reached or is unavailable
@@ -213,6 +171,17 @@ class AtEnrollmentException extends AtException {
   AtEnrollmentException(message) : super(message);
 }
 
+/// Exception thrown when an Enrollment_id is expired or invalid
+class AtInvalidEnrollmentException extends AtException {
+  AtInvalidEnrollmentException(message) : super(message);
+}
+
+/// Exception thrown when the enrollment requests exceed the limit
+/// in the given time window
+class AtThrottleLimitExceeded extends AtException {
+  AtThrottleLimitExceeded(message) : super(message);
+}
+
 enum ExceptionScenario {
   noNetworkConnectivity,
   rootServerNotReachable,
@@ -239,6 +208,7 @@ enum Intent {
   validateAtSign,
   remoteVerbExecution,
   notifyData,
+  encryptData,
   decryptData,
   fetchEncryptionPublicKey,
   fetchEncryptionPrivateKey,

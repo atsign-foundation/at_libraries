@@ -1,3 +1,22 @@
+## 4.0.0
+- [Breaking Change] fix: Updated regex for Reserved keys (Internal keys used by the server)
+- fix: Add "put" operation to OTP verb to store semi-permanent pass codes
+- Remove attributes related to AtKey and metadata in verb builders. Instead, use AtKey instance. 
+## 3.0.58
+- fix: Deprecate encryptedDefaultEncryptedPrivateKey in EnrollParams and introduce encryptedDefaultEncryptedPrivateKey for readability
+- fix: Replace encryptedDefaultEncryptedPrivateKey with encryptedDefaultEncryptionPrivateKey in EnrollVerbBuilder
+## 3.0.57
+- feat: Introduced TTL(Time to Live) for OTP verb to configure OTP expiry
+## 3.0.56
+- feat: Introduce "AtInvalidEnrollmentException" which is thrown when an enrollment is expired or invalid
+- feat: Introduce error code 'AT0030' for Invalid Enrollment Status
+- chore: Deprecated all variables in `src/at_constants.dart`, use `AtConstants.<variable-name>` instead
+## 3.0.55
+- feat: Introduce "AtThrottleLimitExceeded" exception which is thrown when enrollment request exceeds the limit
+- feat: Introduce new error codes for apkam enrollments
+## 3.0.54
+- fix: Modify "totp" verb regex to include alpha-numeric characters
+- feat: Introduce "EnrollResponse" class which represents the enrollment response.
 ## 3.0.53
 - feat: Modify "enroll" verb regex.
 - feat: Introduce "EnrollParams" class to encapsulate enrollment attributes.

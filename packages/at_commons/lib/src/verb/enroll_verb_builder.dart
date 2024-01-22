@@ -22,13 +22,16 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
   /// Public key of an asymmetric key pair generated on the app or client.
   String? apkamPublicKey;
 
-  /// totp for the enroll request. totp must be fetched from an already enrolled app.
+  /// otp for the enroll request. otp must be fetched from an already enrolled app.
   @experimental
-  String? totp;
+  String? otp;
 
   Map<String, String>? namespaces;
 
+  @Deprecated('Use encryptedDefaultEncryptionPrivateKey')
   String? encryptedDefaultEncryptedPrivateKey;
+
+  String? encryptedDefaultEncryptionPrivateKey;
   String? encryptedDefaultSelfEncryptionKey;
   String? encryptedAPKAMSymmetricKey;
 
@@ -43,10 +46,10 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
           ..appName = appName
           ..deviceName = deviceName
           ..apkamPublicKey = apkamPublicKey
-          ..totp = totp
+          ..otp = otp
           ..namespaces = namespaces
-          ..encryptedDefaultEncryptedPrivateKey =
-              encryptedDefaultEncryptedPrivateKey
+          ..encryptedDefaultEncryptionPrivateKey =
+              encryptedDefaultEncryptionPrivateKey
           ..encryptedDefaultSelfEncryptionKey =
               encryptedDefaultSelfEncryptionKey
           ..encryptedAPKAMSymmetricKey = encryptedAPKAMSymmetricKey)
@@ -66,7 +69,7 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
         deviceName != null &&
         namespaces != null &&
         namespaces!.isNotEmpty &&
-        totp != null &&
+        otp != null &&
         apkamPublicKey != null;
   }
 }

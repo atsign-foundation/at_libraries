@@ -10,15 +10,7 @@ export 'package:at_commons/src/exception/at_client_exceptions.dart';
 export 'package:at_commons/src/exception/at_exception_manager.dart';
 export 'package:at_commons/src/exception/at_exception_stack.dart';
 export 'package:at_commons/src/exception/at_exception_utils.dart';
-export 'package:at_commons/src/exception/at_exceptions.dart'
-    hide
-        AtServerException,
-        InboundConnectionLimitException,
-        OutboundConnectionLimitException,
-        BlockedConnectionException,
-        LookupException,
-        InternalServerException,
-        InternalServerError;
+export 'package:at_commons/src/exception/at_exceptions.dart';
 export 'package:at_commons/src/exception/at_server_exceptions.dart';
 export 'package:at_commons/src/exception/error_message.dart';
 export 'package:at_commons/src/keystore/at_key.dart';
@@ -36,5 +28,7 @@ export 'package:at_commons/src/verb/update_json.dart';
 export 'package:at_commons/src/verb/verb_util.dart';
 export 'package:at_commons/src/auth/auth_mode.dart';
 export 'package:at_commons/src/verb/enroll_params.dart';
+export 'package:at_commons/src/enroll/enrollment.dart';
 @experimental
 export 'package:at_commons/src/telemetry/at_telemetry.dart';
+export 'package:at_commons/src/utils/string_utils.dart';

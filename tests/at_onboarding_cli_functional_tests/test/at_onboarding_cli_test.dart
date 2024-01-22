@@ -5,24 +5,37 @@ import 'package:at_client/at_client.dart';
 import 'package:at_demo_data/at_demo_data.dart' as at_demos;
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
-import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart'
-    as activate_cli;
 import 'package:at_utils/at_utils.dart';
 import 'package:test/test.dart';
 
-import 'onboarding_service_impl_override.dart';
-
 final String atKeysFilePath = '${Platform.environment['HOME']}/.atsign/keys';
-
+Map<String, bool> keysCreatedMap = {};
 void main() {
   AtSignLogger.root_level = 'finest';
+  // These group of tests run on docker container with only cram key available on secondary
+  // Perform cram auth and update keys manually.
+  Future<void> _createKeys(String atSign) async {
+    if (keysCreatedMap.containsKey(atSign)) {
+      return;
+    }
+    var atLookup = AtLookupImpl(atSign, 'vip.ve.atsign.zone', 64);
+    await atLookup.authenticate_cram(at_demos.cramKeyMap[atSign]);
+    var command =
+        'update:privatekey:at_pkam_publickey ${at_demos.pkamPublicKeyMap[atSign]}\n';
+    var response = await atLookup.executeCommand(command, auth: true);
+    expect(response, 'data:-1');
+    command =
+        'update:public:publickey${atSign} ${at_demos.encryptionPublicKeyMap[atSign]}\n';
+    await atLookup.executeCommand(command, auth: true);
+    keysCreatedMap[atSign] = true;
+    await atLookup.close();
+  }
 
   group('A group of tests to assert on authenticate functionality', () {
     test('A test to verify authentication is successful with .atKeys file',
         () async {
-      // Intentionally '@' is not prefixed.
-      // AtOnboardingServiceImpl call's fixAtSign which prefixes '@'
-      String atSign = 'alice🛠';
+      String atSign = '@alice🛠';
+      await _createKeys(atSign);
       AtOnboardingPreference preference = getPreferences(atSign);
       await generateAtKeysFile(atSign, preference.atKeysFilePath!);
       AtOnboardingService atOnboardingService =
@@ -35,6 +48,7 @@ void main() {
         'A test to verify update and llookup verbs with authenticated atLookup instance',
         () async {
       String atSign = '@alice🛠';
+      await _createKeys(atSign);
       AtOnboardingPreference preference = getPreferences(atSign);
       await generateAtKeysFile(atSign, preference.atKeysFilePath!);
       AtOnboardingService atOnboardingService =
@@ -52,6 +66,7 @@ void main() {
         'A test to authenticate and atSign and invoke AtClient put and get methods',
         () async {
       String atSign = '@eve🛠';
+      await _createKeys(atSign);
       AtOnboardingPreference preference = getPreferences(atSign);
       await generateAtKeysFile(atSign, preference.atKeysFilePath!);
       AtOnboardingService onboardingService =
@@ -74,6 +89,7 @@ void main() {
       AtOnboardingServiceImpl(atSign, preference);
       expect(preference.atKeysFilePath, '$atKeysFilePath/${atSign}_key.atKeys');
     });
+
     tearDown(() async {
       await tearDownFunc();
     });
@@ -92,6 +108,7 @@ void main() {
         'A test to authenticate atSign and verify PKAM keys and encryption keys are updated to local secondary',
         () async {
       await generateAtKeysFile(atSign, atOnboardingPreference.atKeysFilePath!);
+      await _createKeys(atSign);
       bool status = await atOnboardingService.authenticate();
       atClient = await atOnboardingService.atClient;
       expect(true, status);
@@ -118,15 +135,19 @@ void main() {
   group('A group of tests to verify onboard functionality', () {
     String atSign = '@egcovidlab🛠';
     AtOnboardingPreference atOnboardingPreference = getPreferences(atSign);
-    AtOnboardingService atOnboardingService =
-        OnboardingServiceImplOverride(atSign, atOnboardingPreference);
 
     test(
         'A test to verify atSign is onboarded and .atKeys file is generated successfully',
         () async {
-      expect(await atOnboardingService.onboard(), true);
-      expect(await atOnboardingService.authenticate(), true);
-      // Assert .atKeys file is generated for the atSign
+      AtOnboardingService atOnboardingService =
+          AtOnboardingServiceImpl(atSign, atOnboardingPreference);
+      bool status = await atOnboardingService.onboard();
+      expect(true, status);
+      bool status2 = await atOnboardingService.authenticate();
+      expect(true, status2);
+      expect(await atOnboardingService.isOnboarded(), true);
+
+      /// Assert .atKeys file is generated for the atSign
       expect(await File(atOnboardingPreference.atKeysFilePath!).exists(), true);
     });
 
@@ -176,7 +197,9 @@ AtOnboardingPreference getPreferences(String atSign) {
     ..privateKey = null
     ..cramSecret = at_demos.cramKeyMap[atSign]
     ..atKeysFilePath = '$atKeysFilePath/${atSign}_key.atKeys'
-    ..downloadPath = atKeysFilePath;
+    ..downloadPath = atKeysFilePath
+    ..appName = 'wavi'
+    ..deviceName = 'pixel';
 
   return atOnboardingPreference;
 }

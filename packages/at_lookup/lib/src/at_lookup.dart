@@ -26,9 +26,24 @@ abstract class AtLookUp {
 
   Future<String?> executeVerb(VerbBuilder builder, {bool sync = false});
 
-  /// performs a PKAM authentication using private key on the client side and public key on secondary server
+  Future<String?> executeCommand(String command, {bool auth = false});
+
+  /// Performs a PKAM authentication using private key on the client side and public key on secondary server
+  ///
+  /// Pkam private key should be set in  [atChops.atChopsKeys]
+  ///
   /// Default signing algorithm for pkam signature is [SigningAlgoType.rsa2048] and default hashing algorithm is [HashingAlgoType.sha256]
-  Future<bool> pkamAuthenticate();
+  ///
+  /// Optionally pass enrollmentId if the client is enrolled using APKAM
+  Future<bool> pkamAuthenticate({String? enrollmentId});
+
+  /// Generates digest using from verb response and [secret] and performs a
+  /// CRAM authentication to secondary server
+  Future<bool> cramAuthenticate(String secret);
+
+  /// Terminates the underlying connection to the atServer
+  /// used by this instance of AtLookup
+  Future<void> close();
 
   /// set an instance of  [AtChops] for signing and verification operations.
   set atChops(AtChops? atChops);
@@ -48,4 +63,9 @@ abstract class AtLookUp {
   set hashingAlgoType(HashingAlgoType hashingAlgoType);
 
   HashingAlgoType get hashingAlgoType;
+
+  /// EnrollmentId has to be set for clients that are enrolled through APKAM.
+  set enrollmentId(String? enrollmentId);
+
+  String? get enrollmentId;
 }

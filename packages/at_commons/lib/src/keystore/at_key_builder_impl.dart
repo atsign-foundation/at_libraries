@@ -39,7 +39,7 @@ abstract class AbstractKeyBuilder implements KeyBuilder {
 
   @override
   void validate() {
-    if (_atKey.key!.isEmpty) {
+    if (_atKey.key.isEmpty) {
       throw AtException("Key cannot be empty");
     }
     // validate the atKey

@@ -128,8 +128,9 @@ class VerbSyntax {
   static const notifyRemove = r'notify:remove:(?<id>[\w\d\-\_]+)';
   static const enroll =
       // The non-capturing group (?::)? matches ":" if the operation is request|approve|deny|revoke
-      r'^enroll:(?<operation>(?:list$|(request|approve|deny|revoke)))(?::)?(?<enrollParams>.+)?$';
-  static const totp = r'^totp:(?<operation>get|validate)(:(?<totp>[0-9]+))?$';
+      r'^enroll:(?<operation>(?:list$|(request|approve|deny|revoke|update)))(?::)?(?<enrollParams>.+)?$';
+  static const otp =
+      r'^otp:(?<operation>get|put)(:(?<otp>(?<=put:)\w{6,}))?(:(?:ttl:(?<ttl>\d+)))?$';
   static const keys = r'^keys:((?<operation>put|get|delete):?)'
       r'(?:(?<visibility>public|private|self):?)?'
       r'(?:namespace:(?<namespace>[a-zA-Z0-9_]+):?)?'

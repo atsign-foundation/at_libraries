@@ -1,11 +1,12 @@
+import 'package:at_commons/src/verb/abstract_verb_builder.dart';
 import 'package:uuid/uuid.dart';
 
 import '../at_constants.dart';
-import 'metadata_using_verb_builder.dart';
+
 import 'operation_enum.dart';
 import 'verb_util.dart';
 
-class NotifyVerbBuilder extends MetadataUsingVerbBuilder {
+class NotifyVerbBuilder extends AbstractVerbBuilder {
   /// id for each notification.
   String id = Uuid().v4();
 
@@ -28,7 +29,7 @@ class NotifyVerbBuilder extends MetadataUsingVerbBuilder {
   MessageTypeEnum? messageType;
 
   /// The notifier of the notification. Defaults to system.
-  String notifier = SYSTEM;
+  String notifier = AtConstants.system;
 
   /// Latest N notifications to notify. Defaults to 1
   int? latestN;
@@ -59,19 +60,19 @@ class NotifyVerbBuilder extends MetadataUsingVerbBuilder {
     }
 
     // Add in all of the metadata parameters in atProtocol command format
-    sb.write(metadata.toAtProtocolFragment());
+    sb.write(atKey.metadata.toAtProtocolFragment());
 
-    if (sharedWith != null) {
-      sb.write(':${VerbUtil.formatAtSign(sharedWith)}');
+    if (atKey.sharedWith != null) {
+      sb.write(':${VerbUtil.formatAtSign(atKey.sharedWith)}');
     }
 
-    if (isPublic) {
+    if (atKey.metadata.isPublic == true) {
       sb.write(':public');
     }
-    sb.write(':${atKey!}');
+    sb.write(':${atKey.key}');
 
-    if (sharedBy != null) {
-      sb.write('${VerbUtil.formatAtSign(sharedBy)}');
+    if (atKey.sharedBy != null) {
+      sb.write('${VerbUtil.formatAtSign(atKey.sharedBy)}');
     }
     if (value != null) {
       sb.write(':$value');
@@ -85,7 +86,8 @@ class NotifyVerbBuilder extends MetadataUsingVerbBuilder {
   @override
   bool checkParams() {
     var isValid = true;
-    if ((atKey == null) || (isPublic == true && sharedWith != null)) {
+    if ((atKey.key.isNotEmpty) ||
+        (atKey.metadata.isPublic == true && atKey.sharedWith != null)) {
       isValid = false;
     }
     return isValid;

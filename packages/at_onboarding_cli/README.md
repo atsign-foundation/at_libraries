@@ -1,4 +1,4 @@
-<img width=250px src="https://atsign.dev/assets/img/atPlatform_logo_gray.svg?sanitize=true">
+<a href="https://atsign.com#gh-light-mode-only"><img width=250px src="https://atsign.com/wp-content/uploads/2022/05/atsign-logo-horizontal-color2022.svg#gh-light-mode-only" alt="The Atsign Foundation"></a><a href="https://atsign.com#gh-dark-mode-only"><img width=250px src="https://atsign.com/wp-content/uploads/2023/08/atsign-logo-horizontal-reverse2022-Color.svg#gh-dark-mode-only" alt="The Atsign Foundation"></a>
 
 [![pub package](https://img.shields.io/pub/v/at_onboarding_cli)](https://pub.dev/packages/at_onboarding_cli) [![pub points](https://img.shields.io/pub/points/at_onboarding_cli?logo=dart)](https://pub.dev/packages/at_onboarding_cli/score) [![gitHub license](https://img.shields.io/badge/license-BSD3-blue.svg)](./LICENSE)
 
@@ -33,6 +33,7 @@ Use cases for at_onboarding_cli:\
     2) Onboarding (Activation)\
     3) activate_cli\
     4) register_cli
+    5) APKAM enrollments
 
 - Set `AtOnboardingPreference` to your preferred settings. These preferences will be used to configure the `AtOnboardingService`. 
     
@@ -144,6 +145,9 @@ dart run bin/register.dart -e email@email.com
    5) Enter verification code sent to the provided email when prompted
    6) register_cli fetches the cramkey and the automatically calls activate_cli to activate the fetched atsign
    7) You can find your .atKeysFile in directory at_onboarding_cli/keys after successful activation
+
+### APKAM Enrollments
+- Please refer to examples/readme.md in the github repository for at_onboarding_cli
 
 ## Open source usage and contributions
 
