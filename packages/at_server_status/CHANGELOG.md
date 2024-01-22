@@ -1,3 +1,8 @@
+## 1.0.4
+- build[deps]: Upgraded dependencies for the following packages:
+    - at_commons to v4.0.0
+    - at_utils to v3.0.16
+    - at_lookup to v3.0.44
 ## 1.0.3
 - rsdk uptake and at_lookup version change.
 ## 1.0.2
