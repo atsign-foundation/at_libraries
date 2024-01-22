@@ -11,7 +11,7 @@ import 'package:test/test.dart';
 final String atKeysFilePath = '${Platform.environment['HOME']}/.atsign/keys';
 Map<String, bool> keysCreatedMap = {};
 void main() {
-  AtSignLogger.root_level = 'finest';
+  AtSignLogger.root_level = 'finer';
   // These group of tests run on docker container with only cram key available on secondary
   // Perform cram auth and update keys manually.
   Future<void> _createKeys(String atSign) async {
@@ -19,7 +19,7 @@ void main() {
       return;
     }
     var atLookup = AtLookupImpl(atSign, 'vip.ve.atsign.zone', 64);
-    await atLookup.authenticate_cram(at_demos.cramKeyMap[atSign]);
+    await atLookup.cramAuthenticate(at_demos.cramKeyMap[atSign]!);
     var command =
         'update:privatekey:at_pkam_publickey ${at_demos.pkamPublicKeyMap[atSign]}\n';
     var response = await atLookup.executeCommand(command, auth: true);
@@ -57,8 +57,8 @@ void main() {
       AtLookUp? atLookUp = atOnboardingService.atLookUp;
       AtKey key = AtKey();
       key.key = 'testKey1';
-      await atLookUp?.update(key.key!, 'value1');
-      String? response = await atLookUp?.llookup(key.key!);
+      await atLookUp?.update(key.key, 'value1');
+      String? response = await atLookUp?.llookup(key.key);
       expect('data:value1', response);
     });
 
