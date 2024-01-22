@@ -135,7 +135,7 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
 
     String command = 'enroll:approve:${jsonEncode({
           'enrollmentId': atEnrollmentNotificationRequest.enrollmentId,
-          'encryptedDefaultEncryptedPrivateKey': atLookUp.atChops
+          'encryptedDefaultEncryptionPrivateKey': atLookUp.atChops
               ?.encryptString(
                   atLookUp.atChops!.atChopsKeys.atEncryptionKeyPair!
                       .atPrivateKey.privateKey,
