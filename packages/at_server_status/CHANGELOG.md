@@ -1,3 +1,5 @@
+## 1.0.4
+- Upgrade at_commons to 4.0.0, at_utils to 3.0.16 and at_lookup to 3.0.44
 ## 1.0.3
 - rsdk uptake and at_lookup version change.
 ## 1.0.2
