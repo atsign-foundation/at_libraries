@@ -74,3 +74,9 @@ class AtKeyNotFoundException extends AtClientException {
       : super.message(message,
             intent: intent, exceptionScenario: exceptionScenario);
 }
+
+class InvalidPinException extends AtClientException {
+  InvalidPinException(errorCode, message) : super(errorCode, message);
+
+  InvalidPinException.message(String message) : super.message(message);
+}
