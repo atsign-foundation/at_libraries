@@ -1,7 +1,8 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'dart:async';
 
 import 'package:at_lookup/at_lookup.dart';
-import 'package:at_server_status/src/model/at_status.dart';
 
 import 'at_server_status.dart';
 
@@ -69,6 +70,7 @@ class AtStatusImpl implements AtServerStatus {
     // ignore: omit_local_variable_types
     AtStatus atStatus = AtStatus();
     atStatus.atSign = atSign;
+    // ignore: deprecated_member_use
     await AtLookupImpl.findSecondary(atSign, _root_url, _root_port!)
         .then((serverLocation) async {
       // enum RootStatus { running, stopped, unavailable, found, notFound }
