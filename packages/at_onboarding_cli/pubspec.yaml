@@ -20,20 +20,13 @@ dependencies:
    image: ^4.0.17
    path: ^1.8.1
    zxing2: ^0.2.0
-   at_auth: ^1.0.3
+   at_auth: ^1.0.4
    at_chops: ^1.0.7
    at_client: ^3.0.73
    at_commons: ^4.0.0
    at_lookup: ^3.0.44
    at_server_status: ^1.0.4
    at_utils: ^3.0.16
-
-dependency_overrides:
-  at_auth:
-    git:
-      url: https://github.com/atsign-foundation/at_libraries.git
-      ref: uptake_commons_into_auth
-      path: packages/at_auth
 
 dev_dependencies:
   lints: ^2.1.0
