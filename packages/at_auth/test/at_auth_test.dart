@@ -221,7 +221,7 @@ void main() {
           .thenAnswer((_) =>
               Future.value(AtAuthResponse('@alice🛠')..isSuccessful = true));
       final mockEnrollmentResponse =
-          AtEnrollmentResponse("abc123", EnrollStatus.approved);
+          AtEnrollmentResponse("abc123", EnrollmentStatus.approved);
       when(() => mockAtEnrollment.submitEnrollment(any(), mockAtLookUp))
           .thenAnswer((_) => Future.value(mockEnrollmentResponse));
       final atOnboardingRequest = AtOnboardingRequest('@alice🛠')
