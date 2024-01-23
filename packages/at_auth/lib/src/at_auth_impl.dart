@@ -179,16 +179,17 @@ class AtAuthImpl implements AtAuth {
     // and delete cram key from server
     final encryptionPublicKey = atAuthKeys.defaultEncryptionPublicKey;
     UpdateVerbBuilder updateBuilder = UpdateVerbBuilder()
-      ..atKey = 'publickey'
-      ..isPublic = true
-      ..value = encryptionPublicKey
-      ..sharedBy = atOnboardingRequest.atSign;
+      ..atKey = (AtKey()
+        ..key = 'publickey'
+        ..sharedBy = atOnboardingRequest.atSign
+        ..metadata = (Metadata()..isPublic = true))
+      ..value = encryptionPublicKey;
     String? encryptKeyUpdateResult = await atLookUp!.executeVerb(updateBuilder);
     _logger.info('Encryption public key update result $encryptKeyUpdateResult');
 
     //8.  Delete cram secret from the keystore as cram auth is complete
     DeleteVerbBuilder deleteBuilder = DeleteVerbBuilder()
-      ..atKey = AtConstants.atCramSecret;
+      ..atKey = (AtKey()..key = AtConstants.atCramSecret);
     String? deleteResponse = await atLookUp!.executeVerb(deleteBuilder);
     _logger.info('Cram secret delete response : $deleteResponse');
     atOnboardingResponse.isSuccessful = true;
@@ -251,7 +252,7 @@ class AtAuthImpl implements AtAuth {
     _logger.finer('enrollment response: ${enrollmentResponse.toString()}');
     var enrollmentIdFromServer = enrollmentResponse.enrollmentId;
     var enrollmentStatus = enrollmentResponse.enrollStatus;
-    if (enrollmentStatus != EnrollStatus.approved) {
+    if (enrollmentStatus != EnrollmentStatus.approved) {
       throw AtAuthenticationException(
           'initial enrollment is not approved. Status from server: $enrollmentStatus');
     }
