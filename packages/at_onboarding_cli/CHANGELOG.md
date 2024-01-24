@@ -1,5 +1,5 @@
 ## 1.4.3
-- build[deps]: upgrade at_chops to 2.0.0 | at_lookup to 3.0.45 | at_clien to 3.0.74
+- build[deps]: upgrade at_chops to 2.0.0 | at_lookup to 3.0.45 | at_client to 3.0.74
 ## 1.4.2
 - build[deps]: upgrade: \
     at_commons to 4.0.0 | at_auth to 1.0.4 | at_chops to 1.0.7 | at_client to 3.0.73 \
