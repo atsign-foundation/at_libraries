@@ -20,20 +20,21 @@ dependencies:
    image: ^4.0.17
    path: ^1.8.1
    zxing2: ^0.2.0
-   at_auth: ^1.0.4
-   at_chops: ^1.0.7
+   at_auth: ^1.0.5
+   at_chops: ^2.0.0
    at_client: ^3.0.73
    at_commons: ^4.0.0
-   at_lookup: ^3.0.44
+   at_lookup: ^3.0.45
    at_server_status: ^1.0.4
    at_utils: ^3.0.16
 
+# TODO replace with pub version
 dependency_overrides:
-  at_chops:
-      git:
-        url: https://github.com/atsign-foundation/at_libraries
-        path: packages/at_chops
-        ref: pass_optional_key_params
+  at_client:
+    git:
+      url: https://github.com/atsign-foundation/at_client_sdk/
+      path: packages/at_client
+      ref: replace_encrypt_key_with_atchops
 
 dev_dependencies:
   lints: ^2.1.0
