@@ -14,7 +14,7 @@ dependencies:
   at_utils: ^3.0.16
   meta: ^1.8.0
   at_demo_data: ^1.0.3
-  crypton: ^2.1.0
+  crypton: ^2.2.1
 
 dependency_overrides:
   at_chops:
