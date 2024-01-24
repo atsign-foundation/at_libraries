@@ -1,3 +1,9 @@
+## 1.4.3
+- build[deps]: upgrade at_chops to 1.0.8
+## 1.4.2
+- build[deps]: upgrade: \
+    at_commons to 4.0.0 | at_auth to 1.0.4 | at_chops to 1.0.7 | at_client to 3.0.73 \
+    at_lookup to 3.0.44 | at_server_status to 1.0.4 | at_utils to 3.0.16
 ## 1.4.1
 - feat: remove duplicate enrollment code and use at_auth
 - chore: upgrade at_auth to 1.0.3, at_chops to 1.0.6, at_client to 3.0.69,at_lookup to 3.0.43
