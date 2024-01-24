@@ -135,7 +135,7 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
 
     String command = 'enroll:approve:${jsonEncode({
           'enrollmentId': atEnrollmentNotificationRequest.enrollmentId,
-          'encryptedDefaultEncryptedPrivateKey': atLookUp.atChops
+          'encryptedDefaultEncryptionPrivateKey': atLookUp.atChops
               ?.encryptString(
                   atLookUp.atChops!.atChopsKeys.atEncryptionKeyPair!
                       .atPrivateKey.privateKey,
@@ -183,7 +183,7 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
   Future<AtEnrollmentResponse> _handleDenyOperation(
       AtEnrollmentRequest atEnrollmentRequest, AtLookUp atLookUp) async {
     String command =
-        'enroll:deny:enrollmentId:${atEnrollmentRequest.enrollmentId}';
+        'enroll:deny:${jsonEncode({'enrollmentId':atEnrollmentRequest.enrollmentId})}';
     String? enrollResponse =
         await atLookUp.executeCommand('$command\n', auth: true);
     enrollResponse = enrollResponse?.replaceAll('data:', '');
