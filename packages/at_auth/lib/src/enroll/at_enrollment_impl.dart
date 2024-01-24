@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:at_auth/at_auth.dart';
-import 'package:at_auth/src/enroll/at_enrollment_notification_request.dart';
 import 'package:at_chops/at_chops.dart';
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
@@ -23,13 +22,11 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
   @override
   Future<AtEnrollmentResponse> submitEnrollment(
       AtEnrollmentRequest atEnrollmentRequest, AtLookUp atLookUp) async {
-    switch (atEnrollmentRequest.runtimeType) {
-      case AtInitialEnrollmentRequest:
-        return await _initialClientEnrollment(
-            atEnrollmentRequest as AtInitialEnrollmentRequest, atLookUp);
-      case AtNewEnrollmentRequest:
-        return await _newClientEnrollment(
-            atEnrollmentRequest as AtNewEnrollmentRequest, atLookUp);
+    switch (atEnrollmentRequest) {
+      case AtInitialEnrollmentRequest _:
+        return await _initialClientEnrollment(atEnrollmentRequest, atLookUp);
+      case AtNewEnrollmentRequest _:
+        return await _newClientEnrollment(atEnrollmentRequest, atLookUp);
       default:
         throw AtEnrollmentException(
             'Invalid AtEnrollmentRequest type: ${atEnrollmentRequest.runtimeType}');
@@ -182,8 +179,9 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
 
   Future<AtEnrollmentResponse> _handleDenyOperation(
       AtEnrollmentRequest atEnrollmentRequest, AtLookUp atLookUp) async {
-    String command =
-        'enroll:deny:${jsonEncode({'enrollmentId':atEnrollmentRequest.enrollmentId})}';
+    String command = 'enroll:deny:${jsonEncode({
+          'enrollmentId': atEnrollmentRequest.enrollmentId
+        })}';
     String? enrollResponse =
         await atLookUp.executeCommand('$command\n', auth: true);
     enrollResponse = enrollResponse?.replaceAll('data:', '');
