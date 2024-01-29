@@ -1,4 +1,4 @@
-class RegistrarApiConstants {
+class RegistrarConstants {
   /// Authorities
   static const String apiHostProd = 'my.atsign.com';
   static const String apiHostStaging = 'my.atsign.wtf';

@@ -28,7 +28,7 @@ class AtOnboardingPreference extends AtClientPreference {
   bool skipSync = false;
 
   /// the hostName of the registrar which will be used to activate the atsign
-  String registrarUrl = RegistrarApiConstants.apiHostProd;
+  String registrarUrl = RegistrarConstants.apiHostProd;
 
   String? appName;
 
