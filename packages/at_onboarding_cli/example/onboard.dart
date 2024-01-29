@@ -31,5 +31,6 @@ ArgParser getArgParser() {
     ..addOption('atsign',
         abbr: 'a', help: 'the atsign you would like to auth with')
     ..addOption('cram', abbr: 'c', help: 'CRAM secret for the atsign')
+    ..addOption('atKeysPath', abbr: 'k', help: 'path to save keys file')
     ..addFlag('help', abbr: 'h', help: 'Usage instructions', negatable: false);
 }

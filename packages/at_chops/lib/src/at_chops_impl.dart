@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_cast
+
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -5,14 +7,13 @@ import 'package:at_chops/src/algorithm/aes_encryption_algo.dart';
 import 'package:at_chops/src/algorithm/algo_type.dart';
 import 'package:at_chops/src/algorithm/at_algorithm.dart';
 import 'package:at_chops/src/algorithm/at_iv.dart';
-import 'package:at_chops/src/algorithm/default_encryption_algo.dart';
+import 'package:at_chops/src/algorithm/rsa_encryption_algo.dart';
 import 'package:at_chops/src/algorithm/default_signing_algo.dart';
 import 'package:at_chops/src/algorithm/ecc_signing_algo.dart';
 import 'package:at_chops/src/algorithm/pkam_signing_algo.dart';
 import 'package:at_chops/src/at_chops_base.dart';
 import 'package:at_chops/src/key/at_key_pair.dart';
 import 'package:at_chops/src/key/impl/aes_key.dart';
-import 'package:at_chops/src/key/impl/at_chops_keys.dart';
 import 'package:at_chops/src/key/impl/at_encryption_key_pair.dart';
 import 'package:at_chops/src/key/key_names.dart';
 import 'package:at_chops/src/key/key_type.dart';
@@ -25,7 +26,7 @@ import 'package:at_commons/at_commons.dart';
 import 'package:at_utils/at_logger.dart';
 
 class AtChopsImpl extends AtChops {
-  AtChopsImpl(AtChopsKeys atChopsKeys) : super(atChopsKeys);
+  AtChopsImpl(super.atChopsKeys);
 
   final AtSignLogger _logger = AtSignLogger('AtChopsImpl');
 
@@ -142,74 +143,6 @@ class AtChopsImpl extends AtChops {
   }
 
   @override
-  // ignore: deprecated_member_use_from_same_package
-  AtSigningResult signBytes(Uint8List data, SigningKeyType signingKeyType,
-      {AtSigningAlgorithm? signingAlgorithm}) {
-    signingAlgorithm ??= _getSigningAlgorithm(signingKeyType)!;
-
-    // hard coding signing and hashing algo since this method is deprecated
-    final atSigningMetadata = AtSigningMetaData(SigningAlgoType.rsa2048,
-        HashingAlgoType.sha256, DateTime.now().toUtc());
-    final atSigningResult = AtSigningResult()
-      ..atSigningMetaData = atSigningMetadata
-      ..atSigningResultType = AtSigningResultType.bytes;
-    atSigningResult.result = signingAlgorithm.sign(data);
-    return atSigningResult;
-  }
-
-  @override
-  AtSigningResult verifySignatureBytes(
-      Uint8List data,
-      Uint8List signature,
-      // ignore: deprecated_member_use_from_same_package
-      SigningKeyType signingKeyType,
-      {AtSigningAlgorithm? signingAlgorithm}) {
-    signingAlgorithm ??= _getSigningAlgorithm(signingKeyType)!;
-    // hard coding signing and hashing algo since this method is deprecated
-    final atSigningMetadata = AtSigningMetaData(SigningAlgoType.rsa2048,
-        HashingAlgoType.sha256, DateTime.now().toUtc());
-    final atSigningResult = AtSigningResult()
-      ..atSigningMetaData = atSigningMetadata
-      ..atSigningResultType = AtSigningResultType.bool;
-    atSigningResult.result = signingAlgorithm.verify(data, signature);
-    return atSigningResult;
-  }
-
-  @override
-  // ignore: deprecated_member_use_from_same_package
-  AtSigningResult signString(String data, SigningKeyType signingKeyType,
-      {AtSigningAlgorithm? signingAlgorithm}) {
-    final signingResult = signBytes(
-        utf8.encode(data) as Uint8List, signingKeyType,
-        signingAlgorithm: signingAlgorithm);
-    final atSigningMetadata = signingResult.atSigningMetaData;
-    final atSigningResult = AtSigningResult()
-      ..atSigningMetaData = atSigningMetadata
-      ..atSigningResultType = AtSigningResultType.string;
-    atSigningResult.result = base64Encode(signingResult.result);
-    return atSigningResult;
-  }
-
-  @override
-  AtSigningResult verifySignatureString(
-      // ignore: deprecated_member_use_from_same_package
-      String data,
-      String signature,
-      // ignore: deprecated_member_use_from_same_package
-      SigningKeyType signingKeyType,
-      {AtSigningAlgorithm? signingAlgorithm}) {
-    final signingResult = verifySignatureBytes(
-        utf8.encode(data) as Uint8List, base64Decode(signature), signingKeyType,
-        signingAlgorithm: signingAlgorithm);
-    final atSigningMetadata = signingResult.atSigningMetaData;
-    final atSigningResult = AtSigningResult()
-      ..atSigningMetaData = atSigningMetadata
-      ..atSigningResultType = AtSigningResultType.bool;
-    atSigningResult.result = signingResult.result;
-    return atSigningResult;
-  }
-
-  @override
   AtSigningResult sign(AtSigningInput signingInput) {
     final dataBytes = _getBytes(signingInput.data);
     return _signBytes(dataBytes, signingInput,
@@ -219,7 +152,7 @@ class AtChopsImpl extends AtChops {
   // change this method to public in the next major release and remove existing public method.
   AtSigningResult _signBytes(Uint8List data, AtSigningInput signingInput,
       {AtSigningAlgorithm? signingAlgorithm}) {
-    signingAlgorithm ??= _getSigningAlgorithmV2(signingInput)!;
+    signingAlgorithm ??= _getSigningAlgorithm(signingInput)!;
     final atSigningMetadata = AtSigningMetaData(signingInput.signingAlgoType,
         signingInput.hashingAlgoType, DateTime.now().toUtc());
     final atSigningResult = AtSigningResult()
@@ -268,13 +201,11 @@ class AtChopsImpl extends AtChops {
       EncryptionKeyType encryptionKeyType, String? keyName) {
     switch (encryptionKeyType) {
       case EncryptionKeyType.rsa2048:
-        return DefaultEncryptionAlgo(_getEncryptionKeyPair(keyName)!);
+        return RsaEncryptionAlgo.fromKeyPair(_getEncryptionKeyPair(keyName)!);
       case EncryptionKeyType.rsa4096:
-        // TODO: Handle this case.
-        break;
+        throw AtEncryptionException('EncryptionKeyType.rsa4096 not supported');
       case EncryptionKeyType.ecc:
-        // TODO: Handle this case.
-        break;
+        throw AtEncryptionException('EncryptionKeyType.ecc not supported');
       case EncryptionKeyType.aes128:
         return AESEncryptionAlgo(_getSymmetricKey(keyName)! as AESKey);
       case EncryptionKeyType.aes256:
@@ -283,7 +214,6 @@ class AtChopsImpl extends AtChops {
         throw AtEncryptionException(
             'Cannot find encryption algorithm for encryption key type $encryptionKeyType');
     }
-    return null;
   }
 
   AtEncryptionKeyPair? _getEncryptionKeyPair(String? keyName) {
@@ -303,25 +233,7 @@ class AtChopsImpl extends AtChops {
     return null;
   }
 
-  // ignore: deprecated_member_use_from_same_package
-  AtSigningAlgorithm? _getSigningAlgorithm(SigningKeyType signingKeyType) {
-    switch (signingKeyType) {
-      // ignore: deprecated_member_use_from_same_package
-      case SigningKeyType.pkamSha256:
-        return PkamSigningAlgo(
-            atChopsKeys.atPkamKeyPair!, HashingAlgoType.sha256);
-
-      // ignore: deprecated_member_use_from_same_package
-      case SigningKeyType.signingSha256:
-        return DefaultSigningAlgo(
-            atChopsKeys.atEncryptionKeyPair!, HashingAlgoType.sha256);
-      default:
-        throw AtSigningException(
-            'Cannot find signing algorithm for signing key type $signingKeyType');
-    }
-  }
-
-  AtSigningAlgorithm? _getSigningAlgorithmV2(AtSigningInput signingInput) {
+  AtSigningAlgorithm? _getSigningAlgorithm(AtSigningInput signingInput) {
     if (signingInput.signingAlgorithm != null) {
       return signingInput.signingAlgorithm;
     } else if (signingInput.signingMode != null &&

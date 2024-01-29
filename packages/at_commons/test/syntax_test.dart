@@ -92,7 +92,7 @@ void main() {
       expect(verbParams[AtConstants.visibility], 'public');
       expect(verbParams[AtConstants.keyValue], 'abcd1234');
       expect(verbParams[AtConstants.namespace], '__global');
-      expect(verbParams[AtConstants.atOperation], 'put');
+      expect(verbParams[AtConstants.operation], 'put');
       expect(verbParams[AtConstants.keyName], 'encryption_123-a');
     });
 
@@ -104,7 +104,7 @@ void main() {
       expect(verbParams[AtConstants.visibility], 'private');
       expect(verbParams[AtConstants.keyValue], 'abcd1234');
       expect(verbParams[AtConstants.namespace], '__private');
-      expect(verbParams[AtConstants.atOperation], 'put');
+      expect(verbParams[AtConstants.operation], 'put');
       expect(verbParams[AtConstants.keyName], 'secretKey');
     });
 
@@ -116,7 +116,7 @@ void main() {
       expect(verbParams[AtConstants.visibility], 'private');
       expect(verbParams[AtConstants.keyValue], 'abcd1234');
       expect(verbParams[AtConstants.namespace], '__private');
-      expect(verbParams[AtConstants.atOperation], 'put');
+      expect(verbParams[AtConstants.operation], 'put');
       expect(verbParams[AtConstants.keyName], 'secretKey');
       expect(verbParams[AtConstants.appName], 'wavi');
       expect(verbParams[AtConstants.deviceName], 'pixel');
@@ -130,7 +130,7 @@ void main() {
       expect(verbParams[AtConstants.visibility], 'self');
       expect(verbParams[AtConstants.keyValue], 'zcsfsdff');
       expect(verbParams[AtConstants.namespace], '__global');
-      expect(verbParams[AtConstants.atOperation], 'put');
+      expect(verbParams[AtConstants.operation], 'put');
       expect(verbParams[AtConstants.keyName], 'mykey');
       expect(verbParams[AtConstants.encryptionKeyName], 'encryption_123-a');
     });
@@ -156,14 +156,14 @@ void main() {
     test('keys verb - get key by name', () {
       var command = 'keys:get:keyName:firstKey';
       var verbParams = getVerbParams(VerbSyntax.keys, command);
-      expect(verbParams[AtConstants.atOperation], 'get');
+      expect(verbParams[AtConstants.operation], 'get');
       expect(verbParams[AtConstants.keyName], 'firstKey');
     });
 
     test('keys verb - get key by name with emoji', () {
       var command = 'keys:get:keyName:firstKey🛠';
       var verbParams = getVerbParams(VerbSyntax.keys, command);
-      expect(verbParams[AtConstants.atOperation], 'get');
+      expect(verbParams[AtConstants.operation], 'get');
       expect(verbParams[AtConstants.keyName], 'firstKey🛠');
     });
   });

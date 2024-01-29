@@ -1,5 +1,4 @@
-import 'package:at_commons/at_commons.dart';
-import 'package:at_commons/src/verb/verb_builder.dart';
+import 'package:at_commons/src/verb/abstract_verb_builder.dart';
 import 'package:at_commons/src/verb/verb_util.dart';
 
 /// Plookup builder generates a command to lookup public value of [atKey] on secondary server of another atSign [sharedBy].
@@ -8,13 +7,7 @@ import 'package:at_commons/src/verb/verb_util.dart';
 /// ```
 /// var builder = PlookupVerbBuilder()..key=’phone’..atSign=’alice’;
 /// ```
-class PLookupVerbBuilder implements VerbBuilder {
-  /// Key of the [sharedBy] to lookup. [atKey] must have public access.
-  String? atKey;
-
-  /// atSign of the secondary server on which plookup has to be executed.
-  String? sharedBy;
-
+class PLookupVerbBuilder extends AbstractVerbBuilder {
   String? operation;
 
   // if set to true, returns the value of key on the remote server instead of the cached copy
@@ -22,19 +15,21 @@ class PLookupVerbBuilder implements VerbBuilder {
 
   @override
   String buildCommand() {
-    String command = 'plookup:';
+    StringBuffer serverCommandBuffer = StringBuffer('plookup:');
     if (bypassCache == true) {
-      command += 'bypassCache:$bypassCache:';
+      serverCommandBuffer.write('bypassCache:$bypassCache:');
     }
     if (operation != null) {
-      command += '$operation:';
+      serverCommandBuffer.write('$operation:');
     }
-    command += atKey!;
-    return '$command${VerbUtil.formatAtSign(sharedBy)}\n';
+    serverCommandBuffer.write(atKey.key);
+    return (serverCommandBuffer
+          ..write('${VerbUtil.formatAtSign(atKey.sharedBy)}\n'))
+        .toString();
   }
 
   @override
   bool checkParams() {
-    return atKey != null && sharedBy != null;
+    return atKey.key.isNotEmpty && atKey.sharedBy != null;
   }
 }

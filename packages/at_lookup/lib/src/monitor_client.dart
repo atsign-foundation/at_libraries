@@ -76,6 +76,7 @@ class MonitorClient {
     logger.info('fromResponse $fromResponse');
     var key = RSAPrivateKey.fromString(_privateKey);
     var sha256signature =
+        // ignore: unnecessary_cast
         key.createSHA256Signature(utf8.encode(fromResponse) as Uint8List);
     var signature = base64Encode(sha256signature);
     logger.info('Sending command pkam:$signature');

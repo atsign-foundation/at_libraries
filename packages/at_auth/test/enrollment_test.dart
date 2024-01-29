@@ -80,52 +80,134 @@ void main() {
     when(() => (mockAtLookUp as AtLookupImpl).close())
         .thenAnswer((_) async => ());
 
-    AtEnrollmentRequest atEnrollmentRequest = (AtEnrollmentRequest.request()
+    AtNewEnrollmentRequestBuilder atNewEnrollmentRequestBuilder =
+        AtNewEnrollmentRequestBuilder()
           ..setAppName('wavi')
           ..setDeviceName('pixel')
-          ..setOtp('12345')
-          ..setNamespaces({'wavi': 'rw'}))
-        .build();
+          ..setNamespaces({'wavi': 'rw'})
+          ..setOtp('A123FE')
+          ..setApkamPublicKey('testApkamPublicKey');
+    AtNewEnrollmentRequest atNewEnrollmentRequest =
+        atNewEnrollmentRequestBuilder.build();
 
-    AtPkamKeyPair atPkamKeyPair =
-        AtPkamKeyPair.create(apkamPublicKey, apkamPrivateKey);
-    SymmetricKey symmetricKey = AESKey(apkamSymmetricKey);
-
-    AtEnrollmentResponse enrollmentSubmissionResponse =
-        await atEnrollmentServiceImpl.enrollInternal(
-            atEnrollmentRequest, mockAtLookUp, atPkamKeyPair, symmetricKey);
-    expect(enrollmentSubmissionResponse.enrollmentId, '123');
-    expect(enrollmentSubmissionResponse.enrollStatus, EnrollStatus.pending);
+    AtEnrollmentResponse atEnrollmentResponse = await atEnrollmentServiceImpl
+        .submitEnrollment(atNewEnrollmentRequest, mockAtLookUp);
+    expect(atEnrollmentResponse.enrollmentId, '123');
+    expect(atEnrollmentResponse.enrollStatus, EnrollmentStatus.pending);
   });
 
   group('A group of test related to AtEnrollmentBuilder', () {
-    test('A test to verify generation of enrollment request', () {
-      AtEnrollmentRequestBuilder atEnrollmentRequestBuilder =
-          AtEnrollmentRequest.request()
+    test(
+        'A test to verify generation of initial onboarding enrollment request - default operation request',
+        () {
+      AtInitialEnrollmentRequestBuilder atInitialEnrollmentRequestBuilder =
+          AtInitialEnrollmentRequestBuilder()
             ..setAppName('wavi')
             ..setDeviceName('pixel')
-            ..setOtp('ABC123')
-            ..setNamespaces({'wavi': 'rw'});
-      AtEnrollmentRequest atEnrollmentRequest =
-          atEnrollmentRequestBuilder.build();
+            ..setNamespaces({'wavi': 'rw'})
+            ..setEncryptedDefaultEncryptionPrivateKey('testPrivateKey')
+            ..setEncryptedDefaultSelfEncryptionKey('testSelfKey')
+            ..setApkamPublicKey('testApkamPublicKey');
+      AtInitialEnrollmentRequest atInitialEnrollmentRequest =
+          atInitialEnrollmentRequestBuilder.build();
 
-      expect(atEnrollmentRequest.appName, 'wavi');
-      expect(atEnrollmentRequest.deviceName, 'pixel');
-      expect(atEnrollmentRequest.otp, 'ABC123');
-      expect(atEnrollmentRequest.namespaces, {'wavi': 'rw'});
+      expect(atInitialEnrollmentRequest.appName, 'wavi');
+      expect(atInitialEnrollmentRequest.deviceName, 'pixel');
+      expect(atInitialEnrollmentRequest.namespaces, {'wavi': 'rw'});
+      expect(atInitialEnrollmentRequest.encryptedDefaultEncryptionPrivateKey,
+          'testPrivateKey');
+      expect(atInitialEnrollmentRequest.encryptedDefaultSelfEncryptionKey,
+          'testSelfKey');
+      expect(atInitialEnrollmentRequest.apkamPublicKey, 'testApkamPublicKey');
+      expect(atInitialEnrollmentRequest.enrollOperationEnum,
+          EnrollOperationEnum.request);
+    });
+    test(
+        'A test to verify generation of initial onboarding enrollment request - set operation',
+        () {
+      AtInitialEnrollmentRequestBuilder atInitialEnrollmentRequestBuilder =
+          AtInitialEnrollmentRequestBuilder()
+            ..setAppName('wavi')
+            ..setDeviceName('pixel')
+            ..setNamespaces({'wavi': 'rw'})
+            ..setEncryptedDefaultEncryptionPrivateKey('testPrivateKey')
+            ..setEncryptedDefaultSelfEncryptionKey('testSelfKey')
+            ..setApkamPublicKey('testApkamPublicKey')
+            ..setEnrollOperationEnum(EnrollOperationEnum.approve);
+      AtInitialEnrollmentRequest atInitialEnrollmentRequest =
+          atInitialEnrollmentRequestBuilder.build();
+
+      expect(atInitialEnrollmentRequest.appName, 'wavi');
+      expect(atInitialEnrollmentRequest.deviceName, 'pixel');
+      expect(atInitialEnrollmentRequest.namespaces, {'wavi': 'rw'});
+      expect(atInitialEnrollmentRequest.encryptedDefaultEncryptionPrivateKey,
+          'testPrivateKey');
+      expect(atInitialEnrollmentRequest.encryptedDefaultSelfEncryptionKey,
+          'testSelfKey');
+      expect(atInitialEnrollmentRequest.apkamPublicKey, 'testApkamPublicKey');
+      expect(atInitialEnrollmentRequest.enrollOperationEnum,
+          EnrollOperationEnum.approve);
+    });
+
+    test(
+        'A test to verify generation of new enrollment request - default operation request',
+        () {
+      AtNewEnrollmentRequestBuilder atNewEnrollmentRequestBuilder =
+          AtNewEnrollmentRequestBuilder()
+            ..setAppName('wavi')
+            ..setDeviceName('pixel')
+            ..setNamespaces({'wavi': 'rw'})
+            ..setOtp('A123FE')
+            ..setApkamPublicKey('testApkamPublicKey');
+      AtNewEnrollmentRequest atNewEnrollmentRequest =
+          atNewEnrollmentRequestBuilder.build();
+
+      expect(atNewEnrollmentRequest.appName, 'wavi');
+      expect(atNewEnrollmentRequest.deviceName, 'pixel');
+      expect(atNewEnrollmentRequest.namespaces, {'wavi': 'rw'});
+      expect(atNewEnrollmentRequest.apkamPublicKey, 'testApkamPublicKey');
+      expect(atNewEnrollmentRequest.otp, 'A123FE');
+      expect(atNewEnrollmentRequest.enrollOperationEnum,
+          EnrollOperationEnum.request);
+    });
+
+    test(
+        'A test to verify generation of new enrollment request - set operation',
+        () {
+      AtNewEnrollmentRequestBuilder atNewEnrollmentRequestBuilder =
+          AtNewEnrollmentRequestBuilder()
+            ..setAppName('wavi')
+            ..setDeviceName('pixel')
+            ..setNamespaces({'wavi': 'rw'})
+            ..setOtp('A123FE')
+            ..setApkamPublicKey('testApkamPublicKey')
+            ..setEnrollOperationEnum(EnrollOperationEnum.request);
+      AtNewEnrollmentRequest atNewEnrollmentRequest =
+          atNewEnrollmentRequestBuilder.build();
+
+      expect(atNewEnrollmentRequest.appName, 'wavi');
+      expect(atNewEnrollmentRequest.deviceName, 'pixel');
+      expect(atNewEnrollmentRequest.namespaces, {'wavi': 'rw'});
+      expect(atNewEnrollmentRequest.apkamPublicKey, 'testApkamPublicKey');
+      expect(atNewEnrollmentRequest.otp, 'A123FE');
+      expect(atNewEnrollmentRequest.enrollOperationEnum,
+          EnrollOperationEnum.request);
     });
 
     test('A test to verify generation of enrollment approval request', () {
-      AtEnrollmentRequestBuilder atEnrollmentRequestBuilder =
-          AtEnrollmentRequest.approve()
+      AtEnrollmentNotificationRequestBuilder atEnrollmentNotificationBuilder =
+          AtEnrollmentNotificationRequestBuilder()
             ..setEnrollmentId('ABC-123-ID')
-            ..setEncryptedAPKAMSymmetricKey('dummy-apkam-symmetric-key');
-      AtEnrollmentRequest atEnrollmentRequest =
-          atEnrollmentRequestBuilder.build();
+            ..setEncryptedApkamSymmetricKey('dummy-apkam-symmetric-key')
+            ..setEnrollOperationEnum(EnrollOperationEnum.approve);
+      AtEnrollmentNotificationRequest atEnrollmentNotificationRequest =
+          atEnrollmentNotificationBuilder.build();
 
-      expect(atEnrollmentRequest.enrollmentId, 'ABC-123-ID');
-      expect(atEnrollmentRequest.encryptedAPKAMSymmetricKey,
+      expect(atEnrollmentNotificationRequest.enrollmentId, 'ABC-123-ID');
+      expect(atEnrollmentNotificationRequest.encryptedApkamSymmetricKey,
           'dummy-apkam-symmetric-key');
+      expect(atEnrollmentNotificationRequest.enrollOperationEnum,
+          EnrollOperationEnum.approve);
     });
 
     test('A test to verify generation of enrollment deny request', () {
@@ -135,6 +217,58 @@ void main() {
           atEnrollmentRequestBuilder.build();
 
       expect(atEnrollmentRequest.enrollmentId, 'ABC-123-ID');
+    });
+  });
+  group('Group of tests to check createEnrollVerbBuilder method', () {
+    test(
+        'A test to verify  createEnrollVerbBuilder for AtInitialEnrollmentRequest',
+        () {
+      var enrollmentImpl = AtEnrollmentImpl('@alice');
+      AtInitialEnrollmentRequest request = (AtInitialEnrollmentRequestBuilder()
+            ..setAppName('TestApp')
+            ..setDeviceName('TestDevice')
+            ..setNamespaces({"wavi": "rw"})
+            ..setEncryptedDefaultEncryptionPrivateKey('encryptedPrivateKey')
+            ..setEncryptedDefaultSelfEncryptionKey('encryptedSelfEncryptionKey')
+            ..setApkamPublicKey('apkamPublicKey'))
+          .build();
+
+      var result = enrollmentImpl.createEnrollVerbBuilder(request);
+
+      expect(result.appName, equals('TestApp'));
+      expect(result.deviceName, equals('TestDevice'));
+      expect(result.namespaces, equals({'wavi': 'rw'}));
+      expect(result.encryptedDefaultEncryptionPrivateKey,
+          equals('encryptedPrivateKey'));
+      expect(result.encryptedDefaultSelfEncryptionKey,
+          equals('encryptedSelfEncryptionKey'));
+      expect(result.apkamPublicKey, equals('apkamPublicKey'));
+      expect(result.otp, isNull);
+      expect(result.encryptedAPKAMSymmetricKey, isNull);
+    });
+
+    test('A test for  createEnrollVerbBuilder for AtNewEnrollmentRequest', () {
+      var request = (AtNewEnrollmentRequestBuilder()
+            ..setAppName('TestApp')
+            ..setDeviceName('TestDevice')
+            ..setNamespaces({"wavi": "rw", "contact": "r"})
+            ..setOtp('A1CFG3')
+            ..setApkamPublicKey('apkamPublicKey'))
+          .build();
+
+      var enrollmentImpl = AtEnrollmentImpl('@alice');
+      AtPkamKeyPair atPkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
+      var result = enrollmentImpl.createEnrollVerbBuilder(request,
+          atPkamKeyPair: atPkamKeyPair);
+
+      // Assert
+      expect(result.appName, equals('TestApp'));
+      expect(result.deviceName, equals('TestDevice'));
+      expect(result.namespaces, equals({"wavi": "rw", "contact": "r"}));
+      expect(result.otp, equals('A1CFG3'));
+      expect(result.apkamPublicKey, isNotNull);
+      expect(result.encryptedDefaultEncryptionPrivateKey, isNull);
+      expect(result.encryptedDefaultSelfEncryptionKey, isNull);
     });
   });
 }

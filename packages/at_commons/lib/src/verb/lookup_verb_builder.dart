@@ -1,5 +1,4 @@
-import 'package:at_commons/src/verb/verb_builder.dart';
-import 'package:at_commons/src/verb/verb_util.dart';
+import 'abstract_verb_builder.dart';
 
 /// Lookup verb builder generates a command to lookup [atKey] on either the client user's secondary server(without authentication)
 /// or secondary server of [sharedBy] (with authentication).
@@ -14,13 +13,7 @@ import 'package:at_commons/src/verb/verb_util.dart';
 /// ```
 /// var builder = LookupVerbBuilder()..key=’phone’..atSign=’bob’;
 /// ```
-class LookupVerbBuilder implements VerbBuilder {
-  /// the key of [atKey] to lookup. [atKey] should not have private access.
-  String? atKey;
-
-  /// atSign of the secondary server on which lookup has to be executed.
-  String? sharedBy;
-
+class LookupVerbBuilder extends AbstractVerbBuilder {
   /// Flag to specify whether to run this builder with or without auth.
   bool auth = false;
 
@@ -31,19 +24,19 @@ class LookupVerbBuilder implements VerbBuilder {
 
   @override
   String buildCommand() {
-    String command = 'lookup:';
+    StringBuffer serverCommandBuffer = StringBuffer('lookup:');
     if (bypassCache == true) {
-      command += 'bypassCache:$bypassCache:';
+      serverCommandBuffer.write('bypassCache:$bypassCache:');
     }
     if (operation != null) {
-      command += '$operation:';
+      serverCommandBuffer.write('$operation:');
     }
-    command += atKey!;
-    return '$command${VerbUtil.formatAtSign(sharedBy)}\n';
+    serverCommandBuffer.write('${atKey.toString()}\n');
+    return serverCommandBuffer.toString();
   }
 
   @override
   bool checkParams() {
-    return atKey != null && sharedBy != null;
+    return atKey.key.isNotEmpty && atKey.sharedBy != null;
   }
 }

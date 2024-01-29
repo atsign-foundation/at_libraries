@@ -1,4 +1,3 @@
-import 'package:at_commons/at_commons.dart';
 import 'package:at_commons/src/verb/abstract_verb_builder.dart';
 
 /// Local lookup verb builder generates a command to lookup value of [atKey] stored in the secondary server.
@@ -58,55 +57,25 @@ import 'package:at_commons/src/verb/abstract_verb_builder.dart';
 ///               ..sharedBy = '@alice'
 ///```
 class LLookupVerbBuilder extends AbstractVerbBuilder {
-  /// the key of [atKey] to llookup. [atKey] can have either public, private or shared access.
-  String? atKey;
-
-  /// atSign of the secondary server on which llookup has to be executed.
-  String? sharedBy;
-
-  /// atSign of the secondary server for whom [atKey] is shared
-  String? sharedWith;
-
-  bool isPublic = false;
-
-  bool isCached = false;
-
   String? operation;
-
-  /// Indicates if the key is local
-  /// If the key is local, the key does not sync between cloud and local secondary
-  bool isLocal = false;
 
   @override
   String buildCommand() {
-    var command = 'llookup:';
+    StringBuffer serverCommandBuffer = StringBuffer('llookup:');
     if (operation != null) {
-      command += '$operation:';
+      serverCommandBuffer.write('$operation:');
     }
-    return command += '${buildKey()}\n';
+    serverCommandBuffer.write('${buildKey()}\n');
+    return serverCommandBuffer.toString();
   }
 
   @override
   bool checkParams() {
-    return atKey != null && sharedBy != null;
+    return atKey.key.isNotEmpty && atKey.sharedBy != null;
   }
 
   String buildKey() {
-    if (atKeyObj.key != null) {
-      return atKeyObj.toString();
-    }
-    super.atKeyObj
-      ..key = atKey
-      ..sharedBy = sharedBy
-      ..sharedWith = sharedWith
-      ..isLocal = isLocal
-      ..metadata = (Metadata()
-        ..isPublic = isPublic
-        ..isCached = isCached);
-    // validates the data in the verb builder.
-    // If validation is successful, build and return the key;
-    // else throws exception.
     validateKey();
-    return super.atKeyObj.toString();
+    return atKey.toString();
   }
 }

@@ -27,7 +27,7 @@ void main() {
       expect(outKey.toString(), inKey.toString());
       expect(outKey.key, 'foo.bar');
       expect(outKey.namespace, 'attalk');
-      expect(outKey.metadata!.isPublic, false);
+      expect(outKey.metadata.isPublic, false);
       expect(outKey.isLocal, false);
     });
 
@@ -38,8 +38,8 @@ void main() {
       expect(atKey.sharedBy, '@bob');
       expect(atKey.sharedWith, null);
       expect(atKey.isLocal, false);
-      expect(atKey.metadata!.isPublic, true);
-      expect(atKey.metadata!.namespaceAware, false);
+      expect(atKey.metadata.isPublic, true);
+      expect(atKey.metadata.namespaceAware, false);
       expect(atKey.toString(), testKey);
     });
 
@@ -49,7 +49,7 @@ void main() {
       expect(atKey.key, 'phone');
       expect(atKey.sharedBy, '@bob');
       expect(atKey.sharedWith, '@alice');
-      expect(atKey.metadata!.isPublic, false);
+      expect(atKey.metadata.isPublic, false);
       expect(atKey.isLocal, false);
       expect(atKey.toString(), testKey);
     });
@@ -60,7 +60,7 @@ void main() {
       expect(atKey.key, 'phone');
       expect(atKey.sharedBy, '@bob');
       expect(atKey.sharedWith, null);
-      expect(atKey.metadata!.isPublic, false);
+      expect(atKey.metadata.isPublic, false);
       expect(atKey.isLocal, false);
       expect(atKey.toString(), testKey);
     });
@@ -71,9 +71,9 @@ void main() {
       expect(atKey.key, 'phone');
       expect(atKey.sharedBy, '@bob');
       expect(atKey.sharedWith, '@alice');
-      expect(atKey.metadata!.isCached, true);
-      expect(atKey.metadata!.namespaceAware, false);
-      expect(atKey.metadata!.isPublic, false);
+      expect(atKey.metadata.isCached, true);
+      expect(atKey.metadata.namespaceAware, false);
+      expect(atKey.metadata.isPublic, false);
       expect(atKey.isLocal, false);
       expect(atKey.toString(), testKey);
     });
@@ -84,10 +84,10 @@ void main() {
       expect(atKey.key, 'phone');
       expect(atKey.sharedBy, '@charlie');
       expect(atKey.sharedWith, '@alice');
-      expect(atKey.metadata!.isCached, true);
+      expect(atKey.metadata.isCached, true);
       expect(atKey.namespace, 'unit_test');
-      expect(atKey.metadata!.namespaceAware, true);
-      expect(atKey.metadata!.isPublic, false);
+      expect(atKey.metadata.namespaceAware, true);
+      expect(atKey.metadata.isPublic, false);
       expect(atKey.isLocal, false);
       expect(atKey.toString(), testKey);
     });
@@ -98,8 +98,8 @@ void main() {
       expect(atKey.sharedWith, null);
       expect(atKey.sharedBy, '@demo');
       expect(atKey.key, 'test_key');
-      expect(atKey.metadata!.isCached, true);
-      expect(atKey.metadata!.isPublic, true);
+      expect(atKey.metadata.isCached, true);
+      expect(atKey.metadata.isPublic, true);
     });
 
     test('Test to verify cached:public key with namespace', () {
@@ -108,10 +108,10 @@ void main() {
       expect(atKey.sharedWith, null);
       expect(atKey.sharedBy, '@demo');
       expect(atKey.key, 'test_key');
-      expect(atKey.metadata!.isCached, true);
-      expect(atKey.metadata!.isPublic, true);
+      expect(atKey.metadata.isCached, true);
+      expect(atKey.metadata.isPublic, true);
       expect(atKey.namespace, 'unit_test');
-      expect(atKey.metadata!.namespaceAware, true);
+      expect(atKey.metadata.namespaceAware, true);
     });
 
     test('Test to verify pkam private key', () {
@@ -132,9 +132,9 @@ void main() {
       expect(atKey.key, 'phone');
       expect(atKey.sharedWith, '@alice');
       expect(atKey.sharedBy, '@bob');
-      expect(atKey.metadata!.isPublic, false);
+      expect(atKey.metadata.isPublic, false);
       expect(atKey.isLocal, false);
-      expect(atKey.metadata!.namespaceAware, true);
+      expect(atKey.metadata.namespaceAware, true);
       expect(atKey.toString(), testKey);
     });
   });
@@ -161,7 +161,7 @@ void main() {
       expect(atKey.sharedBy, '@alice🛠');
       expect(atKey.sharedWith, '@bob');
       //assert that dataSignature is not converted to lowercase
-      expect(atKey.metadata?.dataSignature, metaData.dataSignature);
+      expect(atKey.metadata.dataSignature, metaData.dataSignature);
     });
     test('toString and fromString with namespace', () {
       var fromAtsign = '@aliCe';
@@ -186,7 +186,7 @@ void main() {
       expect(outKey.toString(), inKey.toString());
       expect(outKey.key, 'foo.bar');
       expect(outKey.namespace, 'attalk');
-      expect(outKey.metadata!.isPublic, false);
+      expect(outKey.metadata.isPublic, false);
       expect(outKey.isLocal, false);
     });
 
@@ -200,8 +200,8 @@ void main() {
       //sharedWith will be converted to lower_case upon assignment
       expect(atKey.sharedWith, null);
       expect(atKey.isLocal, false);
-      expect(atKey.metadata!.isPublic, true);
-      expect(atKey.metadata!.namespaceAware, false);
+      expect(atKey.metadata.isPublic, true);
+      expect(atKey.metadata.namespaceAware, false);
       //toString method will convert entire key to lower_case
       expect(atKey.toString(), testKey.toLowerCase());
     });
@@ -215,7 +215,7 @@ void main() {
       expect(atKey.sharedBy, '@bob');
       //sharedWith will be converted to lower_case upon assignment
       expect(atKey.sharedWith, '@alice');
-      expect(atKey.metadata!.isPublic, false);
+      expect(atKey.metadata.isPublic, false);
       expect(atKey.isLocal, false);
       //toString method will convert entire key to lower_case
       expect(atKey.toString(), testKey.toLowerCase());
@@ -227,7 +227,7 @@ void main() {
       expect(atKey.key, 'phoNe');
       expect(atKey.sharedBy, '@bob');
       expect(atKey.sharedWith, null);
-      expect(atKey.metadata!.isPublic, false);
+      expect(atKey.metadata.isPublic, false);
       expect(atKey.isLocal, false);
       expect(atKey.toString(), testKey.toLowerCase());
     });
@@ -241,9 +241,9 @@ void main() {
       expect(atKey.sharedBy, '@bob');
       //sharedWith will be converted to lower_case upon assignment
       expect(atKey.sharedWith, '@alice');
-      expect(atKey.metadata!.isCached, true);
-      expect(atKey.metadata!.namespaceAware, false);
-      expect(atKey.metadata!.isPublic, false);
+      expect(atKey.metadata.isCached, true);
+      expect(atKey.metadata.namespaceAware, false);
+      expect(atKey.metadata.isPublic, false);
       expect(atKey.isLocal, false);
       expect(atKey.toString(), testKey.toLowerCase());
     });
@@ -266,9 +266,9 @@ void main() {
       expect(atKey.key, 'phone');
       expect(atKey.sharedWith, '@alice');
       expect(atKey.sharedBy, '@bob');
-      expect(atKey.metadata!.isPublic, false);
+      expect(atKey.metadata.isPublic, false);
       expect(atKey.isLocal, false);
-      expect(atKey.metadata!.namespaceAware, true);
+      expect(atKey.metadata.namespaceAware, true);
       expect(atKey.toString(), testKey);
     });
   });
@@ -404,6 +404,7 @@ void main() {
   group('A group of negative test on toString method', () {
     test('test to verify key is null', () {
       var atKey = AtKey()
+        ..key = ''
         ..sharedWith = '@alice'
         ..sharedBy = '@bob';
       expect(
@@ -452,11 +453,11 @@ void main() {
       expect(atKey.key, equals('phone'));
       expect(atKey.sharedBy, equals('@alice'));
       expect(atKey.namespace, equals('wavi'));
-      expect(atKey.metadata!.ttl, equals(null));
-      expect(atKey.metadata!.ttb, equals(null));
-      expect(atKey.metadata!.isPublic, equals(true));
-      expect(atKey.metadata!.isBinary, equals(false));
-      expect(atKey.metadata!.isCached, equals(false));
+      expect(atKey.metadata.ttl, equals(null));
+      expect(atKey.metadata.ttb, equals(null));
+      expect(atKey.metadata.isPublic, equals(true));
+      expect(atKey.metadata.isBinary, equals(false));
+      expect(atKey.metadata.isCached, equals(false));
       expect(atKey.toString(), 'public:phone.wavi@alice');
     });
 
@@ -470,12 +471,12 @@ void main() {
       expect(atKey.key, equals('phone'));
       expect(atKey.sharedBy, equals('@alice'));
       expect(atKey.namespace, equals('wavi'));
-      expect(atKey.metadata!.ttl, equals(1000));
-      expect(atKey.metadata!.ttb, equals(2000));
-      expect(atKey.metadata!.isPublic, equals(true));
-      expect(atKey.metadata!.isPublic, equals(true));
-      expect(atKey.metadata!.isBinary, equals(false));
-      expect(atKey.metadata!.isCached, equals(false));
+      expect(atKey.metadata.ttl, equals(1000));
+      expect(atKey.metadata.ttb, equals(2000));
+      expect(atKey.metadata.isPublic, equals(true));
+      expect(atKey.metadata.isPublic, equals(true));
+      expect(atKey.metadata.isBinary, equals(false));
+      expect(atKey.metadata.isCached, equals(false));
       expect(atKey.toString(), 'public:phone.wavi@alice');
     });
   });
@@ -491,11 +492,11 @@ void main() {
       expect(atKey.sharedBy, equals('@alice'));
       expect(atKey.namespace, equals('wavi'));
       expect(atKey.sharedWith, equals('@bob'));
-      expect(atKey.metadata!.ttl, equals(null));
-      expect(atKey.metadata!.ttb, equals(null));
-      expect(atKey.metadata!.isPublic, equals(false));
-      expect(atKey.metadata!.isBinary, equals(false));
-      expect(atKey.metadata!.isCached, equals(false));
+      expect(atKey.metadata.ttl, equals(null));
+      expect(atKey.metadata.ttb, equals(null));
+      expect(atKey.metadata.isPublic, equals(false));
+      expect(atKey.metadata.isBinary, equals(false));
+      expect(atKey.metadata.isCached, equals(false));
       expect(atKey.toString(), '@bob:phone.wavi@alice');
     });
 
@@ -510,12 +511,12 @@ void main() {
       expect(atKey.sharedBy, equals('@alice'));
       expect(atKey.namespace, equals('wavi'));
       expect(atKey.sharedWith, equals('@bob'));
-      expect(atKey.metadata!.ttr, equals(1000));
-      expect(atKey.metadata!.ccd, equals(true));
-      expect(atKey.metadata!.ttl, equals(null));
-      expect(atKey.metadata!.ttb, equals(null));
-      expect(atKey.metadata!.isPublic, equals(false));
-      expect(atKey.metadata!.isBinary, equals(false));
+      expect(atKey.metadata.ttr, equals(1000));
+      expect(atKey.metadata.ccd, equals(true));
+      expect(atKey.metadata.ttl, equals(null));
+      expect(atKey.metadata.ttb, equals(null));
+      expect(atKey.metadata.isPublic, equals(false));
+      expect(atKey.metadata.isBinary, equals(false));
       expect(atKey.toString(), '@bob:phone.wavi@alice');
     });
   });

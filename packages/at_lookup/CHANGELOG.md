@@ -1,3 +1,15 @@
+## 3.0.45
+- build[deps]: Upgraded at_chops to v2.0.0
+## 3.0.44
+- build[deps]: Upgraded the following packages:
+    - at_commons to v4.0.0
+    - at_utils to v3.0.16
+    - at_chops to v1.0.7
+## 3.0.43
+- fix: revert removing private key reference from at_lookup_impl
+## 3.0.42
+- fix: more informative exception messages
+- fix: removed private key reference from at_lookup_impl
 ## 3.0.41
 - feat: introduce methods cramAuthenticate and close into the AtLookup interface
 - deprecate: authenticate_cram() from AtLookupImpl. [cramAuthenticate should be used instead]

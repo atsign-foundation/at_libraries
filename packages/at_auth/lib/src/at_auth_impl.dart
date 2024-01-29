@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:at_auth/at_auth.dart';
 import 'package:at_auth/src/at_auth_base.dart';
 import 'package:at_auth/src/auth/cram_authenticator.dart';
 import 'package:at_auth/src/auth/pkam_authenticator.dart';
 import 'package:at_auth/src/enroll/at_enrollment_base.dart';
+import 'package:at_auth/src/enroll/at_enrollment_impl.dart';
+import 'package:at_auth/src/enroll/at_enrollment_response.dart';
+import 'package:at_auth/src/enroll/at_initial_enrollment_request.dart';
 import 'package:at_auth/src/keys/at_auth_keys.dart';
 import 'package:at_auth/src/onboard/at_onboarding_request.dart';
 import 'package:at_auth/src/onboard/at_onboarding_response.dart';
@@ -63,7 +65,8 @@ class AtAuthImpl implements AtAuth {
     }
     if (atAuthKeys == null) {
       throw AtAuthenticationException(
-          'keys either were not provided in the AtAuthRequest, or could not be read from provided keys file');
+          'keys either were not provided in the AtAuthRequest,'
+          ' or could not be read from provided keys file');
     }
     enrollmentIdFromRequest ??= atAuthKeys.enrollmentId;
     var pkamPrivateKey = atAuthKeys.apkamPrivateKey;
@@ -86,10 +89,12 @@ class AtAuthImpl implements AtAuth {
       var pkamResponse = (await pkamAuthenticator!
           .authenticate(enrollmentId: enrollmentIdFromRequest));
       isPkamAuthenticated = pkamResponse.isSuccessful;
-    } on Exception catch (e) {
-      _logger.severe('Caught exception: $e');
+    } on AtException catch (e) {
+      _logger.severe('Caught $e');
       throw AtAuthenticationException(
-          'Unable to authenticate- ${e.toString()}');
+          'Unable to authenticate | Cause: ${e.message}');
+    } on Exception catch (e) {
+      throw AtAuthenticationException('Unable to authenticate | Cause: $e');
     }
     _logger.finer(
         'PKAM auth result: ${isPkamAuthenticated ? 'success' : 'failed'}');
@@ -113,7 +118,7 @@ class AtAuthImpl implements AtAuth {
     if (!cramAuthResult.isSuccessful) {
       throw AtAuthenticationException(
           'Cram authentication failed. Please check the cram key'
-          ' and try again \n(or) contact support@atsign.com');
+          ' and try again (or) contact support@atsign.com');
     }
     //2. generate key pairs
     var atAuthKeys = _generateKeyPairs(atOnboardingRequest.authMode,
@@ -127,7 +132,8 @@ class AtAuthImpl implements AtAuth {
     //3. update pkam public key through enrollment or manually based on app preference
     String? enrollmentIdFromServer;
     if (atOnboardingRequest.enableEnrollment) {
-      // server will update the apkam public key during enrollment.So don't have to manually update in this scenario.
+      // server will update the apkam public key during enrollment.
+      // So don't have to manually update in this scenario.
       enrollmentIdFromServer = await _sendOnboardingEnrollment(
           atOnboardingRequest, atAuthKeys, atLookUp!);
       atAuthKeys.enrollmentId = enrollmentIdFromServer;
@@ -142,20 +148,20 @@ class AtAuthImpl implements AtAuth {
       _logger.finer('PkamPublicKey update result: $pkamUpdateResult');
     }
 
-    //3. Close connection to server
+    //4. Close connection to server
     try {
       await (atLookUp as AtLookupImpl).close();
     } on Exception catch (e) {
       _logger.severe('error while closing connection to server: $e');
     }
 
-    //4. Init _atLookUp again and attempt pkam auth
+    //5. Init _atLookUp again and attempt pkam auth
     // atLookUp = AtLookupImpl(atOnboardingRequest.atSign,
     //     atOnboardingRequest.rootDomain, atOnboardingRequest.rootPort);
     atLookUp!.atChops = atChops;
 
     var isPkamAuthenticated = false;
-    //5. Do pkam auth
+    //6. Do pkam auth
     pkamAuthenticator ??=
         PkamAuthenticator(atOnboardingRequest.atSign, atLookUp!);
     try {
@@ -169,18 +175,21 @@ class AtAuthImpl implements AtAuth {
       throw AtAuthenticationException('Pkam auth returned false');
     }
 
-    //5. If Pkam auth is success, update encryption public key to secondary and delete cram key from server
+    //7. If Pkam auth is success, update encryption public key to secondary
+    // and delete cram key from server
     final encryptionPublicKey = atAuthKeys.defaultEncryptionPublicKey;
     UpdateVerbBuilder updateBuilder = UpdateVerbBuilder()
-      ..atKey = 'publickey'
-      ..isPublic = true
-      ..value = encryptionPublicKey
-      ..sharedBy = atOnboardingRequest.atSign;
+      ..atKey = (AtKey()
+        ..key = 'publickey'
+        ..sharedBy = atOnboardingRequest.atSign
+        ..metadata = (Metadata()..isPublic = true))
+      ..value = encryptionPublicKey;
     String? encryptKeyUpdateResult = await atLookUp!.executeVerb(updateBuilder);
     _logger.info('Encryption public key update result $encryptKeyUpdateResult');
-    // deleting cram secret from the keystore as cram auth is complete
+
+    //8.  Delete cram secret from the keystore as cram auth is complete
     DeleteVerbBuilder deleteBuilder = DeleteVerbBuilder()
-      ..atKey = AtConstants.atCramSecret;
+      ..atKey = (AtKey()..key = AtConstants.atCramSecret);
     String? deleteResponse = await atLookUp!.executeVerb(deleteBuilder);
     _logger.info('Cram secret delete response : $deleteResponse');
     atOnboardingResponse.isSuccessful = true;
@@ -222,13 +231,16 @@ class AtAuthImpl implements AtAuth {
             encryptionAlgorithm: symmetricEncryptionAlgo,
             iv: AtChopsUtil.generateIVLegacy())
         .result;
-    var enrollRequestBuilder = AtEnrollmentRequest.request()
+    _logger.finer('apkamPublicKey: ${atAuthKeys.apkamPublicKey}');
+    var enrollRequestBuilder = AtInitialEnrollmentRequestBuilder()
       ..setAppName(atOnboardingRequest.appName)
       ..setDeviceName(atOnboardingRequest.deviceName)
       ..setEncryptedDefaultEncryptionPrivateKey(
           encryptedDefaultEncryptionPrivateKey)
       ..setEncryptedDefaultSelfEncryptionKey(encryptedDefaultSelfEncryptionKey)
-      ..setApkamPublicKey(atAuthKeys.apkamPublicKey);
+      ..setApkamPublicKey(atAuthKeys.apkamPublicKey)
+      ..setAtAuthKeys(atAuthKeys)
+      ..setEnrollOperationEnum(EnrollOperationEnum.request);
     atEnrollmentBase ??= AtEnrollmentImpl(atOnboardingRequest.atSign);
     AtEnrollmentResponse enrollmentResponse;
     try {
@@ -240,7 +252,7 @@ class AtAuthImpl implements AtAuth {
     _logger.finer('enrollment response: ${enrollmentResponse.toString()}');
     var enrollmentIdFromServer = enrollmentResponse.enrollmentId;
     var enrollmentStatus = enrollmentResponse.enrollStatus;
-    if (enrollmentStatus != EnrollStatus.approved) {
+    if (enrollmentStatus != EnrollmentStatus.approved) {
       throw AtAuthenticationException(
           'initial enrollment is not approved. Status from server: $enrollmentStatus');
     }

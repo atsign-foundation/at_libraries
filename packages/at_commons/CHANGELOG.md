@@ -1,6 +1,9 @@
+## 4.0.1
+- fix: Add "InvalidPinException" which is thrown when an invalid Semi Permanent Passcode is submitted.
 ## 4.0.0
 - [Breaking Change] fix: Updated regex for Reserved keys (Internal keys used by the server)
 - fix: Add "put" operation to OTP verb to store semi-permanent pass codes
+- Remove attributes related to AtKey and metadata in verb builders. Instead, use AtKey instance. 
 ## 3.0.58
 - fix: Deprecate encryptedDefaultEncryptedPrivateKey in EnrollParams and introduce encryptedDefaultEncryptedPrivateKey for readability
 - fix: Replace encryptedDefaultEncryptedPrivateKey with encryptedDefaultEncryptionPrivateKey in EnrollVerbBuilder
