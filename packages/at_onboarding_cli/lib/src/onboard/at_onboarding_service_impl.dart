@@ -18,9 +18,9 @@ import 'package:encrypt/encrypt.dart';
 import 'package:zxing2/qrcode.dart';
 import 'package:image/image.dart';
 import 'package:path/path.dart' as path;
+import 'package:at_register/at_register.dart';
 
 import '../util/home_directory_util.dart';
-import '../util/onboarding_util.dart';
 
 ///class containing service that can onboard/activate/authenticate @signs
 class AtOnboardingServiceImpl implements AtOnboardingService {

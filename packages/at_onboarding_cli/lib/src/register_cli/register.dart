@@ -5,14 +5,9 @@ import 'package:args/args.dart';
 import 'package:at_client/at_client.dart';
 import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart'
     as activate_cli;
-import 'package:at_onboarding_cli/src/util/api_call_status.dart';
 import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
-import 'package:at_onboarding_cli/src/util/register_api_result.dart';
-import 'package:at_onboarding_cli/src/util/register_api_task.dart';
 import 'package:at_utils/at_logger.dart';
-
-import '../util/onboarding_util.dart';
-import '../util/registrar_api_constants.dart';
+import 'package:at_register/at_register.dart';
 
 ///Class containing logic to register a free atsign to email provided
 ///through [args] by utilizing methods defined in [RegisterUtil]

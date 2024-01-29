@@ -2,7 +2,7 @@ import 'dart:core';
 
 import 'package:at_chops/at_chops.dart';
 import 'package:at_client/at_client.dart';
-import 'package:at_onboarding_cli/src/util/registrar_api_constants.dart';
+import 'package:at_register/at_register.dart';
 
 class AtOnboardingPreference extends AtClientPreference {
   /// specify path of .atKeysFile containing encryption keys
