@@ -326,10 +326,22 @@ class AtLookupImpl implements AtLookUp {
     // Setting the errorCode and errorDescription to default values.
     var errorCode = 'AT0014';
     var errorDescription = 'Unknown server error';
-
-    var errorMap = jsonDecode(verbResult);
-    errorCode = errorMap['errorCode'];
-    errorDescription = errorMap['errorDescription'];
+    try {
+      var errorMap = jsonDecode(verbResult);
+      errorCode = errorMap['errorCode'];
+      errorDescription = errorMap['errorDescription'];
+    } on FormatException {
+      // Catching the FormatException to preserve backward compatibility - responses without jsonEncoding.
+      // TODO: Can we remove the below catch block in next release once all the servers are migrated to new version.
+      if (verbResult.contains('-')) {
+        if (verbResult.split('-')[0].isNotEmpty) {
+          errorCode = verbResult.split('-')[0];
+        }
+        if (verbResult.split('-')[1].isNotEmpty) {
+          errorDescription = verbResult.split('-')[1];
+        }
+      }
+    }
 
     throw AtLookUpException(errorCode, errorDescription);
   }
