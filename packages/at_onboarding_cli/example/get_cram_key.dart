@@ -1,5 +1,5 @@
 import 'package:args/args.dart';
-import 'package:at_onboarding_cli/src/util/onboarding_util.dart';
+import 'package:at_register/at_register.dart';
 
 import 'util/custom_arg_parser.dart';
 

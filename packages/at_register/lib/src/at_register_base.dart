@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:at_client/at_client.dart' as at_client;
-import 'package:at_onboarding_cli/src/util/registrar_api_constants.dart';
+import 'package:at_register/src/util/registrar_constants.dart';
 import 'package:http/http.dart';
 import 'package:http/io_client.dart';
 
@@ -21,13 +21,13 @@ class OnboardingUtil {
   /// Returns a Future<List<String>> containing free available atSigns of count provided as input.
   Future<List<String>> getFreeAtSigns(
       {int amount = 1,
-      String authority = RegistrarApiConstants.apiHostProd}) async {
+        String authority = RegistrarConstants.apiHostProd}) async {
     List<String> atSigns = <String>[];
     Response response;
     for (int i = 0; i < amount; i++) {
       // get request at my.atsign.com/api/app/v3/get-free-atsign/
       response =
-          await getRequest(authority, RegistrarApiConstants.pathGetFreeAtSign);
+      await getRequest(authority, RegistrarConstants.pathGetFreeAtSign);
       if (response.statusCode == 200) {
         String atSign = jsonDecode(response.body)['data']['atsign'];
         atSigns.add(atSign);
@@ -45,9 +45,9 @@ class OnboardingUtil {
   /// Sends an OTP to the `email` provided.
   /// Throws [AtException] if [atSign] is invalid
   Future<bool> registerAtSign(String atSign, String email,
-      {oldEmail, String authority = RegistrarApiConstants.apiHostProd}) async {
+      {oldEmail, String authority = RegistrarConstants.apiHostProd}) async {
     Response response =
-        await postRequest(authority, RegistrarApiConstants.pathRegisterAtSign, {
+    await postRequest(authority, RegistrarConstants.pathRegisterAtSign, {
       'atsign': atSign,
       'email': email,
       'oldEmail': oldEmail,
@@ -55,7 +55,7 @@ class OnboardingUtil {
     if (response.statusCode == 200) {
       Map<String, dynamic> jsonDecoded = jsonDecode(response.body);
       bool sentSuccessfully =
-          jsonDecoded['message'].toLowerCase().contains('success');
+      jsonDecoded['message'].toLowerCase().contains('success');
       return sentSuccessfully;
     } else {
       throw at_client.AtClientException.message(
@@ -81,9 +81,9 @@ class OnboardingUtil {
   /// Throws [AtException] if [atSign] or [otp] is invalid
   Future<String> validateOtp(String atSign, String email, String otp,
       {String confirmation = 'true',
-      String authority = RegistrarApiConstants.apiHostProd}) async {
+        String authority = RegistrarConstants.apiHostProd}) async {
     Response response =
-        await postRequest(authority, RegistrarApiConstants.pathValidateOtp, {
+    await postRequest(authority, RegistrarConstants.pathValidateOtp, {
       'atsign': atSign,
       'email': email,
       'otp': otp,
@@ -96,9 +96,9 @@ class OnboardingUtil {
         dataFromResponse.addAll(jsonDecoded['data']);
       }
       if ((jsonDecoded.containsKey('message') &&
-              (jsonDecoded['message'] as String)
-                  .toLowerCase()
-                  .contains('verified')) &&
+          (jsonDecoded['message'] as String)
+              .toLowerCase()
+              .contains('verified')) &&
           jsonDecoded.containsKey('cramkey')) {
         return jsonDecoded['cramkey'];
       } else if (jsonDecoded.containsKey('data') &&
@@ -113,9 +113,9 @@ class OnboardingUtil {
               'Oops! You already have the maximum number of free atSigns. Please select one of your existing atSigns.')) {
         stdout.writeln(
             '[Unable to proceed] This email address already has 10 free atSigns associated with it.\n'
-            'To register a new atSign to this email address, please log into the dashboard \'my.atsign.com/login\'.\n'
-            'Remove at least 1 atSign from your account and then try again.\n'
-            'Alternatively, you can retry this process with a different email address.');
+                'To register a new atSign to this email address, please log into the dashboard \'my.atsign.com/login\'.\n'
+                'Remove at least 1 atSign from your account and then try again.\n'
+                'Alternatively, you can retry this process with a different email address.');
         exit(1);
       } else {
         throw at_client.AtClientException.message(
@@ -133,9 +133,9 @@ class OnboardingUtil {
   /// 1) HTTP 400 BAD_REQUEST
   /// 2) Invalid atsign
   Future<void> requestAuthenticationOtp(String atsign,
-      {String authority = RegistrarApiConstants.apiHostProd}) async {
+      {String authority = RegistrarConstants.apiHostProd}) async {
     Response response = await postRequest(authority,
-        RegistrarApiConstants.requestAuthenticationOtpPath, {'atsign': atsign});
+        RegistrarConstants.requestAuthenticationOtpPath, {'atsign': atsign});
     String apiResponseMessage = jsonDecode(response.body)['message'];
     if (response.statusCode == 200) {
       if (apiResponseMessage.contains('Sent Successfully')) {
@@ -155,10 +155,10 @@ class OnboardingUtil {
   /// Throws exception in the following cases:
   /// 1) HTTP 400 BAD_REQUEST
   Future<String> getCramKey(String atsign, String verificationCode,
-      {String authority = RegistrarApiConstants.apiHostProd}) async {
+      {String authority = RegistrarConstants.apiHostProd}) async {
     Response response = await postRequest(
         authority,
-        RegistrarApiConstants.getCramKeyWithOtpPath,
+        RegistrarConstants.getCramKeyWithOtpPath,
         {'atsign': atsign, 'otp': verificationCode});
     Map<String, dynamic> jsonDecodedBody = jsonDecode(response.body);
     if (response.statusCode == 200) {
@@ -188,8 +188,8 @@ class OnboardingUtil {
     if (_ioClient == null) _createClient();
     Uri uri = Uri.https(authority, path);
     Response response = await _ioClient!.get(uri, headers: <String, String>{
-      'Authorization': RegistrarApiConstants.authorization,
-      'Content-Type': RegistrarApiConstants.contentType,
+      'Authorization': RegistrarConstants.authorization,
+      'Content-Type': RegistrarConstants.contentType,
     });
     return response;
   }
@@ -202,18 +202,18 @@ class OnboardingUtil {
     Uri uri = Uri.https(authority, path);
 
     String body = json.encode(data);
-    if (RegistrarApiConstants.isDebugMode) {
+    if (RegistrarConstants.isDebugMode) {
       stdout.writeln('Sending request to url: $uri\nRequest Body: $body');
     }
     Response response = await _ioClient!.post(
       uri,
       body: body,
       headers: <String, String>{
-        'Authorization': RegistrarApiConstants.authorization,
-        'Content-Type': RegistrarApiConstants.contentType,
+        'Authorization': RegistrarConstants.authorization,
+        'Content-Type': RegistrarConstants.contentType,
       },
     );
-    if (RegistrarApiConstants.isDebugMode) {
+    if (RegistrarConstants.isDebugMode) {
       print('Got Response: ${response.body}');
     }
     return response;
@@ -221,7 +221,7 @@ class OnboardingUtil {
 
   bool validateEmail(String email) {
     return RegExp(
-            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+        r"^[a-zA-Z0-9.a-zA-Z0-9!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
         .hasMatch(email);
   }
 
@@ -243,9 +243,9 @@ class OnboardingUtil {
     while (!validateVerificationCode(otp!)) {
       stderr.writeln(
           '[Unable to proceed] The verification code you entered is invalid.\n'
-          'Please check your email for a 4-character verification code.\n'
-          'If you cannot see the code in your inbox, please check your spam/junk/promotions folders.\n'
-          '[Action Required] Enter your verification code:');
+              'Please check your email for a 4-character verification code.\n'
+              'If you cannot see the code in your inbox, please check your spam/junk/promotions folders.\n'
+              '[Action Required] Enter your verification code:');
       otp = stdin.readLineSync()!.toUpperCase();
     }
     return otp;

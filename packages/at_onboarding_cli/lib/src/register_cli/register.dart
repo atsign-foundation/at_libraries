@@ -5,14 +5,9 @@ import 'package:args/args.dart';
 import 'package:at_client/at_client.dart';
 import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart'
     as activate_cli;
-import 'package:at_onboarding_cli/src/util/api_call_status.dart';
 import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
-import 'package:at_onboarding_cli/src/util/register_api_result.dart';
-import 'package:at_onboarding_cli/src/util/register_api_task.dart';
 import 'package:at_utils/at_logger.dart';
-
-import '../util/onboarding_util.dart';
-import '../util/registrar_api_constants.dart';
+import 'package:at_register/at_register.dart';
 
 ///Class containing logic to register a free atsign to email provided
 ///through [args] by utilizing methods defined in [RegisterUtil]
@@ -54,9 +49,9 @@ class Register {
 
     //set the following parameter to RegisterApiConstants.apiHostStaging
     //to use the staging environment
-    params['authority'] = RegistrarApiConstants.apiHostProd;
+    params['authority'] = RegistrarConstants.apiHostProd;
 
-    //create stream of tasks each of type [RegisterApiTask] and then
+    //create stream of tasks each of type [RegisterTask] and then
     // call start on the stream of tasks
     await RegistrationFlow(params, registerUtil)
         .add(GetFreeAtsign())
@@ -68,27 +63,27 @@ class Register {
   }
 }
 
-///class that handles multiple tasks of type [RegisterApiTask]
+///class that handles multiple tasks of type [RegisterTask]
 ///Initialized with a params map that needs to be populated with - email and api host address
-///[add] method can be used to add tasks[RegisterApiTask] to the [processFlow]
+///[add] method can be used to add tasks[RegisterTask] to the [processFlow]
 ///[start] needs to be called after all required tasks are added to the [processFlow]
 class RegistrationFlow {
-  List<RegisterApiTask> processFlow = [];
-  RegisterApiResult result = RegisterApiResult();
+  List<RegisterTask> processFlow = [];
+  RegisterResult result = RegisterResult();
   late OnboardingUtil registerUtil;
   Map<String, String> params;
 
   RegistrationFlow(this.params, this.registerUtil);
 
-  RegistrationFlow add(RegisterApiTask task) {
+  RegistrationFlow add(RegisterTask task) {
     processFlow.add(task);
     return this;
   }
 
   Future<void> start() async {
-    for (RegisterApiTask task in processFlow) {
+    for (RegisterTask task in processFlow) {
       task.init(params, registerUtil);
-      if (RegistrarApiConstants.isDebugMode) {
+      if (RegistrarConstants.isDebugMode) {
         print('Current Task: $task  [params=$params]\n');
       }
       result = await task.run();
@@ -108,12 +103,12 @@ class RegistrationFlow {
   }
 }
 
-///This is a [RegisterApiTask] that fetches a free atsign
+///This is a [RegisterTask] that fetches a free atsign
 ///throws [AtException] with concerned message which was encountered in the
 ///HTTP GET/POST request
-class GetFreeAtsign extends RegisterApiTask {
+class GetFreeAtsign extends RegisterTask {
   @override
-  Future<RegisterApiResult> run() async {
+  Future<RegisterResult> run() async {
     stdout
         .writeln('[Information] Getting your randomly generated free atSign…');
     try {
@@ -132,13 +127,13 @@ class GetFreeAtsign extends RegisterApiTask {
   }
 }
 
-///This is a [RegisterApiTask] that registers a free atsign fetched in
+///This is a [RegisterTask] that registers a free atsign fetched in
 ///[GetFreeAtsign] to the email provided as args
 ///throws [AtException] with concerned message which was encountered in the
 ///HTTP GET/POST request
-class RegisterAtsign extends RegisterApiTask {
+class RegisterAtsign extends RegisterTask {
   @override
-  Future<RegisterApiResult> run() async {
+  Future<RegisterResult> run() async {
     stdout.writeln(
         '[Information] Sending verification code to: ${params['email']}');
     try {
@@ -158,11 +153,11 @@ class RegisterAtsign extends RegisterApiTask {
   }
 }
 
-///This is a [RegisterApiTask] that validates the otp which was sent as a part
+///This is a [RegisterTask] that validates the otp which was sent as a part
 ///of [RegisterAtsign] to email provided in args
 ///throws [AtException] with concerned message which was encountered in the
 ///HTTP GET/POST request
-class ValidateOtp extends RegisterApiTask {
+class ValidateOtp extends RegisterTask {
   @override
   void init(Map<String, String> params, OnboardingUtil registerUtil) {
     params['confirmation'] = 'false';
@@ -172,7 +167,7 @@ class ValidateOtp extends RegisterApiTask {
   }
 
   @override
-  Future<RegisterApiResult> run() async {
+  Future<RegisterResult> run() async {
     if (params['otp'] == null) {
       params['otp'] = registerUtil.getVerificationCodeFromUser();
     }
