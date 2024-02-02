@@ -14,6 +14,17 @@ class PublicKeyHash {
     map['algo'] = publicKeyHashingAlgo;
     return map;
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PublicKeyHash &&
+          runtimeType == other.runtimeType &&
+          hash == other.hash &&
+          publicKeyHashingAlgo == other.publicKeyHashingAlgo;
+
+  @override
+  int get hashCode => hash.hashCode ^ publicKeyHashingAlgo.hashCode;
 }
 
 enum PublicKeyHashingAlgo { sha256, sha512 }
