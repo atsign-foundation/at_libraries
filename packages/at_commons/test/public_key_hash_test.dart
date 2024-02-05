@@ -15,8 +15,9 @@ void main() {
       jsonMap['hash'] = 'randomhash';
       jsonMap['algo'] = 'sha256';
       final publicKeyHash = PublicKeyHash.fromJson(jsonMap);
-      expect(publicKeyHash.hash, 'randomhash');
-      expect(publicKeyHash.publicKeyHashingAlgo, PublicKeyHashingAlgo.sha256);
+      expect(publicKeyHash, isNotNull);
+      expect(publicKeyHash?.hash, 'randomhash');
+      expect(publicKeyHash?.publicKeyHashingAlgo, PublicKeyHashingAlgo.sha256);
     });
     test('Test to verify equals operator two objects equals', () {
       final publicKeyHash_1 =

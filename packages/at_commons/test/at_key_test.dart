@@ -975,5 +975,16 @@ void main() {
       expect(metadataObject.pubKeyHash!.publicKeyHashingAlgo,
           PublicKeyHashingAlgo.sha512);
     });
+    test(
+        'Test to verify metadata fromJson method when public key hash is not set',
+        () {
+      var jsonMap = {};
+      jsonMap['ttr'] = -1;
+      jsonMap['isBinary'] = false;
+      jsonMap['isEncrypted'] = true;
+      jsonMap['isPublic'] = false;
+      var metadataObject = Metadata.fromJson(jsonMap);
+      expect(metadataObject.pubKeyHash, null);
+    });
   });
 }

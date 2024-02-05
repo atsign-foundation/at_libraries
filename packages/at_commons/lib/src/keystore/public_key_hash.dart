@@ -17,7 +17,10 @@ class PublicKeyHash {
     return map;
   }
 
-  static PublicKeyHash fromJson(Map json) {
+  static PublicKeyHash? fromJson(Map? json) {
+    if (json == null) {
+      return null;
+    }
     return PublicKeyHash(
         json['hash'], PublicKeyHashingAlgo.values.byName(json['algo']));
   }
