@@ -601,13 +601,11 @@ class Metadata {
     if (pubKeyCS.isNotNullOrEmpty) {
       sb.write(':${AtConstants.sharedWithPublicKeyCheckSum}:$pubKeyCS');
     }
-    if (pubKeyHash != null && pubKeyHash!.hash.isNotNullOrEmpty) {
+    if (pubKeyHash != null) {
       sb.write(
           ':${AtConstants.sharedWithPublicKeyHashValue}:${pubKeyHash!.hash}');
-    }
-    if (pubKeyHash != null && pubKeyHash!.publicKeyHashingAlgo != null) {
       sb.write(
-          ':${AtConstants.sharedWithPublicKeyHashAlgo}:${pubKeyHash!.publicKeyHashingAlgo}');
+          ':${AtConstants.sharedWithPublicKeyHashAlgo}:${pubKeyHash!.publicKeyHashingAlgo.name}');
     }
     if (encoding.isNotNullOrEmpty) {
       sb.write(':${AtConstants.encoding}:$encoding');
@@ -751,7 +749,8 @@ class Metadata {
     metaData.sharedKeyStatus = json[AtConstants.sharedKeyStatus];
     metaData.sharedKeyEnc = json[AtConstants.sharedKeyEncrypted];
     metaData.pubKeyCS = json[AtConstants.sharedWithPublicKeyCheckSum];
-    metaData.pubKeyHash = json[AtConstants.sharedWithPublicKeyHash];
+    metaData.pubKeyHash =
+        PublicKeyHash.fromJson(json[AtConstants.sharedWithPublicKeyHash]);
     metaData.encoding = json[AtConstants.encoding];
     metaData.encKeyName = json[AtConstants.encryptingKeyName];
     metaData.encAlgo = json[AtConstants.encryptingAlgo];
