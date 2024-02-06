@@ -1,3 +1,5 @@
+## 3.0.9
+- **chore**: Upgrade to at_commons new major version 4
 ## 3.0.8
 - **Build**: Fix lint warnings from Dart 3
 ## 3.0.7

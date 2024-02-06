@@ -146,12 +146,12 @@ class AtContactsImpl implements AtContactsLibrary {
             .toLowerCase();
     var scanList = await atClient!.getAtKeys(regex: regex);
     scanList.retainWhere((scanKeys) =>
-        !scanKeys.key!.contains(AppConstants.GROUPS_LIST_KEY_PREFIX));
+        !scanKeys.key.contains(AppConstants.GROUPS_LIST_KEY_PREFIX));
     if (scanList.isEmpty) {
       return contactList;
     }
     for (final key in scanList) {
-      var atsign = reduceKey(key.key!);
+      var atsign = reduceKey(key.key);
       var atKey = _formAtKeyFromScanKeys(key);
       AtContact? contact;
       try {
@@ -244,8 +244,7 @@ class AtContactsImpl implements AtContactsLibrary {
     var groupId = atGroup.groupId;
     var group = await getGroup(groupId);
     if (group == null) {
-      throw GroupNotExistsException(
-          'No Group exists with Id $groupId');
+      throw GroupNotExistsException('No Group exists with Id $groupId');
     }
     var atKey = _formKey(KeyType.group, key: atGroup.groupId!);
     //update atGroup
@@ -509,7 +508,7 @@ class AtContactsImpl implements AtContactsLibrary {
 
   ///Returns `true` if key doesn't contain library namespace.
   bool _isOldKey(AtKey atKey) {
-    return !atKey.key!.contains(AppConstants.LIBRARY_NAMESPACE);
+    return !atKey.key.contains(AppConstants.LIBRARY_NAMESPACE);
   }
 
   String reduceKey(String key) {
@@ -601,8 +600,8 @@ class AtContactsImpl implements AtContactsLibrary {
   ///appends namespace for new format keys from scan key
   AtKey _formAtKeyFromScanKeys(AtKey key) {
     var atKey = key;
-    atKey.key = key.key! + '.' + key.namespace!;
-    atKey.metadata!.namespaceAware = false;
+    atKey.key = key.key + '.' + key.namespace!;
+    atKey.metadata.namespaceAware = false;
     return atKey;
   }
 
