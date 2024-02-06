@@ -97,7 +97,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
     // get cram_secret from either from AtOnboardingPreference
     // or fetch from the registrar using verification code sent to email
-    atOnboardingPreference.cramSecret ??= await OnboardingUtil()
+    atOnboardingPreference.cramSecret ??= await RegistrarApiCalls()
         .getCramUsingOtp(_atSign, atOnboardingPreference.registrarUrl);
     if (atOnboardingPreference.cramSecret == null) {
       logger.info('Root Server address is ${atOnboardingPreference.rootDomain}:'

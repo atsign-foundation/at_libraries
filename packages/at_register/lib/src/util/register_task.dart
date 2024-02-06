@@ -1,35 +1,43 @@
 import 'dart:collection';
 
 import 'package:at_register/at_register.dart';
-import 'package:at_register/src/util/register_result.dart';
 
 /// Represents a task in an AtSign registration cycle
 abstract class RegisterTask {
   static final maximumRetries = 3;
 
-  int retryCount = 1;
+  int _retryCount = 1;
 
-  late Map<String, String> params;
+  int get retryCount => _retryCount;
 
-  late OnboardingUtil registerUtil;
+  late RegisterParams registerParams;
 
-  RegisterResult result = RegisterResult();
+  late RegistrarApiCalls registrarApiCalls;
 
-  ///Initializes the Task object with necessary parameters
-  ///[params] is a map that contains necessary data to complete atsign
-  ///                    registration process
-  void init(Map<String, String> params, OnboardingUtil registerUtil) {
-    this.params = params;
+  RegisterTaskResult result = RegisterTaskResult();
+
+  /// Initializes the Task object with necessary parameters
+  /// [params] is a map that contains necessary data to complete atsign
+  /// registration process
+  void init(RegisterParams registerParams, RegistrarApiCalls registrarApiCalls) {
+    this.registerParams = registerParams;
+    this.registrarApiCalls = registrarApiCalls;
     result.data = HashMap<String, String>();
-    this.registerUtil = registerUtil;
   }
 
-  ///Implementing classes need to implement required logic in this method to
-  ///complete their sub-process in the AtSign registration process
-  Future<RegisterResult> run();
+  /// Implementing classes need to implement required logic in this method to
+  /// complete their sub-process in the AtSign registration process
+  Future<RegisterTaskResult> run();
 
-  ///In case the task has returned a [RegisterResult] with status retry, this method checks and returns if the call can be retried
+  /// Increases retry count by 1
+  ///
+  /// This method is to ensure that retryCount cannot be reduced
+  void increaseRetryCount(){
+    _retryCount++;
+  }
+  /// In case the task has returned a [RegisterTaskResult] with status retry,
+  /// this method checks and returns if the task can be retried
   bool shouldRetry() {
-    return retryCount < maximumRetries;
+    return _retryCount < maximumRetries;
   }
 }

@@ -3,6 +3,10 @@ class RegistrarConstants {
   static const String apiHostProd = 'my.atsign.com';
   static const String apiHostStaging = 'my.atsign.wtf';
 
+  /// Select [Prod/Dev]
+  /// Change to [apiHostStaging] to use AtRegister in a staging env
+  static const String authority = apiHostStaging;
+
   /// API Paths
   static const String pathGetFreeAtSign = '/api/app/v3/get-free-atsign';
   static const String pathRegisterAtSign = '/api/app/v3/register-person';
@@ -18,5 +22,7 @@ class RegistrarConstants {
 
   /// DebugMode: setting it to true will print more logs to aid understanding
   /// the inner working of Register_cli
-  static const bool isDebugMode = false;
+  static const bool isDebugMode = true;
+
+  static const String cramKey = 'cramkey';
 }

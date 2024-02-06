@@ -7,12 +7,12 @@ Future<void> main(args) async {
   final argResults = CustomArgParser(getArgParser()).parse(args);
 
   // this step sends an OTP to the registered email
-  await OnboardingUtil().requestAuthenticationOtp(
+  await RegisterApiCall().requestAuthenticationOtp(
       argResults['atsign']); // requires a registered atsign
 
   // the following step validates the email that was sent in the above step
-  String? verificationCode = OnboardingUtil().getVerificationCodeFromUser();
-  String cramKey = await OnboardingUtil().getCramKey(argResults['atsign'],
+  String? verificationCode = ApiUtil.getVerificationCodeFromUser();
+  String cramKey = await RegisterApiCall().getCramKey(argResults['atsign'],
       verificationCode); // verification code received on the registered email
 
   print('Your cram key is: $cramKey');

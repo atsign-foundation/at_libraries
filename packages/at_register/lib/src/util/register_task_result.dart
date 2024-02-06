@@ -1,6 +1,6 @@
 import 'api_call_status.dart';
 
-class RegisterResult {
+class RegisterTaskResult {
   dynamic data;
 
   late ApiCallStatus apiCallStatus;
