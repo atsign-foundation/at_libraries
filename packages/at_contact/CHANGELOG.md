@@ -1,9 +1,10 @@
-## 3.0.9
-- **chore**: Upgrade to at_commons new major version 4
 ## 3.0.8
+- **chore**: Upgrade to at_commons new major version 4
 - **Build**: Fix lint warnings from Dart 3
+
 ## 3.0.7
 - **chore**: Upgraded to latest at_client version 3.0.27
+
 ## 3.0.6
 - Upgrade at_client version to 3.0.26 for AtException chaining
 - Upgrade at_commons version to 3.0.17 for AtException hierarchy
