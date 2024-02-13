@@ -1,25 +1,18 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:at_auth/src/at_auth_base.dart';
+import 'package:at_auth/at_auth.dart';
 import 'package:at_auth/src/auth/cram_authenticator.dart';
 import 'package:at_auth/src/auth/pkam_authenticator.dart';
-import 'package:at_auth/src/enroll/at_enrollment_base.dart';
-import 'package:at_auth/src/enroll/at_enrollment_impl.dart';
-import 'package:at_auth/src/enroll/at_enrollment_response.dart';
-import 'package:at_auth/src/enroll/at_initial_enrollment_request.dart';
-import 'package:at_auth/src/keys/at_auth_keys.dart';
-import 'package:at_auth/src/onboard/at_onboarding_request.dart';
-import 'package:at_auth/src/onboard/at_onboarding_response.dart';
-import 'package:at_auth/src/exception/at_auth_exceptions.dart';
-import 'package:at_auth/src/auth/at_auth_request.dart';
-import 'package:at_auth/src/auth/at_auth_response.dart';
 import 'package:at_auth/src/auth_constants.dart' as auth_constants;
 import 'package:at_chops/at_chops.dart';
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_utils/at_logger.dart';
+
+import 'at_auth_base.dart';
+import 'enroll/at_enrollment_impl.dart';
 
 class AtAuthImpl implements AtAuth {
   final AtSignLogger _logger = AtSignLogger('AtAuthServiceImpl');
@@ -108,6 +101,7 @@ class AtAuthImpl implements AtAuth {
   Future<AtOnboardingResponse> onboard(
       AtOnboardingRequest atOnboardingRequest, String cramSecret) async {
     var atOnboardingResponse = AtOnboardingResponse(atOnboardingRequest.atSign);
+    atEnrollmentBase = AtEnrollmentImpl(atOnboardingRequest.atSign);
     atLookUp ??= AtLookupImpl(atOnboardingRequest.atSign,
         atOnboardingRequest.rootDomain, atOnboardingRequest.rootPort);
 
@@ -123,6 +117,7 @@ class AtAuthImpl implements AtAuth {
     //2. generate key pairs
     var atAuthKeys = _generateKeyPairs(atOnboardingRequest.authMode,
         publicKeyId: atOnboardingRequest.publicKeyId);
+
     if (atChops == null) {
       var atChops = _createAtChops(atAuthKeys);
       this.atChops = atChops;
@@ -217,46 +212,65 @@ class AtAuthImpl implements AtAuth {
       AtOnboardingRequest atOnboardingRequest,
       AtAuthKeys atAuthKeys,
       AtLookUp atLookup) async {
-    var symmetricEncryptionAlgo =
+    AESEncryptionAlgo symmetricEncryptionAlgo =
         AESEncryptionAlgo(AESKey(atAuthKeys.apkamSymmetricKey!));
-    var encryptedDefaultEncryptionPrivateKey = atChops!
+    // Encrypt the defaultEncryptionPrivateKey with APKAM Symmetric key
+    String encryptedDefaultEncryptionPrivateKey = atChops!
         .encryptString(
             atAuthKeys.defaultEncryptionPrivateKey!, EncryptionKeyType.aes256,
             encryptionAlgorithm: symmetricEncryptionAlgo,
             iv: AtChopsUtil.generateIVLegacy())
         .result;
-    var encryptedDefaultSelfEncryptionKey = atChops!
+    // Encrypt the Self Encryption Key with APKAM Symmetric key
+    String encryptedDefaultSelfEncryptionKey = atChops!
         .encryptString(
             atAuthKeys.defaultSelfEncryptionKey!, EncryptionKeyType.aes256,
             encryptionAlgorithm: symmetricEncryptionAlgo,
             iv: AtChopsUtil.generateIVLegacy())
         .result;
+
     _logger.finer('apkamPublicKey: ${atAuthKeys.apkamPublicKey}');
-    var enrollRequestBuilder = AtInitialEnrollmentRequestBuilder()
-      ..setAppName(atOnboardingRequest.appName)
-      ..setDeviceName(atOnboardingRequest.deviceName)
-      ..setEncryptedDefaultEncryptionPrivateKey(
-          encryptedDefaultEncryptionPrivateKey)
-      ..setEncryptedDefaultSelfEncryptionKey(encryptedDefaultSelfEncryptionKey)
-      ..setApkamPublicKey(atAuthKeys.apkamPublicKey)
-      ..setAtAuthKeys(atAuthKeys)
-      ..setEnrollOperationEnum(EnrollOperationEnum.request);
-    atEnrollmentBase ??= AtEnrollmentImpl(atOnboardingRequest.atSign);
-    AtEnrollmentResponse enrollmentResponse;
-    try {
-      enrollmentResponse = await atEnrollmentBase!
-          .submitEnrollment(enrollRequestBuilder.build(), atLookUp!);
-    } on AtEnrollmentException catch (e) {
-      throw AtAuthenticationException('Enrollment error:${e.toString}');
-    }
-    _logger.finer('enrollment response: ${enrollmentResponse.toString()}');
-    var enrollmentIdFromServer = enrollmentResponse.enrollmentId;
-    var enrollmentStatus = enrollmentResponse.enrollStatus;
+
+    // Replacing AtInitialEnrollmentBuilder with InitialEnrollmentRequest.
+    // and use submit method instead of submitEnrollment.
+    // var enrollRequestBuilder = AtInitialEnrollmentRequestBuilder()
+    //   ..setAppName(atOnboardingRequest.appName)
+    //   ..setDeviceName(atOnboardingRequest.deviceName)
+    //   ..setEncryptedDefaultEncryptionPrivateKey(
+    //       encryptedDefaultEncryptionPrivateKey)
+    //   ..setEncryptedDefaultSelfEncryptionKey(encryptedDefaultSelfEncryptionKey)
+    //   ..setApkamPublicKey(atAuthKeys.apkamPublicKey)
+    //   ..setAtAuthKeys(atAuthKeys)
+    //   ..setEnrollOperationEnum(EnrollOperationEnum.request);
+    // atEnrollmentBase ??= AtEnrollmentImpl(atOnboardingRequest.atSign);
+    // AtEnrollmentResponse enrollmentResponse;
+    // try {
+    //   enrollmentResponse = await atEnrollmentBase!
+    //       .submitEnrollment(enrollRequestBuilder.build(), atLookUp!);
+    // } on AtEnrollmentException catch (e) {
+    //   throw AtAuthenticationException('Enrollment error:${e.toString}');
+    // }
+
+    InitialEnrollmentRequest initialEnrollmentRequest =
+        InitialEnrollmentRequest(
+            appName: atOnboardingRequest.appName!,
+            deviceName: atOnboardingRequest.deviceName!,
+            apkamPublicKey: atAuthKeys.apkamPublicKey!,
+            encryptedDefaultEncryptionPrivateKey:
+                encryptedDefaultEncryptionPrivateKey,
+            encryptedDefaultSelfEncryptionKey:
+                encryptedDefaultSelfEncryptionKey);
+
+    AtEnrollmentResponse? atEnrollmentResponse =
+        await atEnrollmentBase?.submit(initialEnrollmentRequest, atLookUp!);
+    _logger.finer('enrollment response: ${atEnrollmentResponse.toString()}');
+    var enrollmentIdFromServer = atEnrollmentResponse?.enrollmentId;
+    var enrollmentStatus = atEnrollmentResponse?.enrollStatus;
     if (enrollmentStatus != EnrollmentStatus.approved) {
       throw AtAuthenticationException(
           'initial enrollment is not approved. Status from server: $enrollmentStatus');
     }
-    return enrollmentIdFromServer;
+    return enrollmentIdFromServer!;
   }
 
   AtAuthKeys _decryptAtKeysFile(

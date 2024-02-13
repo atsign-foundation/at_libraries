@@ -299,7 +299,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         .build();
     logger.finer('calling at_enrollment_impl submit enrollment');
     return await _atEnrollmentBase!
-        .submitEnrollment(newClientEnrollmentRequest, atLookUpImpl);
+        .submit(newClientEnrollmentRequest, atLookUpImpl);
   }
 
   ///write newly created encryption keypairs into atKeys file

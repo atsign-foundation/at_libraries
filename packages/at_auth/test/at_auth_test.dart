@@ -1,3 +1,4 @@
+import 'package:at_auth/src/at_auth_impl.dart';
 import 'package:at_auth/src/auth/pkam_authenticator.dart';
 import 'package:at_chops/at_chops.dart';
 import 'package:at_commons/at_builders.dart';
