@@ -86,13 +86,13 @@ Future<String?> getSelfEncryptionKey(String atKeysFilePath) async {
   json.decode(atAuthData).forEach((String key, dynamic value) {
     jsonData[key] = value.toString();
   });
-  return jsonData[AT_ENCRYPTION_SELF_KEY];
+  return jsonData[AtConstants.atEncryptionSelfKey];
 }
 
 Future<void> insertSelfEncKey(AtClient? atClient, String atsign,
     {String? selfEncryptionKey}) async {
   await atClient?.getLocalSecondary()?.putValue(
-      AT_ENCRYPTION_SELF_KEY, selfEncryptionKey ?? at_demos.aesKeyMap[atsign]!);
+      AtConstants.atEncryptionSelfKey, selfEncryptionKey ?? at_demos.aesKeyMap[atsign]!);
   return;
 }
 

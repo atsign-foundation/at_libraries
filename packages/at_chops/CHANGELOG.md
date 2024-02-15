@@ -1,3 +1,9 @@
+## 2.0.0
+- [Breaking Change] fix: removed deprecated methods and members
+- [Breaking Change] feat: Introduced interface for ASymmetricEncryptionAlgorithm and modified DefaultEncryptionAlgorithm
+- build[deps]:
+    - changed minimum dart version in pubspec from 2.15.1 to 3.0.0
+    - upgraded pointycastle to 3.7.4
 ## 1.0.7
 - build[deps]: Upgraded the following packages:
     - at_commons to v4.0.0

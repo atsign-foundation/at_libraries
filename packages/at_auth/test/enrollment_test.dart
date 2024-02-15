@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:at_auth/at_auth.dart';
-import 'package:at_auth/src/enroll/at_enrollment_notification_request.dart';
 import 'package:at_chops/at_chops.dart';
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
@@ -94,7 +93,7 @@ void main() {
     AtEnrollmentResponse atEnrollmentResponse = await atEnrollmentServiceImpl
         .submitEnrollment(atNewEnrollmentRequest, mockAtLookUp);
     expect(atEnrollmentResponse.enrollmentId, '123');
-    expect(atEnrollmentResponse.enrollStatus, EnrollStatus.pending);
+    expect(atEnrollmentResponse.enrollStatus, EnrollmentStatus.pending);
   });
 
   group('A group of test related to AtEnrollmentBuilder', () {

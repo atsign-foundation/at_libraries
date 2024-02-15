@@ -1,6 +1,7 @@
 import 'package:at_commons/src/keystore/at_key_builder_impl.dart';
 import 'package:at_commons/src/utils/at_key_regex_utils.dart';
 import 'package:at_commons/src/utils/string_utils.dart';
+import 'package:at_commons/src/keystore/public_key_hash.dart';
 import 'package:meta/meta.dart';
 
 import '../at_constants.dart';
@@ -489,7 +490,12 @@ class Metadata {
 
   /// Stores the checksum of the encryption public key used to encrypt the [sharedKeyEnc]. We use this
   /// to verify that the encryption key-pair used to encrypt and decrypt the value are same
+  @Deprecated('Use pubKeyHash')
   String? pubKeyCS;
+
+  /// Stores the hash of the encryption public key used to encrypt the [sharedKeyEnc]
+  /// The hash is used to verify whether the current atsign's public key used for encrypting data by another atsign, has changed while decrypting the data
+  PublicKeyHash? pubKeyHash;
 
   /// If the [AtValue] is public data (i.e. it is not encrypted) and contains one or more new line (\n) characters,
   /// then the data will be encoded, and the encoding will be set to type of encoding (e.g. "base64")
@@ -553,7 +559,7 @@ class Metadata {
         ', refreshAt : ${refreshAt?.toUtc().toString()}, createdAt : ${createdAt?.toUtc().toString()}'
         ', updatedAt : ${updatedAt?.toUtc().toString()}, isBinary : $isBinary, isEncrypted : $isEncrypted'
         ', isCached : $isCached, dataSignature: $dataSignature, sharedKeyStatus: $sharedKeyStatus'
-        ', encryptedSharedKey: $sharedKeyEnc, pubKeyCheckSum: $pubKeyCS, encoding: $encoding'
+        ', encryptedSharedKey: $sharedKeyEnc, pubKeyHash: $pubKeyHash, encoding: $encoding'
         ', encKeyName: $encKeyName, encAlgo: $encAlgo, ivNonce: $ivNonce'
         ', skeEncKeyName: $skeEncKeyName, skeEncAlgo: $skeEncAlgo}';
   }
@@ -594,6 +600,12 @@ class Metadata {
     }
     if (pubKeyCS.isNotNullOrEmpty) {
       sb.write(':${AtConstants.sharedWithPublicKeyCheckSum}:$pubKeyCS');
+    }
+    if (pubKeyHash != null) {
+      sb.write(
+          ':${AtConstants.sharedWithPublicKeyHashValue}:${pubKeyHash!.hash}');
+      sb.write(
+          ':${AtConstants.sharedWithPublicKeyHashAlgo}:${pubKeyHash!.publicKeyHashingAlgo.name}');
     }
     if (encoding.isNotNullOrEmpty) {
       sb.write(':${AtConstants.encoding}:$encoding');
@@ -667,6 +679,9 @@ class Metadata {
     if (fullJson || pubKeyCS != null) {
       map[AtConstants.sharedWithPublicKeyCheckSum] = pubKeyCS;
     }
+    if (fullJson || pubKeyHash != null) {
+      map[AtConstants.sharedWithPublicKeyHash] = pubKeyHash!.toJson();
+    }
     if (fullJson || encoding != null) {
       map[AtConstants.encoding] = encoding;
     }
@@ -734,6 +749,8 @@ class Metadata {
     metaData.sharedKeyStatus = json[AtConstants.sharedKeyStatus];
     metaData.sharedKeyEnc = json[AtConstants.sharedKeyEncrypted];
     metaData.pubKeyCS = json[AtConstants.sharedWithPublicKeyCheckSum];
+    metaData.pubKeyHash =
+        PublicKeyHash.fromJson(json[AtConstants.sharedWithPublicKeyHash]);
     metaData.encoding = json[AtConstants.encoding];
     metaData.encKeyName = json[AtConstants.encryptingKeyName];
     metaData.encAlgo = json[AtConstants.encryptingAlgo];
@@ -769,6 +786,7 @@ class Metadata {
           isCached == other.isCached &&
           sharedKeyEnc == other.sharedKeyEnc &&
           pubKeyCS == other.pubKeyCS &&
+          pubKeyHash == other.pubKeyHash &&
           encoding == other.encoding &&
           encKeyName == other.encKeyName &&
           encAlgo == other.encAlgo &&
@@ -797,6 +815,7 @@ class Metadata {
       isCached.hashCode ^
       sharedKeyEnc.hashCode ^
       pubKeyCS.hashCode ^
+      pubKeyHash.hashCode ^
       encoding.hashCode ^
       encKeyName.hashCode ^
       encAlgo.hashCode ^

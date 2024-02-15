@@ -1,3 +1,5 @@
+## 4.0.1
+- fix: Add "InvalidPinException" which is thrown when an invalid Semi Permanent Passcode is submitted.
 ## 4.0.0
 - [Breaking Change] fix: Updated regex for Reserved keys (Internal keys used by the server)
 - fix: Add "put" operation to OTP verb to store semi-permanent pass codes

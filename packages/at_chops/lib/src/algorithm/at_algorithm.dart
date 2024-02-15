@@ -23,6 +23,20 @@ abstract class SymmetricEncryptionAlgorithm extends AtEncryptionAlgorithm {
   Uint8List decrypt(Uint8List encryptedData, {InitialisationVector iv});
 }
 
+/// Interface for asymmetric encryption algorithms. Check [DefaultEncryptionAlgo] for sample implementation.
+abstract class ASymmetricEncryptionAlgorithm extends AtEncryptionAlgorithm {
+  AtPublicKey? atPublicKey;
+  AtPrivateKey? atPrivateKey;
+
+  /// Encrypt [plainData] with [atPublicKey.publicKey]
+  @override
+  Uint8List encrypt(Uint8List plainData);
+
+  /// Decrypt [encryptedData] with [atPrivateKey.privateKey]
+  @override
+  Uint8List decrypt(Uint8List encryptedData);
+}
+
 /// Interface for data signing. Data is signed using private key from a key pair
 /// Signed data signature is verified with public key of the key pair.
 abstract class AtSigningAlgorithm {

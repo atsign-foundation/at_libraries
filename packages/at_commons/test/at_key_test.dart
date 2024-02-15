@@ -937,4 +937,54 @@ void main() {
       expect(localKey.toString(), 'local:testkey.test@alice');
     });
   });
+  group('A group of tests to verify public key hash in metadata', () {
+    test('Test to verify metadata toJson method when public key hash is set',
+        () {
+      var metadata = Metadata()
+        ..pubKeyHash = PublicKeyHash('randomhash', PublicKeyHashingAlgo.sha512)
+        ..isPublic = false
+        ..ttr = -1;
+      var metadataJson = metadata.toJson();
+      expect(metadataJson[AtConstants.sharedWithPublicKeyHash]['hash'],
+          'randomhash');
+      expect(metadataJson[AtConstants.sharedWithPublicKeyHash]['algo'],
+          PublicKeyHashingAlgo.sha512.name);
+    });
+    test(
+        'Test to verify metadata toProtocol fragment method when public key hash is set',
+        () {
+      var metadata = Metadata()
+        ..pubKeyHash = PublicKeyHash('randomhash', PublicKeyHashingAlgo.sha512)
+        ..isPublic = false
+        ..ttr = -1;
+      var metadataFragment = metadata.toAtProtocolFragment();
+      expect(metadataFragment, contains('hash:randomhash'));
+      expect(metadataFragment, contains('algo:sha512'));
+    });
+    test('Test to verify metadata fromJson method when public key hash is set',
+        () {
+      var jsonMap = {};
+      jsonMap['ttr'] = -1;
+      jsonMap['isBinary'] = false;
+      jsonMap['isEncrypted'] = true;
+      jsonMap['isPublic'] = false;
+      jsonMap['pubKeyHash'] = {'hash': 'randomhash', 'algo': 'sha512'};
+      var metadataObject = Metadata.fromJson(jsonMap);
+      expect(metadataObject.pubKeyHash, isNotNull);
+      expect(metadataObject.pubKeyHash!.hash, 'randomhash');
+      expect(metadataObject.pubKeyHash!.publicKeyHashingAlgo,
+          PublicKeyHashingAlgo.sha512);
+    });
+    test(
+        'Test to verify metadata fromJson method when public key hash is not set',
+        () {
+      var jsonMap = {};
+      jsonMap['ttr'] = -1;
+      jsonMap['isBinary'] = false;
+      jsonMap['isEncrypted'] = true;
+      jsonMap['isPublic'] = false;
+      var metadataObject = Metadata.fromJson(jsonMap);
+      expect(metadataObject.pubKeyHash, null);
+    });
+  });
 }
