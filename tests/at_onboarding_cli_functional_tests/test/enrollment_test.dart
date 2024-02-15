@@ -211,7 +211,7 @@ Future<void> _notificationCallback(
       EncryptionUtil.encryptValue(encryptionPrivateKey, apkamSymmetricKey);
   var encryptedDefaultSelfEncKey =
       EncryptionUtil.encryptValue(selfEncryptionKey!, apkamSymmetricKey);
-  enrollParamsJson['encryptedDefaultEncryptedPrivateKey'] =
+  enrollParamsJson['encryptedDefaultEncryptionPrivateKey'] =
       encryptedDefaultPrivateEncKey;
   enrollParamsJson['encryptedDefaultSelfEncryptionKey'] =
       encryptedDefaultSelfEncKey;
