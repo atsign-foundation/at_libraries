@@ -683,7 +683,7 @@ class Metadata {
       // ignore: deprecated_member_use_from_same_package
       map[AtConstants.sharedWithPublicKeyCheckSum] = pubKeyCS;
     }
-    if (fullJson || pubKeyHash != null) {
+    if (fullJson && pubKeyHash != null) {
       map[AtConstants.sharedWithPublicKeyHash] = pubKeyHash!.toJson();
     }
     if (fullJson || encoding != null) {
