@@ -598,7 +598,9 @@ class Metadata {
     if (sharedKeyEnc.isNotNullOrEmpty) {
       sb.write(':${AtConstants.sharedKeyEncrypted}:$sharedKeyEnc');
     }
+    // ignore: deprecated_member_use_from_same_package
     if (pubKeyCS.isNotNullOrEmpty) {
+      // ignore: deprecated_member_use_from_same_package
       sb.write(':${AtConstants.sharedWithPublicKeyCheckSum}:$pubKeyCS');
     }
     if (pubKeyHash != null) {
@@ -676,7 +678,9 @@ class Metadata {
     if (fullJson || sharedKeyEnc != null) {
       map[AtConstants.sharedKeyEncrypted] = sharedKeyEnc;
     }
+    // ignore: deprecated_member_use_from_same_package
     if (fullJson || pubKeyCS != null) {
+      // ignore: deprecated_member_use_from_same_package
       map[AtConstants.sharedWithPublicKeyCheckSum] = pubKeyCS;
     }
     if (fullJson || pubKeyHash != null) {
@@ -748,6 +752,7 @@ class Metadata {
     metaData.dataSignature = json[AtConstants.publicDataSignature];
     metaData.sharedKeyStatus = json[AtConstants.sharedKeyStatus];
     metaData.sharedKeyEnc = json[AtConstants.sharedKeyEncrypted];
+    // ignore: deprecated_member_use_from_same_package
     metaData.pubKeyCS = json[AtConstants.sharedWithPublicKeyCheckSum];
     metaData.pubKeyHash =
         PublicKeyHash.fromJson(json[AtConstants.sharedWithPublicKeyHash]);
@@ -785,6 +790,7 @@ class Metadata {
           isEncrypted == other.isEncrypted &&
           isCached == other.isCached &&
           sharedKeyEnc == other.sharedKeyEnc &&
+          // ignore: deprecated_member_use_from_same_package
           pubKeyCS == other.pubKeyCS &&
           pubKeyHash == other.pubKeyHash &&
           encoding == other.encoding &&
@@ -814,6 +820,7 @@ class Metadata {
       isEncrypted.hashCode ^
       isCached.hashCode ^
       sharedKeyEnc.hashCode ^
+      // ignore: deprecated_member_use_from_same_package
       pubKeyCS.hashCode ^
       pubKeyHash.hashCode ^
       encoding.hashCode ^
