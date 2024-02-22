@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import '../../at_register.dart';
 
 /// class that handles multiple tasks of type [RegisterTask]
@@ -22,15 +20,15 @@ class RegistrationFlow {
   Future<void> start() async {
     for (RegisterTask task in processQueue) {
       task.init(params, registrarApiCall);
-      if (RegistrarConstants.isDebugMode) {
-        stdout.writeln('\nCurrent Task: $task  | Attempt: ${task.retryCount} [params=$params]');
-      }
       result = await task.run();
+      if (RegistrarConstants.isDebugMode) {
+        task.logger.shout('Attempt: ${task.retryCount} | params[$params]');
+        task.logger.shout('Result: $result');
+      }
       if (result.apiCallStatus == ApiCallStatus.retry) {
         while (
             task.shouldRetry() && result.apiCallStatus == ApiCallStatus.retry) {
-          result = await task.run();
-          task.increaseRetryCount();
+          result = await task.retry();
         }
       }
       if (result.apiCallStatus == ApiCallStatus.success) {

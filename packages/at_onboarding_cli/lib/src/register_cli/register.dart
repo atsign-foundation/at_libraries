@@ -4,7 +4,6 @@ import 'package:args/args.dart';
 import 'package:at_client/at_client.dart';
 import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart'
     as activate_cli;
-import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:at_register/at_register.dart';
 
@@ -34,11 +33,11 @@ class Register {
     if (!argResults.wasParsed('email')) {
       stderr.writeln(
           '[Unable to run Register CLI] Please enter your email address'
-          '\n[Usage] dart run register.dart -e email@email.com\n[Options]\n${argParser.usage}');
+          '\n[Usage] dart run bin/register.dart -e email@email.com\n[Options]\n${argParser.usage}');
       exit(6);
     }
 
-    if (ApiUtil.validateEmail(argResults['email'])) {
+    if (ApiUtil.enforceEmailRegex(argResults['email'])) {
       registerParams.email = argResults['email'];
     } else {
       stderr.writeln(
@@ -61,7 +60,7 @@ class Register {
 
 Future<void> main(List<String> args) async {
   Register register = Register();
-  AtSignLogger.root_level = 'severe';
+  AtSignLogger.root_level = 'info';
   try {
     await register.main(args);
   } on MaximumAtsignQuotaException {
@@ -76,7 +75,7 @@ Future<void> main(List<String> args) async {
       stderr.writeln(
           '[Unable to run Register CLI] Please re-run with your email address');
       stderr
-          .writeln('Usage: \'dart run register_cli.dart -e email@email.com\'');
+          .writeln('Usage: \'dart run bin/register_cli.dart -e email@email.com\'');
       exit(1);
     } else if (e.toString().contains('Could not find an option or flag')) {
       stderr

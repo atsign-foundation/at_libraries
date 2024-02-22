@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:at_utils/at_logger.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/io_client.dart';
 
@@ -36,9 +37,6 @@ class ApiUtil {
     Uri uri = Uri.https(authority, path);
 
     String body = json.encode(data);
-    if (RegistrarConstants.isDebugMode) {
-      stdout.writeln('Sending request to url: $uri\nRequest Body: $body');
-    }
     http.Response response = await _ioClient!.post(
       uri,
       body: body,
@@ -48,22 +46,27 @@ class ApiUtil {
       },
     );
     if (RegistrarConstants.isDebugMode) {
-      print('Got Response: ${response.body}');
+      AtSignLogger('AtRegister').shout('Sent request to url: $uri | Request Body: $body');
+      AtSignLogger('AtRegister').shout('Got Response: ${response.body}');
     }
     return response;
   }
 
-  static bool validateEmail(String email) {
+  static bool enforceEmailRegex(String email) {
     return RegExp(
             r"^[a-zA-Z0-9.a-zA-Z0-9!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
         .hasMatch(email);
   }
 
-  static bool validateVerificationCode(String otp) {
+  static bool enforceOtpRegex(String otp) {
     if (otp.length == 4) {
       return RegExp(r"^[a-zA-z0-9]").hasMatch(otp);
     }
     return false;
+  }
+  
+  static String formatExceptionMessage(String exception){
+    return exception.replaceAll('Exception:', '');
   }
 
   /// Method to get verification code from user input
@@ -74,7 +77,7 @@ class ApiUtil {
     stdout.writeln(
         '[Action Required] Enter your verification code: (verification code is not case-sensitive)');
     otp = stdin.readLineSync()!.toUpperCase();
-    while (!validateVerificationCode(otp!)) {
+    while (!enforceOtpRegex(otp!)) {
       stderr.writeln(
           '[Unable to proceed] The verification code you entered is invalid.\n'
           'Please check your email for a 4-character verification code.\n'
@@ -83,5 +86,24 @@ class ApiUtil {
       otp = stdin.readLineSync()!.toUpperCase();
     }
     return otp;
+  }
+
+  static String readUserAtsignChoice(List<String>? atsigns) {
+    if (atsigns == null) {
+      throw AtRegisterException('Fetched atsigns list is null');
+    } else if (atsigns.length == 1) {
+      return atsigns[0];
+    }
+    stdout.writeln(
+        'Please select one atsign from the list above. Input the number of the atsign you wish to select.');
+    stdout.writeln(
+        'For example, type \'2\'+\'Enter\' to select the second atsign (or) just hit \'Enter\' to select the first one');
+    stdout.writeln('Valid range is 1 - ${atsigns.length + 1}');
+    int? choice = int.tryParse(stdin.readLineSync()!);
+    if (choice == null) {
+      return atsigns[0];
+    } else {
+      return atsigns[choice];
+    }
   }
 }

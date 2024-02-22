@@ -1,4 +1,5 @@
 import 'package:at_commons/at_commons.dart';
+import 'package:at_register/at_register.dart';
 
 class RegisterParams {
   String? atsign;
@@ -7,6 +8,7 @@ class RegisterParams {
   bool confirmation = true;
   String? otp;
   String? cram;
+  List<String>? fetchedAtsignsList;
 
 
   /// Populates the current instance of [RegisterParams] using the fields from the json
@@ -17,7 +19,7 @@ class RegisterParams {
   ///
   /// ```params.addFromJson(json);```
   addFromJson(Map<dynamic, dynamic> json) {
-    if (json.containsKey('atsign')) {
+    if (json.containsKey('atsign') && json['atsign'].runtimeType == String) {
       atsign = json['atsign'];
     }
     if (json.containsKey('otp')) {
@@ -29,7 +31,7 @@ class RegisterParams {
     if (json.containsKey('oldEmail')) {
       oldEmail = json['oldEmail'];
     }
-    if (json.containsKey('cramkey')) {
+    if (json.containsKey(RegistrarConstants.cramKey)) {
       cram = json['cramkey'];
     }
   }

@@ -1,5 +1,4 @@
 import 'dart:collection';
-import 'dart:io';
 
 import 'package:at_commons/at_commons.dart';
 import 'package:at_utils/at_utils.dart';
@@ -12,18 +11,22 @@ import '../../at_register.dart';
 ///HTTP GET/POST request
 class ValidateOtp extends RegisterTask {
   @override
+  String get name => 'ValidateOtpTask';
+
+  @override
   void init(
       RegisterParams registerParams, RegistrarApiCalls registrarApiCalls) {
     this.registerParams = registerParams;
     this.registrarApiCalls = registrarApiCalls;
     this.registerParams.confirmation = false;
     result.data = HashMap<String, String>();
+    logger = AtSignLogger(name);
   }
 
   @override
   Future<RegisterTaskResult> run() async {
     registerParams.otp ??= ApiUtil.getVerificationCodeFromUser();
-    stdout.writeln('[Information] Validating your verification code...');
+    logger.info('Validating your verification code...');
     try {
       registerParams.atsign = AtUtils.fixAtSign(registerParams.atsign!);
       ValidateOtpResult validateOtpApiResult =
@@ -32,10 +35,10 @@ class ValidateOtp extends RegisterTask {
               confirmation: registerParams.confirmation,
               authority: RegistrarConstants.authority);
       if (validateOtpApiResult.taskStatus == ValidateOtpStatus.retry) {
-        /// ToDo: move this log to onboarding cli
-        stderr
-            .writeln('[Unable to proceed] Invalid or expired verification code.'
+        logger.severe('Invalid or expired verification code.'
                 ' Check your verification code and try again.');
+
+        /// ToDo: how can an overrided ApiUtil be injected here
         registerParams.otp = ApiUtil.getVerificationCodeFromUser();
         result.apiCallStatus =
             shouldRetry() ? ApiCallStatus.retry : ApiCallStatus.failure;
@@ -51,11 +54,8 @@ class ValidateOtp extends RegisterTask {
         result.data[RegistrarConstants.cramKey] =
             validateOtpApiResult.data[RegistrarConstants.cramKey].split(":")[1];
 
-        /// ToDo: move this log to onboarding cli
-        stdout.writeln(
-            '[Information] Your cram secret: ${result.data['cramkey']}');
-        stdout.writeln(
-            '[Success] Your atSign **@${registerParams.atsign}** has been'
+        logger.info('Your cram secret: ${result.data['cramkey']}');
+        logger.shout('Your atSign **@${registerParams.atsign}** has been'
             ' successfully registered to ${registerParams.email}');
         result.apiCallStatus = ApiCallStatus.success;
       } else if (validateOtpApiResult.taskStatus == ValidateOtpStatus.failure) {

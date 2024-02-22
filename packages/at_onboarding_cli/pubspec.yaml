@@ -31,6 +31,8 @@ dependencies:
 dependency_overrides:
    at_register:
       path: /home/srie/Desktop/work/at_libraries/packages/at_register
+   at_client:
+      path: /home/srie/Desktop/at_client_sdk/packages/at_client
 
 dev_dependencies:
   lints: ^2.1.0
