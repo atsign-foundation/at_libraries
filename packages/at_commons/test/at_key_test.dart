@@ -987,4 +987,60 @@ void main() {
       expect(metadataObject.pubKeyHash, null);
     });
   });
+
+  group('A group of tests to verify at_key metadata',(){
+    test('A test to verify toJson invoked on empty metadata should not throw exception',(){
+      Metadata metadata = Metadata();
+      Map metadataMap = metadata.toJson();
+      expect(metadataMap['availableAt'], null);
+      expect(metadataMap['expiresAt'], null);
+      expect(metadataMap['refreshAt'], null);
+      expect(metadataMap['createdAt'], null);
+      expect(metadataMap['updatedAt'], null);
+      expect(metadataMap['isPublic'], false);
+      expect(metadataMap['ttl'], null);
+      expect(metadataMap['ttb'], null);
+      expect(metadataMap['ttr'], null);
+      expect(metadataMap['ccd'], null);
+      expect(metadataMap['isBinary'], false);
+      expect(metadataMap['isEncrypted'], false);
+      expect(metadataMap['dataSignature'], null);
+      expect(metadataMap['sharedKeyStatus'], null);
+      expect(metadataMap['pubKeyCS'], null);
+      expect(metadataMap['encoding'], null);
+      expect(metadataMap['encKeyName'], null);
+      expect(metadataMap['encAlgo'], null);
+      expect(metadataMap['ivNonce'], null);
+      expect(metadataMap['skeEncKeyName'], null);
+      expect(metadataMap['skeEncAlgo'], null);
+      expect(metadataMap['pubKeyHash'], null);
+    });
+
+    test('A test to verify toJson when metadata is populated',(){
+      Metadata metadata = Metadata()
+      ..ttl = 100
+      ..ttb = 100
+      ..ttr = 1
+      ..ccd = true
+      ..dataSignature = 'dummy_data_signature'
+      ..isPublic = true
+      ..isEncrypted = true
+      ..isCached = true
+      ..sharedKeyEnc = 'dummy_shared_key_enc'
+      ..pubKeyHash = PublicKeyHash('test_hash', PublicKeyHashingAlgo.sha256)
+      ..isBinary = true;
+      Map metadataMap = metadata.toJson();
+      expect(metadataMap['isPublic'], true);
+      expect(metadataMap['ttl'], 100);
+      expect(metadataMap['ttb'], 100);
+      expect(metadataMap['ttr'], 1);
+      expect(metadataMap['ccd'], true);
+      expect(metadataMap['isBinary'], true);
+      expect(metadataMap['isEncrypted'], true);
+      expect(metadataMap['dataSignature'], 'dummy_data_signature');
+      expect(metadataMap['sharedKeyEnc'], 'dummy_shared_key_enc');
+      expect(metadataMap['pubKeyHash']['hash'], 'test_hash');
+      expect(metadataMap['pubKeyHash']['algo'], 'sha256');
+    });
+  });
 }
