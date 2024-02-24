@@ -684,7 +684,7 @@ class Metadata {
       map[AtConstants.sharedWithPublicKeyCheckSum] = pubKeyCS;
     }
     if (fullJson || pubKeyHash != null) {
-      map[AtConstants.sharedWithPublicKeyHash] = pubKeyHash!.toJson();
+      map[AtConstants.sharedWithPublicKeyHash] = pubKeyHash?.toJson();
     }
     if (fullJson || encoding != null) {
       map[AtConstants.encoding] = encoding;
@@ -703,6 +703,12 @@ class Metadata {
     }
     if (fullJson || skeEncAlgo != null) {
       map[AtConstants.sharedKeyEncryptedEncryptingAlgo] = skeEncAlgo;
+    }
+    if (fullJson || namespaceAware) {
+      map['namespaceAware'] = namespaceAware;
+    }
+    if (fullJson || isCached) {
+      map['isCached'] = isCached;
     }
     return map;
   }
