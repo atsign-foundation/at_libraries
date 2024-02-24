@@ -704,6 +704,12 @@ class Metadata {
     if (fullJson || skeEncAlgo != null) {
       map[AtConstants.sharedKeyEncryptedEncryptingAlgo] = skeEncAlgo;
     }
+    if (fullJson || namespaceAware) {
+      map['namespaceAware'] = namespaceAware;
+    }
+    if (fullJson || isCached) {
+      map['isCached'] = isCached;
+    }
     return map;
   }
 

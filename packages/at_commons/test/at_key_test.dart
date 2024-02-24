@@ -988,8 +988,10 @@ void main() {
     });
   });
 
-  group('A group of tests to verify at_key metadata',(){
-    test('A test to verify toJson invoked on empty metadata should not throw exception',(){
+  group('A group of tests to verify at_key metadata', () {
+    test(
+        'A test to verify toJson invoked on empty metadata should not throw exception',
+        () {
       Metadata metadata = Metadata();
       Map metadataMap = metadata.toJson();
       expect(metadataMap['availableAt'], null);
@@ -1002,8 +1004,10 @@ void main() {
       expect(metadataMap['ttb'], null);
       expect(metadataMap['ttr'], null);
       expect(metadataMap['ccd'], null);
+      expect(metadataMap['namespaceAware'], true);
       expect(metadataMap['isBinary'], false);
       expect(metadataMap['isEncrypted'], false);
+      expect(metadataMap['isCached'], false);
       expect(metadataMap['dataSignature'], null);
       expect(metadataMap['sharedKeyStatus'], null);
       expect(metadataMap['pubKeyCS'], null);
@@ -1016,31 +1020,58 @@ void main() {
       expect(metadataMap['pubKeyHash'], null);
     });
 
-    test('A test to verify toJson when metadata is populated',(){
+    test('A test to verify toJson when metadata is populated', () {
       Metadata metadata = Metadata()
-      ..ttl = 100
-      ..ttb = 100
-      ..ttr = 1
-      ..ccd = true
-      ..dataSignature = 'dummy_data_signature'
-      ..isPublic = true
-      ..isEncrypted = true
-      ..isCached = true
-      ..sharedKeyEnc = 'dummy_shared_key_enc'
-      ..pubKeyHash = PublicKeyHash('test_hash', PublicKeyHashingAlgo.sha256)
-      ..isBinary = true;
+        ..ttl = 100
+        ..ttb = 100
+        ..ttr = 1
+        ..ccd = true
+        ..availableAt = DateTime.parse('2024-02-24T13:27:00z')
+        ..expiresAt = DateTime.parse('2024-02-24T14:27:00z')
+        ..refreshAt = DateTime.parse('2024-02-24T15:27:00z')
+        ..createdAt = DateTime.parse('2024-02-24T16:27:00z')
+        ..updatedAt = DateTime.parse('2024-02-24T17:27:00z')
+        ..dataSignature = 'dummy_data_signature'
+        ..sharedKeyStatus = 'delivered'
+        ..isPublic = true
+        ..namespaceAware = false
+        ..isBinary = true
+        ..isEncrypted = true
+        ..isCached = false
+        ..sharedKeyEnc = 'dummy_shared_key_enc'
+        ..pubKeyHash = PublicKeyHash('test_hash', PublicKeyHashingAlgo.sha256)
+        ..encoding = 'base64'
+        ..encKeyName = 'key_12345.__shared_keys.wavi'
+        ..encAlgo = 'RSA'
+        ..ivNonce = '16'
+        ..skeEncKeyName = 'dummy_enc_key_name'
+        ..skeEncAlgo = 'RSA';
       Map metadataMap = metadata.toJson();
-      expect(metadataMap['isPublic'], true);
       expect(metadataMap['ttl'], 100);
       expect(metadataMap['ttb'], 100);
       expect(metadataMap['ttr'], 1);
       expect(metadataMap['ccd'], true);
+      expect(metadataMap['availableAt'], '2024-02-24 13:27:00.000Z');
+      expect(metadataMap['expiresAt'], '2024-02-24 14:27:00.000Z');
+      expect(metadataMap['refreshAt'], '2024-02-24 15:27:00.000Z');
+      expect(metadataMap['createdAt'], '2024-02-24 16:27:00.000Z');
+      expect(metadataMap['updatedAt'], '2024-02-24 17:27:00.000Z');
+      expect(metadataMap['dataSignature'], 'dummy_data_signature');
+      expect(metadataMap['sharedKeyStatus'], 'delivered');
+      expect(metadataMap['isPublic'], true);
+      expect(metadataMap['namespaceAware'], false);
       expect(metadataMap['isBinary'], true);
       expect(metadataMap['isEncrypted'], true);
-      expect(metadataMap['dataSignature'], 'dummy_data_signature');
+      expect(metadataMap['isCached'], false);
       expect(metadataMap['sharedKeyEnc'], 'dummy_shared_key_enc');
       expect(metadataMap['pubKeyHash']['hash'], 'test_hash');
       expect(metadataMap['pubKeyHash']['algo'], 'sha256');
+      expect(metadataMap['encoding'], 'base64');
+      expect(metadataMap['encKeyName'], 'key_12345.__shared_keys.wavi');
+      expect(metadataMap['encAlgo'], 'RSA');
+      expect(metadataMap['ivNonce'], '16');
+      expect(metadataMap['skeEncKeyName'], 'dummy_enc_key_name');
+      expect(metadataMap['skeEncAlgo'], 'RSA');
     });
   });
 }
