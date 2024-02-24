@@ -1,4 +1,5 @@
 import 'package:at_commons/at_builders.dart';
+import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
 
 /// The example below demonstrate on how to use at_lookup package to interact with secondary server
@@ -17,9 +18,7 @@ void main() async {
   /// To update a key into secondary server
   //Build update verb builder
   var updateVerbBuilder = UpdateVerbBuilder()
-    ..atKey = 'phone'
-    ..sharedBy = '@alice'
-    ..sharedWith = '@bob'
+    ..atKey = (AtKey.shared('phone', sharedBy: '@alice')..sharedWith('@bob')).build()
     ..value = '+1 889 886 7879';
 
   // Sends update command to secondary server
@@ -28,29 +27,23 @@ void main() async {
 
   /// To lookup a value of a key sharedBy a specific atSign
   var lookupVerbBuilder = LookupVerbBuilder()
-    ..atKey = 'phone'
-    ..sharedBy = '@bob'
+    ..atKey = AtKey.shared('phone', sharedBy: '@alice').build()
     ..auth = true;
   await atLookupImpl.executeVerb(lookupVerbBuilder);
 
   /// To lookup a value of a public key
   var pLookupBuilder = PLookupVerbBuilder()
-    ..atKey = 'lastName'
-    ..sharedBy = '@bob';
+    ..atKey = AtKey.shared('phone', sharedBy: '@alice').build();
   await atLookupImpl.executeVerb(pLookupBuilder);
 
   /// To retrieve the value of key created by self.
   var lLookupVerbBuilder = LLookupVerbBuilder()
-    ..sharedWith = '@bob'
-    ..atKey = 'phone'
-    ..sharedBy = '@alice';
+    ..atKey = (AtKey.shared('phone', sharedBy: '@alice')..sharedWith('@bob')).build();
   await atLookupImpl.executeVerb(lLookupVerbBuilder);
 
   ///To remove a key from secondary server
   var deleteVerbBuilder = DeleteVerbBuilder()
-    ..sharedWith = '@bob'
-    ..atKey = 'phone'
-    ..sharedBy = '@alice';
+    ..atKey = (AtKey.shared('phone', sharedBy: '@alice')..sharedWith('@bob')).build();
   await atLookupImpl.executeVerb(deleteVerbBuilder, sync: true);
 
   /// To retrieve keys from the secondary server
@@ -59,9 +52,7 @@ void main() async {
 
   ///To notify key to another atSign
   var notifyVerbBuilder = NotifyVerbBuilder()
-    ..atKey = 'phone'
-    ..sharedBy = '@alice'
-    ..sharedWith = '@bob';
+    ..atKey = (AtKey.shared('phone', sharedBy: '@alice')..sharedWith('@bob')).build();
   await atLookupImpl.executeVerb(notifyVerbBuilder);
 
   ///To retrieve the notifications received
