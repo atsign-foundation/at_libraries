@@ -1,6 +1,7 @@
+## 4.0.3
+- fix: "toJson()" invoked on "pubKeyHash" leads to NullPointerException.
 ## 4.0.2
 - feat: changes to replace md5 checksum - deprecated pubKeyCS in AtKey and introduced new class PublicKeyHash
-- fix: "toJson()" invoked on "pubKeyHash" leads to NullPointerException.
 ## 4.0.1
 - fix: Add "InvalidPinException" which is thrown when an invalid Semi Permanent Passcode is submitted.
 ## 4.0.0
