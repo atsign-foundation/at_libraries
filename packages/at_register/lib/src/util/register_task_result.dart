@@ -1,7 +1,9 @@
+import 'dart:collection';
+
 import 'api_call_status.dart';
 
 class RegisterTaskResult {
-  dynamic data;
+  Map<String, dynamic> data = HashMap<String, String>();
 
   late ApiCallStatus apiCallStatus;
 

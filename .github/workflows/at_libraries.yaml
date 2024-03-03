@@ -65,6 +65,7 @@ jobs:
           - at_onboarding_cli
           - at_commons
           - at_utils
+          - at_register
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 

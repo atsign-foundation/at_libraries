@@ -1,7 +1,6 @@
 library;
 
-export 'src/api-interactions/registrar_api_calls.dart';
-export 'src/api-interactions/registration_flow.dart';
+export 'src/api-interactions/registrar_api_accessor.dart';
 export 'src/api-interactions/get_free_atsign.dart';
 export 'src/api-interactions/register_atsign.dart';
 export 'src/api-interactions/validate_otp.dart';

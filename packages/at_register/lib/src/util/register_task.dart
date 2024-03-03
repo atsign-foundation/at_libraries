@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:at_register/at_register.dart';
 import 'package:at_utils/at_logger.dart';
 
@@ -15,30 +13,29 @@ abstract class RegisterTask {
 
   late RegisterParams registerParams;
 
-  late RegistrarApiCalls registrarApiCalls;
+  late RegistrarApiAccessor _registrarApiAccessor;
+  RegistrarApiAccessor get registrarApiAccessor => _registrarApiAccessor;
 
   late AtSignLogger logger;
 
-  RegisterTaskResult result = RegisterTaskResult();
-
-  /// Initializes the Task object with necessary parameters
-  /// [params] is a map that contains necessary data to complete atsign
-  /// registration process
-  void init(
-      RegisterParams registerParams, RegistrarApiCalls registrarApiCalls) {
-    this.registerParams = registerParams;
-    this.registrarApiCalls = registrarApiCalls;
-    result.data = HashMap<String, String>();
+  RegisterTask(this.registerParams,
+      {RegistrarApiAccessor? registrarApiAccessorInstance}) {
+    _registrarApiAccessor =
+        registrarApiAccessorInstance ?? RegistrarApiAccessor();
     logger = AtSignLogger(name);
   }
 
   /// Implementing classes need to implement required logic in this method to
   /// complete their sub-process in the AtSign registration process
-  Future<RegisterTaskResult> run();
+  ///
+  /// If [allowRetry] is set to true, the task will rethrow all exceptions
+  /// otherwise will catch the exception and store the exception message in
+  /// [RegisterTaskResult.exceptionMessage]
+  Future<RegisterTaskResult> run({bool allowRetry = true});
 
-  Future<RegisterTaskResult> retry() async {
+  Future<RegisterTaskResult> retry({bool allowRetry = true}) async {
     increaseRetryCount();
-    return await run();
+    return await run(allowRetry: allowRetry);
   }
 
   /// Increases retry count by 1

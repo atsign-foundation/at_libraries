@@ -1,79 +1,90 @@
-import 'dart:collection';
-
 import 'package:at_commons/at_commons.dart';
 import 'package:at_utils/at_utils.dart';
 
 import '../../at_register.dart';
 
-///This is a [RegisterTask] that validates the otp which was sent as a part
-///of [RegisterAtsign] to email provided in args
-///throws [AtException] with concerned message which was encountered in the
-///HTTP GET/POST request
+/// Task for validating the verification_code sent as part of the registration process.
 class ValidateOtp extends RegisterTask {
+  ValidateOtp(super.registerParams,
+      {super.registrarApiAccessorInstance, bool confirmation = false});
+
   @override
   String get name => 'ValidateOtpTask';
 
   @override
-  void init(
-      RegisterParams registerParams, RegistrarApiCalls registrarApiCalls) {
-    this.registerParams = registerParams;
-    this.registrarApiCalls = registrarApiCalls;
-    this.registerParams.confirmation = false;
-    result.data = HashMap<String, String>();
-    logger = AtSignLogger(name);
-  }
-
-  @override
-  Future<RegisterTaskResult> run() async {
-    registerParams.otp ??= ApiUtil.getVerificationCodeFromUser();
-    logger.info('Validating your verification code...');
+  Future<RegisterTaskResult> run({bool allowRetry = false}) async {
+    RegisterTaskResult result = RegisterTaskResult();
+    if (registerParams.otp.isNullOrEmpty) {
+      throw InvalidVerificationCodeException(
+          'Verification code cannot be null');
+    }
     try {
+      logger
+          .info('Validating verification code for ${registerParams.atsign}...');
       registerParams.atsign = AtUtils.fixAtSign(registerParams.atsign!);
-      ValidateOtpResult validateOtpApiResult =
-          await registrarApiCalls.validateOtp(registerParams.atsign!,
-              registerParams.email!, registerParams.otp!,
-              confirmation: registerParams.confirmation,
-              authority: RegistrarConstants.authority);
-      if (validateOtpApiResult.taskStatus == ValidateOtpStatus.retry) {
-        logger.severe('Invalid or expired verification code.'
-                ' Check your verification code and try again.');
+      final validateOtpApiResult = await registrarApiAccessor.validateOtp(
+        registerParams.atsign!,
+        registerParams.email!,
+        registerParams.otp!,
+        confirmation: registerParams.confirmation,
+        authority: RegistrarConstants.authority,
+      );
 
-        /// ToDo: how can an overrided ApiUtil be injected here
-        registerParams.otp = ApiUtil.getVerificationCodeFromUser();
-        result.apiCallStatus =
-            shouldRetry() ? ApiCallStatus.retry : ApiCallStatus.failure;
-        result.exceptionMessage =
-            'Incorrect otp entered 3 times. Max retries reached.';
-      } else if (validateOtpApiResult.taskStatus ==
-          ValidateOtpStatus.followUp) {
-        registerParams.confirmation = true;
-        result.data['otp'] = registerParams.otp;
-        result.apiCallStatus = ApiCallStatus.retry;
-      } else if (validateOtpApiResult.taskStatus ==
-          ValidateOtpStatus.verified) {
-        result.data[RegistrarConstants.cramKey] =
-            validateOtpApiResult.data[RegistrarConstants.cramKey].split(":")[1];
+      switch (validateOtpApiResult.taskStatus) {
+        case ValidateOtpStatus.retry:
+          if (!allowRetry) {
+            throw InvalidVerificationCodeException(
+                'Verification Failed: Incorrect verification code provided');
+          } else {
+            logger.warning('Invalid or expired verification code. Retrying...');
+            registerParams.otp ??= ApiUtil
+                .readCliVerificationCode(); // retry reading otp from user through stdin
+            result.apiCallStatus =
+                shouldRetry() ? ApiCallStatus.retry : ApiCallStatus.failure;
+            result.exceptionMessage =
+                'Verification Failed: Incorrect verification code provided. Please retry the process again';
+          }
+          break;
 
-        logger.info('Your cram secret: ${result.data['cramkey']}');
-        logger.shout('Your atSign **@${registerParams.atsign}** has been'
-            ' successfully registered to ${registerParams.email}');
-        result.apiCallStatus = ApiCallStatus.success;
-      } else if (validateOtpApiResult.taskStatus == ValidateOtpStatus.failure) {
-        result.apiCallStatus = ApiCallStatus.failure;
-        result.exceptionMessage = validateOtpApiResult.exceptionMessage;
+        case ValidateOtpStatus.followUp:
+          registerParams.confirmation = true;
+          result.data['otp'] = registerParams.otp;
+          result.apiCallStatus = ApiCallStatus.retry;
+          logger.finer(
+              'Provided email has existing atsigns, please select one atsign and retry this task');
+          break;
+
+        case ValidateOtpStatus.verified:
+          result.data[RegistrarConstants.cramKeyName] = validateOtpApiResult
+              .data[RegistrarConstants.cramKeyName]
+              .split(":")[1];
+          logger.info('Cram secret verified.');
+          logger.shout('Successful registration for ${registerParams.email}');
+          result.apiCallStatus = ApiCallStatus.success;
+          break;
+
+        case ValidateOtpStatus.failure:
+          result.apiCallStatus = ApiCallStatus.failure;
+          result.exceptionMessage = validateOtpApiResult.exceptionMessage;
+          break;
+        case null:
+          result.apiCallStatus = ApiCallStatus.failure;
+          result.exceptionMessage = validateOtpApiResult.exceptionMessage;
+          break;
       }
     } on MaximumAtsignQuotaException {
       rethrow;
     } on ExhaustedVerificationCodeRetriesException {
       rethrow;
-    } on AtException catch (e) {
-      result.exceptionMessage = e.message;
+    } on InvalidVerificationCodeException {
+      rethrow;
+    } catch (e) {
+      if (!allowRetry) {
+        throw AtRegisterException(e.toString());
+      }
       result.apiCallStatus =
           shouldRetry() ? ApiCallStatus.retry : ApiCallStatus.failure;
-    } on Exception catch (e) {
       result.exceptionMessage = e.toString();
-      result.apiCallStatus =
-          shouldRetry() ? ApiCallStatus.retry : ApiCallStatus.failure;
     }
     return result;
   }

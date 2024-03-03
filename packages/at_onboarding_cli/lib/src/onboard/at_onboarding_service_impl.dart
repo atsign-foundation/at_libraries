@@ -18,9 +18,9 @@ import 'package:encrypt/encrypt.dart';
 import 'package:zxing2/qrcode.dart';
 import 'package:image/image.dart';
 import 'package:path/path.dart' as path;
-import 'package:at_register/at_register.dart';
 
 import '../util/home_directory_util.dart';
+import '../util/onboarding_util.dart';
 
 ///class containing service that can onboard/activate/authenticate @signs
 class AtOnboardingServiceImpl implements AtOnboardingService {
@@ -97,7 +97,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
     // get cram_secret from either from AtOnboardingPreference
     // or fetch from the registrar using verification code sent to email
-    atOnboardingPreference.cramSecret ??= await RegistrarApiCalls()
+    atOnboardingPreference.cramSecret ??= await OnboardingUtil()
         .getCramUsingOtp(_atSign, atOnboardingPreference.registrarUrl);
     if (atOnboardingPreference.cramSecret == null) {
       logger.info('Root Server address is ${atOnboardingPreference.rootDomain}:'

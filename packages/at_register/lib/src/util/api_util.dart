@@ -46,7 +46,8 @@ class ApiUtil {
       },
     );
     if (RegistrarConstants.isDebugMode) {
-      AtSignLogger('AtRegister').shout('Sent request to url: $uri | Request Body: $body');
+      AtSignLogger('AtRegister')
+          .shout('Sent request to url: $uri | Request Body: $body');
       AtSignLogger('AtRegister').shout('Got Response: ${response.body}');
     }
     return response;
@@ -64,15 +65,15 @@ class ApiUtil {
     }
     return false;
   }
-  
-  static String formatExceptionMessage(String exception){
+
+  static String formatExceptionMessage(String exception) {
     return exception.replaceAll('Exception:', '');
   }
 
   /// Method to get verification code from user input
   /// validates code locally and retries taking user input if invalid
   /// Returns only when the user has provided a 4-length String only containing numbers and alphabets
-  static String getVerificationCodeFromUser() {
+  static String readCliVerificationCode() {
     String? otp;
     stdout.writeln(
         '[Action Required] Enter your verification code: (verification code is not case-sensitive)');
@@ -105,5 +106,12 @@ class ApiUtil {
     } else {
       return atsigns[choice];
     }
+  }
+
+  static String formatException(String message) {
+    if (message.contains('Exception: ')) {
+      return message.replaceAll('Exception: ', '');
+    }
+    return message;
   }
 }

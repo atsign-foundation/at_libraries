@@ -5,11 +5,9 @@ class RegisterParams {
   String? atsign;
   String? email;
   String? oldEmail;
-  bool confirmation = true;
+  bool confirmation = false;
   String? otp;
   String? cram;
-  List<String>? fetchedAtsignsList;
-
 
   /// Populates the current instance of [RegisterParams] using the fields from the json
   ///
@@ -31,7 +29,7 @@ class RegisterParams {
     if (json.containsKey('oldEmail')) {
       oldEmail = json['oldEmail'];
     }
-    if (json.containsKey(RegistrarConstants.cramKey)) {
+    if (json.containsKey(RegistrarConstants.cramKeyName)) {
       cram = json['cramkey'];
     }
   }

@@ -10,15 +10,14 @@ import '../../at_register.dart';
 /// Contains methods that actually perform the RegistrarAPI calls
 /// and handle/process the response
 class RegistrarApiAccessor {
-  AtSignLogger logger = AtSignLogger('AtRegister');
+  AtSignLogger logger = AtSignLogger('RegistrarApiAccessor');
 
   /// Returns a Future<List<String>> containing free available atSigns
   /// based on [count] provided as input.
   Future<String> getFreeAtSigns(
       {String authority = RegistrarConstants.apiHostProd}) async {
-    http.Response response;
-    response = await ApiUtil.getRequest(
-        authority, RegistrarConstants.pathGetFreeAtSign);
+    http.Response response = await ApiUtil.getRequest(
+        authority, RegistrarConstants.getFreeAtSignApiPath);
     if (response.statusCode == 200) {
       String? atsign = jsonDecode(response.body)['data']['atsign'];
       if (atsign != null) {
@@ -41,14 +40,14 @@ class RegistrarApiAccessor {
   /// of verificationCode/otp will take place in [validateOtp]
   Future<bool> registerAtSign(String atSign, String email,
       {oldEmail, String authority = RegistrarConstants.apiHostProd}) async {
-    http.Response response = await ApiUtil.postRequest(
-        authority, RegistrarConstants.pathRegisterAtSign, {
+    final response = await ApiUtil.postRequest(
+        authority, RegistrarConstants.registerAtSignApiPath, {
       'atsign': atSign,
       'email': email,
       'oldEmail': oldEmail,
     });
     if (response.statusCode == 200) {
-      Map<String, dynamic> jsonDecoded = jsonDecode(response.body);
+      final jsonDecoded = jsonDecode(response.body) as Map<String, dynamic>;
       bool sentSuccessfully =
           jsonDecoded['message'].toLowerCase().contains('success');
       return sentSuccessfully;
@@ -84,28 +83,28 @@ class RegistrarApiAccessor {
   Future<ValidateOtpResult> validateOtp(String atSign, String email, String otp,
       {bool confirmation = true,
       String authority = RegistrarConstants.apiHostProd}) async {
-    http.Response response = await ApiUtil.postRequest(
-        authority, RegistrarConstants.pathValidateOtp, {
+    final response = await ApiUtil.postRequest(
+        authority, RegistrarConstants.validateOtpApiPath, {
       'atsign': atSign,
       'email': email,
       'otp': otp,
       'confirmation': confirmation.toString(),
     });
 
-    ValidateOtpResult validateOtpResult = ValidateOtpResult();
-    Map<String, dynamic> jsonDecodedResponse;
     if (response.statusCode == 200) {
-      validateOtpResult.data = {};
-      jsonDecodedResponse = jsonDecode(response.body);
+      final validateOtpResult = ValidateOtpResult();
+      // is this needed ?
+      final jsonDecodedResponse = jsonDecode(response.body);
       if (jsonDecodedResponse.containsKey('data')) {
-        validateOtpResult.data.addAll(jsonDecodedResponse['data']);
+        validateOtpResult.data
+            .addAll(jsonDecodedResponse['data'] as Map<String, dynamic>);
       }
       _processValidateOtpApiResponse(jsonDecodedResponse, validateOtpResult);
+      return validateOtpResult;
     } else {
       throw AtRegisterException(
-          '${response.statusCode} ${response.reasonPhrase}');
+          'Failed to Validate VerificationCode | ${response.statusCode} ${response.reasonPhrase}');
     }
-    return validateOtpResult;
   }
 
   /// processes API response for [validateOtp] call and populates [result]
@@ -114,8 +113,8 @@ class RegistrarApiAccessor {
             (responseJson['message'].toString().toLowerCase()) == 'verified') &&
         responseJson.containsKey('cramkey')) {
       result.taskStatus = ValidateOtpStatus.verified;
-      result.data[RegistrarConstants.cramKey] =
-          responseJson[RegistrarConstants.cramKey];
+      result.data[RegistrarConstants.cramKeyName] =
+          responseJson[RegistrarConstants.cramKeyName];
     } else if (responseJson.containsKey('data') &&
         result.data.containsKey('newAtsign')) {
       result.taskStatus = ValidateOtpStatus.followUp;
@@ -142,9 +141,9 @@ class RegistrarApiAccessor {
   /// 2) Invalid atsign
   Future<void> requestAuthenticationOtp(String atsign,
       {String authority = RegistrarConstants.apiHostProd}) async {
-    http.Response response = await ApiUtil.postRequest(authority,
+    final response = await ApiUtil.postRequest(authority,
         RegistrarConstants.requestAuthenticationOtpPath, {'atsign': atsign});
-    String apiResponseMessage = jsonDecode(response.body)['message'];
+    final apiResponseMessage = jsonDecode(response.body)['message'];
     if (response.statusCode == 200) {
       if (apiResponseMessage.contains('Sent Successfully')) {
         logger.info(
@@ -165,11 +164,11 @@ class RegistrarApiAccessor {
   /// Throws exception in the following cases: 1) HTTP 400 BAD_REQUEST
   Future<String> getCramKey(String atsign, String verificationCode,
       {String authority = RegistrarConstants.apiHostProd}) async {
-    http.Response response = await ApiUtil.postRequest(
+    final response = await ApiUtil.postRequest(
         authority,
         RegistrarConstants.getCramKeyWithOtpPath,
         {'atsign': atsign, 'otp': verificationCode});
-    Map<String, dynamic> jsonDecodedBody = jsonDecode(response.body);
+    final jsonDecodedBody = jsonDecode(response.body) as Map<String, dynamic>;
     if (response.statusCode == 200) {
       if (jsonDecodedBody['message'] == 'Verified') {
         String cram = jsonDecodedBody['cramkey'];
@@ -190,7 +189,7 @@ class RegistrarApiAccessor {
   /// 2) fetch the CRAM key from registrar using the verification code
   Future<String> getCramUsingOtp(String atsign, String registrarUrl) async {
     await requestAuthenticationOtp(atsign, authority: registrarUrl);
-    return await getCramKey(atsign, ApiUtil.getVerificationCodeFromUser(),
+    return await getCramKey(atsign, ApiUtil.readCliVerificationCode(),
         authority: registrarUrl);
   }
 }

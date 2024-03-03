@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:at_register/at_register.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
@@ -16,11 +14,12 @@ void main() {
     test('validate behaviour of GetFreeAtsign', () async {
       when(() => mockRegistrarApiAccessor.getFreeAtSigns())
           .thenAnswer((invocation) => Future.value('@alice'));
-      print(mockRegistrarApiAccessor.getFreeAtSigns());
+
       RegisterParams params = RegisterParams()..email = 'abcd@gmail.com';
       GetFreeAtsign getFreeAtsign = GetFreeAtsign(params,
           registrarApiAccessorInstance: mockRegistrarApiAccessor);
       final result = await getFreeAtsign.run();
+
       expect(result.data[RegistrarConstants.atsignName], '@alice');
     });
 
@@ -40,32 +39,13 @@ void main() {
         expect(e.toString().contains('random exception'), true);
         exceptionFlag = true;
       }
-      expect(getFreeAtsign.shouldRetry(), true);
+      // validates that exception was thrown
       expect(exceptionFlag, true);
     });
   });
 
   group('Group of tests to validate behaviour of RegisterAtsign', () {
     setUp(() => resetMocktailState());
-
-    test('validate RegisterAtsign behaviour in RegistrationFlow', () async {
-      String atsign = '@bobby';
-      String email = 'second-group@email';
-      when(() => mockRegistrarApiAccessor.registerAtSign(atsign, email))
-          .thenAnswer((_) => Future.value(true));
-
-      RegisterParams params = RegisterParams()
-        ..atsign = atsign
-        ..email = email;
-      RegisterAtsign registerAtsignTask = RegisterAtsign(params,
-          registrarApiAccessorInstance: mockRegistrarApiAccessor);
-      await registerAtsignTask.run();
-      expect(registerAtsignTask.retryCount, 1); // 1 is the default retry count
-      // this task does not generate any new params. This test validates how RegistrationFlow
-      // processes the task when otp has been sent to user's email
-      // successful execution of this test would indicate that the process did not
-      // encounter any errors/exceptions
-    });
 
     test('RegisterAtsign params reading and updating - positive case',
         () async {
@@ -80,6 +60,7 @@ void main() {
       RegisterAtsign registerAtsignTask = RegisterAtsign(params,
           registrarApiAccessorInstance: mockRegistrarApiAccessor);
       RegisterTaskResult result = await registerAtsignTask.run();
+
       expect(result.apiCallStatus, ApiCallStatus.success);
       expect(result.data['otpSent'], 'true');
     });
@@ -97,9 +78,9 @@ void main() {
       RegisterAtsign registerAtsignTask = RegisterAtsign(params,
           registrarApiAccessorInstance: mockRegistrarApiAccessor);
       RegisterTaskResult result = await registerAtsignTask.run();
+
       expect(result.apiCallStatus, ApiCallStatus.success);
       expect(result.data['otpSent'], 'false');
-      expect(registerAtsignTask.shouldRetry(), true);
     });
 
     test('verify behaviour of RegisterAtsign processing an exception',
@@ -123,7 +104,7 @@ void main() {
         expect(e.toString().contains('random exception'), true);
         exceptionFlag = true;
       }
-      expect(registerAtsignTask.shouldRetry(), true);
+      // validates that an exception was thrown
       expect(exceptionFlag, true);
     });
 
@@ -144,11 +125,9 @@ void main() {
       try {
         await registerAtsignTask.run();
       } on Exception catch (e) {
-        print(e.toString());
         assert(e.toString().contains('another new random exception'));
         exceptionFlag = true;
       }
-      expect(registerAtsignTask.retryCount, 1);
       expect(exceptionFlag, true);
     });
   });
@@ -224,33 +203,23 @@ void main() {
       ValidateOtp validateOtpTask = ValidateOtp(params,
           registrarApiAccessorInstance: mockRegistrarApiAccessor);
       RegisterTaskResult result = await validateOtpTask.run();
-      expect(params.confirmation, true);
+      expect(params.confirmation, true); // confirmation set to true by the Task
       expect(result.apiCallStatus, ApiCallStatus.retry);
-      expect(validateOtpResult2.taskStatus, ValidateOtpStatus.verified);
 
       // The above case is when an email has already existing atsigns, select an atsign
       // from the list and retry the task with confirmation set to 'true'
+      // mimic-ing a user selecting an atsign and proceeding ahead
       params.atsign = atsign2;
       result = await validateOtpTask.run();
       expect(result.apiCallStatus, ApiCallStatus.success);
       expect(result.data[RegistrarConstants.cramKeyName], cram);
     });
 
-    test('validate behaviour of ValidateOtp task - 3 otp retries exhausted',
+    test('validate behaviour of ValidateOtp task - null or empty otp',
         () async {
       String atsign = '@charlie-otp-retry';
       String email = 'third-group-test-3@email';
-      String otp = 'bcaa';
-      String cram = 'craaaaaaaaaaaam';
-      ValidateOtpResult validateOtpResult = ValidateOtpResult();
-      validateOtpResult.taskStatus = ValidateOtpStatus.retry;
-      validateOtpResult.apiCallStatus = ApiCallStatus.success;
-      validateOtpResult.data = {
-        RegistrarConstants.cramKeyName: '$atsign:$cram'
-      };
-      when(() => mockRegistrarApiAccessor.validateOtp(atsign, email, otp,
-              confirmation: any(named: "confirmation")))
-          .thenAnswer((invocation) => Future.value(validateOtpResult));
+      String? otp; // invalid null otp
 
       var params = RegisterParams()
         ..atsign = atsign
@@ -261,61 +230,65 @@ void main() {
           registrarApiAccessorInstance: mockRegistrarApiAccessor);
 
       expect(() async => await validateOtpTask.run(),
-          throwsA(ExhaustedVerificationCodeRetriesException));
+          throwsA(predicate((e) => e is InvalidVerificationCodeException)));
 
-      expect(validateOtpTask.retryCount, 1);
+      params.otp = '';
+      expect(() async => await validateOtpTask.run(),
+          throwsA(predicate((e) => e is InvalidVerificationCodeException)));
     });
-  });
 
-  group('test to validate all 3 API calls in sequence', () {
-    setUp(() => resetMocktailState());
-    //
-    // test('verify all 3 API calls in sequence', () async {
-    //   String atsign = '@lewis';
-    //   String email = 'lewis44@gmail.com';
-    //   String cram = 'craaaaaaaaaaaaam';
-    //   String otp = 'Agbr';
-    //   // mock for get-free-atsign
-    //   when(() => mockRegistrarApiAccessor.getFreeAtSigns())
-    //       .thenAnswer((invocation) => Future.value(atsign));
-    //   // mock for register-atsign
-    //   when(() => mockRegistrarApiAccessor.registerAtSign(atsign, email))
-    //       .thenAnswer((_) => Future.value(true));
-    //   // rest of the mocks for validate-otp
-    //   var mockApiRespData = {
-    //     'atsign': ['@old-atsign'],
-    //     'newAtsign': atsign
-    //   };
-    //   ValidateOtpResult validateOtpResult = ValidateOtpResult()
-    //     ..taskStatus = ValidateOtpStatus.followUp
-    //     ..apiCallStatus = ApiCallStatus.success
-    //     ..data = {'data': mockApiRespData};
-    //   when(() => mockRegistrarApiAccessor.validateOtp(atsign, email, otp,
-    //           confirmation: false))
-    //       .thenAnswer((invocation) => Future.value(validateOtpResult));
-    //
-    //   ValidateOtpResult validateOtpResult2 = ValidateOtpResult()
-    //     ..taskStatus = ValidateOtpStatus.verified
-    //     ..apiCallStatus = ApiCallStatus.success
-    //     ..data = {RegistrarConstants.cramKey: '$atsign:$cram'};
-    //   when(() => mockRegistrarApiAccessor.validateOtp(atsign, email, otp,
-    //           confirmation: true))
-    //       .thenAnswer((invocation) => Future.value(validateOtpResult2));
-    //
-    //   RegisterParams params = RegisterParams()
-    //     ..email = email
-    //     ..otp = otp
-    //     ..confirmation = false;
-    //
-    //   await RegistrationFlow(params, mockRegistrarApiAccessor)
-    //       .add(GetFreeAtsign())
-    //       .add(RegisterAtsign())
-    //       .add(ValidateOtp())
-    //       .start();
-    //
-    //   expect(params.atsign, atsign);
-    //   expect(params.cram, cram);
-    //   expect(params.confirmation, true);
-    // });
+    test('validate behaviour of ValidateOtp task - incorrect otp', () async {
+      String atsign = '@charlie-otp-incorrect';
+      String email = 'third-group-test-3-3@email';
+      String otp = 'otpp'; // invalid otp
+
+      var params = RegisterParams()
+        ..atsign = atsign
+        ..confirmation = false
+        ..email = email
+        ..otp = otp;
+
+      ValidateOtpResult validateOtpResult = ValidateOtpResult()
+        ..taskStatus = ValidateOtpStatus.retry
+        ..apiCallStatus = ApiCallStatus.success
+        ..exceptionMessage = 'incorrect otp';
+      when(() => mockRegistrarApiAccessor.validateOtp(atsign, email, otp,
+              confirmation: false))
+          .thenAnswer((invocation) => Future.value(validateOtpResult));
+
+      ValidateOtp validateOtpTask = ValidateOtp(params,
+          registrarApiAccessorInstance: mockRegistrarApiAccessor);
+
+      expect(
+          () async => await validateOtpTask.run(),
+          throwsA(predicate((e) =>
+              e is InvalidVerificationCodeException &&
+              e.message.contains('incorrect otp'))));
+    });
+
+    test(
+        'validate behaviour of ValidateOtp task - maximum free atsign limit reached',
+        () async {
+      String atsign = '@charlie-otp-incorrect';
+      String email = 'third-group-test-3-3@email';
+      String otp = 'otpp';
+
+      var params = RegisterParams()
+        ..atsign = atsign
+        ..confirmation = false
+        ..email = email
+        ..otp = otp;
+
+      when(() => mockRegistrarApiAccessor.validateOtp(atsign, email, otp,
+              confirmation: false))
+          .thenThrow(
+              MaximumAtsignQuotaException('maximum free atsign limit reached'));
+
+      ValidateOtp validateOtpTask = ValidateOtp(params,
+          registrarApiAccessorInstance: mockRegistrarApiAccessor);
+
+      expect(() async => await validateOtpTask.run(),
+          throwsA(predicate((e) => e is MaximumAtsignQuotaException)));
+    });
   });
 }
