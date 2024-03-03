@@ -9,7 +9,7 @@ import '../../at_register.dart';
 
 /// Contains methods that actually perform the RegistrarAPI calls
 /// and handle/process the response
-class RegistrarApiCalls {
+class RegistrarApiAccessor {
   AtSignLogger logger = AtSignLogger('AtRegister');
 
   /// Returns a Future<List<String>> containing free available atSigns
@@ -183,7 +183,7 @@ class RegistrarApiCalls {
     throw InvalidDataException(jsonDecodedBody['message']);
   }
 
-  /// calls utility methods from [RegistrarApiCalls] that
+  /// calls utility methods from [RegistrarApiAccessor] that
   ///
   /// 1) send verification code to the registered email
   ///

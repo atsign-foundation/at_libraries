@@ -1,6 +1,6 @@
 import '../../at_register.dart';
 
-/// class that handles multiple tasks of type [RegisterTask]
+/// Processes tasks of type [RegisterTask]
 /// Initialized with a params map that needs to be populated with - email and api host address
 /// [add] method can be used to add tasks[RegisterTask] to the [processQueue]
 /// [start] needs to be called after all required tasks are added to the [processQueue]
@@ -17,6 +17,7 @@ class RegistrationFlow {
     return this;
   }
 
+  /// ToDo: should return Result ? or it's fine to populate the params
   Future<void> start() async {
     for (RegisterTask task in processQueue) {
       task.init(params, registrarApiCall);
