@@ -26,4 +26,7 @@ class RegistrarConstants {
 
   static const String cramKeyName = 'cramkey';
   static const String atsignName = 'atsign';
+  static const String otpSentName = 'otpSent';
+  static const String fetchedAtsignListName = 'fetchedAtsignList';
+  static const String newAtsignName = 'newAtsign';
 }

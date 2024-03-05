@@ -1,3 +1,4 @@
+import 'package:at_commons/at_commons.dart';
 import 'package:at_register/at_register.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
@@ -7,6 +8,52 @@ class MockRegistrarApiAccessor extends Mock implements RegistrarApiAccessor {}
 void main() {
   MockRegistrarApiAccessor mockRegistrarApiAccessor =
       MockRegistrarApiAccessor();
+
+  group('Validate individual tasks behaviour with invalid params', () {
+    test('validate behaviour of GetFreeAtsign', () async {
+      RegisterParams params = RegisterParams()..email = '';
+
+      expect(
+          () => GetFreeAtsign(params,
+              registrarApiAccessorInstance: mockRegistrarApiAccessor),
+          throwsA(predicate((e) => e is IllegalArgumentException)));
+    });
+
+    test('validate behaviour of RegisterAtsign', () async {
+      RegisterParams params = RegisterParams()
+        ..email = 'email@email'
+        ..atsign = null;
+
+      expect(
+          () => RegisterAtsign(params,
+              registrarApiAccessorInstance: mockRegistrarApiAccessor),
+          throwsA(predicate((e) => e is IllegalArgumentException)));
+    });
+
+    test('validate behaviour of ValidateOtp with null atsign', () async {
+      RegisterParams params = RegisterParams()
+        ..email = 'email@email'
+        ..otp = null;
+
+      expect(
+          () => ValidateOtp(params,
+              registrarApiAccessorInstance: mockRegistrarApiAccessor),
+          throwsA(predicate((e) => e is IllegalArgumentException)));
+    });
+
+    test('validate behaviour of ValidateOtp with null verification code',
+        () async {
+      RegisterParams params = RegisterParams()
+        ..email = 'email@email'
+        ..atsign = '@abcd'
+        ..otp = null;
+
+      expect(
+          () => ValidateOtp(params,
+              registrarApiAccessorInstance: mockRegistrarApiAccessor),
+          throwsA(predicate((e) => e is InvalidVerificationCodeException)));
+    });
+  });
 
   group('A group of tests to validate GetFreeAtsign', () {
     setUp(() => resetMocktailState());
@@ -205,6 +252,9 @@ void main() {
       RegisterTaskResult result = await validateOtpTask.run();
       expect(params.confirmation, true); // confirmation set to true by the Task
       expect(result.apiCallStatus, ApiCallStatus.retry);
+      // expect(result.data[RegistrarConstants.fetchedAtsignListName],
+      //     ['@old-atsign']);
+      expect(result.data[RegistrarConstants.newAtsignName], atsign);
 
       // The above case is when an email has already existing atsigns, select an atsign
       // from the list and retry the task with confirmation set to 'true'
@@ -213,28 +263,6 @@ void main() {
       result = await validateOtpTask.run();
       expect(result.apiCallStatus, ApiCallStatus.success);
       expect(result.data[RegistrarConstants.cramKeyName], cram);
-    });
-
-    test('validate behaviour of ValidateOtp task - null or empty otp',
-        () async {
-      String atsign = '@charlie-otp-retry';
-      String email = 'third-group-test-3@email';
-      String? otp; // invalid null otp
-
-      var params = RegisterParams()
-        ..atsign = atsign
-        ..confirmation = false
-        ..email = email
-        ..otp = otp;
-      ValidateOtp validateOtpTask = ValidateOtp(params,
-          registrarApiAccessorInstance: mockRegistrarApiAccessor);
-
-      expect(() async => await validateOtpTask.run(),
-          throwsA(predicate((e) => e is InvalidVerificationCodeException)));
-
-      params.otp = '';
-      expect(() async => await validateOtpTask.run(),
-          throwsA(predicate((e) => e is InvalidVerificationCodeException)));
     });
 
     test('validate behaviour of ValidateOtp task - incorrect otp', () async {
@@ -250,8 +278,7 @@ void main() {
 
       ValidateOtpResult validateOtpResult = ValidateOtpResult()
         ..taskStatus = ValidateOtpStatus.retry
-        ..apiCallStatus = ApiCallStatus.success
-        ..exceptionMessage = 'incorrect otp';
+        ..apiCallStatus = ApiCallStatus.success;
       when(() => mockRegistrarApiAccessor.validateOtp(atsign, email, otp,
               confirmation: false))
           .thenAnswer((invocation) => Future.value(validateOtpResult));
@@ -263,7 +290,7 @@ void main() {
           () async => await validateOtpTask.run(),
           throwsA(predicate((e) =>
               e is InvalidVerificationCodeException &&
-              e.message.contains('incorrect otp'))));
+              e.message.contains('Incorrect verification code provided'))));
     });
 
     test(

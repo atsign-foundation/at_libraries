@@ -22,8 +22,9 @@ void main() {
 
       RegisterParams params = RegisterParams()..email = 'abcd@gmail.com';
       GetFreeAtsign getFreeAtsign = GetFreeAtsign(params,
-          registrarApiAccessorInstance: mockRegistrarApiAccessor);
-      final result = await getFreeAtsign.run(allowRetry: true);
+          registrarApiAccessorInstance: mockRegistrarApiAccessor,
+          allowRetry: true);
+      final result = await getFreeAtsign.run();
       expect(result.data[RegistrarConstants.atsignName], '@alice');
     });
 
@@ -35,8 +36,9 @@ void main() {
 
       RegisterParams params = RegisterParams()..email = 'abcd@gmail.com';
       GetFreeAtsign getFreeAtsign = GetFreeAtsign(params,
-          registrarApiAccessorInstance: mockRegistrarApiAccessor);
-      RegisterTaskResult? result = await getFreeAtsign.run(allowRetry: true);
+          registrarApiAccessorInstance: mockRegistrarApiAccessor,
+          allowRetry: true);
+      RegisterTaskResult? result = await getFreeAtsign.run();
 
       expect(result.apiCallStatus, ApiCallStatus.retry);
       assert(result.exceptionMessage!.contains(testExceptionMessage));
@@ -57,9 +59,9 @@ void main() {
         ..atsign = atsign
         ..email = email;
       RegisterAtsign registerAtsignTask = RegisterAtsign(params,
-          registrarApiAccessorInstance: mockRegistrarApiAccessor);
-      RegisterTaskResult result =
-          await registerAtsignTask.run(allowRetry: true);
+          registrarApiAccessorInstance: mockRegistrarApiAccessor,
+          allowRetry: true);
+      RegisterTaskResult result = await registerAtsignTask.run();
       expect(result.apiCallStatus, ApiCallStatus.success);
       expect(result.data['otpSent'], 'true');
     });
@@ -75,9 +77,9 @@ void main() {
         ..atsign = atsign
         ..email = email;
       RegisterAtsign registerAtsignTask = RegisterAtsign(params,
-          registrarApiAccessorInstance: mockRegistrarApiAccessor);
-      RegisterTaskResult result =
-          await registerAtsignTask.run(allowRetry: true);
+          registrarApiAccessorInstance: mockRegistrarApiAccessor,
+          allowRetry: true);
+      RegisterTaskResult result = await registerAtsignTask.run();
 
       expect(result.apiCallStatus, ApiCallStatus.success);
       expect(result.data['otpSent'], 'false');
@@ -96,9 +98,9 @@ void main() {
         ..email = email;
 
       RegisterAtsign registerAtsignTask = RegisterAtsign(params,
-          registrarApiAccessorInstance: mockRegistrarApiAccessor);
-      RegisterTaskResult? result =
-          await registerAtsignTask.run(allowRetry: true);
+          registrarApiAccessorInstance: mockRegistrarApiAccessor,
+          allowRetry: true);
+      RegisterTaskResult? result = await registerAtsignTask.run();
 
       expect(registerAtsignTask.shouldRetry(), true);
       assert(result.exceptionMessage!.contains(testException));
@@ -117,9 +119,10 @@ void main() {
         ..atsign = atsign
         ..email = email;
       RegisterAtsign registerAtsignTask = RegisterAtsign(params,
-          registrarApiAccessorInstance: mockRegistrarApiAccessor);
+          registrarApiAccessorInstance: mockRegistrarApiAccessor,
+          allowRetry: true);
 
-      var result = await registerAtsignTask.run(allowRetry: true);
+      var result = await registerAtsignTask.run();
       assert(result.exceptionMessage!.contains(testExceptionMessage));
       expect(registerAtsignTask.retryCount, 1);
     });
@@ -152,8 +155,9 @@ void main() {
         ..otp = otp;
 
       ValidateOtp validateOtpTask = ValidateOtp(params,
-          registrarApiAccessorInstance: mockRegistrarApiAccessor);
-      RegisterTaskResult result = await validateOtpTask.run(allowRetry: true);
+          registrarApiAccessorInstance: mockRegistrarApiAccessor,
+          allowRetry: true);
+      RegisterTaskResult result = await validateOtpTask.run();
 
       expect(result.data[RegistrarConstants.cramKeyName], cram);
     });
@@ -194,8 +198,9 @@ void main() {
         ..otp = otp;
 
       ValidateOtp validateOtpTask = ValidateOtp(params,
-          registrarApiAccessorInstance: mockRegistrarApiAccessor);
-      RegisterTaskResult result = await validateOtpTask.run(allowRetry: true);
+          registrarApiAccessorInstance: mockRegistrarApiAccessor,
+          allowRetry: true);
+      RegisterTaskResult result = await validateOtpTask.run();
       expect(params.confirmation,
           true); // confirmation set to true by RegisterTask
       expect(result.apiCallStatus, ApiCallStatus.retry);
@@ -204,7 +209,7 @@ void main() {
       // The above case is when an email has already existing atsigns, select an atsign
       // from the list and retry the task with confirmation set to 'true'
       params.atsign = atsign2;
-      result = await validateOtpTask.run(allowRetry: true);
+      result = await validateOtpTask.run();
       expect(result.apiCallStatus, ApiCallStatus.success);
       expect(result.data[RegistrarConstants.cramKeyName], cram);
     });
@@ -231,9 +236,10 @@ void main() {
         ..email = email
         ..otp = otp;
       ValidateOtp validateOtpTask = ValidateOtp(params,
-          registrarApiAccessorInstance: mockRegistrarApiAccessor);
+          registrarApiAccessorInstance: mockRegistrarApiAccessor,
+          allowRetry: true);
 
-      RegisterTaskResult result = await validateOtpTask.run(allowRetry: true);
+      RegisterTaskResult result = await validateOtpTask.run();
       expect(result.apiCallStatus, ApiCallStatus.retry);
     });
 
@@ -256,9 +262,10 @@ void main() {
               MaximumAtsignQuotaException('maximum free atsign limit reached'));
 
       ValidateOtp validateOtpTask = ValidateOtp(params,
-          registrarApiAccessorInstance: mockRegistrarApiAccessor);
+          registrarApiAccessorInstance: mockRegistrarApiAccessor,
+          allowRetry: true);
 
-      expect(() async => await validateOtpTask.run(allowRetry: true),
+      expect(() async => await validateOtpTask.run(),
           throwsA(predicate((e) => e is MaximumAtsignQuotaException)));
     });
   });

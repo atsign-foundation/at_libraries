@@ -74,8 +74,9 @@ class RegistrarApiAccessor {
   ///
   /// Case 1("verified") - the API has registered the atsign to provided email and CRAM key present in HTTP_RESPONSE Body.
   ///
-  /// Case 2("follow-up"): User already has existing atsigns and new atsign registered successfully. To receive the CRAM key, follow-up by calling
-  /// the API with one of the existing listed atsigns, with confirmation set to true.
+  /// Case 2("follow-up"): User already has existing atsigns and new atsign
+  /// registered successfully. To receive the CRAM key, retry the call with one
+  /// of the existing listed atsigns and confirmation set to true.
   ///
   /// Case 3("retry"): Incorrect OTP send request again with correct OTP.
   ///
@@ -92,13 +93,12 @@ class RegistrarApiAccessor {
     });
 
     if (response.statusCode == 200) {
-      final validateOtpResult = ValidateOtpResult();
-      // is this needed ?
+      ValidateOtpResult validateOtpResult = ValidateOtpResult();
       final jsonDecodedResponse = jsonDecode(response.body);
-      if (jsonDecodedResponse.containsKey('data')) {
-        validateOtpResult.data
-            .addAll(jsonDecodedResponse['data'] as Map<String, dynamic>);
-      }
+      // if (jsonDecodedResponse.containsKey('data')) {
+      // validateOtpResult.data
+      //     .addAll(jsonDecodedResponse['data'] as Map<String, dynamic>);
+      // }
       _processValidateOtpApiResponse(jsonDecodedResponse, validateOtpResult);
       return validateOtpResult;
     } else {
@@ -108,28 +108,34 @@ class RegistrarApiAccessor {
   }
 
   /// processes API response for [validateOtp] call and populates [result]
-  void _processValidateOtpApiResponse(responseJson, result) {
-    if ((responseJson.containsKey('message') &&
-            (responseJson['message'].toString().toLowerCase()) == 'verified') &&
-        responseJson.containsKey('cramkey')) {
+  void _processValidateOtpApiResponse(
+      Map<String, dynamic> apiResponse, ValidateOtpResult result) {
+    if ((apiResponse.containsKey('message') &&
+            (apiResponse['message'].toString().toLowerCase()) ==
+                ValidateOtpStatus.verified.name) &&
+        apiResponse.containsKey(RegistrarConstants.cramKeyName)) {
       result.taskStatus = ValidateOtpStatus.verified;
       result.data[RegistrarConstants.cramKeyName] =
-          responseJson[RegistrarConstants.cramKeyName];
-    } else if (responseJson.containsKey('data') &&
-        result.data.containsKey('newAtsign')) {
+          apiResponse[RegistrarConstants.cramKeyName];
+    } else if (apiResponse.containsKey('data') &&
+        result.data.containsKey(RegistrarConstants.newAtsignName)) {
+      result.data[RegistrarConstants.fetchedAtsignListName] =
+          apiResponse[RegistrarConstants.atsignName];
+      result.data[RegistrarConstants.newAtsignName] =
+          apiResponse[RegistrarConstants.newAtsignName];
       result.taskStatus = ValidateOtpStatus.followUp;
-    } else if (responseJson.containsKey('message') &&
-        responseJson['message'] ==
+    } else if (apiResponse.containsKey('message') &&
+        apiResponse['message'] ==
             'The code you have entered is invalid or expired. Please try again?') {
       result.taskStatus = ValidateOtpStatus.retry;
-      result.exceptionMessage = responseJson['message'];
-    } else if (responseJson.containsKey('message') &&
-        (responseJson['message'] ==
+      result.exceptionMessage = apiResponse['message'];
+    } else if (apiResponse.containsKey('message') &&
+        (apiResponse['message'] ==
             'Oops! You already have the maximum number of free atSigns. Please select one of your existing atSigns.')) {
       throw MaximumAtsignQuotaException(
           'Maximum free atsign limit reached for current email');
     } else {
-      throw AtRegisterException('${responseJson['message']}');
+      throw AtRegisterException('${apiResponse['message']}');
     }
   }
 

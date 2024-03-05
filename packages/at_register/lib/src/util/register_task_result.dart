@@ -3,7 +3,7 @@ import 'dart:collection';
 import 'api_call_status.dart';
 
 class RegisterTaskResult {
-  Map<String, dynamic> data = HashMap<String, String>();
+  Map<String, dynamic> data = HashMap<String, dynamic>();
 
   late ApiCallStatus apiCallStatus;
 
