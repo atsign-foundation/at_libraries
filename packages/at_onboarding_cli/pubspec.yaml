@@ -30,11 +30,10 @@ dependencies:
 
 dependency_overrides:
    at_register:
-     path: /home/srie/Desktop/work/at_libraries/packages/at_register
-#      git:
-#        url: https://github.com/atsign-foundation/at_libraries.git
-#        path: packages/at_register
-#        ref: at_register_package
+      git:
+        url: https://github.com/atsign-foundation/at_libraries.git
+        path: packages/at_register
+        ref: at_register_package
 
 dev_dependencies:
   lints: ^2.1.0
