@@ -9,6 +9,8 @@ environment:
 dependencies:
   at_onboarding_cli:
     path: ../../packages/at_onboarding_cli
+  at_register:
+    path:  ../../packages/at_register
 
 dev_dependencies:
   lints: ^1.0.0
