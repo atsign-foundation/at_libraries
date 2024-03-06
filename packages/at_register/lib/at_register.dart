@@ -1,4 +1,4 @@
-library;
+library at_register;
 
 export 'src/api-interactions/registrar_api_accessor.dart';
 export 'src/api-interactions/get_free_atsign.dart';

@@ -14,7 +14,7 @@ class RegistrarApiAccessor {
 
   /// Returns a Future<List<String>> containing free available atSigns
   /// based on [count] provided as input.
-  Future<String> getFreeAtSigns(
+  Future<String> getFreeAtSign(
       {String authority = RegistrarConstants.apiHostProd}) async {
     http.Response response = await ApiUtil.getRequest(
         authority, RegistrarConstants.getFreeAtSignApiPath);
@@ -95,10 +95,6 @@ class RegistrarApiAccessor {
     if (response.statusCode == 200) {
       ValidateOtpResult validateOtpResult = ValidateOtpResult();
       final jsonDecodedResponse = jsonDecode(response.body);
-      // if (jsonDecodedResponse.containsKey('data')) {
-      // validateOtpResult.data
-      //     .addAll(jsonDecodedResponse['data'] as Map<String, dynamic>);
-      // }
       _processValidateOtpApiResponse(jsonDecodedResponse, validateOtpResult);
       return validateOtpResult;
     } else {
@@ -110,32 +106,29 @@ class RegistrarApiAccessor {
   /// processes API response for [validateOtp] call and populates [result]
   void _processValidateOtpApiResponse(
       Map<String, dynamic> apiResponse, ValidateOtpResult result) {
-    if ((apiResponse.containsKey('message') &&
-            (apiResponse['message'].toString().toLowerCase()) ==
-                ValidateOtpStatus.verified.name) &&
+    String? message = apiResponse['message'].toString().toLowerCase();
+    if (apiResponse.containsKey('data')) {
+      result.data.addAll(apiResponse['data'] as Map<String, dynamic>);
+    }
+
+    if (message == ValidateOtpStatus.verified.name &&
         apiResponse.containsKey(RegistrarConstants.cramKeyName)) {
       result.taskStatus = ValidateOtpStatus.verified;
-      result.data[RegistrarConstants.cramKeyName] =
-          apiResponse[RegistrarConstants.cramKeyName];
     } else if (apiResponse.containsKey('data') &&
-        result.data.containsKey(RegistrarConstants.newAtsignName)) {
+        apiResponse.containsKey(RegistrarConstants.newAtsignName)) {
       result.data[RegistrarConstants.fetchedAtsignListName] =
           apiResponse[RegistrarConstants.atsignName];
-      result.data[RegistrarConstants.newAtsignName] =
-          apiResponse[RegistrarConstants.newAtsignName];
       result.taskStatus = ValidateOtpStatus.followUp;
-    } else if (apiResponse.containsKey('message') &&
-        apiResponse['message'] ==
-            'The code you have entered is invalid or expired. Please try again?') {
+    } else if (message ==
+        'The code you have entered is invalid or expired. Please try again?') {
       result.taskStatus = ValidateOtpStatus.retry;
-      result.exceptionMessage = apiResponse['message'];
-    } else if (apiResponse.containsKey('message') &&
-        (apiResponse['message'] ==
-            'Oops! You already have the maximum number of free atSigns. Please select one of your existing atSigns.')) {
+      result.exception = apiResponse['message'];
+    } else if (message ==
+        'Oops! You already have the maximum number of free atSigns. Please select one of your existing atSigns.') {
       throw MaximumAtsignQuotaException(
           'Maximum free atsign limit reached for current email');
     } else {
-      throw AtRegisterException('${apiResponse['message']}');
+      throw AtRegisterException(message);
     }
   }
 

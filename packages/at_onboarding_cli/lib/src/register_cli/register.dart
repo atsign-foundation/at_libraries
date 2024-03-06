@@ -46,18 +46,19 @@ class Register {
       exit(7);
     }
 
-    GetFreeAtsign getFreeAtsignTask = GetFreeAtsign(registerParams,
-        registrarApiAccessorInstance: registrarApiAccessor, );
+    GetFreeAtsign getFreeAtsignTask = GetFreeAtsign(
+      apiAccessorInstance: registrarApiAccessor,
+    );
 
-    RegisterAtsign registerAtsignTask = RegisterAtsign(registerParams,
-        registrarApiAccessorInstance: registrarApiAccessor);
+    RegisterAtsign registerAtsignTask =
+        RegisterAtsign(apiAccessorInstance: registrarApiAccessor);
 
-    ValidateOtp validateOtpTask = ValidateOtp(registerParams,
-        registrarApiAccessorInstance: registrarApiAccessor);
+    ValidateOtp validateOtpTask =
+        ValidateOtp(apiAccessorInstance: registrarApiAccessor);
 
     // create a queue of tasks each of type [RegisterTask] and then
     // call start on the RegistrationFlow object
-    await RegistrationFlow()
+    await RegistrationFlow(registerParams)
         .add(getFreeAtsignTask)
         .add(registerAtsignTask)
         .add(validateOtpTask)

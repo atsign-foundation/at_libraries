@@ -4,7 +4,7 @@ version: 1.0.0
 repository: https://github.com/atsign-foundation/at_libraries
 
 environment:
-  sdk: ^3.2.4
+  sdk: '>=2.15.1 <4.0.0'
 
 dependencies:
   at_commons: ^4.0.3

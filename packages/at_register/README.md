@@ -21,7 +21,7 @@ please feel free to take a look at `at_onboarding_cli/register_cli`
 
 To add this package as the dependency, add it to your pubspec.yaml
 
-```dart  
+```yaml
 dependencies:
   at_register: ^1.0.0
 ```
@@ -51,27 +51,27 @@ RegisterParams params = RegisterParams()..email = 'email@email.com';
 ### 1) To fetch a free atsign
 
 ```dart
-GetFreeAtsign getFreeAtsignTask = GetFreeAtsign(params);
-RegisterTaskResult result = await getFreeAtsignTask.run();
-print(result.data['atsign']);
+GetFreeAtsign getFreeAtsignTask = GetFreeAtsign();
+RegisterTaskResult result = await getFreeAtsignTask.run(params);
+print(result.data[RegistrarConstants.atsignName]);
 ```
 
 ### 2) To register the free atsign fetched in (1)
 
 ```dart
 params.atsign = '@alice'; // preferably use the one fetched in (1)
-RegisterAtsign registerAtsignTask = RegisterAtsign(params);
-RegisterTaskResult result = await registerAtsignTask.run();
-print(result.data['otpSent']); // contains true/false if verification code was delivered to email
+RegisterAtsign registerAtsignTask = RegisterAtsign();
+RegisterTaskResult result = await registerAtsignTask.run(params);
+print(result.data[RegistrarConstants.otpSentName]); // contains true/false if verification code was delivered to email
 ```
 
 ### 3) To validate the verification code
 
 ```dart
 params.otp = 'AB1C'; // to be fetched from user
-ValidateOtp validateOtpTask = ValidateOtp(params);
-RegisterTaskResult result = await validateOtp.run();
-print(result.data['cram']);
+ValidateOtp validateOtpTask = ValidateOtp();
+RegisterTaskResult result = await validateOtp.run(params);
+print(result.data[RegistrarConstants.cramKeyName]);
 ```
 Please refer to [examples](https://github.com/atsign-foundation/at_libraries/blob/doc_at_lookup/at_lookup/example/bin/example.dart) for more details.
 

@@ -7,9 +7,10 @@ import 'package:at_register/at_register.dart';
 class RegistrationFlow {
   List<RegisterTask> processQueue = [];
   RegisterTaskResult _result = RegisterTaskResult();
-  RegisterParams params = RegisterParams();
+  late RegisterParams params;
+  String defaultExceptionMessage = 'Could not complete the task. Please retry';
 
-  RegistrationFlow();
+  RegistrationFlow(this.params);
 
   RegistrationFlow add(RegisterTask task) {
     processQueue.add(task);
@@ -18,22 +19,35 @@ class RegistrationFlow {
 
   Future<RegisterTaskResult> start() async {
     for (RegisterTask task in processQueue) {
-      // setting allowRetry to false as this method has logic to retry each
+      // setting allowRetry to true as this method has logic to retry each
       // failed task 3-times and then throw an exception if still failing
-      _result = await task.run();
-      task.logger.finer('Attempt: ${task.retryCount} | params[$params]');
-      task.logger.finer('Result: $_result');
+      try {
+        _result = await task.run(params);
+        task.logger.finer('Attempt: ${task.retryCount} | params[$params]');
+        task.logger.finer('Result: $_result');
 
-      if (_result.apiCallStatus == ApiCallStatus.retry) {
-        while (
-            task.shouldRetry() && _result.apiCallStatus == ApiCallStatus.retry) {
-          _result = await task.retry();
+        while (_result.apiCallStatus == ApiCallStatus.retry &&
+            task.shouldRetry()) {
+          _result = await task.retry(params);
+          task.logger.finer('Attempt: ${task.retryCount} | params[$params]');
+          task.logger.finer('Result: $_result');
         }
-      }
-      if (_result.apiCallStatus == ApiCallStatus.success) {
-        params.addFromJson(_result.data);
-      } else {
-        throw AtRegisterException(_result.exceptionMessage!);
+        if (_result.apiCallStatus == ApiCallStatus.success) {
+          params.addFromJson(_result.data);
+        } else {
+          throw _result.exception ??
+              AtRegisterException('${task.name}: $defaultExceptionMessage');
+        }
+      } on MaximumAtsignQuotaException {
+        rethrow;
+      } on ExhaustedVerificationCodeRetriesException {
+        rethrow;
+      } on InvalidVerificationCodeException {
+        rethrow;
+      } on AtRegisterException {
+        rethrow;
+      } on Exception catch (e) {
+        throw AtRegisterException(e.toString());
       }
     }
     return _result;

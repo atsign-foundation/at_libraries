@@ -5,7 +5,7 @@ import 'package:at_utils/at_logger.dart';
 abstract class RegisterTask {
   late String name;
 
-  final maximumRetries = 3;
+  final maximumRetries = 4; // 1 run attempt + 3 retries = 4
 
   int _retryCount = 1;
 
@@ -13,20 +13,17 @@ abstract class RegisterTask {
 
   late bool _allowRetry = false;
 
-  late RegisterParams registerParams;
-
   late RegistrarApiAccessor _registrarApiAccessor;
   RegistrarApiAccessor get registrarApiAccessor => _registrarApiAccessor;
 
   late AtSignLogger logger;
 
-  RegisterTask(this.registerParams,
+  RegisterTask(
       {RegistrarApiAccessor? registrarApiAccessorInstance,
       bool allowRetry = false}) {
     _registrarApiAccessor =
         registrarApiAccessorInstance ?? RegistrarApiAccessor();
     _allowRetry = allowRetry;
-    validateInputParams();
     logger = AtSignLogger(name);
   }
 
@@ -35,29 +32,23 @@ abstract class RegisterTask {
   ///
   /// If [allowRetry] is set to true, the task will rethrow all exceptions
   /// otherwise will catch the exception and store the exception message in
-  /// [RegisterTaskResult.exceptionMessage]
-  Future<RegisterTaskResult> run();
+  /// [RegisterTaskResult.exception]
+  Future<RegisterTaskResult> run(RegisterParams params);
 
-  Future<RegisterTaskResult> retry() async {
+  Future<RegisterTaskResult> retry(RegisterParams params) async {
     increaseRetryCount();
-    return await run();
-  }
-
-  bool canThrowException() {
-    // cannot throw exception if retries allowed
-    return !_allowRetry;
-  }
-
-  void populateApiCallStatus(RegisterTaskResult result, Exception e) {
-    result.apiCallStatus =
-        shouldRetry() ? ApiCallStatus.retry : ApiCallStatus.failure;
-    result.exceptionMessage = e.toString();
+    return await run(params);
   }
 
   /// Each task implementation will have a set of params that are required to
   /// complete the respective task. This method will ensure all required params
   /// are provided/populated
-  void validateInputParams();
+  void validateInputParams(RegisterParams params);
+
+  bool canThrowException() {
+    // cannot throw exception if retries allowed
+    return !_allowRetry;
+  }
 
   /// Increases retry count by 1
   ///
@@ -69,6 +60,6 @@ abstract class RegisterTask {
   /// In case the task has returned a [RegisterTaskResult] with status retry,
   /// this method checks and returns if the task can be retried
   bool shouldRetry() {
-    return _retryCount <= maximumRetries;
+    return _retryCount < maximumRetries;
   }
 }

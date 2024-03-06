@@ -4,24 +4,42 @@ import 'package:at_utils/at_utils.dart';
 import '../../at_register.dart';
 
 /// Task for validating the verification_code sent as part of the registration process.
+///
+/// Example usage:
+/// ```dart
+/// ValidateOtp validateOtpInstance = ValidateOtp();
+/// RegisterTaskResult result = await validateOtpInstance.run(registerParams);
+/// ```
+/// CASE 1: 'If the email provided through registerParams does NOT have any existing atsigns':
+/// cramKey will be present in result.data[[RegistrarConstants.cramKeyName]]
+///
+/// CASE 2: 'If the email provided through registerParams has existing atsigns':
+/// list of existingAtsigns will be present in result.data[[RegistrarConstants.fetchedAtsignListName]]
+/// and the new atsign in result.data[[RegistrarConstants.newAtsignName]];
+/// Now, to fetch the cram key select one atsign (existing/new); populate this atsign
+/// in registerParams and retry this task. Output will be as described in 'CASE 1'
 class ValidateOtp extends RegisterTask {
-  ValidateOtp(super.registerParams,
-      {super.registrarApiAccessorInstance, super.allowRetry});
+  ValidateOtp(
+      {RegistrarApiAccessor? apiAccessorInstance, bool allowRetry = false})
+      : super(
+            registrarApiAccessorInstance: apiAccessorInstance,
+            allowRetry: allowRetry);
 
   @override
   String get name => 'ValidateOtpTask';
 
   @override
-  Future<RegisterTaskResult> run() async {
+  Future<RegisterTaskResult> run(RegisterParams params) async {
+    validateInputParams(params);
     RegisterTaskResult result = RegisterTaskResult();
     try {
-      logger.info('Validating code with ${registerParams.atsign}...');
-      registerParams.atsign = AtUtils.fixAtSign(registerParams.atsign!);
+      logger.info('Validating code with ${params.atsign}...');
+      params.atsign = AtUtils.fixAtSign(params.atsign!);
       final validateOtpApiResult = await registrarApiAccessor.validateOtp(
-        registerParams.atsign!,
-        registerParams.email!,
-        registerParams.otp!,
-        confirmation: registerParams.confirmation,
+        params.atsign!,
+        params.email!,
+        params.otp!,
+        confirmation: params.confirmation,
         authority: RegistrarConstants.authority,
       );
 
@@ -30,23 +48,25 @@ class ValidateOtp extends RegisterTask {
           if (canThrowException()) {
             throw InvalidVerificationCodeException(
                 'Verification Failed: Incorrect verification code provided');
+          }
+          logger.warning('Invalid or expired verification code. Retrying...');
+          params.otp ??= ApiUtil
+              .readCliVerificationCode(); // retry reading otp from user through stdin
+          if (shouldRetry()) {
+            result.apiCallStatus = ApiCallStatus.retry;
+            result.exception = InvalidVerificationCodeException(
+                'Verification Failed: Incorrect verification code provided. Please retry the process again');
           } else {
-            logger.warning('Invalid or expired verification code. Retrying...');
-            registerParams.otp ??= ApiUtil
-                .readCliVerificationCode(); // retry reading otp from user through stdin
-            result.apiCallStatus =
-                shouldRetry() ? ApiCallStatus.retry : ApiCallStatus.failure;
-            result.exceptionMessage =
-                'Verification Failed: Incorrect verification code provided. Please retry the process again';
+            result.apiCallStatus = ApiCallStatus.failure;
+            result.exception = ExhaustedVerificationCodeRetriesException(
+                'Exhausted verification code retry attempts. Please restart the process');
           }
           break;
 
         case ValidateOtpStatus.followUp:
-          registerParams.confirmation = true;
-          result.data['otp'] = registerParams.otp;
-          result.data[RegistrarConstants.fetchedAtsignListName] =
-              validateOtpApiResult
-                  .data[RegistrarConstants.fetchedAtsignListName];
+          params.confirmation = true;
+          result.data['otp'] = params.otp;
+          result.fetchedAtsignList = validateOtpApiResult.data['atsign'];
           result.data[RegistrarConstants.newAtsignName] =
               validateOtpApiResult.data[RegistrarConstants.newAtsignName];
           result.apiCallStatus = ApiCallStatus.retry;
@@ -59,18 +79,18 @@ class ValidateOtp extends RegisterTask {
               .data[RegistrarConstants.cramKeyName]
               .split(":")[1];
           logger.info('Cram secret verified');
-          logger.info('Successful registration for ${registerParams.email}');
+          logger.info('Successful registration for ${params.email}');
           result.apiCallStatus = ApiCallStatus.success;
           break;
 
         case ValidateOtpStatus.failure:
           result.apiCallStatus = ApiCallStatus.failure;
-          result.exceptionMessage = validateOtpApiResult.exceptionMessage;
+          result.exception = validateOtpApiResult.exception;
           break;
 
         case null:
           result.apiCallStatus = ApiCallStatus.failure;
-          result.exceptionMessage = validateOtpApiResult.exceptionMessage;
+          result.exception = validateOtpApiResult.exception;
           break;
       }
     } on MaximumAtsignQuotaException {
@@ -83,25 +103,24 @@ class ValidateOtp extends RegisterTask {
       if (canThrowException()) {
         throw AtRegisterException(e.toString());
       }
-      populateApiCallStatus(result, e);
+      ApiUtil.handleException(result, e, shouldRetry());
     }
     return result;
   }
 
   @override
-  void validateInputParams() {
-    if (registerParams.atsign.isNullOrEmpty) {
+  void validateInputParams(RegisterParams params) {
+    if (params.atsign.isNullOrEmpty) {
       throw IllegalArgumentException(
           'Atsign cannot be null for register-atsign-task');
     }
-    if (registerParams.email.isNullOrEmpty) {
+    if (params.email.isNullOrEmpty) {
       throw IllegalArgumentException(
           'e-mail cannot be null for register-atsign-task');
     }
-    if (registerParams.otp.isNullOrEmpty) {
+    if (params.otp.isNullOrEmpty) {
       throw InvalidVerificationCodeException(
           'Verification code cannot be null/empty');
     }
-
   }
 }

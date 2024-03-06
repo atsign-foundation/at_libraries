@@ -10,41 +10,44 @@ import '../../at_register.dart';
 /// Example usage:
 /// ```dart
 /// GetFreeAtsign getFreeAtsignInstance = GetFreeAtsign();
-/// await getFreeAtsignInstance.init(RegisterParams(), RegistrarApiAccessor());
-/// RegisterTaskResult result = await getFreeAtsignInstance.run();
+/// RegisterTaskResult result = await getFreeAtsignInstance.run(registerParams);
 /// ```
-/// The fetched atsign will be stored in result.data['atsign'].
-/// ToDo: write down what will be the structure inside result.data{}
+/// The fetched atsign will be stored in result.data[[RegistrarConstants.atsignName]]
 class GetFreeAtsign extends RegisterTask {
-  GetFreeAtsign(super.registerParams,
-      {super.registrarApiAccessorInstance, super.allowRetry});
+  GetFreeAtsign(
+      {RegistrarApiAccessor? apiAccessorInstance, bool allowRetry = false})
+      : super(
+            registrarApiAccessorInstance: apiAccessorInstance,
+            allowRetry: allowRetry);
 
   @override
   String get name => 'GetFreeAtsignTask';
 
   @override
-  Future<RegisterTaskResult> run() async {
+  Future<RegisterTaskResult> run(RegisterParams params) async {
+    validateInputParams(params);
     logger.info('Getting a randomly generated free atSign...');
     RegisterTaskResult result = RegisterTaskResult();
     try {
-      String atsign = await registrarApiAccessor.getFreeAtSigns(
+      String atsign = await registrarApiAccessor.getFreeAtSign(
           authority: RegistrarConstants.authority);
       logger.info('Fetched free atsign: $atsign');
       result.data['atsign'] = atsign;
+      result.apiCallStatus = ApiCallStatus.success;
     } on Exception catch (e) {
       if (canThrowException()) {
         throw AtRegisterException(e.toString());
       }
-      populateApiCallStatus(result, e);
+      ApiUtil.handleException(result, e, shouldRetry());
     }
-    result.apiCallStatus = ApiCallStatus.success;
     return result;
   }
 
   @override
-  void validateInputParams() {
-    if(registerParams.email.isNullOrEmpty){
-      throw IllegalArgumentException('email cannot be null for get-free-atsign-task');
+  void validateInputParams(params) {
+    if (params.email.isNullOrEmpty) {
+      throw IllegalArgumentException(
+          'email cannot be null for get-free-atsign-task');
     }
   }
 }

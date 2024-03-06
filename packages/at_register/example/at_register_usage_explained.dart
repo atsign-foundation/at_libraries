@@ -6,8 +6,8 @@ Future<void> main() async {
 
   /// Example for GetFreeAtsign task
   GetFreeAtsign getFreeAtsignTask =
-      GetFreeAtsign(params, registrarApiAccessorInstance: accessorInstance);
-  RegisterTaskResult getFreeAtsignResult = await getFreeAtsignTask.run();
+      GetFreeAtsign(apiAccessorInstance: accessorInstance);
+  RegisterTaskResult getFreeAtsignResult = await getFreeAtsignTask.run(params);
   // api call status present in result.apiCallStatus
   print(getFreeAtsignResult.apiCallStatus);
   // all relevant data present in result.data which is a Map
@@ -20,8 +20,8 @@ Future<void> main() async {
 
   /// Example for RegisterAtsign task
   RegisterAtsign registerAtsignTask =
-      RegisterAtsign(params, registrarApiAccessorInstance: accessorInstance);
-  RegisterTaskResult registerAtsignResult = await registerAtsignTask.run();
+      RegisterAtsign(apiAccessorInstance: accessorInstance);
+  RegisterTaskResult registerAtsignResult = await registerAtsignTask.run(params);
   // registerAtsignResult.data should have a key named 'otpSent' which contains
   // true/false reg the status of verificationCodeSent to provided email
   print(registerAtsignResult.data[RegistrarConstants.otpSentName]);
@@ -31,9 +31,9 @@ Future<void> main() async {
 
   /// Example for ValidateOtp task
   ValidateOtp validateOtpTask =
-      ValidateOtp(params, registrarApiAccessorInstance: accessorInstance);
+      ValidateOtp(apiAccessorInstance: accessorInstance);
   // Note: confirmation is set to false by default
-  RegisterTaskResult validateOtpResult = await validateOtpTask.run();
+  RegisterTaskResult validateOtpResult = await validateOtpTask.run(params);
 
   // CASE 1: if this is the first atsign for the provided email, CRAM should be
   // present in validateOtpResult.data with key RegistrarConstants.cramKeyName
@@ -49,12 +49,12 @@ Future<void> main() async {
   // now this will return a result with the cram key in result.data
   List<String> fetchedAtsignList =
       validateOtpResult.data[RegistrarConstants.fetchedAtsignListName];
-  validateOtpTask.registerParams.atsign = fetchedAtsignList[0];
-  validateOtpResult = await validateOtpTask.run();
+  params.atsign = fetchedAtsignList[0];
+  validateOtpResult = await validateOtpTask.run(params);
   print(validateOtpResult.data[RegistrarConstants.cramKeyName]);
 
   // CASE 3: if the otp is incorrect, fetch the correct otp from user and re-run
   // the validateOtpTask
-  validateOtpTask.registerParams.otp = 'AB14'; // correct otp
-  validateOtpResult = await validateOtpTask.run();
+  params.otp = 'AB14'; // correct otp
+  validateOtpResult = await validateOtpTask.run(params);
 }

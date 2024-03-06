@@ -7,12 +7,14 @@ class RegisterTaskResult {
 
   late ApiCallStatus apiCallStatus;
 
-  String? exceptionMessage;
+  List<String>? fetchedAtsignList;
+
+  Exception? exception;
 
   @override
   String toString() {
     return 'Data: $data | '
         'ApiCallStatus: ${apiCallStatus.name} | '
-        'exception(if encountered): $exceptionMessage';
+        'exception(if encountered): $exception';
   }
 }

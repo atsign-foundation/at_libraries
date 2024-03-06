@@ -89,6 +89,18 @@ class ApiUtil {
     return otp;
   }
 
+  /// Populates [RegisterTaskResult.apiCallStatus] based on [_retryCount]
+  /// Formats and populates [RegisterTaskResult.exception] based on Exception [e]
+  static void handleException(
+      RegisterTaskResult result, Exception e, bool shouldRetry) {
+    result.apiCallStatus =
+        shouldRetry ? ApiCallStatus.retry : ApiCallStatus.failure;
+
+    String formattedExceptionMessage =
+        ApiUtil.formatExceptionMessage(e.toString());
+    result.exception = AtRegisterException(formattedExceptionMessage);
+  }
+
   static String readUserAtsignChoice(List<String>? atsigns) {
     if (atsigns == null) {
       throw AtRegisterException('Fetched atsigns list is null');
@@ -106,12 +118,5 @@ class ApiUtil {
     } else {
       return atsigns[choice];
     }
-  }
-
-  static String formatException(String message) {
-    if (message.contains('Exception: ')) {
-      return message.replaceAll('Exception: ', '');
-    }
-    return message;
   }
 }

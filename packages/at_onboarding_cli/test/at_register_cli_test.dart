@@ -15,14 +15,14 @@ void main() {
 
     test('validate behaviour of GetFreeAtsign - encounters exception',
         () async {
-      when(() => accessorInstance.getFreeAtSigns())
+      when(() => accessorInstance.getFreeAtSign())
           .thenThrow(Exception('random exception'));
 
       RegisterParams params = RegisterParams()..email = 'abcd@gmail.com';
-      GetFreeAtsign getFreeAtsign = GetFreeAtsign(params,
-          registrarApiAccessorInstance: accessorInstance, allowRetry: true);
+      GetFreeAtsign getFreeAtsign = GetFreeAtsign(
+          apiAccessorInstance: accessorInstance, allowRetry: true);
       try {
-        await RegistrationFlow().add(getFreeAtsign).start();
+        await RegistrationFlow(params).add(getFreeAtsign).start();
       } on Exception catch (e) {
         expect(e.runtimeType, AtRegisterException);
         expect(e.toString().contains('random exception'), true);
@@ -45,35 +45,16 @@ void main() {
       RegisterParams params = RegisterParams()
         ..atsign = atsign
         ..email = email;
-      RegisterAtsign registerAtsignTask = RegisterAtsign(params,
-          registrarApiAccessorInstance: accessorInstance, allowRetry: true);
-
-      await RegistrationFlow().add(registerAtsignTask).start();
-      expect(registerAtsignTask.retryCount, registerAtsignTask.maximumRetries);
-      expect(registerAtsignTask.shouldRetry(), false);
-    });
-
-    test('verify behaviour of RegisterAtsign processing an exception',
-        () async {
-      String atsign = '@bobby';
-      String email = 'second-group@email';
-      when(() => accessorInstance.registerAtSign(atsign, email))
-          .thenThrow(Exception('another random exception'));
-
-      RegisterParams params = RegisterParams()
-        ..atsign = atsign
-        ..email = email;
-      RegisterAtsign registerAtsignTask = RegisterAtsign(params,
-          registrarApiAccessorInstance: accessorInstance, allowRetry: true);
-
-      expect(registerAtsignTask.retryCount, registerAtsignTask.maximumRetries);
-      expect(registerAtsignTask.shouldRetry(), false);
+      RegisterAtsign registerAtsignTask = RegisterAtsign(
+          apiAccessorInstance: accessorInstance, allowRetry: true);
       try {
-        await RegistrationFlow().add(registerAtsignTask).start();
-      } on Exception catch (e) {
-        assert(e is AtRegisterException &&
-            e.message.contains('another random exception'));
+        await RegistrationFlow(params).add(registerAtsignTask).start();
+      } on Exception catch(e){
+        expect(e.runtimeType, AtRegisterException);
+        assert(e.toString().contains('Could not complete the task'));  
       }
+      expect(registerAtsignTask.retryCount, registerAtsignTask.maximumRetries);
+      expect(registerAtsignTask.shouldRetry(), false);
     });
 
     test(
@@ -87,16 +68,18 @@ void main() {
       RegisterParams params = RegisterParams()
         ..atsign = atsign
         ..email = email;
-      RegisterAtsign registerAtsignTask = RegisterAtsign(params,
-          registrarApiAccessorInstance: accessorInstance, allowRetry: true);
-
+      RegisterAtsign registerAtsignTask = RegisterAtsign(
+          apiAccessorInstance: accessorInstance, allowRetry: true);
+      bool exceptionFlag = false;
       try {
-        await RegistrationFlow().add(registerAtsignTask).start();
+        await RegistrationFlow(params).add(registerAtsignTask).start();
       } on Exception catch (e) {
-        print(e.toString());
         assert(e.toString().contains('another new random exception'));
+        exceptionFlag = true;
       }
-      expect(registerAtsignTask.retryCount, 3);
+      expect(exceptionFlag, true);
+      expect(
+          registerAtsignTask.retryCount, registerAtsignTask.maximumRetries);
       expect(registerAtsignTask.shouldRetry(), false);
     });
   });
@@ -141,10 +124,10 @@ void main() {
         ..email = email
         ..otp = otp;
 
-      ValidateOtp validateOtpTask = ValidateOtp(params,
-          registrarApiAccessorInstance: accessorInstance, allowRetry: true);
+      ValidateOtp validateOtpTask =
+          ValidateOtp(apiAccessorInstance: accessorInstance, allowRetry: true);
       RegisterTaskResult result =
-          await RegistrationFlow().add(validateOtpTask).start();
+          await RegistrationFlow(params).add(validateOtpTask).start();
 
       expect(result.data[RegistrarConstants.cramKeyName], cram);
       expect(params.confirmation, true);
@@ -176,11 +159,18 @@ void main() {
         ..email = email
         ..otp = otp;
 
-      ValidateOtp validateOtpTask = ValidateOtp(params,
-          registrarApiAccessorInstance: accessorInstance, allowRetry: true);
-      expect(() async => await RegistrationFlow().add(validateOtpTask).start(),
-          throwsA(ExhaustedVerificationCodeRetriesException));
-
+      ValidateOtp validateOtpTask =
+          ValidateOtp(apiAccessorInstance: accessorInstance, allowRetry: true);
+      bool exceptionCaughtFlag = false;
+      try {
+        await RegistrationFlow(params).add(validateOtpTask).start();
+      } on Exception catch (e) {
+        print(e.runtimeType);
+        print(e.toString());
+        assert(e is ExhaustedVerificationCodeRetriesException);
+        exceptionCaughtFlag = true;
+      }
+      expect(exceptionCaughtFlag, true);
       expect(validateOtpTask.retryCount, validateOtpTask.maximumRetries);
       expect(validateOtpTask.shouldRetry(), false);
     });
@@ -194,8 +184,9 @@ void main() {
       String email = 'lewis44@gmail.com';
       String cram = 'craaaaaaaaaaaaam';
       String otp = 'Agbr';
+
       // mock for get-free-atsign
-      when(() => accessorInstance.getFreeAtSigns())
+      when(() => accessorInstance.getFreeAtSign())
           .thenAnswer((invocation) => Future.value(atsign));
       // mock for register-atsign
       when(() => accessorInstance.registerAtSign(atsign, email))
@@ -226,23 +217,24 @@ void main() {
         ..otp = otp
         ..confirmation = false;
 
-      GetFreeAtsign getFreeAtsignTask = GetFreeAtsign(params,
-          registrarApiAccessorInstance: accessorInstance, allowRetry: true);
+      GetFreeAtsign getFreeAtsignTask = GetFreeAtsign(
+          apiAccessorInstance: accessorInstance, allowRetry: true);
 
-      RegisterAtsign registerAtsignTask = RegisterAtsign(params,
-          registrarApiAccessorInstance: accessorInstance, allowRetry: true);
+      RegisterAtsign registerAtsignTask = RegisterAtsign(
+          apiAccessorInstance: accessorInstance, allowRetry: true);
 
-      ValidateOtp validateOtpTask = ValidateOtp(params,
-          registrarApiAccessorInstance: accessorInstance, allowRetry: true);
+      ValidateOtp validateOtpTask =
+          ValidateOtp(apiAccessorInstance: accessorInstance, allowRetry: true);
 
-      await RegistrationFlow()
+      print(await accessorInstance.getFreeAtSign());
+      RegisterTaskResult result = await RegistrationFlow(params)
           .add(getFreeAtsignTask)
           .add(registerAtsignTask)
           .add(validateOtpTask)
           .start();
 
       expect(params.atsign, atsign);
-      expect(params.cram, cram);
+      expect(result.data[RegistrarConstants.cramKeyName], cram);
       expect(params.confirmation, true);
     });
   });

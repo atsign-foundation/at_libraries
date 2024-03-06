@@ -1,20 +1,25 @@
 import 'package:at_commons/at_commons.dart';
 
 class AtRegisterException extends AtException {
-  AtRegisterException(super.message, {super.intent, super.exceptionScenario});
+  AtRegisterException(String message,
+      {Intent? intent, ExceptionScenario? exceptionScenario})
+      : super(message, intent: intent, exceptionScenario: exceptionScenario);
 }
 
 class MaximumAtsignQuotaException extends AtException {
-  MaximumAtsignQuotaException(super.message,
-      {super.intent, super.exceptionScenario});
+  MaximumAtsignQuotaException(String message,
+      {Intent? intent, ExceptionScenario? exceptionScenario})
+      : super(message, intent: intent, exceptionScenario: exceptionScenario);
 }
 
 class InvalidVerificationCodeException extends AtException {
-  InvalidVerificationCodeException(super.message,
-      {super.intent, super.exceptionScenario});
+  InvalidVerificationCodeException(String message,
+      {Intent? intent, ExceptionScenario? exceptionScenario})
+      : super(message, intent: intent, exceptionScenario: exceptionScenario);
 }
 
 class ExhaustedVerificationCodeRetriesException extends AtException {
-  ExhaustedVerificationCodeRetriesException(super.message,
-      {super.intent, super.exceptionScenario});
+  ExhaustedVerificationCodeRetriesException(String message,
+      {Intent? intent, ExceptionScenario? exceptionScenario})
+      : super(message, intent: intent, exceptionScenario: exceptionScenario);
 }
