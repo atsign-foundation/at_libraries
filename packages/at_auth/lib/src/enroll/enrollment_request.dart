@@ -1,5 +1,6 @@
 import 'package:at_auth/src/enroll/base_enrollment_request.dart';
 
+/// The [EnrollmentRequest] serves as an enrollment
 class EnrollmentRequest extends BaseEnrollmentRequest {
   Map<String, String> namespaces;
   String? encryptedAPKAMSymmetricKey;

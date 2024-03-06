@@ -22,60 +22,69 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
   @override
   Future<AtEnrollmentResponse> submit(
       BaseEnrollmentRequest baseEnrollmentRequest, AtLookUp atLookUp) async {
-    EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
-      ..appName = baseEnrollmentRequest.appName
-      ..deviceName = baseEnrollmentRequest.deviceName;
-
     switch (baseEnrollmentRequest) {
       case FirstEnrollmentRequest _:
-        enrollVerbBuilder.apkamPublicKey = baseEnrollmentRequest.apkamPublicKey;
-        enrollVerbBuilder.encryptedDefaultEncryptionPrivateKey =
-            baseEnrollmentRequest.encryptedDefaultEncryptionPrivateKey;
-        enrollVerbBuilder.encryptedDefaultSelfEncryptionKey =
-            baseEnrollmentRequest.encryptedDefaultSelfEncryptionKey;
-        String? serverResponse =
-            await _executeEnrollCommand(enrollVerbBuilder, atLookUp);
-        var enrollJson = jsonDecode(serverResponse);
-        var enrollmentIdFromServer = enrollJson[AtConstants.enrollmentId];
-        var enrollStatus = getEnrollStatusFromString(enrollJson['status']);
-        return AtEnrollmentResponse(enrollmentIdFromServer, enrollStatus);
+        return _handleFirstEnrollmentRequest(baseEnrollmentRequest, atLookUp);
       case EnrollmentRequest _:
-        // Generate APKAM Key pair
-        AtPkamKeyPair apkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
-        enrollVerbBuilder.apkamPublicKey = apkamKeyPair.atPublicKey.publicKey;
-        SymmetricKey apkamSymmetricKey =
-            AtChopsUtil.generateSymmetricKey(EncryptionKeyType.aes256);
-        String defaultEncryptionPublicKey =
-            await _getDefaultEncryptionPublicKey(atLookUp);
-        // Encrypting the Encryption Public key with APKAM Symmetric key.
-        enrollVerbBuilder.encryptedAPKAMSymmetricKey =
-            RSAPublicKey.fromString(defaultEncryptionPublicKey)
-                .encrypt(apkamSymmetricKey.key);
-        enrollVerbBuilder.otp = baseEnrollmentRequest.otp;
-        enrollVerbBuilder.namespaces = baseEnrollmentRequest.namespaces;
-        String? serverResponse =
-            await _executeEnrollCommand(enrollVerbBuilder, atLookUp);
-        var enrollJson = jsonDecode(serverResponse);
-        var enrollmentIdFromServer = enrollJson[AtConstants.enrollmentId];
-        var enrollStatus = getEnrollStatusFromString(enrollJson['status']);
-        AtAuthKeys atAuthKeys = AtAuthKeys()
-          ..apkamPrivateKey = apkamKeyPair.atPrivateKey.privateKey
-          ..apkamPublicKey = apkamKeyPair.atPublicKey.publicKey
-          ..apkamSymmetricKey = apkamSymmetricKey.key
-          ..enrollmentId = enrollJson[AtConstants.enrollmentId]
-          ..defaultEncryptionPublicKey = defaultEncryptionPublicKey;
-        return AtEnrollmentResponse(enrollmentIdFromServer, enrollStatus)
-          ..atAuthKeys = atAuthKeys;
+        return _handleEnrollmentRequest(baseEnrollmentRequest, atLookUp);
       default:
-        throw AtException('Invalid type received');
+        throw InvalidRequestException('Invalid Enrollment request received');
     }
   }
 
-  /// Approves the enrollment request.
-  /// The encrptedAPKAMSymmetric is received from the secondary server
-  /// 1. Decrypt the encrypted "APKAM Symmetric Key" with the defaultEncryptionPrivateKey to get the original APKAM Symmetric key
-  /// 2. Encrypt the defaultEncryptionPrivateKey and defaultSelfEncryptionKey with the APKAM Symmetric key.
-  /// 3. Send the enrollmentId, encrypted "defaultEncryptionPrivateKey" and encrypted "selfEncryptionKey" to secondary server.
+  /// Handles the FirstEnrollmentRequest. This is submitted when an atSign is onboarded for the first time.
+  Future<AtEnrollmentResponse> _handleFirstEnrollmentRequest(
+      FirstEnrollmentRequest baseEnrollmentRequest, AtLookUp atLookUp) async {
+    EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
+      ..appName = baseEnrollmentRequest.appName
+      ..deviceName = baseEnrollmentRequest.deviceName;
+    enrollVerbBuilder.apkamPublicKey = baseEnrollmentRequest.apkamPublicKey;
+    enrollVerbBuilder.encryptedDefaultEncryptionPrivateKey =
+        baseEnrollmentRequest.encryptedDefaultEncryptionPrivateKey;
+    enrollVerbBuilder.encryptedDefaultSelfEncryptionKey =
+        baseEnrollmentRequest.encryptedDefaultSelfEncryptionKey;
+    String? serverResponse =
+        await _executeEnrollCommand(enrollVerbBuilder, atLookUp);
+    var enrollJson = jsonDecode(serverResponse);
+    var enrollmentIdFromServer = enrollJson[AtConstants.enrollmentId];
+    var enrollStatus = getEnrollStatusFromString(enrollJson['status']);
+    return AtEnrollmentResponse(enrollmentIdFromServer, enrollStatus);
+  }
+
+  /// Handles the subsequent enrollment requests.
+  Future<AtEnrollmentResponse> _handleEnrollmentRequest(
+      EnrollmentRequest enrollmentRequest, AtLookUp atLookUp) async {
+    EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
+      ..appName = enrollmentRequest.appName
+      ..deviceName = enrollmentRequest.deviceName;
+    // Generate APKAM Key pair
+    AtPkamKeyPair apkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
+    enrollVerbBuilder.apkamPublicKey = apkamKeyPair.atPublicKey.publicKey;
+    SymmetricKey apkamSymmetricKey =
+        AtChopsUtil.generateSymmetricKey(EncryptionKeyType.aes256);
+    String defaultEncryptionPublicKey =
+        await _getDefaultEncryptionPublicKey(atLookUp);
+    // Encrypting the Encryption Public key with APKAM Symmetric key.
+    enrollVerbBuilder.encryptedAPKAMSymmetricKey =
+        RSAPublicKey.fromString(defaultEncryptionPublicKey)
+            .encrypt(apkamSymmetricKey.key);
+    enrollVerbBuilder.otp = enrollmentRequest.otp;
+    enrollVerbBuilder.namespaces = enrollmentRequest.namespaces;
+    String? serverResponse =
+        await _executeEnrollCommand(enrollVerbBuilder, atLookUp);
+    var enrollJson = jsonDecode(serverResponse);
+    var enrollmentIdFromServer = enrollJson[AtConstants.enrollmentId];
+    var enrollStatus = getEnrollStatusFromString(enrollJson['status']);
+    AtAuthKeys atAuthKeys = AtAuthKeys()
+      ..apkamPrivateKey = apkamKeyPair.atPrivateKey.privateKey
+      ..apkamPublicKey = apkamKeyPair.atPublicKey.publicKey
+      ..apkamSymmetricKey = apkamSymmetricKey.key
+      ..enrollmentId = enrollJson[AtConstants.enrollmentId]
+      ..defaultEncryptionPublicKey = defaultEncryptionPublicKey;
+    return AtEnrollmentResponse(enrollmentIdFromServer, enrollStatus)
+      ..atAuthKeys = atAuthKeys;
+  }
+
   @override
   Future<AtEnrollmentResponse> approve(
       EnrollmentRequestDecision enrollmentRequestDecision,
@@ -145,8 +154,41 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
     return enrollmentResponse;
   }
 
+  Future<String> _getDefaultEncryptionPublicKey(AtLookUp atLookupImpl) async {
+    var lookupVerbBuilder = LookupVerbBuilder()
+      ..atKey = (AtKey()
+        ..key = 'publickey'
+        ..sharedBy = _atSign);
+    String? lookupResult = await atLookupImpl.executeVerb(lookupVerbBuilder);
+    if (lookupResult == null || lookupResult.isEmpty) {
+      throw AtEnrollmentException(
+          'Unable to lookup encryption public key. Server response is null/empty');
+    }
+    var defaultEncryptionPublicKey = lookupResult.replaceFirst('data:', '');
+    return defaultEncryptionPublicKey;
+  }
+
+  _convertEnrollmentStatusToEnum(String enrollmentStatus) {
+    switch (enrollmentStatus) {
+      case 'approved':
+        return EnrollmentStatus.approved;
+      case 'denied:':
+        return EnrollmentStatus.denied;
+      case 'expired':
+        return EnrollmentStatus.expired;
+      case 'revoked':
+        return EnrollmentStatus.revoked;
+      case 'pending':
+        return EnrollmentStatus.pending;
+      default:
+        throw AtEnrollmentException(
+            '$enrollmentStatus is not a valid enrollment status');
+    }
+  }
+
   /// Creates a verb builder instance based on the [request] type
   @visibleForTesting
+  @Deprecated('This method is obsolate')
   EnrollVerbBuilder createEnrollVerbBuilder(
     AtEnrollmentRequest request, {
     AtPkamKeyPair? atPkamKeyPair,
@@ -170,10 +212,10 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
         ..apkamPublicKey = atPkamKeyPair!.atPublicKey.publicKey
         ..encryptedAPKAMSymmetricKey = encryptedApkamSymmetricKey;
     }
-
     return enrollVerbBuilder;
   }
 
+  @Deprecated('message')
   Future<String> _executeEnrollCommand(
       EnrollVerbBuilder enrollVerbBuilder, AtLookUp atLookUp) async {
     var enrollResult =
@@ -187,25 +229,8 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
     return enrollResult.replaceFirst('data:', '');
   }
 
-  _convertEnrollmentStatusToEnum(String enrollmentStatus) {
-    switch (enrollmentStatus) {
-      case 'approved':
-        return EnrollmentStatus.approved;
-      case 'denied:':
-        return EnrollmentStatus.denied;
-      case 'expired':
-        return EnrollmentStatus.expired;
-      case 'revoked':
-        return EnrollmentStatus.revoked;
-      case 'pending':
-        return EnrollmentStatus.pending;
-      default:
-        throw AtEnrollmentException(
-            '$enrollmentStatus is not a valid enrollment status');
-    }
-  }
-
   @override
+  @Deprecated('message')
   Future<AtEnrollmentResponse> submitEnrollment(
       AtEnrollmentRequest atEnrollmentRequest, AtLookUp atLookUp) async {
     switch (atEnrollmentRequest) {
@@ -275,20 +300,6 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
     return atEnrollmentResponse;
   }
 
-  Future<String> _getDefaultEncryptionPublicKey(AtLookUp atLookupImpl) async {
-    var lookupVerbBuilder = LookupVerbBuilder()
-      ..atKey = (AtKey()
-        ..key = 'publickey'
-        ..sharedBy = _atSign);
-    String? lookupResult = await atLookupImpl.executeVerb(lookupVerbBuilder);
-    if (lookupResult == null || lookupResult.isEmpty) {
-      throw AtEnrollmentException(
-          'Unable to lookup encryption public key. Server response is null/empty');
-    }
-    var defaultEncryptionPublicKey = lookupResult.replaceFirst('data:', '');
-    return defaultEncryptionPublicKey;
-  }
-
   @override
   Future<AtEnrollmentResponse> manageEnrollmentApproval(
       AtEnrollmentRequest atEnrollmentRequest, AtLookUp atLookUp) async {
@@ -298,10 +309,16 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
           throw AtEnrollmentException(
               'Invalid atEnrollmentRequest type: $atEnrollmentRequest. Please pass AtEnrollmentNotificationRequest');
         }
-        return AtEnrollmentResponse('enrollmentId', EnrollmentStatus.approved);
-      //return approve(atEnrollmentRequest, atLookUp);
+        EnrollmentRequestDecision enrollmentRequestDecision =
+            EnrollmentRequestDecision.approved(ApprovedRequestDecisionBuilder(
+                enrollmentId: atEnrollmentRequest.enrollmentId!,
+                encryptedAPKAMSymmetricKey:
+                    atEnrollmentRequest.encryptedApkamSymmetricKey));
+        return approve(enrollmentRequestDecision, atLookUp);
       case EnrollOperationEnum.deny:
-      //return deny(atEnrollmentRequest, atLookUp);
+        return deny(
+            EnrollmentRequestDecision.denied(atEnrollmentRequest.enrollmentId!),
+            atLookUp);
       default:
         throw AtEnrollmentException('Enrollment operation is not provided');
     }

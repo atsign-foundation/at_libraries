@@ -12,10 +12,9 @@ import 'package:at_commons/at_commons.dart';
 ///
 /// Upon approval, the encryptedAPKAMSymmetricKey undergoes decryption using the default encryption public key to
 /// retrieve the original APKAM Symmetric key. Subsequently, the default encryption key pair and the self-encryption
-/// key are encrypted with the APKAM symmetric key and transmitted to the server.
-///
-/// If the request is denied, the requester is prevented from logging into the application.
-///
+/// key are encrypted with the APKAM symmetric key and transmitted to the server for the requesting app. The requesting
+/// app, then decrypts the encrypted default encryption private key and self encryption key. These keys are used for
+/// decryption of shared data and self data respectively..
 ///
 /// ```dart
 ///  To approve an enrollment request
@@ -25,6 +24,8 @@ import 'package:at_commons/at_commons.dart';
 ///               enrollmentId: 'dummy-enrollment-id',
 ///               encryptedAPKAMSymmetricKey: 'dummy-encrypted-apkam-symmetric-key'));
 /// ```
+///
+/// If the request is denied, the requester is prevented from logging into the application.
 ///
 /// To deny an enrollment request
 ///
@@ -46,6 +47,22 @@ class EnrollmentRequestDecision {
   // Use static factory methods to get instance of EnrollmentRequestDecision
   EnrollmentRequestDecision._();
 
+  /// To approve the request, the "enrollmentId" and its corresponding "encryptedAPKAMSymmetricKey,"
+  /// received through the notification, must be provided using the "AuthenticationRequestDecisionBuilder."
+  ///
+  /// Upon approval, the encryptedAPKAMSymmetricKey undergoes decryption using the default encryption public key to
+  /// retrieve the original APKAM Symmetric key. Subsequently, the default encryption key pair and the self-encryption
+  /// key are encrypted with the APKAM symmetric key and transmitted to the server for the requesting app. The requesting
+  /// app, then decrypts the encrypted default encryption private key and self encryption key. These keys are used for
+  /// decryption of shared data and self data respectively..
+  ///
+  /// ```dart
+  ///  To approve an enrollment request
+  ///
+  /// EnrollmentRequestDecision enrollmentRequestDecision =
+  ///           EnrollmentRequestDecision.approved(ApprovedRequestDecisionBuilder(
+  ///               enrollmentId: 'dummy-enrollment-id',
+  ///               encryptedAPKAMSymmetricKey: 'dummy-encrypted-apkam-symmetric-key'));
   static EnrollmentRequestDecision approved(
       ApprovedRequestDecisionBuilder approvedRequestDecisionBuilder) {
     EnrollmentRequestDecision enrollmentRequestDecision =
@@ -58,6 +75,11 @@ class EnrollmentRequestDecision {
     return enrollmentRequestDecision;
   }
 
+  /// If the request is denied, the requester is prevented from logging into the application.
+  ///
+  /// ```dart
+  ///  EnrollmentRequestDecision enrollmentRequestDecision = EnrollmentRequestDecision.denied('dummy-enrollment-id');
+  /// ```
   static EnrollmentRequestDecision denied(String enrollmentId) {
     return EnrollmentRequestDecision._()
       .._enrollmentId = enrollmentId
@@ -65,6 +87,16 @@ class EnrollmentRequestDecision {
   }
 }
 
+/// The class encapsulates the data required for approving an enrollment.
+///
+/// The enrollmentId is a unique identifier assigned to each enrollment request. This allows identification of individual requests to
+/// perform the enrollment operations.
+///
+/// The encryptedAPKAMSymmetricKey is decrypted using default encryptionPublicKey. The original APKAMSymmetricKey is used to encrypt
+/// the default encryption private key and the self encryption key and are sent to the server for the requesting app.
+///
+/// The requesting app, decrypts the encrypted default encryption private key and self encryption key. These keys are used for decryption
+/// of shared data and self data respectively.
 class ApprovedRequestDecisionBuilder {
   String enrollmentId;
   String encryptedAPKAMSymmetricKey;
