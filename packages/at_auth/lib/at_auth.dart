@@ -17,7 +17,7 @@ export 'src/enroll/base_enrollment_request.dart';
 export 'src/enroll/enrollment_request.dart';
 export 'src/enroll/enrollment_request_decision.dart';
 export 'src/enroll/enrollment_server_response.dart';
-export 'src/enroll/initial_enrollment_request.dart';
+export 'src/enroll/first_enrollment_request.dart';
 export 'src/exception/at_auth_exceptions.dart';
 export 'src/keys/at_auth_keys.dart';
 export 'src/onboard/at_onboarding_request.dart';

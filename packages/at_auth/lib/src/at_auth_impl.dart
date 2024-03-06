@@ -251,8 +251,8 @@ class AtAuthImpl implements AtAuth {
     //   throw AtAuthenticationException('Enrollment error:${e.toString}');
     // }
 
-    InitialEnrollmentRequest initialEnrollmentRequest =
-        InitialEnrollmentRequest(
+    FirstEnrollmentRequest initialEnrollmentRequest =
+        FirstEnrollmentRequest(
             appName: atOnboardingRequest.appName!,
             deviceName: atOnboardingRequest.deviceName!,
             apkamPublicKey: atAuthKeys.apkamPublicKey!,

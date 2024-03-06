@@ -1,6 +1,7 @@
 import 'package:at_auth/src/enroll/at_enrollment_request.dart';
 
 /// Class for attributes required specifically for new enrollment requests from client.
+@Deprecated('Use EnrollmentRequest')
 class AtNewEnrollmentRequest extends AtEnrollmentRequest {
   String _otp;
 

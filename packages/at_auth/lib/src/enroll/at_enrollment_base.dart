@@ -8,9 +8,14 @@ import 'enrollment_request_decision.dart';
 abstract class AtEnrollmentBase {
   /// Submits an enrollment request.
   ///
-  /// The [atEnrollmentRequest] parameter represents the enrollment request details.
-  /// The [atLookUp] parameter is used to perform lookups to secondary server
-  /// to submit an enrollment request.
+  /// The [BaseEnrollmentRequest] is the superclass and serves as the entity responsible for submitting the enrollment request.
+  ///
+  /// Use [FirstEnrollmentRequest] which is subclass of [BaseEnrollmentRequest] when an atSign is onboarded(activated) for the first time.
+  ///
+  /// Use [EnrollmentRequest] which is a subclass of [BaseEnrollmentRequest] to submit subsequent enrollment requests to generate APKAM key-pair which limits access to the
+  /// specified namespaces.
+  ///
+  /// The [atLookUp] parameter is used to perform lookups to secondary server to submit an enrollment request.
   ///
   /// Returns a [Future] containing an [AtEnrollmentResponse] representing the
   /// result of the enrollment.

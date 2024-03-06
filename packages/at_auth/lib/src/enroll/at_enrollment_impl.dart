@@ -27,7 +27,7 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
       ..deviceName = baseEnrollmentRequest.deviceName;
 
     switch (baseEnrollmentRequest) {
-      case InitialEnrollmentRequest _:
+      case FirstEnrollmentRequest _:
         enrollVerbBuilder.apkamPublicKey = baseEnrollmentRequest.apkamPublicKey;
         enrollVerbBuilder.encryptedDefaultEncryptionPrivateKey =
             baseEnrollmentRequest.encryptedDefaultEncryptionPrivateKey;

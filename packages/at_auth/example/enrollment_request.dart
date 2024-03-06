@@ -1,7 +1,5 @@
 import 'package:at_auth/at_auth.dart';
-import 'package:at_auth/src/enroll/enrollment_request.dart';
-import 'package:at_auth/src/enroll/initial_enrollment_request.dart';
-import 'package:at_commons/at_builders.dart';
+import 'package:at_auth/src/enroll/at_enrollment_impl.dart';
 import 'package:at_lookup/at_lookup.dart';
 
 void main() async {
@@ -11,7 +9,7 @@ void main() async {
 
   // 1. Onboarding an app for first time. Submit an enrollment and is auto approved.
   // We get the above details from the AtOnboardingRequest.
-  InitialEnrollmentRequest initialEnrollmentRequest = InitialEnrollmentRequest(
+  FirstEnrollmentRequest initialEnrollmentRequest = FirstEnrollmentRequest(
       appName: 'wavi',
       deviceName: 'my-device',
       apkamPublicKey: 'dummy_apkam_key',
