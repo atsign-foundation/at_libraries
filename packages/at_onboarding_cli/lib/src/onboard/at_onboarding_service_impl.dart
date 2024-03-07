@@ -157,6 +157,16 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         appName, deviceName, otp, namespaces, atLookUpImpl);
     logger.finer('EnrollmentResponse from server: $enrollmentResponse');
 
+    AtChopsKeys atChopsKeys = AtChopsKeys.create(
+        AtEncryptionKeyPair.create(
+            enrollmentResponse.atAuthKeys!.defaultEncryptionPublicKey!, ''),
+        AtPkamKeyPair.create(enrollmentResponse.atAuthKeys!.apkamPublicKey!,
+            enrollmentResponse.atAuthKeys!.apkamPrivateKey!));
+    atChopsKeys.apkamSymmetricKey =
+        AESKey(enrollmentResponse.atAuthKeys!.apkamSymmetricKey!);
+
+    atLookUpImpl.atChops = AtChopsImpl(atChopsKeys);
+
     // Pkam auth will be attempted asynchronously until enrollment is approved/denied
     _attemptPkamAuthAsync(
         atLookUpImpl, enrollmentResponse.enrollmentId, retryInterval);
