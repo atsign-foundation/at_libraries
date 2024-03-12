@@ -50,10 +50,10 @@ class EnrollmentRequestDecision {
   /// To approve the request, the "enrollmentId" and its corresponding "encryptedAPKAMSymmetricKey,"
   /// received through the notification, must be provided using the "AuthenticationRequestDecisionBuilder."
   ///
-  /// Upon approval, the encryptedAPKAMSymmetricKey undergoes decryption using the default encryption public key to
-  /// retrieve the original APKAM Symmetric key. Subsequently, the default encryption key pair and the self-encryption
-  /// key are encrypted with the APKAM symmetric key and transmitted to the server for the requesting app. The requesting
-  /// app, then decrypts the encrypted default encryption private key and self encryption key. These keys are used for
+  /// Upon approval, the encryptedAPKAMSymmetricKey undergoes decryption using the default encryption private key to
+  /// retrieve the original APKAM Symmetric key. Subsequently, default encryption private key and self-encryption key
+  /// are encrypted with the APKAM symmetric key and transmitted to server for the requesting app. The requesting app,
+  /// then decrypts the encrypted default encryption private key and self encryption key. These keys are used for
   /// decryption of shared data and self data respectively..
   ///
   /// ```dart
@@ -92,8 +92,8 @@ class EnrollmentRequestDecision {
 /// The enrollmentId is a unique identifier assigned to each enrollment request. This allows identification of individual requests to
 /// perform the enrollment operations.
 ///
-/// The encryptedAPKAMSymmetricKey is decrypted using default encryptionPublicKey. The original APKAMSymmetricKey is used to encrypt
-/// the default encryption private key and the self encryption key and are sent to the server for the requesting app.
+/// The encryptedAPKAMSymmetricKey is decrypted using default encryptionPrivateKey. The original APKAMSymmetricKey is used to
+/// encrypt default encryption private key and self encryption key and are sent to the server for the requesting app.
 ///
 /// The requesting app, decrypts the encrypted default encryption private key and self encryption key. These keys are used for decryption
 /// of shared data and self data respectively.

@@ -4,7 +4,7 @@ import 'package:at_auth/src/enroll/at_enrollment_request.dart';
 /// Class for attributes required specifically for enrollment from the first onboarding client that
 /// has enableEnrollment flag set to true from client side in preferences.
 /// Default encryption private key and default self encryption keys are encrypted using APKAM symmetric key generated for the onboarding client.
-@Deprecated('Use InitialEnrollmentRequest')
+@Deprecated('Use FirstEnrollmentRequest when onboarding an atSign')
 class AtInitialEnrollmentRequest extends AtEnrollmentRequest {
   final String _encryptedDefaultEncryptionPrivateKey;
   final String _encryptedDefaultSelfEncryptionKey;

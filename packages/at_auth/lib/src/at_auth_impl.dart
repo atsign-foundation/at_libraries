@@ -231,7 +231,7 @@ class AtAuthImpl implements AtAuth {
 
     _logger.finer('apkamPublicKey: ${atAuthKeys.apkamPublicKey}');
 
-    FirstEnrollmentRequest initialEnrollmentRequest = FirstEnrollmentRequest(
+    FirstEnrollmentRequest firstEnrollmentRequest = FirstEnrollmentRequest(
         appName: atOnboardingRequest.appName!,
         deviceName: atOnboardingRequest.deviceName!,
         apkamPublicKey: atAuthKeys.apkamPublicKey!,
@@ -242,7 +242,7 @@ class AtAuthImpl implements AtAuth {
     AtEnrollmentResponse? atEnrollmentResponse;
     try {
       atEnrollmentResponse =
-          await atEnrollmentBase?.submit(initialEnrollmentRequest, atLookUp!);
+          await atEnrollmentBase?.submit(firstEnrollmentRequest, atLookUp!);
     } on AtEnrollmentException catch (e) {
       throw AtAuthenticationException('Enrollment error:${e.toString}');
     }

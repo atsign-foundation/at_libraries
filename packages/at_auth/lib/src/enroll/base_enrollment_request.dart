@@ -1,8 +1,9 @@
+import 'package:at_auth/at_auth.dart';
 import 'package:at_commons/at_commons.dart';
 
 /// The BaseEnrollmentRequest class encapsulates shared fields between the InitialEnrollmentRequest and EnrollmentRequest.
 ///
-/// The [InitialEnrollmentRequest] is used when the app is onboarded for the first time. The request is sent to the server
+/// The [FirstEnrollmentRequest] is used when the app is onboarded for the first time. The request is sent to the server
 /// via the CRAM authenticated connection and is auto approved.
 ///
 /// The [EnrollmentRequest] is used by the other apps to authenticate. This request is sent to the server and subsequently

@@ -124,7 +124,7 @@ abstract class AtEnrollmentBase {
   ///
   /// Returns a [Future] containing an [AtEnrollmentResponse] representing the
   /// result of the approval/denial of an enrollment.
-  @Deprecated("Use approve and deny methods")
+  @Deprecated("Use approve and deny methods to approve or deny an enrollment respectively")
   Future<AtEnrollmentResponse> manageEnrollmentApproval(
       AtEnrollmentRequest atEnrollmentRequest, AtLookUp atLookUp);
 }
