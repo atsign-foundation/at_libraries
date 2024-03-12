@@ -32,7 +32,7 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
     }
   }
 
-  /// Handles the FirstEnrollmentRequest. This is submitted when an atSign is onboarded for the first time.
+  /// Handles the FirstEnrollmentRequest, which is submitted when an atSign is first onboarded.
   Future<AtEnrollmentResponse> _handleFirstEnrollmentRequest(
       FirstEnrollmentRequest baseEnrollmentRequest, AtLookUp atLookUp) async {
     EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
@@ -43,11 +43,13 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
         baseEnrollmentRequest.encryptedDefaultEncryptionPrivateKey;
     enrollVerbBuilder.encryptedDefaultSelfEncryptionKey =
         baseEnrollmentRequest.encryptedDefaultSelfEncryptionKey;
+
     String? serverResponse =
         await _executeEnrollCommand(enrollVerbBuilder, atLookUp);
     var enrollJson = jsonDecode(serverResponse);
     var enrollmentIdFromServer = enrollJson[AtConstants.enrollmentId];
     var enrollStatus = getEnrollStatusFromString(enrollJson['status']);
+
     return AtEnrollmentResponse(enrollmentIdFromServer, enrollStatus);
   }
 
@@ -57,6 +59,7 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
     EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
       ..appName = enrollmentRequest.appName
       ..deviceName = enrollmentRequest.deviceName;
+
     // Generate APKAM Key pair
     AtPkamKeyPair apkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
     enrollVerbBuilder.apkamPublicKey = apkamKeyPair.atPublicKey.publicKey;
@@ -70,6 +73,7 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
             .encrypt(apkamSymmetricKey.key);
     enrollVerbBuilder.otp = enrollmentRequest.otp;
     enrollVerbBuilder.namespaces = enrollmentRequest.namespaces;
+
     String? serverResponse =
         await _executeEnrollCommand(enrollVerbBuilder, atLookUp);
     var enrollJson = jsonDecode(serverResponse);
@@ -81,6 +85,7 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
       ..apkamSymmetricKey = apkamSymmetricKey.key
       ..enrollmentId = enrollJson[AtConstants.enrollmentId]
       ..defaultEncryptionPublicKey = defaultEncryptionPublicKey;
+
     return AtEnrollmentResponse(enrollmentIdFromServer, enrollStatus)
       ..atAuthKeys = atAuthKeys;
   }
@@ -89,7 +94,10 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
   Future<AtEnrollmentResponse> approve(
       EnrollmentRequestDecision enrollmentRequestDecision,
       AtLookUp atLookUp) async {
-    // TODO: NULL check for atChops.
+    if (atLookUp.atChops == null) {
+      throw AtAuthenticationException(
+          'The authentication keys are not initialized');
+    }
     // Fetch the encryptionPrivateKey from atChops instance.
     RSAPrivateKey defaultEncryptionPrivateKey = RSAPrivateKey.fromString(
         atLookUp
@@ -168,7 +176,7 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
     return defaultEncryptionPublicKey;
   }
 
-  _convertEnrollmentStatusToEnum(String enrollmentStatus) {
+  EnrollmentStatus _convertEnrollmentStatusToEnum(String enrollmentStatus) {
     switch (enrollmentStatus) {
       case 'approved':
         return EnrollmentStatus.approved;
@@ -215,7 +223,6 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
     return enrollVerbBuilder;
   }
 
-  @Deprecated('message')
   Future<String> _executeEnrollCommand(
       EnrollVerbBuilder enrollVerbBuilder, AtLookUp atLookUp) async {
     var enrollResult =
@@ -230,7 +237,7 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
   }
 
   @override
-  @Deprecated('message')
+  @Deprecated('Use submit method')
   Future<AtEnrollmentResponse> submitEnrollment(
       AtEnrollmentRequest atEnrollmentRequest, AtLookUp atLookUp) async {
     switch (atEnrollmentRequest) {
@@ -244,6 +251,7 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
     }
   }
 
+  @Deprecated('use submit method')
   Future<AtEnrollmentResponse> _initialClientEnrollment(
       AtInitialEnrollmentRequest atInitialEnrollmentRequest,
       AtLookUp atLookUp) async {
@@ -260,6 +268,7 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
       ..atAuthKeys = atAuthKeys;
   }
 
+  @Deprecated('Use submit method')
   Future<AtEnrollmentResponse> _newClientEnrollment(
       AtNewEnrollmentRequest atNewEnrollmentRequest, AtLookUp atLookUp) async {
     _logger.info('Generating APKAM encryption keypair and APKAM symmetric key');

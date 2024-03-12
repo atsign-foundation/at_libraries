@@ -231,38 +231,21 @@ class AtAuthImpl implements AtAuth {
 
     _logger.finer('apkamPublicKey: ${atAuthKeys.apkamPublicKey}');
 
-    // Replacing AtInitialEnrollmentBuilder with InitialEnrollmentRequest.
-    // and use submit method instead of submitEnrollment.
-    // var enrollRequestBuilder = AtInitialEnrollmentRequestBuilder()
-    //   ..setAppName(atOnboardingRequest.appName)
-    //   ..setDeviceName(atOnboardingRequest.deviceName)
-    //   ..setEncryptedDefaultEncryptionPrivateKey(
-    //       encryptedDefaultEncryptionPrivateKey)
-    //   ..setEncryptedDefaultSelfEncryptionKey(encryptedDefaultSelfEncryptionKey)
-    //   ..setApkamPublicKey(atAuthKeys.apkamPublicKey)
-    //   ..setAtAuthKeys(atAuthKeys)
-    //   ..setEnrollOperationEnum(EnrollOperationEnum.request);
-    // atEnrollmentBase ??= AtEnrollmentImpl(atOnboardingRequest.atSign);
-    // AtEnrollmentResponse enrollmentResponse;
-    // try {
-    //   enrollmentResponse = await atEnrollmentBase!
-    //       .submitEnrollment(enrollRequestBuilder.build(), atLookUp!);
-    // } on AtEnrollmentException catch (e) {
-    //   throw AtAuthenticationException('Enrollment error:${e.toString}');
-    // }
+    FirstEnrollmentRequest initialEnrollmentRequest = FirstEnrollmentRequest(
+        appName: atOnboardingRequest.appName!,
+        deviceName: atOnboardingRequest.deviceName!,
+        apkamPublicKey: atAuthKeys.apkamPublicKey!,
+        encryptedDefaultEncryptionPrivateKey:
+            encryptedDefaultEncryptionPrivateKey,
+        encryptedDefaultSelfEncryptionKey: encryptedDefaultSelfEncryptionKey);
 
-    FirstEnrollmentRequest initialEnrollmentRequest =
-        FirstEnrollmentRequest(
-            appName: atOnboardingRequest.appName!,
-            deviceName: atOnboardingRequest.deviceName!,
-            apkamPublicKey: atAuthKeys.apkamPublicKey!,
-            encryptedDefaultEncryptionPrivateKey:
-                encryptedDefaultEncryptionPrivateKey,
-            encryptedDefaultSelfEncryptionKey:
-                encryptedDefaultSelfEncryptionKey);
-
-    AtEnrollmentResponse? atEnrollmentResponse =
-        await atEnrollmentBase?.submit(initialEnrollmentRequest, atLookUp!);
+    AtEnrollmentResponse? atEnrollmentResponse;
+    try {
+      atEnrollmentResponse =
+          await atEnrollmentBase?.submit(initialEnrollmentRequest, atLookUp!);
+    } on AtEnrollmentException catch (e) {
+      throw AtAuthenticationException('Enrollment error:${e.toString}');
+    }
     _logger.finer('enrollment response: ${atEnrollmentResponse.toString()}');
     var enrollmentIdFromServer = atEnrollmentResponse?.enrollmentId;
     var enrollmentStatus = atEnrollmentResponse?.enrollStatus;

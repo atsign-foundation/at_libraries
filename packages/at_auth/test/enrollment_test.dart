@@ -81,18 +81,14 @@ void main() {
     when(() => (mockAtLookUp as AtLookupImpl).close())
         .thenAnswer((_) async => ());
 
-    AtNewEnrollmentRequestBuilder atNewEnrollmentRequestBuilder =
-        AtNewEnrollmentRequestBuilder()
-          ..setAppName('wavi')
-          ..setDeviceName('pixel')
-          ..setNamespaces({'wavi': 'rw'})
-          ..setOtp('A123FE')
-          ..setApkamPublicKey('testApkamPublicKey');
-    AtNewEnrollmentRequest atNewEnrollmentRequest =
-        atNewEnrollmentRequestBuilder.build();
+    EnrollmentRequest enrollmentRequest = EnrollmentRequest(
+        appName: 'wavi',
+        deviceName: 'pixel',
+        otp: 'A123FE',
+        namespaces: {'wavi': 'rw'});
 
     AtEnrollmentResponse atEnrollmentResponse = await atEnrollmentServiceImpl
-        .submitEnrollment(atNewEnrollmentRequest, mockAtLookUp);
+        .submit(enrollmentRequest, mockAtLookUp);
     expect(atEnrollmentResponse.enrollmentId, '123');
     expect(atEnrollmentResponse.enrollStatus, EnrollmentStatus.pending);
   });
