@@ -158,7 +158,7 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
     enrollResponse = enrollResponse?.replaceAll('data:', '');
     var enrollmentJsonMap = jsonDecode(enrollResponse!);
     AtEnrollmentResponse enrollmentResponse = AtEnrollmentResponse(
-        enrollmentJsonMap['enrollmentId'], enrollmentJsonMap['status']);
+        enrollmentJsonMap['enrollmentId'], _convertEnrollmentStatusToEnum(enrollmentJsonMap['status']));
     return enrollmentResponse;
   }
 
@@ -180,7 +180,7 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
     switch (enrollmentStatus) {
       case 'approved':
         return EnrollmentStatus.approved;
-      case 'denied:':
+      case 'denied':
         return EnrollmentStatus.denied;
       case 'expired':
         return EnrollmentStatus.expired;
