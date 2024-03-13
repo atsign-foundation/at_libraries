@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/src/verb/enroll_params.dart';
 import 'package:test/test.dart';
 
@@ -52,6 +53,20 @@ void main() {
       var enrollParams = jsonDecode(command);
       expect(enrollParams['enrollmentId'], '123');
     });
+
+    test('A test to verify enroll list regex with params', () {
+      String command = 'enroll:list:{"approvalStatusFilter":"123"}';
+      expect(RegExp(VerbSyntax.enroll).hasMatch(command), true);
+
+      command = command.replaceAll('enroll:list:', '');
+      var enrollParams = jsonDecode(command);
+      expect(enrollParams['approvalStatusFilter'], '123');
+    });
+
+    test('A test to verify enroll list regex without params', () {
+      String command = 'enroll:list';
+      expect(RegExp(VerbSyntax.enroll).hasMatch(command), true);
+    });
   });
 
   group('A group of tests to verify toJson and fromJson in EnrollParams', () {
@@ -64,7 +79,8 @@ void main() {
         ..enrollmentId = '1234'
         ..encryptedAPKAMSymmetricKey = 'dummy_pkam_sym_key'
         ..encryptedDefaultEncryptionPrivateKey = 'dummy_encrypted_private_key'
-        ..encryptedDefaultSelfEncryptionKey = 'dummy_self_encryption_key';
+        ..encryptedDefaultSelfEncryptionKey = 'dummy_self_encryption_key'
+      ..approvalStatusFilter = 'pending';
 
       Map<String, dynamic> enrollParamsMap = enrollParams.toJson();
       expect(enrollParamsMap['appName'], 'wavi');
@@ -78,6 +94,7 @@ void main() {
           'dummy_encrypted_private_key');
       expect(enrollParamsMap['encryptedDefaultSelfEncryptionKey'],
           'dummy_self_encryption_key');
+      expect(enrollParamsMap['approvalStatusFilter'], 'pending');
     });
 
     test('A test to verify fromJson', () {
@@ -93,6 +110,7 @@ void main() {
       enrollParamsMap['encryptedDefaultSelfEncryptionKey'] =
           'dummy_self_encryption_key';
       enrollParamsMap['otp'] = '123';
+      enrollParamsMap['approvalStatusFilter'] = 'pending';
 
       var enrollParams = EnrollParams.fromJson(enrollParamsMap);
       expect(enrollParams.appName, 'wavi');
@@ -106,6 +124,7 @@ void main() {
           'dummy_self_encryption_key');
       expect(enrollParams.otp, '123');
       expect(enrollParams.namespaces, {'wavi': 'rw', '__manage': 'r'});
+      expect(enrollParams.approvalStatusFilter, 'pending');
     });
   });
 }
