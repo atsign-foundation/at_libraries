@@ -12,6 +12,7 @@ class EnrollParams {
   String? encryptedDefaultSelfEncryptionKey;
   String? encryptedAPKAMSymmetricKey;
   String? apkamPublicKey;
+  String? approvalStatusFilter;
   EnrollParams();
   factory EnrollParams.fromJson(Map<String, dynamic> json) =>
       _$EnrollParamsFromJson(json);

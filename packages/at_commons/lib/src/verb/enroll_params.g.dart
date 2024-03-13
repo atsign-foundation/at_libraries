@@ -20,7 +20,8 @@ EnrollParams _$EnrollParamsFromJson(Map<String, dynamic> json) => EnrollParams()
   ..encryptedDefaultSelfEncryptionKey =
       json['encryptedDefaultSelfEncryptionKey'] as String?
   ..encryptedAPKAMSymmetricKey = json['encryptedAPKAMSymmetricKey'] as String?
-  ..apkamPublicKey = json['apkamPublicKey'] as String?;
+  ..apkamPublicKey = json['apkamPublicKey'] as String?
+  ..approvalStatusFilter = json['approvalStatusFilter'] as String?;
 
 Map<String, dynamic> _$EnrollParamsToJson(EnrollParams instance) =>
     <String, dynamic>{
@@ -35,4 +36,5 @@ Map<String, dynamic> _$EnrollParamsToJson(EnrollParams instance) =>
           instance.encryptedDefaultSelfEncryptionKey,
       'encryptedAPKAMSymmetricKey': instance.encryptedAPKAMSymmetricKey,
       'apkamPublicKey': instance.apkamPublicKey,
+      'approvalStatusFilter': instance.approvalStatusFilter,
     };
