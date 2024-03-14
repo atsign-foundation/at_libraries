@@ -1,4 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
+
+import '../../at_commons.dart';
 part 'enroll_params.g.dart';
 
 @JsonSerializable()
@@ -12,7 +14,8 @@ class EnrollParams {
   String? encryptedDefaultSelfEncryptionKey;
   String? encryptedAPKAMSymmetricKey;
   String? apkamPublicKey;
-  String? approvalStatusFilter;
+  List<EnrollmentStatus> enrollmentStatusFilter = EnrollmentStatus.values;
+  // or List<EnrollmentStatus> enrollmentStatusFilter = [EnrollmentStatus.approved, EnrollmentStatus.pending]
   EnrollParams();
   factory EnrollParams.fromJson(Map<String, dynamic> json) =>
       _$EnrollParamsFromJson(json);
