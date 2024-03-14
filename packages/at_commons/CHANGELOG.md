@@ -1,6 +1,6 @@
 ## 4.0.4
 - feat: update enroll regex so that enroll:list accepts optional params
-- feat: introduce field in EnrollParams named 'approvalStatusFilter'
+- feat: introduce field in EnrollParams named 'enrollmentStatusFilter'
 ## 4.0.3
 - fix: "toJson()" invoked on "pubKeyHash" leads to NullPointerException.
 ## 4.0.2
