@@ -15,7 +15,6 @@ class EnrollParams {
   String? encryptedAPKAMSymmetricKey;
   String? apkamPublicKey;
   List<EnrollmentStatus> enrollmentStatusFilter = EnrollmentStatus.values;
-  // or List<EnrollmentStatus> enrollmentStatusFilter = [EnrollmentStatus.approved, EnrollmentStatus.pending]
   EnrollParams();
   factory EnrollParams.fromJson(Map<String, dynamic> json) =>
       _$EnrollParamsFromJson(json);
