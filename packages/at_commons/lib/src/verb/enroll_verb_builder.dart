@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:at_commons/src/enroll/enrollment.dart';
 import 'package:at_commons/src/verb/abstract_verb_builder.dart';
 import 'package:at_commons/src/verb/enroll_params.dart';
 import 'package:meta/meta.dart';
@@ -35,29 +36,34 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
   String? encryptedDefaultSelfEncryptionKey;
   String? encryptedAPKAMSymmetricKey;
 
+  List<EnrollmentStatus>? enrollmentStatusFilter;
+
   @override
   String buildCommand() {
     var sb = StringBuffer();
     sb.write('enroll:');
     sb.write(getEnrollOperation(operation));
 
-    Map<String, dynamic> enrollParams = (EnrollParams()
-          ..enrollmentId = enrollmentId
-          ..appName = appName
-          ..deviceName = deviceName
-          ..apkamPublicKey = apkamPublicKey
-          ..otp = otp
-          ..namespaces = namespaces
-          ..encryptedDefaultEncryptionPrivateKey =
-              encryptedDefaultEncryptionPrivateKey
-          ..encryptedDefaultSelfEncryptionKey =
-              encryptedDefaultSelfEncryptionKey
-          ..encryptedAPKAMSymmetricKey = encryptedAPKAMSymmetricKey)
-        .toJson();
-    enrollParams
+    EnrollParams enrollParams = EnrollParams()
+      ..enrollmentId = enrollmentId
+      ..appName = appName
+      ..deviceName = deviceName
+      ..apkamPublicKey = apkamPublicKey
+      ..otp = otp
+      ..namespaces = namespaces
+      ..encryptedDefaultEncryptionPrivateKey =
+          encryptedDefaultEncryptionPrivateKey
+      ..encryptedDefaultSelfEncryptionKey = encryptedDefaultSelfEncryptionKey
+      ..encryptedAPKAMSymmetricKey = encryptedAPKAMSymmetricKey;
+    if (operation == EnrollOperationEnum.list) {
+      enrollParams.enrollmentStatusFilter = enrollmentStatusFilter;
+    }
+
+    Map<String, dynamic> enrollParamsJson = enrollParams.toJson();
+    enrollParamsJson
         .removeWhere((key, value) => value == null || value.toString().isEmpty);
-    if (enrollParams.isNotEmpty) {
-      sb.write(':${jsonEncode(enrollParams)}');
+    if (enrollParamsJson.isNotEmpty) {
+      sb.write(':${jsonEncode(enrollParamsJson)}');
     }
     sb.write('\n');
     return sb.toString();
