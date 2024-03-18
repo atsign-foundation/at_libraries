@@ -36,7 +36,10 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
   String? encryptedDefaultSelfEncryptionKey;
   String? encryptedAPKAMSymmetricKey;
 
-  List<EnrollmentStatus>? enrollmentStatusFilter = EnrollmentStatus.values;
+  /// Filters enrollment requests according to the provided [EnrollmentStatus] criteria.
+  ///
+  /// Accepts a list of enrollment statuses, defaulting to all available status values.
+  List<EnrollmentStatus> enrollmentStatusFilter = EnrollmentStatus.values;
 
   @override
   String buildCommand() {

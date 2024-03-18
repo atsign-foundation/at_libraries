@@ -55,12 +55,12 @@ void main() {
 
     test('A test to verify enroll list regex with params', () {
       String command =
-          'enroll:list:{"approvalStatusFilter":"[pending, approved]"}';
+          'enroll:list:{"enrollmentStatusFilter":"[pending, approved]"}';
       expect(RegExp(VerbSyntax.enroll).hasMatch(command), true);
 
       command = command.replaceAll('enroll:list:', '');
       var enrollParams = jsonDecode(command);
-      expect(enrollParams['approvalStatusFilter'], '[pending, approved]');
+      expect(enrollParams['enrollmentStatusFilter'], '[pending, approved]');
     });
 
     test('A test to verify enroll list regex without params', () {
