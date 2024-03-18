@@ -1,3 +1,4 @@
+import 'package:at_commons/src/enroll/enrollment.dart';
 import 'package:at_commons/src/verb/enroll_verb_builder.dart';
 import 'package:at_commons/src/verb/operation_enum.dart';
 import 'package:test/test.dart';
@@ -17,7 +18,7 @@ void main() {
         ..encryptedDefaultSelfEncryptionKey = 'dummy_self_encryption_key';
       var command = enrollVerbBuilder.buildCommand();
       expect(command,
-          'enroll:request:{"enrollmentId":"1234","appName":"wavi","deviceName":"pixel","namespaces":{"wavi":"rw","__manage":"r"},"encryptedDefaultEncryptionPrivateKey":"dummy_encrypted_private_key","encryptedDefaultSelfEncryptionKey":"dummy_self_encryption_key","encryptedAPKAMSymmetricKey":"dummy_pkam_sym_key","apkamPublicKey":"abcd1234","enrollmentStatusFilter":["pending","approved","denied","revoked","expired"]}\n');
+          'enroll:request:{"enrollmentId":"1234","appName":"wavi","deviceName":"pixel","namespaces":{"wavi":"rw","__manage":"r"},"encryptedDefaultEncryptionPrivateKey":"dummy_encrypted_private_key","encryptedDefaultSelfEncryptionKey":"dummy_self_encryption_key","encryptedAPKAMSymmetricKey":"dummy_pkam_sym_key","apkamPublicKey":"abcd1234"}\n');
     });
 
     test('A test to verify enroll approve operation', () {
@@ -33,7 +34,7 @@ void main() {
         ..encryptedDefaultSelfEncryptionKey = 'dummy_self_encryption_key';
       var command = enrollVerbBuilder.buildCommand();
       expect(command,
-          'enroll:approve:{"enrollmentId":"123","appName":"wavi","deviceName":"pixel","namespaces":{"wavi":"rw"},"encryptedDefaultEncryptionPrivateKey":"dummy_encrypted_private_key","encryptedDefaultSelfEncryptionKey":"dummy_self_encryption_key","encryptedAPKAMSymmetricKey":"dummy_pkam_sym_key","apkamPublicKey":"abcd1234","enrollmentStatusFilter":["pending","approved","denied","revoked","expired"]}\n');
+          'enroll:approve:{"enrollmentId":"123","appName":"wavi","deviceName":"pixel","namespaces":{"wavi":"rw"},"encryptedDefaultEncryptionPrivateKey":"dummy_encrypted_private_key","encryptedDefaultSelfEncryptionKey":"dummy_self_encryption_key","encryptedAPKAMSymmetricKey":"dummy_pkam_sym_key","apkamPublicKey":"abcd1234"}\n');
     });
 
     test('A test to verify enroll deny operation', () {
@@ -41,7 +42,7 @@ void main() {
         ..operation = EnrollOperationEnum.deny
         ..enrollmentId = '123';
       var command = enrollVerbBuilder.buildCommand();
-      expect(command, 'enroll:deny:{"enrollmentId":"123","enrollmentStatusFilter":["pending","approved","denied","revoked","expired"]}\n');
+      expect(command, 'enroll:deny:{"enrollmentId":"123"}\n');
     });
 
     test('A test to verify enroll revoke operation', () {
@@ -49,14 +50,19 @@ void main() {
         ..operation = EnrollOperationEnum.revoke
         ..enrollmentId = '123';
       var command = enrollVerbBuilder.buildCommand();
-      expect(command, 'enroll:revoke:{"enrollmentId":"123","enrollmentStatusFilter":["pending","approved","denied","revoked","expired"]}\n');
+      expect(command, 'enroll:revoke:{"enrollmentId":"123"}\n');
     });
 
-    test('A test to verify enroll list operation', () {
+    test('A test to verify to override enroll list status', () {
       var enrollVerbBuilder = EnrollVerbBuilder()
-        ..operation = EnrollOperationEnum.list;
+        ..operation = EnrollOperationEnum.list
+        ..enrollmentStatusFilter = [
+          EnrollmentStatus.approved,
+          EnrollmentStatus.pending
+        ];
       var command = enrollVerbBuilder.buildCommand();
-      expect(command, 'enroll:list:{"enrollmentStatusFilter":["pending","approved","denied","revoked","expired"]}\n');
+      expect(command,
+          'enroll:list:{"enrollmentStatusFilter":["approved","pending"]}\n');
     });
   });
 }

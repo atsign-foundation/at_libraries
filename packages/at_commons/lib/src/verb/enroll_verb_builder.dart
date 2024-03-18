@@ -36,7 +36,7 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
   String? encryptedDefaultSelfEncryptionKey;
   String? encryptedAPKAMSymmetricKey;
 
-  List<EnrollmentStatus>? enrollmentStatusFilter;
+  List<EnrollmentStatus>? enrollmentStatusFilter = EnrollmentStatus.values;
 
   @override
   String buildCommand() {
@@ -54,19 +54,34 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
       ..encryptedDefaultEncryptionPrivateKey =
           encryptedDefaultEncryptionPrivateKey
       ..encryptedDefaultSelfEncryptionKey = encryptedDefaultSelfEncryptionKey
-      ..encryptedAPKAMSymmetricKey = encryptedAPKAMSymmetricKey;
-    if (operation == EnrollOperationEnum.list) {
-      enrollParams.enrollmentStatusFilter = enrollmentStatusFilter;
-    }
+      ..encryptedAPKAMSymmetricKey = encryptedAPKAMSymmetricKey
+      ..enrollmentStatusFilter = enrollmentStatusFilter;
 
     Map<String, dynamic> enrollParamsJson = enrollParams.toJson();
-    enrollParamsJson
-        .removeWhere((key, value) => value == null || value.toString().isEmpty);
+    enrollParamsJson.removeWhere(_removeElements);
     if (enrollParamsJson.isNotEmpty) {
       sb.write(':${jsonEncode(enrollParamsJson)}');
     }
     sb.write('\n');
     return sb.toString();
+  }
+
+  /// Checks if the key and its value should be added to the enroll verb command.
+  ///
+  /// Returning "false" will leave the key and its value in the map, which gets added to the
+  /// enroll verb command. Returning true will remove the key and its value from the map to
+  /// to refrain adding the key and its value to the enroll verb command.
+  bool _removeElements(String key, dynamic value) {
+    if (value == null || value.toString().isEmpty) {
+      return true;
+    }
+    // When operation is not list, EnrollmentStatusFilter is not applicable. Hence remove from enrollParamsJson
+    // to prevent it from adding it enroll verb command.
+    if (key == 'enrollmentStatusFilter' &&
+        operation != EnrollOperationEnum.list) {
+      return true;
+    }
+    return false;
   }
 
   @override
