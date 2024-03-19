@@ -17,6 +17,7 @@ void main() async {
       encryptedDefaultSelfEncryptionKey: 'default-self-encryption-key');
 
   // Contains the response from the server.
+  // ignore: unused_local_variable
   AtEnrollmentResponse atEnrollmentResponse =
       await atEnrollmentBase.submit(initialEnrollmentRequest, atLookUp);
 
@@ -29,7 +30,7 @@ void main() async {
       otp: '123',
       encryptedAPKAMSymmetricKey: 'enc_apkam_sym_key');
 
-  // Intenally, the apkam symmetric key is generated and set to enrollmentRequest
+  // Internally, the apkam symmetric key is generated and set to enrollmentRequest
   enrollmentRequest.encryptedAPKAMSymmetricKey = 'dummy_encrypted_key';
 
   // Contains the response from the server.
