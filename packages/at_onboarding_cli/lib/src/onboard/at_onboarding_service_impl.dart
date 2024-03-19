@@ -47,7 +47,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       {this.atServiceFactory, String? enrollmentId}) {
     // performs atSign format checks on the atSign
     _atSign = AtUtils.fixAtSign(atsign);
-    _atEnrollmentBase ??= at_auth.AtAuthBase.atEnrollment(_atSign);
+    _atEnrollmentBase ??= at_auth.atAuthBase.atEnrollment(_atSign);
     // set default LocalStorage paths for this instance
     atOnboardingPreference.commitLogPath ??=
         HomeDirectoryUtil.getCommitLogPath(_atSign, enrollmentId: enrollmentId);
@@ -116,7 +116,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       throw AtActivateException('atsign is already activated');
     }
 
-    atAuth ??= at_auth.AtAuthBase.atAuth();
+    atAuth ??= at_auth.atAuthBase.atAuth();
     var atOnboardingRequest = at_auth.AtOnboardingRequest(_atSign);
     atOnboardingRequest.rootDomain = atOnboardingPreference.rootDomain;
     atOnboardingRequest.rootPort = atOnboardingPreference.rootPort;
@@ -397,7 +397,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   @override
   Future<bool> authenticate({String? enrollmentId}) async {
-    atAuth ??= at_auth.AtAuthBase.atAuth();
+    atAuth ??= at_auth.atAuthBase.atAuth();
     var atAuthRequest = at_auth.AtAuthRequest(_atSign)
       ..enrollmentId = enrollmentId
       ..atKeysFilePath = atOnboardingPreference.atKeysFilePath

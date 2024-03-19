@@ -23,4 +23,4 @@ export 'src/keys/at_auth_keys.dart';
 export 'src/onboard/at_onboarding_request.dart';
 export 'src/onboard/at_onboarding_response.dart';
 
-final AtAuthInterface AtAuthBase = AtAuthInterfaceImpl();
+final AtAuthInterface atAuthBase = AtAuthInterfaceImpl();
