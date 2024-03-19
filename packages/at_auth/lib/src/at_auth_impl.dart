@@ -11,7 +11,6 @@ import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_utils/at_logger.dart';
 
-import 'at_auth_base.dart';
 import 'enroll/at_enrollment_impl.dart';
 
 class AtAuthImpl implements AtAuth {
