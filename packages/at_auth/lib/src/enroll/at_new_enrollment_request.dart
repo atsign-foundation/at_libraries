@@ -3,7 +3,7 @@ import 'package:at_auth/src/enroll/at_enrollment_request.dart';
 /// Class for attributes required specifically for new enrollment requests from client.
 @Deprecated('Use EnrollmentRequest')
 class AtNewEnrollmentRequest extends AtEnrollmentRequest {
-  String _otp;
+  final String _otp;
 
   AtNewEnrollmentRequest.builder(
       AtNewEnrollmentRequestBuilder atNewEnrollmentRequestBuilder)
@@ -21,8 +21,12 @@ class AtNewEnrollmentRequestBuilder extends AtEnrollmentRequestBuilder {
     return this;
   }
 
+  // ignore: deprecated_member_use_from_same_package
   /// Builds and returns an instance of [AtNewEnrollmentRequest].
+  @override
+  // ignore: deprecated_member_use_from_same_package
   AtNewEnrollmentRequest build() {
+    // ignore: deprecated_member_use_from_same_package
     return AtNewEnrollmentRequest.builder(this);
   }
 }
