@@ -199,6 +199,7 @@ void main() {
             ..setEncryptedDefaultEncryptionPrivateKey('testPrivateKey')
             ..setEncryptedDefaultSelfEncryptionKey('testSelfKey')
             ..setApkamPublicKey('testApkamPublicKey');
+      // ignore: deprecated_member_use_from_same_package
       AtInitialEnrollmentRequest atInitialEnrollmentRequest =
           atInitialEnrollmentRequestBuilder.build();
 
@@ -225,6 +226,7 @@ void main() {
             ..setEncryptedDefaultSelfEncryptionKey('testSelfKey')
             ..setApkamPublicKey('testApkamPublicKey')
             ..setEnrollOperationEnum(EnrollOperationEnum.approve);
+      // ignore: deprecated_member_use_from_same_package
       AtInitialEnrollmentRequest atInitialEnrollmentRequest =
           atInitialEnrollmentRequestBuilder.build();
 
@@ -250,6 +252,7 @@ void main() {
             ..setNamespaces({'wavi': 'rw'})
             ..setOtp('A123FE')
             ..setApkamPublicKey('testApkamPublicKey');
+      // ignore: deprecated_member_use_from_same_package
       AtNewEnrollmentRequest atNewEnrollmentRequest =
           atNewEnrollmentRequestBuilder.build();
 
@@ -273,6 +276,7 @@ void main() {
             ..setOtp('A123FE')
             ..setApkamPublicKey('testApkamPublicKey')
             ..setEnrollOperationEnum(EnrollOperationEnum.request);
+      // ignore: deprecated_member_use_from_same_package
       AtNewEnrollmentRequest atNewEnrollmentRequest =
           atNewEnrollmentRequestBuilder.build();
 
@@ -291,6 +295,7 @@ void main() {
             ..setEnrollmentId('ABC-123-ID')
             ..setEncryptedApkamSymmetricKey('dummy-apkam-symmetric-key')
             ..setEnrollOperationEnum(EnrollOperationEnum.approve);
+      // ignore: deprecated_member_use_from_same_package
       AtEnrollmentNotificationRequest atEnrollmentNotificationRequest =
           atEnrollmentNotificationBuilder.build();
 
@@ -303,7 +308,9 @@ void main() {
 
     test('A test to verify generation of enrollment deny request', () {
       AtEnrollmentRequestBuilder atEnrollmentRequestBuilder =
+          // ignore: deprecated_member_use_from_same_package
           AtEnrollmentRequest.deny()..setEnrollmentId('ABC-123-ID');
+      // ignore: deprecated_member_use_from_same_package
       AtEnrollmentRequest atEnrollmentRequest =
           atEnrollmentRequestBuilder.build();
 
@@ -315,6 +322,7 @@ void main() {
         'A test to verify  createEnrollVerbBuilder for AtInitialEnrollmentRequest',
         () {
       var enrollmentImpl = AtEnrollmentImpl('@alice');
+      // ignore: deprecated_member_use_from_same_package
       AtInitialEnrollmentRequest request = (AtInitialEnrollmentRequestBuilder()
             ..setAppName('TestApp')
             ..setDeviceName('TestDevice')
@@ -324,6 +332,7 @@ void main() {
             ..setApkamPublicKey('apkamPublicKey'))
           .build();
 
+      // ignore: deprecated_member_use_from_same_package
       var result = enrollmentImpl.createEnrollVerbBuilder(request);
 
       expect(result.appName, equals('TestApp'));
@@ -349,6 +358,7 @@ void main() {
 
       var enrollmentImpl = AtEnrollmentImpl('@alice');
       AtPkamKeyPair atPkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
+      // ignore: deprecated_member_use_from_same_package
       var result = enrollmentImpl.createEnrollVerbBuilder(request,
           atPkamKeyPair: atPkamKeyPair);
 
