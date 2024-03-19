@@ -310,6 +310,7 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
   }
 
   @override
+  @Deprecated('Use one of the approve or deny methods')
   Future<AtEnrollmentResponse> manageEnrollmentApproval(
       AtEnrollmentRequest atEnrollmentRequest, AtLookUp atLookUp) async {
     switch (atEnrollmentRequest.enrollOperationEnum) {
