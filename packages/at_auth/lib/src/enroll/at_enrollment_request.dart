@@ -8,6 +8,7 @@ class AtEnrollmentRequest {
   final String? _appName;
   final String? _deviceName;
   final Map<String, String>? _namespaces;
+  // ignore: prefer_final_fields
   EnrollOperationEnum _enrollOperationEnum = EnrollOperationEnum.request;
 
   final String? _enrollmentId;
@@ -94,6 +95,7 @@ class AtEnrollmentRequest {
   }
 }
 
+// ignore: deprecated_member_use_from_same_package
 /// Builder class for creating instances of [AtEnrollmentRequest].
 class AtEnrollmentRequestBuilder {
   String? _appName;
@@ -140,8 +142,11 @@ class AtEnrollmentRequestBuilder {
     return this;
   }
 
+  // ignore: deprecated_member_use_from_same_package
   /// Builds and returns an instance of [AtEnrollmentRequest].
+  // ignore: deprecated_member_use_from_same_package
   AtEnrollmentRequest build() {
+    // ignore: deprecated_member_use_from_same_package
     return AtEnrollmentRequest.builder(this);
   }
 }
