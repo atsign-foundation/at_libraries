@@ -41,8 +41,12 @@ class AtInitialEnrollmentRequestBuilder extends AtEnrollmentRequestBuilder {
     return this;
   }
 
+  // ignore: deprecated_member_use_from_same_package
   /// Builds and returns an instance of [AtInitialEnrollmentRequest].
+  @override
+  // ignore: deprecated_member_use_from_same_package
   AtInitialEnrollmentRequest build() {
+    // ignore: deprecated_member_use_from_same_package
     return AtInitialEnrollmentRequest.builder(this);
   }
 }
