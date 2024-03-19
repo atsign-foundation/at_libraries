@@ -158,7 +158,8 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
     enrollResponse = enrollResponse?.replaceAll('data:', '');
     var enrollmentJsonMap = jsonDecode(enrollResponse!);
     AtEnrollmentResponse enrollmentResponse = AtEnrollmentResponse(
-        enrollmentJsonMap['enrollmentId'], _convertEnrollmentStatusToEnum(enrollmentJsonMap['status']));
+        enrollmentJsonMap['enrollmentId'],
+        _convertEnrollmentStatusToEnum(enrollmentJsonMap['status']));
     return enrollmentResponse;
   }
 

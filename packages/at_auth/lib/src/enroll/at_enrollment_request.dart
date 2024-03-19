@@ -3,7 +3,8 @@ import 'package:at_commons/at_commons.dart';
 
 /// Base class containing common attributes for enrollment requests either from first onboarding client with enrollment enabled
 /// or a new client requesting enrollment.
-@Deprecated('Use FirstEnrollmentRequest when onboarding an atSign and EnrollmentRequest to submit subsequent enrollment requests')
+@Deprecated(
+    'Use FirstEnrollmentRequest when onboarding an atSign and EnrollmentRequest to submit subsequent enrollment requests')
 class AtEnrollmentRequest {
   final String? _appName;
   final String? _deviceName;

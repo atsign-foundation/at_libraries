@@ -217,10 +217,10 @@ void main() {
           .thenAnswer((_) => Future.value(true));
       when(() => mockAtLookUp.executeVerb(any()))
           .thenAnswer((_) => Future.value('data:2'));
-      when(() => mockAtLookUp
-              .executeCommand(any(that: startsWith('enroll:request'))))
-          .thenAnswer((_) =>
-              Future.value('data:{"enrollmentId":"abc123", "status":"approved"}'));
+      when(() =>
+          mockAtLookUp.executeCommand(
+              any(that: startsWith('enroll:request')))).thenAnswer((_) =>
+          Future.value('data:{"enrollmentId":"abc123", "status":"approved"}'));
 
       when(() => mockAtLookUp.close()).thenAnswer((_) async => {});
       when(() => mockPkamAuthenticator.authenticate(enrollmentId: "abc123"))
