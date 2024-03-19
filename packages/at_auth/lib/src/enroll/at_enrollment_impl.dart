@@ -196,7 +196,7 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
 
   /// Creates a verb builder instance based on the [request] type
   @visibleForTesting
-  @Deprecated('This method is obsolate')
+  @Deprecated('This method is obsolete')
   EnrollVerbBuilder createEnrollVerbBuilder(
     AtEnrollmentRequest request, {
     AtPkamKeyPair? atPkamKeyPair,
