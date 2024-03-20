@@ -178,7 +178,7 @@ class AtLookupImpl implements AtLookUp {
       value = VerbUtil.getFormattedValue(value);
       logger.finer('value: $value dataSignature:$dataSignature');
       var isDataValid = publicKey.verifySHA256Signature(
-          utf8.encode(value), base64Decode(dataSignature));
+          utf8.encode(value) as Uint8List, base64Decode(dataSignature));
       logger.finer('data verify result: $isDataValid');
       return 'data:$value';
     } on Exception catch (e) {
