@@ -142,7 +142,8 @@ class CLIBase {
         atKeysFilePath ?? '$homeDir/.atsign/keys/${this.atSign}_key.atKeys';
     localStoragePathToUse =
         storageDir ?? '$homeDir/.$nameSpace/${this.atSign}/storage';
-    downloadPathToUse = downloadDir ?? '$homeDir/.$nameSpace/${this.atSign}/files';
+    downloadPathToUse =
+        downloadDir ?? '$homeDir/.$nameSpace/${this.atSign}/files';
 
     AtSignLogger.defaultLoggingHandler = AtSignLogger.stdErrLoggingHandler;
 
