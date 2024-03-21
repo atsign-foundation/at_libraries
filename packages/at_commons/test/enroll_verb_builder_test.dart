@@ -64,5 +64,13 @@ void main() {
       expect(command,
           'enroll:list:{"enrollmentStatusFilter":["approved","pending"]}\n');
     });
+
+    test('A test to validate enroll list command with default filter', () {
+      var enrollVerbBuilder = EnrollVerbBuilder()
+        ..operation = EnrollOperationEnum.list;
+      var command = enrollVerbBuilder.buildCommand();
+      expect(command,
+          'enroll:list:{"enrollmentStatusFilter":["pending","approved","denied","revoked","expired"]}\n');
+    });
   });
 }

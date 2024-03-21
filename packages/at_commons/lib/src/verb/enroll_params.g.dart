@@ -1,4 +1,5 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart run build_runner build to generate this file
 
 part of 'enroll_params.dart';
 

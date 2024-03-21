@@ -1,5 +1,5 @@
 ## 4.0.4
-- feat: Enhance enroll:list to enable filtering of enrollments based on their status
+- feat: Enhance enroll:list to enable filtering based on enrollment status
 ## 4.0.3
 - fix: "toJson()" invoked on "pubKeyHash" leads to NullPointerException.
 ## 4.0.2

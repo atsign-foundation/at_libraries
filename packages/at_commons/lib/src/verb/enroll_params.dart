@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 
-import '../../at_commons.dart';
+import 'package:at_commons/at_commons.dart';
 part 'enroll_params.g.dart';
 
 @JsonSerializable()

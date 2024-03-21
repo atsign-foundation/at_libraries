@@ -36,9 +36,9 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
   String? encryptedDefaultSelfEncryptionKey;
   String? encryptedAPKAMSymmetricKey;
 
-  /// Filters enrollment requests according to the provided [EnrollmentStatus] criteria.
+  /// Filters enrollment requests based on provided [EnrollmentStatus] criteria.
   ///
-  /// Accepts a list of enrollment statuses, defaulting to all available status values.
+  /// Accepts a list of enrollment statuses. Defaults to all EnrollmentStatuses
   List<EnrollmentStatus> enrollmentStatusFilter = EnrollmentStatus.values;
 
   @override
@@ -69,7 +69,9 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
     return sb.toString();
   }
 
-  /// Checks if the key and its value should be added to the enroll verb command.
+  /// Compares current EnrollOperation with VerbBuilder params and removes any
+  /// that are NOT applicable
+  ///
   ///
   /// Returning "false" will leave the key and its value in the map, which gets added to the
   /// enroll verb command. Returning true will remove the key and its value from the map to
@@ -78,8 +80,8 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
     if (value == null || value.toString().isEmpty) {
       return true;
     }
-    // When operation is not list, EnrollmentStatusFilter is not applicable. Hence remove from enrollParamsJson
-    // to prevent it from adding it enroll verb command.
+    // EnrollmentStatusFilter is only applicable to EnrollOperation.list
+    // Remove it from enrollParamsJson for any operation other than list
     if (key == 'enrollmentStatusFilter' &&
         operation != EnrollOperationEnum.list) {
       return true;
