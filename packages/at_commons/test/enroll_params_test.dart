@@ -7,6 +7,7 @@ void main() {
     test('A test to verify enroll request params', () {
       String command =
           'enroll:request:{"enrollmentId":"1234","appName":"wavi","deviceName":"pixel","namespaces":{"wavi":"rw","__manage":"r"},"encryptedDefaultEncryptionPrivateKey":"dummy_encrypted_private_key","encryptedDefaultSelfEncryptionKey":"dummy_self_encryption_key","encryptedAPKAMSymmetricKey":"dummy_pkam_sym_key","apkamPublicKey":"abcd1234"}';
+      expect(RegExp(VerbSyntax.enroll).hasMatch(command), true);
       command = command.replaceAll('enroll:request:', '');
       var enrollParams = jsonDecode(command);
       expect(enrollParams['enrollmentId'], '1234');
@@ -25,6 +26,7 @@ void main() {
     test('A test to verify enroll approve params', () {
       String command =
           'enroll:approve:{"enrollmentId":"123","appName":"wavi","deviceName":"pixel","namespaces":{"wavi":"rw"},"encryptedDefaultEncryptionPrivateKey":"dummy_encrypted_private_key","encryptedDefaultSelfEncryptionKey":"dummy_self_encryption_key","encryptedAPKAMSymmetricKey":"dummy_pkam_sym_key","apkamPublicKey":"abcd1234"}';
+      expect(RegExp(VerbSyntax.enroll).hasMatch(command), true);
       command = command.replaceAll('enroll:approve:', '');
       var enrollParams = jsonDecode(command);
       expect(enrollParams['enrollmentId'], '123');
@@ -41,6 +43,7 @@ void main() {
 
     test('A test to verify enroll deny params', () {
       String command = 'enroll:deny:{"enrollmentId":"123"}';
+      expect(RegExp(VerbSyntax.enroll).hasMatch(command), true);
       command = command.replaceAll('enroll:deny:', '');
       var enrollParams = jsonDecode(command);
       expect(enrollParams['enrollmentId'], '123');
@@ -48,6 +51,7 @@ void main() {
 
     test('A test to verify enroll revoke params', () {
       String command = 'enroll:revoke:{"enrollmentId":"123"}';
+      expect(RegExp(VerbSyntax.enroll).hasMatch(command), true);
       command = command.replaceAll('enroll:revoke:', '');
       var enrollParams = jsonDecode(command);
       expect(enrollParams['enrollmentId'], '123');
