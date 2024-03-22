@@ -61,7 +61,7 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
       ..enrollmentStatusFilter = enrollmentStatusFilter;
 
     Map<String, dynamic> enrollParamsJson = enrollParams.toJson();
-    enrollParamsJson.removeWhere(_removeNonApplicableElements);
+    enrollParamsJson.removeWhere(_removeElements);
     if (enrollParamsJson.isNotEmpty) {
       sb.write(':${jsonEncode(enrollParamsJson)}');
     }
@@ -76,7 +76,7 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
   /// Returning "false" will leave the key and its value in the map, which gets added to the
   /// enroll verb command. Returning true will remove the key and its value from the map to
   /// to refrain adding the key and its value to the enroll verb command.
-  bool _removeNonApplicableElements(String key, dynamic value) {
+  bool _removeElements(String key, dynamic value) {
     if (value == null || value.toString().isEmpty) {
       return true;
     }
