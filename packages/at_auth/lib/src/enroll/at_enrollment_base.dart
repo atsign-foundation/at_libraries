@@ -14,6 +14,12 @@ abstract class AtEnrollmentBase {
   /// server. The server assigns the "__manage" namespace, which has access to all namespaces and serves as the administrator app
   /// responsible for approving subsequent enrollment requests.
   ///
+  /// The enrollment request is auto-approved. When an @ sign is initially onboarded and the enableEnrollment flag is set to
+  /// true in AtClientPreferences, the enrollment is sent to the server. In this scenario, because there's no app available for
+  /// approval yet, the initial enrollment (submitted over a CRAM authenticated connection) is automatically approved.
+  /// Conversely, if enableEnrollment is set to false, the enrollment isn't submitted, which means subsequent enrollment requests
+  /// cannot be approved by the app.
+  ///
   /// ```dart
   /// Example on submitting FirstEnrollmentRequest
   ///   FirstEnrollmentRequest firstEnrollmentRequest = FirstEnrollmentRequest(
