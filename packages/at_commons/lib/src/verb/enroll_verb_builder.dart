@@ -39,7 +39,7 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
   /// Filters enrollment requests based on provided [EnrollmentStatus] criteria.
   ///
   /// Accepts a list of enrollment statuses. Defaults to all EnrollmentStatuses
-  List<EnrollmentStatus> enrollmentStatusFilter = EnrollmentStatus.values;
+  List<EnrollmentStatus>? enrollmentStatusFilter;
 
   @override
   String buildCommand() {

@@ -69,8 +69,7 @@ void main() {
       var enrollVerbBuilder = EnrollVerbBuilder()
         ..operation = EnrollOperationEnum.list;
       var command = enrollVerbBuilder.buildCommand();
-      expect(command,
-          'enroll:list:{"enrollmentStatusFilter":["pending","approved","denied","revoked","expired"]}\n');
+      expect(command, 'enroll:list\n');
     });
   });
 }
