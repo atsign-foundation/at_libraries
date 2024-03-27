@@ -1,3 +1,9 @@
+## 4.0.5
+- feat: Enhance enroll:list to enable filtering based on enrollment status
+## 4.0.3
+- fix: "toJson()" invoked on "pubKeyHash" leads to NullPointerException.
+## 4.0.2
+- feat: changes to replace md5 checksum - deprecated pubKeyCS in AtKey and introduced new class PublicKeyHash
 ## 4.0.1
 - fix: Add "InvalidPinException" which is thrown when an invalid Semi Permanent Passcode is submitted.
 ## 4.0.0

@@ -8,13 +8,13 @@ Future<void> main(List<String> args) async {
   try {
     await activate_cli.main(args);
   } on IllegalArgumentException catch (e) {
-    stderr.writeln('[Exception] Incorrect arguments provided \nCause:$e');
+    stderr.writeln('[Exception] Incorrect arguments provided\nCause: $e');
     exit(1);
   } on Exception catch (e) {
-    stderr.writeln('[Exception] Aborting process with exit code:2 \nCause:$e');
+    stderr.writeln('[Exception] Aborting process with exit code:2\nCause: $e');
     exit(2);
   } on Error catch (e) {
-    stderr.writeln('[Error] Aborting process with exit code:3\nCause:$e');
+    stderr.writeln('[Error] Aborting process with exit code:3\nCause: $e');
     exit(3);
   }
   // The onboarding_service_impl creates an AtClient instance which will start

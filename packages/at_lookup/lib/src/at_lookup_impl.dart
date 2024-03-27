@@ -178,7 +178,8 @@ class AtLookupImpl implements AtLookUp {
       value = VerbUtil.getFormattedValue(value);
       logger.finer('value: $value dataSignature:$dataSignature');
       var isDataValid = publicKey.verifySHA256Signature(
-          utf8.encode(value), base64Decode(dataSignature));
+          // ignore: unnecessary_cast
+          utf8.encode(value) as Uint8List, base64Decode(dataSignature));
       logger.finer('data verify result: $isDataValid');
       return 'data:$value';
     } on Exception catch (e) {
@@ -301,41 +302,49 @@ class AtLookupImpl implements AtLookUp {
       var errorCode = AtLookUpExceptionUtil.getErrorCode(e);
       throw AtLookUpException(errorCode, e.toString());
     }
+    return _verbResponseHandler(verbResult);
+  }
+
+  String _verbResponseHandler(String verbResult) {
     // If connection time-out, do not return empty verbResult;
     // throw AtLookupException.
     if (verbResult.isEmpty) {
       throw AtLookUpException('AT0014', 'Request timed out');
     }
-    // If response starts with error:, throw AtLookupException.
-    if (_isError(verbResult)) {
-      verbResult = verbResult.replaceAll('error:', '');
-      // Setting the errorCode and errorDescription to default values.
-      var errorCode = 'AT0014';
-      var errorDescription = 'Unknown server error';
-      try {
-        var errorMap = jsonDecode(verbResult);
-        errorCode = errorMap['errorCode'];
-        errorDescription = errorMap['errorDescription'];
-      } on FormatException {
-        // Catching the FormatException to preserve backward compatibility - responses without jsonEncoding.
-        // TODO: Can we remove the below catch block in next release once all the servers are migrated to new version.
-        if (verbResult.contains('-')) {
-          if (verbResult.split('-')[0].isNotEmpty) {
-            errorCode = verbResult.split('-')[0];
-          }
-          if (verbResult.split('-')[1].isNotEmpty) {
-            errorDescription = verbResult.split('-')[1];
-          }
-        }
-      }
-      throw AtLookUpException(errorCode, errorDescription);
+    // Response starting with "data:", represents successfully processing of verb
+    // return the response.
+    if (verbResult.startsWith('data:')) {
+      return verbResult;
     }
-    // Return the verb result.
+    if (verbResult.startsWith('error:')) {
+      _errorResponseHandler(verbResult);
+    }
     return verbResult;
   }
 
-  bool _isError(String verbResult) {
-    return verbResult.startsWith('error:');
+  void _errorResponseHandler(String verbResult) {
+    verbResult = verbResult.replaceAll('error:', '');
+    // Setting the errorCode and errorDescription to default values.
+    var errorCode = 'AT0014';
+    var errorDescription = 'Unknown server error';
+    try {
+      var errorMap = jsonDecode(verbResult);
+      errorCode = errorMap['errorCode'];
+      errorDescription = errorMap['errorDescription'];
+    } on FormatException {
+      // Catching the FormatException to preserve backward compatibility - responses without jsonEncoding.
+      // TODO: Can we remove the below catch block in next release once all the servers are migrated to new version.
+      if (verbResult.contains('-')) {
+        if (verbResult.split('-')[0].isNotEmpty) {
+          errorCode = verbResult.split('-')[0];
+        }
+        if (verbResult.split('-')[1].isNotEmpty) {
+          errorDescription = verbResult.split('-')[1];
+        }
+      }
+    }
+
+    throw AtLookUpException(errorCode, errorDescription);
   }
 
   Future<String> _update(UpdateVerbBuilder builder) async {
@@ -402,7 +411,8 @@ class AtLookupImpl implements AtLookUp {
 
   @override
   Future<String?> executeCommand(String atCommand, {bool auth = false}) async {
-    return await _process(atCommand, auth: auth);
+    String verbResponse = await _process(atCommand, auth: auth);
+    return _verbResponseHandler(verbResponse);
   }
 
   final Mutex _pkamAuthenticationMutex = Mutex();
@@ -537,7 +547,7 @@ class AtLookupImpl implements AtLookUp {
   }
 
   @Deprecated('use AtLookup().cramAuthenticate()')
-  // ignore: non_constant_identifier_names
+// ignore: non_constant_identifier_names
   Future<bool> authenticate_cram(var secret) async {
     secret ??= cramSecret;
     if (secret == null) {

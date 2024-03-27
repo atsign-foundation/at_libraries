@@ -140,6 +140,7 @@ class UpdateVerbBuilder extends AbstractVerbBuilder {
 
     builder.atKey.metadata.sharedKeyEnc =
         verbParams[AtConstants.sharedKeyEncrypted];
+    // ignore: deprecated_member_use_from_same_package
     builder.atKey.metadata.pubKeyCS =
         verbParams[AtConstants.sharedWithPublicKeyCheckSum];
     builder.atKey.metadata.sharedKeyStatus =
@@ -199,6 +200,7 @@ class UpdateVerbBuilder extends AbstractVerbBuilder {
           atKey.metadata.sharedKeyStatus ==
               other.atKey.metadata.sharedKeyStatus &&
           atKey.metadata.sharedKeyEnc == other.atKey.metadata.sharedKeyEnc &&
+          // ignore: deprecated_member_use_from_same_package
           atKey.metadata.pubKeyCS == other.atKey.metadata.pubKeyCS &&
           atKey.metadata.encoding == other.atKey.metadata.encoding &&
           atKey.metadata.encKeyName == other.atKey.metadata.encKeyName &&
@@ -226,6 +228,7 @@ class UpdateVerbBuilder extends AbstractVerbBuilder {
       atKey.metadata.dataSignature.hashCode ^
       atKey.metadata.sharedKeyStatus.hashCode ^
       atKey.metadata.sharedKeyEnc.hashCode ^
+      // ignore: deprecated_member_use_from_same_package
       atKey.metadata.pubKeyCS.hashCode ^
       atKey.metadata.encoding.hashCode ^
       atKey.metadata.encKeyName.hashCode ^

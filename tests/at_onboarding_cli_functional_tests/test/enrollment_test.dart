@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:at_client/at_client.dart';
+import 'package:at_lookup/at_lookup.dart';
 import 'package:at_demo_data/at_demo_data.dart' as at_demos;
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_utils/at_utils.dart';
@@ -32,50 +33,78 @@ void main() {
       bool status = await onboardingService_1.onboard();
       expect(status, true);
       preference_1.privateKey = pkamPrivateKey;
+      var keysFilePath = preference_1.atKeysFilePath;
+      var keysFile = File(keysFilePath!);
+      expect(keysFile.existsSync(), true);
+      var keysFileContent = keysFile.readAsStringSync();
+      var keysFileJson = jsonDecode(keysFileContent);
+      expect(keysFileJson['enrollmentId'], isNotEmpty);
+      expect(keysFileJson['apkamSymmetricKey'], isNotEmpty);
 
       //2. authenticate first client
-      await onboardingService_1.authenticate();
+      var authResult = await onboardingService_1.authenticate();
+      expect(authResult, true);
       await _setLastReceivedNotificationDateTime(
           onboardingService_1.atClient!, atSign);
 
-      //3. run otp:get from first client
-      String? totp = await onboardingService_1.atClient!
+      Map<String, String> namespaces = {"buzz": "rw"};
+      //3.1 test invalid otp
+      String? totp = 'a6b4df';
+      AtOnboardingPreference enrollPreference_2 =
+          getPreferenceForEnroll(atSign);
+      final onboardingService_2 =
+          AtOnboardingServiceImpl(atSign, enrollPreference_2);
+      expect(
+          () async =>
+              onboardingService_2.enroll('buzz', 'iphone', totp!, namespaces),
+          throwsA(predicate((dynamic e) =>
+              e is AtLookUpException &&
+              e.errorCode == 'AT0011' &&
+              e.errorMessage!
+                  .contains('invalid otp. Cannot process enroll request'))));
+
+      //3.2 run otp:get from first client
+      totp = await onboardingService_1.atClient!
           .getRemoteSecondary()!
           .executeCommand('otp:get\n', auth: true);
       totp = totp!.replaceFirst('data:', '');
       totp = totp.trim();
       logger.finer('otp: $totp');
-      Map<String, String> namespaces = {"buzz": "rw"};
 
-      //4. enroll second client
-      AtOnboardingPreference enrollPreference_2 =
-          getPreferenceForEnroll(atSign);
-      final onboardingService_2 =
-          AtOnboardingServiceImpl(atSign, enrollPreference_2);
+      //3.3. enroll second client with valid otp
       var enrollResponse =
           await onboardingService_2.enroll('buzz', 'iphone', totp, namespaces);
       logger.finer('enroll response $enrollResponse');
       // enrollment id from the response
       var enrollmentId = enrollResponse.enrollmentId;
+      expect(enrollmentId, isNotEmpty);
+      expect(enrollResponse.enrollStatus, EnrollmentStatus.pending);
       var completer = Completer<void>(); // Create a Completer
 
-      //5. listen for notification from first client and invoke callback which approves the enrollment
+      //4. listen for notification from first client and invoke callback which approves the enrollment
       onboardingService_1.atClient!.notificationService
           .subscribe(regex: '.__manage')
           .listen(expectAsync1((notification) async {
-            logger.finer('got enroll notification');
+            logger.info('got enroll notification: $notification');
+
             await _notificationCallback(
                 notification, onboardingService_1.atClient!, 'approve');
             completer.complete();
           }, count: 1, max: -1));
       await completer.future;
 
-      //6. assert that the keys file is created for enrolled app
+      //5. assert that the keys file is created for enrolled app
       final enrolledClientKeysFile = File(enrollPreference_2.atKeysFilePath!);
       while (!await enrolledClientKeysFile.exists()) {
         await Future.delayed(Duration(seconds: 10));
       }
       expect(await enrolledClientKeysFile.exists(), true);
+      var enrolledClientKeysFileContent =
+          enrolledClientKeysFile.readAsStringSync();
+      var enrolledClientKeysFileJson =
+          jsonDecode(enrolledClientKeysFileContent);
+      expect(enrolledClientKeysFileJson['enrollmentId'], isNotEmpty);
+      expect(enrolledClientKeysFileJson['apkamSymmetricKey'], isNotEmpty);
       //  Authenticate now with the approved enrollmentID
       // assert that authentication is successful
       bool authResultWithEnrollment =
@@ -165,7 +194,11 @@ void main() {
     totp = totp.trim();
     logger.finer('otp: $totp');
     Map<String, String> namespaces = {"buzz": "rw"};
-
+    expect(totp.length, 6);
+    expect(
+        totp.contains('0') || totp.contains('o') || totp.contains('O'), false);
+    // check whether otp contains atleast one number and one alphabet
+    expect(RegExp(r'^(?=.*[a-zA-Z])(?=.*\d).+$').hasMatch(totp), true);
     //4. enroll second client
     AtOnboardingPreference enrollPreference_2 = getPreferenceForEnroll(atSign);
     final onboardingService_2 =
@@ -182,6 +215,13 @@ void main() {
         .subscribe(regex: '.__manage')
         .listen(expectAsync1((notification) async {
           logger.finer('got enroll notification');
+          expect(notification.value, isNotNull);
+          var notificationValueJson = jsonDecode(notification.value!);
+          expect(
+              notificationValueJson['encryptedApkamSymmetricKey'], isNotEmpty);
+          expect(notificationValueJson['appName'], 'buzz');
+          expect(notificationValueJson['deviceName'], 'iphone');
+          expect(notificationValueJson['namespace']['buzz'], 'rw');
           await _notificationCallback(
               notification, onboardingService_1.atClient!, 'deny');
           completer.complete();
@@ -211,7 +251,7 @@ Future<void> _notificationCallback(
       EncryptionUtil.encryptValue(encryptionPrivateKey, apkamSymmetricKey);
   var encryptedDefaultSelfEncKey =
       EncryptionUtil.encryptValue(selfEncryptionKey!, apkamSymmetricKey);
-  enrollParamsJson['encryptedDefaultEncryptedPrivateKey'] =
+  enrollParamsJson['encryptedDefaultEncryptionPrivateKey'] =
       encryptedDefaultPrivateEncKey;
   enrollParamsJson['encryptedDefaultSelfEncryptionKey'] =
       encryptedDefaultSelfEncKey;
@@ -226,6 +266,15 @@ Future<void> _notificationCallback(
       .getRemoteSecondary()!
       .executeCommand(enrollRequest, auth: true);
   print('enroll Response from server: $enrollResponse');
+  expect(enrollResponse, isNotEmpty);
+  enrollResponse = enrollResponse!.replaceFirst('data:', '');
+  var enrollResponseJson = jsonDecode(enrollResponse);
+  if (response == 'approve') {
+    expect(enrollResponseJson['status'], 'approved');
+  } else {
+    expect(enrollResponseJson['status'], 'denied');
+  }
+  expect(enrollResponseJson['enrollmentId'], enrollmentId);
 }
 
 Future<void> _setLastReceivedNotificationDateTime(
