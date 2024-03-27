@@ -49,9 +49,9 @@ void main() {
           apiAccessorInstance: accessorInstance, allowRetry: true);
       try {
         await RegistrationFlow(params).add(registerAtsignTask).start();
-      } on Exception catch(e){
+      } on Exception catch (e) {
         expect(e.runtimeType, AtRegisterException);
-        assert(e.toString().contains('Could not complete the task'));  
+        assert(e.toString().contains('Could not complete the task'));
       }
       expect(registerAtsignTask.retryCount, registerAtsignTask.maximumRetries);
       expect(registerAtsignTask.shouldRetry(), false);
@@ -78,8 +78,7 @@ void main() {
         exceptionFlag = true;
       }
       expect(exceptionFlag, true);
-      expect(
-          registerAtsignTask.retryCount, registerAtsignTask.maximumRetries);
+      expect(registerAtsignTask.retryCount, registerAtsignTask.maximumRetries);
       expect(registerAtsignTask.shouldRetry(), false);
     });
   });

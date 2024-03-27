@@ -5,7 +5,7 @@ import 'package:at_commons/at_commons.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:http/http.dart' as http;
 
-import '../../at_register.dart';
+import 'package:at_register/at_register.dart';
 
 /// Contains methods that actually perform the RegistrarAPI calls
 /// and handle/process the response
@@ -48,6 +48,7 @@ class RegistrarApiAccessor {
     });
     if (response.statusCode == 200) {
       final jsonDecoded = jsonDecode(response.body) as Map<String, dynamic>;
+      // will be set to true if API response contains message with 'success'
       bool sentSuccessfully =
           jsonDecoded['message'].toLowerCase().contains('success');
       return sentSuccessfully;
@@ -143,16 +144,14 @@ class RegistrarApiAccessor {
     final response = await ApiUtil.postRequest(authority,
         RegistrarConstants.requestAuthenticationOtpPath, {'atsign': atsign});
     final apiResponseMessage = jsonDecode(response.body)['message'];
-    if (response.statusCode == 200) {
-      if (apiResponseMessage.contains('Sent Successfully')) {
-        logger.info(
-            'Successfully sent verification code to your registered e-mail');
-        return;
-      }
-      throw AtRegisterException(
-          'Unable to send verification code for authentication. | Cause: $apiResponseMessage');
+    if (response.statusCode == 200 &&
+        apiResponseMessage.contains('Sent Successfully')) {
+      logger.info(
+          'Successfully sent verification code to your registered e-mail');
+      return;
     }
-    throw AtRegisterException(apiResponseMessage);
+    throw AtRegisterException(
+        'Unable to send verification code for authentication. | Cause: $apiResponseMessage');
   }
 
   /// Returns the cram key for an atsign by fetching it from the registrar API
@@ -175,7 +174,9 @@ class RegistrarApiAccessor {
         logger.info('CRAM Key fetched successfully');
         return cram;
       }
-      throw InvalidDataException(
+      // If API call status is HTTP.OK / 200, but the response message does not
+      // contain 'Verified', that indicates incorrect verification provided by user
+      throw InvalidVerificationCodeException(
           'Invalid verification code. Please enter a valid verification code');
     }
     throw InvalidDataException(jsonDecodedBody['message']);

@@ -1,6 +1,6 @@
 import 'package:at_commons/at_commons.dart';
 
-import '../../at_register.dart';
+import 'package:at_register/at_register.dart';
 
 /// User selects an atsign from the list fetched in [GetFreeAtsign].
 ///
@@ -36,7 +36,7 @@ class RegisterAtsign extends RegisterTask {
           params.atsign!, params.email!,
           authority: RegistrarConstants.authority);
       result.data[RegistrarConstants.otpSentName] = otpSent;
-      if(otpSent) {
+      if (otpSent) {
         logger.info('Verification code sent to: ${params.email}');
         result.apiCallStatus = ApiCallStatus.success;
       } else {

@@ -19,8 +19,6 @@ class RegistrationFlow {
 
   Future<RegisterTaskResult> start() async {
     for (RegisterTask task in processQueue) {
-      // setting allowRetry to true as this method has logic to retry each
-      // failed task 3-times and then throw an exception if still failing
       try {
         _result = await task.run(params);
         task.logger.finer('Attempt: ${task.retryCount} | params[$params]');

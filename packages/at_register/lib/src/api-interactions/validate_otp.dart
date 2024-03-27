@@ -84,11 +84,10 @@ class ValidateOtp extends RegisterTask {
           break;
 
         case ValidateOtpStatus.failure:
-          result.apiCallStatus = ApiCallStatus.failure;
-          result.exception = validateOtpApiResult.exception;
-          break;
 
         case null:
+
+        default:
           result.apiCallStatus = ApiCallStatus.failure;
           result.exception = validateOtpApiResult.exception;
           break;

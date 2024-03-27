@@ -47,14 +47,13 @@ class Register {
     }
 
     GetFreeAtsign getFreeAtsignTask = GetFreeAtsign(
-      apiAccessorInstance: registrarApiAccessor,
-    );
+        apiAccessorInstance: registrarApiAccessor, allowRetry: true);
 
     RegisterAtsign registerAtsignTask =
-        RegisterAtsign(apiAccessorInstance: registrarApiAccessor);
+        RegisterAtsign(apiAccessorInstance: registrarApiAccessor, allowRetry: true);
 
     ValidateOtp validateOtpTask =
-        ValidateOtp(apiAccessorInstance: registrarApiAccessor);
+        ValidateOtp(apiAccessorInstance: registrarApiAccessor, allowRetry: true);
 
     // create a queue of tasks each of type [RegisterTask] and then
     // call start on the RegistrationFlow object

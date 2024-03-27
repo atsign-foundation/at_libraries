@@ -1,8 +1,8 @@
 import 'package:at_commons/at_commons.dart';
 
-import '../../at_register.dart';
+import 'package:at_register/at_register.dart';
 
-/// A [RegisterTask] that fetches a list of free atsigns.
+/// A [RegisterTask] that fetches a free atsign
 ///
 /// Throws an [AtException] with the concerned message encountered in the
 /// HTTP GET/POST request.
@@ -12,7 +12,7 @@ import '../../at_register.dart';
 /// GetFreeAtsign getFreeAtsignInstance = GetFreeAtsign();
 /// RegisterTaskResult result = await getFreeAtsignInstance.run(registerParams);
 /// ```
-/// The fetched atsign will be stored in result.data[[RegistrarConstants.atsignName]]
+/// The fetched atsign will be stored in RegisterTaskResult.data[[RegistrarConstants.atsignName]]
 class GetFreeAtsign extends RegisterTask {
   GetFreeAtsign(
       {RegistrarApiAccessor? apiAccessorInstance, bool allowRetry = false})

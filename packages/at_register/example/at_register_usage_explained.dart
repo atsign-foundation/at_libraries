@@ -14,14 +14,15 @@ Future<void> main() async {
   print(getFreeAtsignResult.data);
 
   // this step is optional
-  // Can be used to propagates the data received in the current task to the next
+  // Can be used to propagate the data received in the current task to the next
   params.addFromJson(getFreeAtsignResult.data);
   // ----------------------------------------------------
 
   /// Example for RegisterAtsign task
   RegisterAtsign registerAtsignTask =
       RegisterAtsign(apiAccessorInstance: accessorInstance);
-  RegisterTaskResult registerAtsignResult = await registerAtsignTask.run(params);
+  RegisterTaskResult registerAtsignResult =
+      await registerAtsignTask.run(params);
   // registerAtsignResult.data should have a key named 'otpSent' which contains
   // true/false reg the status of verificationCodeSent to provided email
   print(registerAtsignResult.data[RegistrarConstants.otpSentName]);
@@ -49,6 +50,7 @@ Future<void> main() async {
   // now this will return a result with the cram key in result.data
   List<String> fetchedAtsignList =
       validateOtpResult.data[RegistrarConstants.fetchedAtsignListName];
+  // selecting the first atsign from the fetchedAtsignList for demonstration
   params.atsign = fetchedAtsignList[0];
   validateOtpResult = await validateOtpTask.run(params);
   print(validateOtpResult.data[RegistrarConstants.cramKeyName]);
@@ -56,5 +58,5 @@ Future<void> main() async {
   // CASE 3: if the otp is incorrect, fetch the correct otp from user and re-run
   // the validateOtpTask
   params.otp = 'AB14'; // correct otp
-  validateOtpResult = await validateOtpTask.run(params);
+  validateOtpResult = await validateOtpTask.retry(params);
 }
