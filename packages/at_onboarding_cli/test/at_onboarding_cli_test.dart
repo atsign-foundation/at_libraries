@@ -12,13 +12,13 @@ import 'package:test/scaffolding.dart';
 
 class MockAtLookupImpl extends Mock implements AtLookupImpl {}
 
-class MockAtAuthImpl extends Mock implements AtAuthImpl {}
+class MockAtAuthImpl extends Mock implements AtAuth {}
 
 class FakeAtAuthRequest extends Fake implements AtAuthRequest {}
 
 void main() {
   AtLookupImpl mockAtLookup = MockAtLookupImpl();
-  AtAuthImpl mockAtAuth = MockAtAuthImpl();
+  AtAuth mockAtAuth = MockAtAuthImpl();
   setUp(() {
     reset(mockAtLookup);
     reset(mockAtAuth);

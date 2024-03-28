@@ -1,3 +1,4 @@
+import 'package:at_auth/src/at_auth_impl.dart';
 import 'package:at_auth/src/auth/pkam_authenticator.dart';
 import 'package:at_chops/at_chops.dart';
 import 'package:at_commons/at_builders.dart';
@@ -21,7 +22,8 @@ class FakeUpdateVerbBuilder extends Fake implements UpdateVerbBuilder {}
 
 class FakeDeleteVerbBuilder extends Fake implements DeleteVerbBuilder {}
 
-class FakeEnrollRequest extends Fake implements AtEnrollmentRequest {}
+class FakeFirstEnrollmentRequest extends Fake
+    implements FirstEnrollmentRequest {}
 
 class FakeVerbBuilder extends Fake implements VerbBuilder {}
 
@@ -41,7 +43,7 @@ void main() {
         pkamAuthenticator: mockPkamAuthenticator,
         atEnrollmentBase: mockAtEnrollment);
     registerFallbackValue(FakeVerbBuilder());
-    registerFallbackValue(FakeEnrollRequest());
+    registerFallbackValue(FakeFirstEnrollmentRequest());
   });
   group('AtAuthImpl authentication tests', () {
     test('Test authenticate() true with keys file', () async {
@@ -215,6 +217,10 @@ void main() {
           .thenAnswer((_) => Future.value(true));
       when(() => mockAtLookUp.executeVerb(any()))
           .thenAnswer((_) => Future.value('data:2'));
+      when(() =>
+          mockAtLookUp.executeCommand(
+              any(that: startsWith('enroll:request')))).thenAnswer((_) =>
+          Future.value('data:{"enrollmentId":"abc123", "status":"approved"}'));
 
       when(() => mockAtLookUp.close()).thenAnswer((_) async => {});
       when(() => mockPkamAuthenticator.authenticate(enrollmentId: "abc123"))
@@ -222,7 +228,7 @@ void main() {
               Future.value(AtAuthResponse('@alice🛠')..isSuccessful = true));
       final mockEnrollmentResponse =
           AtEnrollmentResponse("abc123", EnrollmentStatus.approved);
-      when(() => mockAtEnrollment.submitEnrollment(any(), mockAtLookUp))
+      when(() => mockAtEnrollment.submit(any(), mockAtLookUp))
           .thenAnswer((_) => Future.value(mockEnrollmentResponse));
       final atOnboardingRequest = AtOnboardingRequest('@alice🛠')
         ..rootDomain = 'test.atsign.com'

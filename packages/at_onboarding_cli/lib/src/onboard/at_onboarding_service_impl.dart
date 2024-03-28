@@ -6,7 +6,7 @@ import 'dart:io';
 
 import 'package:at_chops/at_chops.dart';
 import 'package:at_client/at_client.dart';
-import 'package:at_auth/at_auth.dart';
+import 'package:at_auth/at_auth.dart' as at_auth;
 import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 import 'package:at_server_status/at_server_status.dart';
 import 'package:at_utils/at_utils.dart';
@@ -32,6 +32,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   final StreamController<String> _pkamSuccessController =
       StreamController<String>();
+
   Stream<dynamic> get _onPkamSuccess => _pkamSuccessController.stream;
 
   /// The object which controls what types of AtClients, NotificationServices
@@ -40,13 +41,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   /// a [DefaultAtServiceFactory]
   AtServiceFactory? atServiceFactory;
 
-  AtEnrollmentBase? _atEnrollmentBase;
+  at_auth.AtEnrollmentBase? _atEnrollmentBase;
 
   AtOnboardingServiceImpl(atsign, this.atOnboardingPreference,
       {this.atServiceFactory, String? enrollmentId}) {
     // performs atSign format checks on the atSign
     _atSign = AtUtils.fixAtSign(atsign);
-    _atEnrollmentBase ??= AtEnrollmentImpl(_atSign);
+    _atEnrollmentBase ??= at_auth.atAuthBase.atEnrollment(_atSign);
     // set default LocalStorage paths for this instance
     atOnboardingPreference.commitLogPath ??=
         HomeDirectoryUtil.getCommitLogPath(_atSign, enrollmentId: enrollmentId);
@@ -115,8 +116,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       throw AtActivateException('atsign is already activated');
     }
 
-    atAuth ??= AtAuthImpl();
-    var atOnboardingRequest = AtOnboardingRequest(_atSign);
+    atAuth ??= at_auth.atAuthBase.atAuth();
+    var atOnboardingRequest = at_auth.AtOnboardingRequest(_atSign);
     atOnboardingRequest.rootDomain = atOnboardingPreference.rootDomain;
     atOnboardingRequest.rootPort = atOnboardingPreference.rootPort;
     atOnboardingRequest.enableEnrollment =
@@ -138,7 +139,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }
 
   @override
-  Future<AtEnrollmentResponse> enroll(String appName, String deviceName,
+  Future<at_auth.AtEnrollmentResponse> enroll(String appName, String deviceName,
       String otp, Map<String, String> namespaces,
       {int? pkamRetryIntervalMins}) async {
     if (appName == null || deviceName == null) {
@@ -152,9 +153,19 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         atOnboardingPreference.rootDomain, atOnboardingPreference.rootPort);
 
     //2. Send enroll request to server
-    AtEnrollmentResponse enrollmentResponse = await _sendEnrollRequest(
+    at_auth.AtEnrollmentResponse enrollmentResponse = await _sendEnrollRequest(
         appName, deviceName, otp, namespaces, atLookUpImpl);
     logger.finer('EnrollmentResponse from server: $enrollmentResponse');
+
+    AtChopsKeys atChopsKeys = AtChopsKeys.create(
+        AtEncryptionKeyPair.create(
+            enrollmentResponse.atAuthKeys!.defaultEncryptionPublicKey!, ''),
+        AtPkamKeyPair.create(enrollmentResponse.atAuthKeys!.apkamPublicKey!,
+            enrollmentResponse.atAuthKeys!.apkamPrivateKey!));
+    atChopsKeys.apkamSymmetricKey =
+        AESKey(enrollmentResponse.atAuthKeys!.apkamSymmetricKey!);
+
+    atLookUpImpl.atChops = AtChopsImpl(atChopsKeys);
 
     // Pkam auth will be attempted asynchronously until enrollment is approved/denied
     _attemptPkamAuthAsync(
@@ -188,7 +199,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
               enrollmentIdFromServer, atLookUpImpl),
           apkamSymmetricKey);
 
-      var atAuthKeys = AtAuthKeys()
+      var atAuthKeys = at_auth.AtAuthKeys()
         ..defaultEncryptionPrivateKey = decryptedEncryptionPrivateKey
         ..defaultEncryptionPublicKey = defaultEncryptionPublicKey
         ..apkamSymmetricKey = apkamSymmetricKey
@@ -284,27 +295,26 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     return false;
   }
 
-  Future<AtEnrollmentResponse> _sendEnrollRequest(
+  Future<at_auth.AtEnrollmentResponse> _sendEnrollRequest(
       String appName,
       String deviceName,
       String otp,
       Map<String, String> namespaces,
       AtLookupImpl atLookUpImpl) async {
-    var newClientEnrollmentRequest = (AtNewEnrollmentRequestBuilder()
-          ..setAppName(appName)
-          ..setDeviceName(deviceName)
-          ..setNamespaces(namespaces)
-          ..setOtp(otp)
-          ..setEnrollOperationEnum(EnrollOperationEnum.request))
-        .build();
+    at_auth.EnrollmentRequest newClientEnrollmentRequest =
+        at_auth.EnrollmentRequest(
+            appName: appName,
+            deviceName: deviceName,
+            namespaces: namespaces,
+            otp: otp);
     logger.finer('calling at_enrollment_impl submit enrollment');
     return await _atEnrollmentBase!
-        .submitEnrollment(newClientEnrollmentRequest, atLookUpImpl);
+        .submit(newClientEnrollmentRequest, atLookUpImpl);
   }
 
   ///write newly created encryption keypairs into atKeys file
   Future<void> _generateAtKeysFile(
-      String? currentEnrollmentId, AtAuthKeys atAuthKeys) async {
+      String? currentEnrollmentId, at_auth.AtAuthKeys atAuthKeys) async {
     final atKeysMap = <String, String>{
       AuthKeyType.pkamPublicKey: EncryptionUtil.encryptValue(
         atAuthKeys.apkamPublicKey!,
@@ -356,7 +366,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   /// #TODO remove this method in future when all keys are read from AtChops
   Future<void> _persistKeysLocalSecondary() async {
     //when authenticating keys need to be fetched from atKeys file
-    AtAuthKeys atAuthKeys = _decryptAtKeysFile(
+    at_auth.AtAuthKeys atAuthKeys = _decryptAtKeysFile(
         (await _readAtKeysFile(atOnboardingPreference.atKeysFilePath)));
     //backup keys into local secondary
     bool? response = await atClient
@@ -387,8 +397,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   @override
   Future<bool> authenticate({String? enrollmentId}) async {
-    atAuth ??= AtAuthImpl();
-    var atAuthRequest = AtAuthRequest(_atSign)
+    atAuth ??= at_auth.atAuthBase.atAuth();
+    var atAuthRequest = at_auth.AtAuthRequest(_atSign)
       ..enrollmentId = enrollmentId
       ..atKeysFilePath = atOnboardingPreference.atKeysFilePath
       ..authMode = atOnboardingPreference.authMode
@@ -428,8 +438,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     return jsonData![AuthKeyType.selfEncryptionKey]!;
   }
 
-  AtAuthKeys _decryptAtKeysFile(Map<String, String> jsonData) {
-    var atAuthKeys = AtAuthKeys();
+  at_auth.AtAuthKeys _decryptAtKeysFile(Map<String, String> jsonData) {
+    var atAuthKeys = at_auth.AtAuthKeys();
     String decryptionKey = _getDecryptionKey(jsonData);
     atAuthKeys.defaultEncryptionPublicKey = EncryptionUtil.decryptValue(
         jsonData[AuthKeyType.encryptionPublicKey]!, decryptionKey);
@@ -593,5 +603,5 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   AtChops? atChops;
 
   @override
-  AtAuth? atAuth;
+  at_auth.AtAuth? atAuth;
 }
