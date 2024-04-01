@@ -1,10 +1,12 @@
 import 'dart:convert';
 
 import 'package:at_auth/at_auth.dart';
+import 'package:at_auth/src/enroll/at_enrollment_impl.dart';
 import 'package:at_chops/at_chops.dart';
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
+import 'package:crypton/crypton.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
@@ -80,20 +82,109 @@ void main() {
     when(() => (mockAtLookUp as AtLookupImpl).close())
         .thenAnswer((_) async => ());
 
-    AtNewEnrollmentRequestBuilder atNewEnrollmentRequestBuilder =
-        AtNewEnrollmentRequestBuilder()
-          ..setAppName('wavi')
-          ..setDeviceName('pixel')
-          ..setNamespaces({'wavi': 'rw'})
-          ..setOtp('A123FE')
-          ..setApkamPublicKey('testApkamPublicKey');
-    AtNewEnrollmentRequest atNewEnrollmentRequest =
-        atNewEnrollmentRequestBuilder.build();
+    EnrollmentRequest enrollmentRequest = EnrollmentRequest(
+        appName: 'wavi',
+        deviceName: 'pixel',
+        otp: 'A123FE',
+        namespaces: {'wavi': 'rw'});
 
-    AtEnrollmentResponse atEnrollmentResponse = await atEnrollmentServiceImpl
-        .submitEnrollment(atNewEnrollmentRequest, mockAtLookUp);
+    AtEnrollmentResponse atEnrollmentResponse =
+        await atEnrollmentServiceImpl.submit(enrollmentRequest, mockAtLookUp);
     expect(atEnrollmentResponse.enrollmentId, '123');
     expect(atEnrollmentResponse.enrollStatus, EnrollmentStatus.pending);
+  });
+
+  group('A group of tests related EnrollmentRequestDecision', () {
+    test('A test to verify the approve enrollment', () async {
+      String atSign = '@alice🛠';
+
+      String? apkamPrivateKey = pkamPrivateKeyMap[atSign]!;
+      String? apkamPublicKey = pkamPublicKeyMap[atSign]!;
+      String? encryptionPublicKey = encryptionPublicKeyMap[atSign]!;
+      String? encryptionPrivateKey = encryptionPrivateKeyMap[atSign]!;
+      String? selfEncryptionKey = aesKeyMap[atSign]!;
+      String? apkamSymmetricKey = apkamSymmetricKeyMap[atSign]!;
+
+      String encryptedAPKAMSymmetricKey =
+          RSAPublicKey.fromString(encryptionPublicKey)
+              .encrypt(apkamSymmetricKey);
+
+      AtChopsKeys atChopsKeys = AtChopsKeys.create(
+          AtEncryptionKeyPair.create(encryptionPublicKey, encryptionPrivateKey),
+          AtPkamKeyPair.create(apkamPublicKey, apkamPrivateKey));
+      atChopsKeys.apkamSymmetricKey = AESKey(apkamSymmetricKey);
+      atChopsKeys.selfEncryptionKey = AESKey(selfEncryptionKey);
+
+      AtChopsImpl atChopsImpl = AtChopsImpl(atChopsKeys);
+
+      AtLookUp mockAtLookUp = MockAtLookUp();
+
+      AtEnrollmentBase atEnrollmentBase = AtEnrollmentImpl(atSign);
+
+      when(() => mockAtLookUp.atChops).thenReturn(atChopsImpl);
+
+      when(() =>
+          mockAtLookUp.executeCommand(any(that: startsWith('enroll:approve')),
+              auth: true)).thenAnswer((_) => Future.value('data:${jsonEncode({
+                'status': 'approved',
+                'enrollmentId': '4be2d358-074d-4e3b-99f3-64c4da01532f'
+              })}'));
+
+      EnrollmentRequestDecision enrollmentRequestDecision =
+          EnrollmentRequestDecision.approved(ApprovedRequestDecisionBuilder(
+              enrollmentId: '4be2d358-074d-4e3b-99f3-64c4da01532f',
+              encryptedAPKAMSymmetricKey: encryptedAPKAMSymmetricKey));
+
+      AtEnrollmentResponse atEnrollmentResponse = await atEnrollmentBase
+          .approve(enrollmentRequestDecision, mockAtLookUp);
+
+      expect(atEnrollmentResponse.enrollmentId,
+          '4be2d358-074d-4e3b-99f3-64c4da01532f');
+      expect(atEnrollmentResponse.enrollStatus, EnrollmentStatus.approved);
+    });
+
+    test('A test to verify the deny enrollment', () async {
+      String atSign = '@alice🛠';
+
+      String? apkamPrivateKey = pkamPrivateKeyMap[atSign]!;
+      String? apkamPublicKey = pkamPublicKeyMap[atSign]!;
+      String? encryptionPublicKey = encryptionPublicKeyMap[atSign]!;
+      String? encryptionPrivateKey = encryptionPrivateKeyMap[atSign]!;
+      String? selfEncryptionKey = aesKeyMap[atSign]!;
+      String? apkamSymmetricKey = apkamSymmetricKeyMap[atSign]!;
+
+      AtChopsKeys atChopsKeys = AtChopsKeys.create(
+          AtEncryptionKeyPair.create(encryptionPublicKey, encryptionPrivateKey),
+          AtPkamKeyPair.create(apkamPublicKey, apkamPrivateKey));
+      atChopsKeys.apkamSymmetricKey = AESKey(apkamSymmetricKey);
+      atChopsKeys.selfEncryptionKey = AESKey(selfEncryptionKey);
+
+      AtChopsImpl atChopsImpl = AtChopsImpl(atChopsKeys);
+
+      AtLookUp mockAtLookUp = MockAtLookUp();
+
+      AtEnrollmentBase atEnrollmentBase = AtEnrollmentImpl(atSign);
+
+      when(() => mockAtLookUp.atChops).thenReturn(atChopsImpl);
+
+      when(() => mockAtLookUp
+              .executeCommand(any(that: startsWith('enroll:deny')), auth: true))
+          .thenAnswer((_) => Future.value('data:${jsonEncode({
+                    'status': 'denied',
+                    'enrollmentId': '4be2d358-074d-4e3b-99f3-64c4da01532f'
+                  })}'));
+
+      EnrollmentRequestDecision enrollmentRequestDecision =
+          EnrollmentRequestDecision.denied(
+              '4be2d358-074d-4e3b-99f3-64c4da01532f');
+
+      AtEnrollmentResponse atEnrollmentResponse =
+          await atEnrollmentBase.deny(enrollmentRequestDecision, mockAtLookUp);
+
+      expect(atEnrollmentResponse.enrollmentId,
+          '4be2d358-074d-4e3b-99f3-64c4da01532f');
+      expect(atEnrollmentResponse.enrollStatus, EnrollmentStatus.denied);
+    });
   });
 
   group('A group of test related to AtEnrollmentBuilder', () {
@@ -108,6 +199,7 @@ void main() {
             ..setEncryptedDefaultEncryptionPrivateKey('testPrivateKey')
             ..setEncryptedDefaultSelfEncryptionKey('testSelfKey')
             ..setApkamPublicKey('testApkamPublicKey');
+      // ignore: deprecated_member_use_from_same_package
       AtInitialEnrollmentRequest atInitialEnrollmentRequest =
           atInitialEnrollmentRequestBuilder.build();
 
@@ -134,6 +226,7 @@ void main() {
             ..setEncryptedDefaultSelfEncryptionKey('testSelfKey')
             ..setApkamPublicKey('testApkamPublicKey')
             ..setEnrollOperationEnum(EnrollOperationEnum.approve);
+      // ignore: deprecated_member_use_from_same_package
       AtInitialEnrollmentRequest atInitialEnrollmentRequest =
           atInitialEnrollmentRequestBuilder.build();
 
@@ -159,6 +252,7 @@ void main() {
             ..setNamespaces({'wavi': 'rw'})
             ..setOtp('A123FE')
             ..setApkamPublicKey('testApkamPublicKey');
+      // ignore: deprecated_member_use_from_same_package
       AtNewEnrollmentRequest atNewEnrollmentRequest =
           atNewEnrollmentRequestBuilder.build();
 
@@ -182,6 +276,7 @@ void main() {
             ..setOtp('A123FE')
             ..setApkamPublicKey('testApkamPublicKey')
             ..setEnrollOperationEnum(EnrollOperationEnum.request);
+      // ignore: deprecated_member_use_from_same_package
       AtNewEnrollmentRequest atNewEnrollmentRequest =
           atNewEnrollmentRequestBuilder.build();
 
@@ -200,6 +295,7 @@ void main() {
             ..setEnrollmentId('ABC-123-ID')
             ..setEncryptedApkamSymmetricKey('dummy-apkam-symmetric-key')
             ..setEnrollOperationEnum(EnrollOperationEnum.approve);
+      // ignore: deprecated_member_use_from_same_package
       AtEnrollmentNotificationRequest atEnrollmentNotificationRequest =
           atEnrollmentNotificationBuilder.build();
 
@@ -212,7 +308,9 @@ void main() {
 
     test('A test to verify generation of enrollment deny request', () {
       AtEnrollmentRequestBuilder atEnrollmentRequestBuilder =
+          // ignore: deprecated_member_use_from_same_package
           AtEnrollmentRequest.deny()..setEnrollmentId('ABC-123-ID');
+      // ignore: deprecated_member_use_from_same_package
       AtEnrollmentRequest atEnrollmentRequest =
           atEnrollmentRequestBuilder.build();
 
@@ -224,6 +322,7 @@ void main() {
         'A test to verify  createEnrollVerbBuilder for AtInitialEnrollmentRequest',
         () {
       var enrollmentImpl = AtEnrollmentImpl('@alice');
+      // ignore: deprecated_member_use_from_same_package
       AtInitialEnrollmentRequest request = (AtInitialEnrollmentRequestBuilder()
             ..setAppName('TestApp')
             ..setDeviceName('TestDevice')
@@ -233,6 +332,7 @@ void main() {
             ..setApkamPublicKey('apkamPublicKey'))
           .build();
 
+      // ignore: deprecated_member_use_from_same_package
       var result = enrollmentImpl.createEnrollVerbBuilder(request);
 
       expect(result.appName, equals('TestApp'));
@@ -258,6 +358,7 @@ void main() {
 
       var enrollmentImpl = AtEnrollmentImpl('@alice');
       AtPkamKeyPair atPkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();
+      // ignore: deprecated_member_use_from_same_package
       var result = enrollmentImpl.createEnrollVerbBuilder(request,
           atPkamKeyPair: atPkamKeyPair);
 
