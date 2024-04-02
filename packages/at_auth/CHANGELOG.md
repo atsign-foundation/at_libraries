@@ -1,3 +1,10 @@
+## 1.0.6
+- build[deps]: Upgraded the following packages:
+  - at_commons to 4.0.5
+  - at_lookup to 3.0.46
+- Implement new methods for enrollment operations within AtEnrollmentImpl and mark the older methods as deprecated.
+- Enhance readability by renaming the current classes associated with EnrollmentRequest.
+
 ## 1.0.5
 - build[deps]: Upgraded the following packages:
   - at_chops to v2.0.0

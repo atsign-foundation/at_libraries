@@ -1,7 +1,14 @@
 import 'dart:convert';
 
-import 'package:at_auth/at_auth.dart';
+import 'package:at_auth/src/enroll/at_enrollment_base.dart';
 import 'package:at_auth/src/enroll/at_enrollment_impl.dart';
+import 'package:at_auth/src/enroll/at_enrollment_notification_request.dart';
+import 'package:at_auth/src/enroll/at_enrollment_request.dart';
+import 'package:at_auth/src/enroll/at_enrollment_response.dart';
+import 'package:at_auth/src/enroll/at_initial_enrollment_request.dart';
+import 'package:at_auth/src/enroll/at_new_enrollment_request.dart';
+import 'package:at_auth/src/enroll/enrollment_request.dart';
+import 'package:at_auth/src/enroll/enrollment_request_decision.dart';
 import 'package:at_chops/at_chops.dart';
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
