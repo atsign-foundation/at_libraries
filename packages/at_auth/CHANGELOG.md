@@ -1,4 +1,4 @@
-## 1.0.6
+## 2.0.0
 - build[deps]: Upgraded the following packages:
   - at_commons to 4.0.5
   - at_lookup to 3.0.46
