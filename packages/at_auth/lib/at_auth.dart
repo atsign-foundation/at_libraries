@@ -38,18 +38,6 @@ export 'src/keys/at_auth_keys.dart';
 export 'src/onboard/at_onboarding_request.dart';
 export 'src/onboard/at_onboarding_response.dart';
 
-@Deprecated('Use EnrollmentServerResponse')
-export 'src/enroll/at_enrollment_notification_request.dart';
-
-@Deprecated('Use FirstEnrollmentRequest when onboarding an atSign')
-export 'src/enroll/at_initial_enrollment_request.dart';
-
-@Deprecated('Use EnrollmentRequest')
-export 'src/enroll/at_new_enrollment_request.dart';
-@Deprecated(
-    'Use FirstEnrollmentRequest when onboarding an atSign and EnrollmentRequest to submit subsequent enrollment requests')
-export 'src/enroll/at_enrollment_request.dart';
-
 /// Global constant to access [AtAuthInterface].
 ///
 /// Serves as the primary entry point to access public methods in at_auth package.

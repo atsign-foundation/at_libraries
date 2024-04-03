@@ -1,4 +1,3 @@
-import 'package:at_auth/src/enroll/at_enrollment_request.dart';
 import 'package:at_auth/src/enroll/at_enrollment_response.dart';
 import 'package:at_auth/src/enroll/base_enrollment_request.dart';
 import 'package:at_auth/src/enroll/enrollment_request_decision.dart';
@@ -113,28 +112,4 @@ abstract class AtEnrollmentBase {
   /// ```
   Future<AtEnrollmentResponse> deny(
       EnrollmentRequestDecision enrollmentRequestDecision, AtLookUp atLookUp);
-
-  /// Submits an enrollment request.
-  ///
-  /// The [atEnrollmentRequest] parameter represents the enrollment request details.
-  /// The [atLookUp] parameter is used to perform lookups to secondary server
-  /// to submit an enrollment request.
-  ///
-  /// Returns a [Future] containing an [AtEnrollmentResponse] representing the
-  /// result of the enrollment.
-  @Deprecated("Use submit method")
-  Future<AtEnrollmentResponse> submitEnrollment(
-      AtEnrollmentRequest atEnrollmentRequest, AtLookUp atLookUp);
-
-  /// Manages the approval/denial of an enrollment request.
-  ///
-  /// The [atEnrollmentRequest] parameter represents the enrollment request details.
-  /// The [atLookUp] parameter is used to perform lookups during approval management.
-  ///
-  /// Returns a [Future] containing an [AtEnrollmentResponse] representing the
-  /// result of the approval/denial of an enrollment.
-  @Deprecated(
-      "Use approve and deny methods to approve or deny an enrollment respectively")
-  Future<AtEnrollmentResponse> manageEnrollmentApproval(
-      AtEnrollmentRequest atEnrollmentRequest, AtLookUp atLookUp);
 }
