@@ -123,7 +123,7 @@ jobs:
 
       - name: Start docker instance
         working-directory: tests/${{ matrix.package }}
-        run: sudo docker-compose up -d
+        run: sudo docker compose up -d
 
       - name: Check for docker container readiness
         working-directory: tests/${{ matrix.package }}
@@ -143,4 +143,4 @@ jobs:
 
       - name: kill docker image
         working-directory: tests/${{ matrix.package }}
-        run: sudo docker-compose down
+        run: sudo docker compose down
