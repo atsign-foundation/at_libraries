@@ -363,13 +363,6 @@ void main() {
       expect(selfKeyBuilder, isA<SelfKeyBuilder>());
       expect(selfKeyBuilder.build().toString(), 'phone.wavi@bob');
     });
-
-    test('Validate the hidden key builder', () {
-      PrivateKeyBuilder hiddenKeyBuilder =
-          AtKey.private('phone', namespace: 'wavi');
-      expect(hiddenKeyBuilder, isA<PrivateKeyBuilder>());
-      expect(hiddenKeyBuilder.build().toString(), 'privatekey:phone.wavi');
-    });
   });
 
   group('A group of tests to validate the AtKey instances', () {
@@ -394,12 +387,6 @@ void main() {
           AtKey.self('phone', namespace: 'wavi', sharedBy: '@alice').build();
       expect(selfKey, isA<SelfKey>());
       expect(selfKey.toString(), 'phone.wavi@alice');
-    });
-
-    test('Test to verify the hidden key', () {
-      AtKey selfKey = AtKey.private('phone', namespace: 'wavi').build();
-      expect(selfKey, isA<PrivateKey>());
-      expect(selfKey.toString(), 'privatekey:phone.wavi');
     });
   });
 
@@ -818,17 +805,6 @@ void main() {
           ..isPublic = true)
         ..namespace = 'wavi';
       expect('cached:public:phone.wavi@alice', atKey.toString());
-    });
-
-    //Private keys
-    test('Verify a privatekey creation using static factory method', () {
-      var atKey = PrivateKey()..key = 'at_secret';
-      expect('privatekey:at_secret', atKey.toString());
-    });
-
-    test('Verify a privatekey creation', () {
-      var atKey = AtKey()..key = 'privatekey:at_secret';
-      expect('privatekey:at_secret', atKey.toString());
     });
   });
 

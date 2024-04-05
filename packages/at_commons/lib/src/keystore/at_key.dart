@@ -228,16 +228,8 @@ class AtKey {
       ..sharedBy(sharedBy);
   }
 
-  /// Private key's that are created by the owner of the atSign and these keys
-  /// are not shown in the scan.
-  ///
-  /// Builds a private key and returns a [PrivateKeyBuilder]. Private key's are not
-  /// returned when fetched for key's of atSign.
-  ///
-  /// Example: privatekey:phone.wavi@alice
-  /// ```dart
-  /// AtKey privateKey = AtKey.private('phone', namespace: 'wavi').build();
-  /// ```
+  /// Obsolete, was never used
+  @Deprecated("Obsolete, from the ancient times")
   static PrivateKeyBuilder private(String key, {String? namespace}) {
     return PrivateKeyBuilder()
       ..key(key)
@@ -382,7 +374,8 @@ class SharedKey extends AtKey {
   }
 }
 
-/// Represents a Private key.
+/// Obsolete, was never used
+@Deprecated("Obsolete, from the ancient times")
 class PrivateKey extends AtKey {
   PrivateKey() {
     super.metadata = Metadata()..isHidden = true;
