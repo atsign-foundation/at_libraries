@@ -1125,4 +1125,38 @@ void main() {
           'Key length exceeds maximum permissible length of ${KeyLengthValidation.maxKeyLength} characters');
     });
   });
+  group('A group of tests to verify public key toString', () {
+    test('test to verify public key toString without namespace ', () {
+      var publicKey = (PublicKeyBuilder()
+            ..key('phone')
+            ..sharedBy('@bob'))
+          .build();
+      expect(publicKey.toString(), 'public:phone@bob');
+    });
+    test('test to verify public key toString with namespace ', () {
+      var publicKey = (PublicKeyBuilder()
+            ..key('phone')
+            ..sharedBy('@bob')
+            ..namespace('wavi'))
+          .build();
+      expect(publicKey.toString(), 'public:phone.wavi@bob');
+    });
+    test('test to verify cached public key toString without namespace  ', () {
+      var publicKey = (PublicKeyBuilder()
+            ..key('phone')
+            ..sharedBy('@bob')
+            ..cache(10, true))
+          .build();
+      expect(publicKey.toString(), 'cached:public:phone@bob');
+    });
+    test('test to verify cached public key toString with namespace  ', () {
+      var publicKey = (PublicKeyBuilder()
+            ..key('phone')
+            ..sharedBy('@bob')
+            ..cache(10, true)
+            ..namespace('buzz'))
+          .build();
+      expect(publicKey.toString(), 'cached:public:phone.buzz@bob');
+    });
+  });
 }
