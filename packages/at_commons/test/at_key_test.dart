@@ -2,6 +2,8 @@ import 'package:at_commons/at_commons.dart';
 import 'package:at_commons/src/keystore/at_key_builder_impl.dart';
 import 'package:test/test.dart';
 
+import 'test_utils.dart';
+
 void main() {
   group('A group of positive test to construct a atKey', () {
     test('toString and fromString with namespace', () {
@@ -1072,6 +1074,55 @@ void main() {
       expect(metadataMap['ivNonce'], '16');
       expect(metadataMap['skeEncKeyName'], 'dummy_enc_key_name');
       expect(metadataMap['skeEncAlgo'], 'RSA');
+    });
+  });
+  group('A group of tests to verify key length validation', () {
+    test('test to validate key length for a local key', () {
+      var localKey = (LocalKeyBuilder()
+            ..key('phone')
+            ..sharedBy('@alice'))
+          .build();
+      var validationResult = AtKeyValidators.get().validate(
+          localKey.toString(), ValidationContext()..atSign = '@alice');
+      expect(validationResult.isValid, true);
+    });
+    test(
+        'test to validate failure when key length exceeds 248 chars for a local key',
+        () {
+      var localKey = (LocalKeyBuilder()
+            ..key(TestUtils.createRandomString(250))
+            ..sharedBy('@alice'))
+          .build();
+      var validationResult = AtKeyValidators.get().validate(
+          localKey.toString(), ValidationContext()..atSign = '@alice');
+      expect(validationResult.isValid, false);
+      expect(validationResult.failureReason,
+          'Key length exceeds maximum permissible length of ${KeyLengthValidation.maxKeyLengthWithoutCached} characters');
+    });
+    test('test to validate key length for a cached public key', () {
+      var publicKey = (PublicKeyBuilder()
+            ..key('phone')
+            ..sharedBy('@bob')
+            ..cache(10, true)
+            ..namespace('wavi'))
+          .build();
+      var validationResult = AtKeyValidators.get().validate(
+          publicKey.toString(), ValidationContext()..atSign = '@alice');
+      expect(validationResult.isValid, true);
+    });
+    test(
+        'test to validate failure when key length exceeds 255 chars for a cached public key',
+        () {
+      var publicKey = (PublicKeyBuilder()
+            ..key(TestUtils.createRandomString(250))
+            ..sharedBy('@bob')
+            ..cache(10, true))
+          .build();
+      var validationResult = AtKeyValidators.get().validate(
+          publicKey.toString(), ValidationContext()..atSign = '@alice');
+      expect(validationResult.isValid, false);
+      expect(validationResult.failureReason,
+          'Key length exceeds maximum permissible length of ${KeyLengthValidation.maxKeyLength} characters');
     });
   });
 }

@@ -140,18 +140,21 @@ class ReservedEntityValidation extends Validation {
   }
 }
 
-/// Validates key length of a @sign
+/// Validates key length of a key
 class KeyLengthValidation extends Validation {
-  static const int _maxKeyLength = 240;
+  static const int maxKeyLength = 255;
+  static const int maxKeyLengthWithoutCached = 248;
   String key;
 
   KeyLengthValidation(this.key);
 
   @override
   ValidationResult doValidate() {
-    if (key.length > _maxKeyLength) {
+    int maxLength =
+        key.startsWith('cached:') ? maxKeyLength : maxKeyLengthWithoutCached;
+    if (key.length > maxLength) {
       return ValidationResult(
-          'Key length exceeds maximum permissible length of $_maxKeyLength characters');
+          'Key length exceeds maximum permissible length of $maxLength characters');
     }
     return ValidationResult.noFailure();
   }

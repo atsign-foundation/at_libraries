@@ -347,11 +347,6 @@ class PublicKey extends AtKey {
     super.metadata = Metadata();
     super.metadata.isPublic = true;
   }
-
-  @override
-  String toString() {
-    return 'public:$key${_dotNamespaceIfPresent()}$_sharedBy'.toLowerCase();
-  }
 }
 
 ///Represents a Self key.
