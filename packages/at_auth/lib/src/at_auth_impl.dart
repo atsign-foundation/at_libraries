@@ -123,24 +123,13 @@ class AtAuthImpl implements AtAuth {
       atLookUp!.atChops = atChops;
     }
 
-    //3. update pkam public key through enrollment or manually based on app preference
+    //3. send onboarding enrollment
     String? enrollmentIdFromServer;
-    if (atOnboardingRequest.enableEnrollment) {
-      // server will update the apkam public key during enrollment.
-      // So don't have to manually update in this scenario.
-      enrollmentIdFromServer = await _sendOnboardingEnrollment(
-          atOnboardingRequest, atAuthKeys, atLookUp!);
-      atAuthKeys.enrollmentId = enrollmentIdFromServer;
-    } else {
-      // update pkam public key to server if enrollment is not set in preference
-      _logger.finer('Updating PkamPublicKey to remote secondary');
-      final pkamPublicKey = atAuthKeys.apkamPublicKey;
-      String updateCommand =
-          'update:${AtConstants.atPkamPublicKey} $pkamPublicKey\n';
-      String? pkamUpdateResult =
-          await atLookUp!.executeCommand(updateCommand, auth: false);
-      _logger.finer('PkamPublicKey update result: $pkamUpdateResult');
-    }
+    // server will update the apkam public key during enrollment.
+    // So don't have to manually update apkam public key in this scenario.
+    enrollmentIdFromServer = await _sendOnboardingEnrollment(
+        atOnboardingRequest, atAuthKeys, atLookUp!);
+    atAuthKeys.enrollmentId = enrollmentIdFromServer;
 
     //4. Close connection to server
     try {
@@ -211,6 +200,11 @@ class AtAuthImpl implements AtAuth {
       AtOnboardingRequest atOnboardingRequest,
       AtAuthKeys atAuthKeys,
       AtLookUp atLookup) async {
+    if (atOnboardingRequest.appName == null ||
+        atOnboardingRequest.deviceName == null) {
+      throw AtEnrollmentException(
+          'appName and deviceName are required for onboarding');
+    }
     AESEncryptionAlgo symmetricEncryptionAlgo =
         AESEncryptionAlgo(AESKey(atAuthKeys.apkamSymmetricKey!));
     // Encrypt the defaultEncryptionPrivateKey with APKAM Symmetric key

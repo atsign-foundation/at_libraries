@@ -7,7 +7,6 @@ void main(List<String> args) async {
   final atSign = args[0];
   final atOnboardingRequest = AtOnboardingRequest(atSign)
     ..rootDomain = 'vip.ve.atsign.zone'
-    ..enableEnrollment = true
     ..appName = 'wavi'
     ..deviceName = 'iphone';
   final atOnboardingResponse =
