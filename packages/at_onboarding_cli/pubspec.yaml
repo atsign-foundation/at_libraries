@@ -20,7 +20,7 @@ dependencies:
    image: ^4.0.17
    path: ^1.8.1
    zxing2: ^0.2.0
-   at_auth: ^1.0.5
+   at_auth: ^2.0.1
    at_chops: ^2.0.0
    at_client: ^3.0.74
    at_commons: ^4.0.0
