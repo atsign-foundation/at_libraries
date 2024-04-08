@@ -1135,4 +1135,104 @@ void main() {
       expect(publicKey.toString(), 'cached:public:phone.buzz@bob');
     });
   });
+  group('A group of tests to verify self key toString', () {
+    test('test to verify self key toString without namespace and no sharedWith',
+        () {
+      var selfKey = (SelfKeyBuilder()
+            ..key('phone')
+            ..sharedBy('@bob'))
+          .build();
+      expect(selfKey.toString(), 'phone@bob');
+    });
+    test(
+        'test to verify self key toString without namespace and sharedWith set',
+        () {
+      var selfKey = (SelfKeyBuilder()
+            ..key('phone')
+            ..sharedBy('@bob'))
+          .build()
+        ..sharedWith = '@bob';
+      expect(selfKey.toString(), '@bob:phone@bob');
+    });
+    test('test to verify self key toString with namespace and no sharedWith',
+        () {
+      var selfKey = (SelfKeyBuilder()
+            ..key('phone')
+            ..sharedBy('@bob')
+            ..namespace('buzz'))
+          .build();
+      expect(selfKey.toString(), 'phone.buzz@bob');
+    });
+    test('test to verify self key toString with namespace and sharedWith set',
+        () {
+      var selfKey = (SelfKeyBuilder()
+            ..key('phone')
+            ..sharedBy('@bob')
+            ..namespace('buzz'))
+          .build()
+        ..sharedWith = '@bob';
+      expect(selfKey.toString(), '@bob:phone.buzz@bob');
+    });
+    test('test to verify self key mixed case', () {
+      var selfKey = (SelfKeyBuilder()
+            ..key('pHoNE')
+            ..sharedBy('@boB')
+            ..namespace('Buzz'))
+          .build()
+        ..sharedWith = '@bob';
+      expect(selfKey.toString(), '@bob:phone.buzz@bob');
+    });
+    group('A group of tests to verify shared key toString', () {
+      test('test to verify shared key toString without namespace ', () {
+        var sharedKey = (SharedKeyBuilder()
+              ..key('phone')
+              ..sharedBy('@bob')
+              ..sharedWith('@alice'))
+            .build();
+        expect(sharedKey.toString(), '@alice:phone@bob');
+      });
+      test('test to verify shared key toString with namespace', () {
+        var sharedKey = (SharedKeyBuilder()
+              ..key('phone')
+              ..sharedBy('@bob')
+              ..sharedWith('@alice')
+              ..namespace('buzz'))
+            .build();
+        expect(sharedKey.toString(), '@alice:phone.buzz@bob');
+      });
+      test('test to verify shared key toString mixed case', () {
+        var sharedKey = (SharedKeyBuilder()
+              ..key('phone')
+              ..sharedBy('@bob')
+              ..sharedWith('@alice')
+              ..namespace('buzz'))
+            .build();
+        expect(sharedKey.toString(), '@alice:phone.buzz@bob');
+      });
+    });
+    group('A group of tests to verify local key toString', () {
+      test('test to verify localkey toString without namespace', () {
+        var localKey = (LocalKeyBuilder()
+              ..key('secret')
+              ..sharedBy('@bob'))
+            .build();
+        expect(localKey.toString(), 'local:secret@bob');
+      });
+      test('test to verify localkey toString with namespace', () {
+        var localKey = (LocalKeyBuilder()
+              ..key('secret')
+              ..sharedBy('@bob')
+              ..namespace('buzz'))
+            .build();
+        expect(localKey.toString(), 'local:secret.buzz@bob');
+      });
+      test('test to verify localkey toString mixed case', () {
+        var localKey = (LocalKeyBuilder()
+              ..key('seCreT')
+              ..sharedBy('@boB'))
+            .build();
+        expect(localKey.toString(), 'local:secret@bob');
+      });
+    });
+  });
 }

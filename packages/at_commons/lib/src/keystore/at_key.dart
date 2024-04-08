@@ -347,30 +347,12 @@ class SelfKey extends AtKey {
     super.metadata = Metadata();
     super.metadata.isPublic = false;
   }
-
-  @override
-  String toString() {
-    // If sharedWith is populated and sharedWith is equal to sharedBy, then
-    // keys is a self key.
-    // @alice:phone@alice or phone@alice
-    if (_sharedWith != null && _sharedWith!.isNotEmpty) {
-      return '$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy'
-          .toLowerCase();
-    }
-    return '$key${_dotNamespaceIfPresent()}$_sharedBy'.toLowerCase();
-  }
 }
 
 /// Represents a key shared to another atSign.
 class SharedKey extends AtKey {
   SharedKey() {
     super.metadata = Metadata();
-  }
-
-  @override
-  String toString() {
-    return '$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy'
-        .toLowerCase();
   }
 }
 
@@ -394,11 +376,6 @@ class LocalKey extends AtKey {
   LocalKey() {
     isLocal = true;
     super.metadata = Metadata();
-  }
-
-  @override
-  String toString() {
-    return 'local:$key${_dotNamespaceIfPresent()}$sharedBy'.toLowerCase();
   }
 }
 
