@@ -4,6 +4,7 @@ class AtOnboardingRequest {
   String atSign;
   AtOnboardingRequest(this.atSign);
   PkamAuthMode authMode = PkamAuthMode.keysFile;
+  @Deprecated('no longer used')
   bool enableEnrollment = false;
   String rootDomain = 'root.atsign.org';
   int rootPort = 64;

@@ -1,5 +1,6 @@
 import 'package:at_auth/src/at_auth_impl.dart';
 import 'package:at_auth/src/auth/pkam_authenticator.dart';
+import 'package:at_auth/src/enroll/first_enrollment_request.dart';
 import 'package:at_chops/at_chops.dart';
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
@@ -170,27 +171,6 @@ void main() {
   });
   group('AtAuthImpl onboarding tests', () {
     var testCramSecret = 'cram123';
-    test('Test onboard - authenticate_cram returns true', () async {
-      when(() => mockAtLookUp.cramAuthenticate(testCramSecret))
-          .thenAnswer((_) => Future.value(true));
-      when(() => mockAtLookUp.executeCommand(any()))
-          .thenAnswer((_) => Future.value('data:1'));
-      when(() => mockAtLookUp.executeVerb(any()))
-          .thenAnswer((_) => Future.value('data:2'));
-
-      when(() => mockAtLookUp.close()).thenAnswer((_) async => {});
-      when(() => mockPkamAuthenticator.authenticate()).thenAnswer(
-          (_) => Future.value(AtAuthResponse('@alice🛠')..isSuccessful = true));
-
-      final atOnboardingRequest = AtOnboardingRequest('@alice🛠')
-        ..rootDomain = 'test.atsign.com'
-        ..rootPort = 64;
-
-      final response =
-          await atAuth.onboard(atOnboardingRequest, testCramSecret);
-
-      expect(response.isSuccessful, true);
-    });
     test('Test onboard - authenticate_cram returns false', () async {
       when(() => mockAtLookUp.cramAuthenticate(testCramSecret))
           .thenAnswer((_) => Future.value(false));
@@ -212,7 +192,7 @@ void main() {
           throwsA(isA<AtAuthenticationException>()));
     });
 
-    test('Test onboard - enable enrollment', () async {
+    test('Test onboard with enrollment', () async {
       when(() => mockAtLookUp.cramAuthenticate(testCramSecret))
           .thenAnswer((_) => Future.value(true));
       when(() => mockAtLookUp.executeVerb(any()))
@@ -233,7 +213,6 @@ void main() {
       final atOnboardingRequest = AtOnboardingRequest('@alice🛠')
         ..rootDomain = 'test.atsign.com'
         ..rootPort = 64
-        ..enableEnrollment = true
         ..appName = 'wavi'
         ..authMode = PkamAuthMode.keysFile
         ..deviceName = 'iphone';
@@ -243,30 +222,6 @@ void main() {
 
       expect(response.isSuccessful, true);
       expect(response.enrollmentId, 'abc123');
-    });
-
-    test('Test onboard - enable enrollment set to false', () async {
-      when(() => mockAtLookUp.cramAuthenticate(testCramSecret))
-          .thenAnswer((_) => Future.value(true));
-      when(() => mockAtLookUp.executeCommand(any()))
-          .thenAnswer((_) => Future.value('data:1'));
-      when(() => mockAtLookUp.executeVerb(any()))
-          .thenAnswer((_) => Future.value('data:2'));
-
-      when(() => mockAtLookUp.close()).thenAnswer((_) async => {});
-      when(() => mockPkamAuthenticator.authenticate()).thenAnswer(
-          (_) => Future.value(AtAuthResponse('@alice🛠')..isSuccessful = true));
-
-      final atOnboardingRequest = AtOnboardingRequest('@alice🛠')
-        ..rootDomain = 'test.atsign.com'
-        ..rootPort = 64
-        ..enableEnrollment = false
-        ..appName = 'wavi'
-        ..deviceName = 'iphone';
-
-      final response =
-          await atAuth.onboard(atOnboardingRequest, testCramSecret);
-      expect(response.isSuccessful, true);
     });
   });
 }

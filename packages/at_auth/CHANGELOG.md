@@ -1,3 +1,5 @@
+## 2.0.1
+- fix: deprecate enableEnrollment flag in OnboardingRequest and removed the check in AtAuthImpl
 ## 2.0.0
 - build[deps]: Upgraded the following packages:
   - at_commons to 4.0.5
