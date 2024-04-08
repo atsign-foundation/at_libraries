@@ -30,9 +30,6 @@ export 'src/enroll/enrollment_request_decision.dart';
 /// request from the requesting app, for approval or denial.
 export 'src/enroll/enrollment_server_response.dart';
 
-/// The class contains fields to submit enrollment request when onboarding an atsign.
-export 'src/enroll/first_enrollment_request.dart';
-
 export 'src/exception/at_auth_exceptions.dart';
 export 'src/keys/at_auth_keys.dart';
 export 'src/onboard/at_onboarding_request.dart';

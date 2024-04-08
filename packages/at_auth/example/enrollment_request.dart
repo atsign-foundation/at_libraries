@@ -1,48 +1,52 @@
+import 'dart:io';
+
+import 'package:args/args.dart';
 import 'package:at_auth/at_auth.dart';
 import 'package:at_auth/src/enroll/at_enrollment_impl.dart';
 import 'package:at_lookup/at_lookup.dart';
 
-/// The example on submitting the [FirstEnrollmentRequest] which is used when onboarding an atSign and
-/// [EnrollmentRequest] which is used by the subsequent mobile apps for authentication and authorization.
-void main() async {
-  AtLookUp atLookUp = AtLookupImpl('@alice', 'vip.ve.atsign.zone', 64);
+/// Requests for an enrollment
+/// Enrollment request will be submitted to server and marked as pending
+/// To get the otp, run otp:get from authenticated privileged client using openssl terminal
+/// A privileged at_onboarding_cli client will get the enrollment notification. Check [https://github.com/atsign-foundation/at_libraries/blob/trunk/packages/at_onboarding_cli/example/apkam_examples/enroll_app_listen.dart]
+/// Approve or deny the enrollment request from at_onboarding_cli client
+/// Usage: dart enrollment_request.dart -a <atsign> -o <otp> -r <root_server_domain>
+void main(List<String> args) async {
+  try {
+    final parser = ArgParser()
+      ..addOption('atsign',
+          abbr: 'a', help: 'atSign to onboard', mandatory: true)
+      ..addOption('otp',
+          abbr: 'o', help: 'OTP required for enrollment', mandatory: true)
+      ..addOption('rootDomain',
+          abbr: 'r',
+          help: 'root server domain',
+          mandatory: false,
+          defaultsTo: 'root.atsign.org');
+    ;
+    final argResults = parser.parse(args);
+    AtLookUp atLookUp =
+        AtLookupImpl(argResults['atsign'], argResults['rootDomain'], 64);
 
-  AtEnrollmentBase atEnrollmentBase = AtEnrollmentImpl('@alice');
+    AtEnrollmentBase atEnrollmentBase = AtEnrollmentImpl(argResults['atsign']);
 
-  /// Onboarding an app for first time. Submit an enrollment and is auto approved.
-  ///
-  /// When an atsign is onboarded for the first time and enableEnrollment flag is set to true in AtClientPreferences,
-  /// the enrollment is submitted to the server. Since, when onboarding for the first time, since there is no app
-  /// to approve, the initial enrollment (Enrollment submitted on CRAM authenticated connection) is auto approved.
-  /// If the enableEnrollment is set to false, then the enrollment is not submitted and the app will not be able
-  /// to approve the other enrollment requests.
-  ///
-  /// The [appName] and [deviceName] are received from the AtOnboardingRequest.
-  FirstEnrollmentRequest initialEnrollmentRequest = FirstEnrollmentRequest(
-      appName: 'wavi',
-      deviceName: 'my-device',
-      apkamPublicKey: 'dummy_apkam_key',
-      encryptedDefaultEncryptionPrivateKey: 'default-encryption-key',
-      encryptedDefaultSelfEncryptionKey: 'default-self-encryption-key');
+    // New app sending enrollment request to server:
+    EnrollmentRequest enrollmentRequest = EnrollmentRequest(
+        appName: 'buzz',
+        deviceName: 'pixel',
+        namespaces: {'buzz': 'rw'},
+        otp: argResults['otp']);
 
-  // Contains the response from the server.
-  // ignore: unused_local_variable
-  AtEnrollmentResponse atEnrollmentResponse =
-      await atEnrollmentBase.submit(initialEnrollmentRequest, atLookUp);
-
-  // 2. The second app sending enrollment request to server:
-  EnrollmentRequest enrollmentRequest = EnrollmentRequest(
-      appName: 'wavi',
-      deviceName: 'my-device',
-      namespaces: {'wavi': 'rw'},
-      apkamPublicKey: 'dummy_public_key',
-      otp: '123',
-      encryptedAPKAMSymmetricKey: 'enc_apkam_sym_key');
-
-  // Internally, the apkam symmetric key is generated and set to enrollmentRequest
-  enrollmentRequest.encryptedAPKAMSymmetricKey = 'dummy_encrypted_key';
-
-  // Contains the response from the server.
-  atEnrollmentResponse =
-      await atEnrollmentBase.submit(enrollmentRequest, atLookUp);
+    // Contains the response from the server.
+    final atEnrollmentResponse =
+        await atEnrollmentBase.submit(enrollmentRequest, atLookUp);
+    print(atEnrollmentResponse);
+  } on Exception catch (e, trace) {
+    print(trace);
+  } on ArgumentError catch (e, trace) {
+    print(e.message);
+    print(trace);
+  } finally {
+    exit(0);
+  }
 }

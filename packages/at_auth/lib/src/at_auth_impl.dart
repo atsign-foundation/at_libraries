@@ -5,6 +5,7 @@ import 'package:at_auth/at_auth.dart';
 import 'package:at_auth/src/auth/cram_authenticator.dart';
 import 'package:at_auth/src/auth/pkam_authenticator.dart';
 import 'package:at_auth/src/auth_constants.dart' as auth_constants;
+import 'package:at_auth/src/enroll/first_enrollment_request.dart';
 import 'package:at_chops/at_chops.dart';
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
