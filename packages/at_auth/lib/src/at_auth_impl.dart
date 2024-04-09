@@ -16,6 +16,8 @@ import 'enroll/at_enrollment_impl.dart';
 
 class AtAuthImpl implements AtAuth {
   final AtSignLogger _logger = AtSignLogger('AtAuthServiceImpl');
+  final String _defaultAppNameForOnboarding = 'firstApp';
+  final String _defaultDeviceNameForOnboarding = 'firstDevice';
   @override
   AtChops? atChops;
 
@@ -201,11 +203,8 @@ class AtAuthImpl implements AtAuth {
       AtOnboardingRequest atOnboardingRequest,
       AtAuthKeys atAuthKeys,
       AtLookUp atLookup) async {
-    if (atOnboardingRequest.appName == null ||
-        atOnboardingRequest.deviceName == null) {
-      throw AtEnrollmentException(
-          'appName and deviceName are required for onboarding');
-    }
+    atOnboardingRequest.appName ??= _defaultAppNameForOnboarding;
+    atOnboardingRequest.deviceName ??= _defaultDeviceNameForOnboarding;
     AESEncryptionAlgo symmetricEncryptionAlgo =
         AESEncryptionAlgo(AESKey(atAuthKeys.apkamSymmetricKey!));
     // Encrypt the defaultEncryptionPrivateKey with APKAM Symmetric key
