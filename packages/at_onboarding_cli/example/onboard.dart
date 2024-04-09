@@ -17,9 +17,7 @@ Future<void> main(List<String> args) async {
     ..atKeysFilePath = argResults['atKeysPath']
     ..appName = 'wavi'
     ..deviceName = 'pixel'
-    ..rootDomain = 'vip.ve.atsign.zone'
-    ..enableEnrollmentDuringOnboard = true;
-
+    ..rootDomain = 'vip.ve.atsign.zone';
   AtOnboardingService? onboardingService =
       AtOnboardingServiceImpl(atSign, atOnboardingPreference);
   await onboardingService.onboard();

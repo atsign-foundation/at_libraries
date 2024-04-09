@@ -1,15 +1,15 @@
 List of steps to run the examples for checking apkam enrollment
 
-1. Onboard an atsign which has privilege to approve/deny enrollments:<br>
+1. Onboard an atsign which will get the privilege to approve/deny enrollments:<br>
    - run: `dart example/onboard.dart -a <atsign> -c <CRAM secret> -k <path_store_keys_file>`<br>
    - e.g. `dart example/onboard.dart -a @alice -k /home/alice/.atsign/@alice_wavikey.atKeys -c b26455a907582760ebf35bc4847de549bc41c24b25c8b1c58d5964f7b4f8a43bc55b0e9a601c9a9657d9a8b8bbc32f88b4e38ffaca03c8710ebae1b14ca9f364`<br/>
    - If you do not already have the CRAM Secret for your atsign
      run: `dart example/get_cram_key.dart -a <@atsign>`
 2. Authenticate using the onboarded atsign:<br>
-   - run: `dart example/apkam_authenticate.dart -a <atsign> -k <path_of_keys_file_from_#1>`<br>
+   - run: `dart example/apkam_examples/apkam_authenticate.dart -a <atsign> -k <path_of_keys_file_from_#1>`<br>
    - e.g. `dart example/apkam_examples/apkam_authenticate.dart -a @alice -k /home/alice/.atsign/@alice_wavikey.atKeys`
 3. Run client to approve enrollments:<br>
-   - run: `dart example/enroll_app_listen.dart -a <atsign> -k <path_of_keys_file_from_#1>`<br>
+   - run: `dart example/apkam_examples/enroll_app_listen.dart -a <atsign> -k <path_of_keys_file_from_#1>`<br>
    - e.g `dart example/apkam_examples/enroll_app_listen.dart -a @alice -k /home/alice/.atsign/@alice_wavikey.atKeys`
 4. Get OTP for enrollment
     - 4.1 Perform a PKAM authentication through the ssl client

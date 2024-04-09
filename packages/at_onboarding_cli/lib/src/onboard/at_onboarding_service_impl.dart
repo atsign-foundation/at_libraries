@@ -86,12 +86,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   @override
   Future<bool> onboard() async {
-    if (atOnboardingPreference.enableEnrollmentDuringOnboard &&
-        (atOnboardingPreference.appName == null ||
-            atOnboardingPreference.deviceName == null)) {
-      throw AtOnboardingException(
-          'appName and deviceName are mandatory for onboarding. Please set the params in AtOnboardingPreference');
-    }
     // cram auth doesn't use at_chops. So create at_lookup here.
     AtLookupImpl atLookUpImpl = AtLookupImpl(_atSign,
         atOnboardingPreference.rootDomain, atOnboardingPreference.rootPort);
@@ -120,8 +114,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     var atOnboardingRequest = at_auth.AtOnboardingRequest(_atSign);
     atOnboardingRequest.rootDomain = atOnboardingPreference.rootDomain;
     atOnboardingRequest.rootPort = atOnboardingPreference.rootPort;
-    atOnboardingRequest.enableEnrollment =
-        atOnboardingPreference.enableEnrollmentDuringOnboard;
     atOnboardingRequest.appName = atOnboardingPreference.appName;
     atOnboardingRequest.deviceName = atOnboardingPreference.deviceName;
     atOnboardingRequest.publicKeyId = atOnboardingPreference.publicKeyId;
