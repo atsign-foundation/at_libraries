@@ -1,3 +1,5 @@
+## 2.0.2
+- fix: set default value for app name and device name if they are not passed in the onboarding request.
 ## 2.0.1
 - fix: deprecate enableEnrollment flag in OnboardingRequest and removed the check in AtAuthImpl
 ## 2.0.0

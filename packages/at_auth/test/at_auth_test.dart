@@ -192,7 +192,8 @@ void main() {
           throwsA(isA<AtAuthenticationException>()));
     });
 
-    test('Test onboard with enrollment', () async {
+    test('Test onboard with appName and deviceName set in onboarding request',
+        () async {
       when(() => mockAtLookUp.cramAuthenticate(testCramSecret))
           .thenAnswer((_) => Future.value(true));
       when(() => mockAtLookUp.executeVerb(any()))
@@ -217,6 +218,34 @@ void main() {
         ..authMode = PkamAuthMode.keysFile
         ..deviceName = 'iphone';
 
+      final response =
+          await atAuth.onboard(atOnboardingRequest, testCramSecret);
+
+      expect(response.isSuccessful, true);
+      expect(response.enrollmentId, 'abc123');
+    });
+    test('Test onboard with default appName and deviceName', () async {
+      when(() => mockAtLookUp.cramAuthenticate(testCramSecret))
+          .thenAnswer((_) => Future.value(true));
+      when(() => mockAtLookUp.executeVerb(any()))
+          .thenAnswer((_) => Future.value('data:2'));
+      when(() =>
+          mockAtLookUp.executeCommand(
+              any(that: startsWith('enroll:request')))).thenAnswer((_) =>
+          Future.value('data:{"enrollmentId":"abc123", "status":"approved"}'));
+
+      when(() => mockAtLookUp.close()).thenAnswer((_) async => {});
+      when(() => mockPkamAuthenticator.authenticate(enrollmentId: "abc123"))
+          .thenAnswer((_) =>
+              Future.value(AtAuthResponse('@alice🛠')..isSuccessful = true));
+      final mockEnrollmentResponse =
+          AtEnrollmentResponse("abc123", EnrollmentStatus.approved);
+      when(() => mockAtEnrollment.submit(any(), mockAtLookUp))
+          .thenAnswer((_) => Future.value(mockEnrollmentResponse));
+      final atOnboardingRequest = AtOnboardingRequest('@alice🛠')
+        ..rootDomain = 'test.atsign.com'
+        ..rootPort = 64
+        ..authMode = PkamAuthMode.keysFile;
       final response =
           await atAuth.onboard(atOnboardingRequest, testCramSecret);
 
