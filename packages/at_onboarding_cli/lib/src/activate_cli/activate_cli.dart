@@ -15,6 +15,16 @@ Future<void> main(List<String> arguments) async {
   final parser = ArgParser()
     ..addOption('atsign', abbr: 'a', help: 'atSign to activate')
     ..addOption('cramkey', abbr: 'c', help: 'CRAM key', mandatory: false)
+    ..addOption('appName',
+        abbr: 'p',
+        help: 'application name that identifies the client',
+        mandatory: false,
+        defaultsTo: 'testapp')
+    ..addOption('deviceName',
+        abbr: 'd',
+        help: 'device name on which the application is running',
+        mandatory: false,
+        defaultsTo: 'testdevice')
     ..addOption('rootServer',
         abbr: 'r',
         help: 'root server\'s domain name',
@@ -42,7 +52,8 @@ Future<void> main(List<String> arguments) async {
   await activate(argResults);
 }
 
-Future<void> activate(ArgResults argResults, {AtOnboardingService? atOnboardingService}) async {
+Future<void> activate(ArgResults argResults,
+    {AtOnboardingService? atOnboardingService}) async {
   stdout.writeln('[Information] Root server is ${argResults['rootServer']}');
   stdout.writeln(
       '[Information] Registrar url provided is ${argResults['registrarUrl']}');
@@ -51,7 +62,9 @@ Future<void> activate(ArgResults argResults, {AtOnboardingService? atOnboardingS
     ..rootDomain = argResults['rootServer']
     ..registrarUrl = argResults['registrarUrl']
     ..cramSecret =
-        argResults.wasParsed('cramkey') ? argResults['cramkey'] : null;
+        argResults.wasParsed('cramkey') ? argResults['cramkey'] : null
+    ..appName = argResults['appName']
+    ..deviceName = argResults['deviceName'];
   //onboard the atSign
   atOnboardingService ??=
       AtOnboardingServiceImpl(argResults['atsign'], atOnboardingPreference);
