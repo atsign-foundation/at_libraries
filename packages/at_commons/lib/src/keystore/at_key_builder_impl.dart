@@ -123,7 +123,8 @@ class SelfKeyBuilder extends AbstractKeyBuilder {
   }
 }
 
-/// Builder to build the hidden keys
+/// Obsolete, was never used
+@Deprecated("Obsolete, from the ancient times")
 class PrivateKeyBuilder extends AbstractKeyBuilder {
   PrivateKeyBuilder() : super() {
     _atKey = PrivateKey();

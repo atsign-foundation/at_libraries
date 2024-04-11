@@ -228,16 +228,8 @@ class AtKey {
       ..sharedBy(sharedBy);
   }
 
-  /// Private key's that are created by the owner of the atSign and these keys
-  /// are not shown in the scan.
-  ///
-  /// Builds a private key and returns a [PrivateKeyBuilder]. Private key's are not
-  /// returned when fetched for key's of atSign.
-  ///
-  /// Example: privatekey:phone.wavi@alice
-  /// ```dart
-  /// AtKey privateKey = AtKey.private('phone', namespace: 'wavi').build();
-  /// ```
+  /// Obsolete, was never used
+  @Deprecated("Obsolete, from the ancient times")
   static PrivateKeyBuilder private(String key, {String? namespace}) {
     return PrivateKeyBuilder()
       ..key(key)
@@ -347,11 +339,6 @@ class PublicKey extends AtKey {
     super.metadata = Metadata();
     super.metadata.isPublic = true;
   }
-
-  @override
-  String toString() {
-    return 'public:$key${_dotNamespaceIfPresent()}$_sharedBy'.toLowerCase();
-  }
 }
 
 ///Represents a Self key.
@@ -360,18 +347,6 @@ class SelfKey extends AtKey {
     super.metadata = Metadata();
     super.metadata.isPublic = false;
   }
-
-  @override
-  String toString() {
-    // If sharedWith is populated and sharedWith is equal to sharedBy, then
-    // keys is a self key.
-    // @alice:phone@alice or phone@alice
-    if (_sharedWith != null && _sharedWith!.isNotEmpty) {
-      return '$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy'
-          .toLowerCase();
-    }
-    return '$key${_dotNamespaceIfPresent()}$_sharedBy'.toLowerCase();
-  }
 }
 
 /// Represents a key shared to another atSign.
@@ -379,15 +354,10 @@ class SharedKey extends AtKey {
   SharedKey() {
     super.metadata = Metadata();
   }
-
-  @override
-  String toString() {
-    return '$_sharedWith:$key${_dotNamespaceIfPresent()}$_sharedBy'
-        .toLowerCase();
-  }
 }
 
-/// Represents a Private key.
+/// Obsolete, was never used
+@Deprecated("Obsolete, from the ancient times")
 class PrivateKey extends AtKey {
   PrivateKey() {
     super.metadata = Metadata()..isHidden = true;
@@ -406,11 +376,6 @@ class LocalKey extends AtKey {
   LocalKey() {
     isLocal = true;
     super.metadata = Metadata();
-  }
-
-  @override
-  String toString() {
-    return 'local:$key${_dotNamespaceIfPresent()}$sharedBy'.toLowerCase();
   }
 }
 
