@@ -40,7 +40,7 @@ class AtChopsImpl extends AtChops {
       encryptionAlgorithm ??=
           _getEncryptionAlgorithm(encryptionKeyType, keyName)!;
       if (encryptionAlgorithm is SymmetricEncryptionAlgorithm && iv == null) {
-        throw InvalidDataException(
+        throw AtDecryptionException(
             'Initialization vector required for SymmetricKeyEncryption');
       }
       final atEncryptionMetaData = AtEncryptionMetaData(

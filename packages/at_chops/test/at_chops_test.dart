@@ -231,16 +231,13 @@ void main() {
       var encryptionResult =
           atChops.encryptBytes(utf8EncData, EncryptionKeyType.aes256, iv: iv);
 
-      bool exceptionCatchFlag = false;
-      try {
-        atChops.decryptBytes(encryptionResult.result, EncryptionKeyType.aes256,
-            iv: null);
-      } on Exception catch (e) {
-        expect(e.runtimeType, AtDecryptionException);
-        expect(e.toString(), 'Exception: Exception: Initialization vector required for SymmetricKeyEncryption');
-        exceptionCatchFlag = true;
-      }
-      expect(exceptionCatchFlag, true);
+      expect(
+          () => atChops.decryptBytes(
+              encryptionResult.result, EncryptionKeyType.aes256, iv: null),
+          throwsA(predicate((e) =>
+              e is AtDecryptionException &&
+              e.toString().contains(
+                  'Exception: Exception: Initialization vector required for SymmetricKeyEncryption'))));
     });
   });
 
