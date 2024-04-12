@@ -220,6 +220,25 @@ void main() {
       expect(decryptionResult.atEncryptionMetaData.iv, iv);
       expect(decryptionResult.result, data);
     });
+
+    test('validate decryption behaviour with null iv', () {
+      final aesKey = AtChopsUtil.generateSymmetricKey(EncryptionKeyType.aes256);
+      final atChopsKeys = AtChopsKeys()..selfEncryptionKey = aesKey;
+      final atChops = AtChopsImpl(atChopsKeys);
+
+      var iv = AtChopsUtil.generateRandomIV(15);
+      var utf8EncData = utf8.encode('abcd');
+      var encryptionResult =
+          atChops.encryptBytes(utf8EncData, EncryptionKeyType.aes256, iv: iv);
+
+      expect(
+          () => atChops.decryptBytes(
+              encryptionResult.result, EncryptionKeyType.aes256, iv: null),
+          throwsA(predicate((e) =>
+              e is AtDecryptionException &&
+              e.toString().contains(
+                  'Initialization vector required for decryption using SymmetricKey'))));
+    });
   });
 
   group('A group of tests for data signing and verification', () {

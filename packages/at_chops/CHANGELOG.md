@@ -1,3 +1,5 @@
+## 2.0.1
+- fix: throw Exception when input IV is null for decryption(with Symmetric Encryption)
 ## 2.0.0
 - [Breaking Change] fix: removed deprecated methods and members
 - [Breaking Change] feat: Introduced interface for ASymmetricEncryptionAlgorithm and modified DefaultEncryptionAlgorithm
