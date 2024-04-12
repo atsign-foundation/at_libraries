@@ -237,7 +237,7 @@ void main() {
           throwsA(predicate((e) =>
               e is AtDecryptionException &&
               e.toString().contains(
-                  'Initialization vector required for SymmetricKeyEncryption'))));
+                  'Initialization vector required for decryption using SymmetricKeyEncryption'))));
     });
   });
 
