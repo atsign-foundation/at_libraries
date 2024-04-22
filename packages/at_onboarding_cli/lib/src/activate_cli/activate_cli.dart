@@ -1,8 +1,9 @@
+import 'dart:io';
+
+import 'package:args/args.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
-import 'package:args/args.dart';
 import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
-import 'dart:io';
 import 'package:at_utils/at_logger.dart';
 
 Future<void> main(List<String> arguments) async {
@@ -10,11 +11,20 @@ Future<void> main(List<String> arguments) async {
   String rootServer = 'root.atsign.org';
   String registrarUrl = 'my.atsign.com';
   AtSignLogger.root_level = 'severe';
-
   //get atSign and CRAM key from args
   final parser = ArgParser()
     ..addOption('atsign', abbr: 'a', help: 'atSign to activate')
     ..addOption('cramkey', abbr: 'c', help: 'CRAM key', mandatory: false)
+    ..addOption('appName',
+        abbr: 'p',
+        help: 'application name that identifies the client',
+        mandatory: false,
+        defaultsTo: 'testapp')
+    ..addOption('deviceName',
+        abbr: 'd',
+        help: 'device name on which the application is running',
+        mandatory: false,
+        defaultsTo: 'testdevice')
     ..addOption('rootServer',
         abbr: 'r',
         help: 'root server\'s domain name',
@@ -52,7 +62,9 @@ Future<void> activate(ArgResults argResults,
     ..rootDomain = argResults['rootServer']
     ..registrarUrl = argResults['registrarUrl']
     ..cramSecret =
-        argResults.wasParsed('cramkey') ? argResults['cramkey'] : null;
+        argResults.wasParsed('cramkey') ? argResults['cramkey'] : null
+    ..appName = argResults['appName']
+    ..deviceName = argResults['deviceName'];
   //onboard the atSign
   atOnboardingService ??=
       AtOnboardingServiceImpl(argResults['atsign'], atOnboardingPreference);

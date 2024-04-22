@@ -1,5 +1,4 @@
 /// Class holder for message of different data types(int, String etc.,)
-
 abstract class AtBuffer<T> {
   /// Message that is stored in the buffer
   T? message;

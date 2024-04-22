@@ -1,3 +1,7 @@
+## 1.4.4
+- feat: uptake changes for at_auth 2.0.0
+- build[deps]: upgrade at_auth to 2.0.2 | at_lookup to 3.0.46 | at_client to 3.0.75 \
+  at_commons to 4.0.5
 ## 1.4.3
 - build[deps]: upgrade at_chops to 2.0.0 | at_lookup to 3.0.45 | at_client to 3.0.74
 ## 1.4.2

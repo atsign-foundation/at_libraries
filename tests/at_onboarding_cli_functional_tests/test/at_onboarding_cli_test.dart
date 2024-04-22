@@ -5,8 +5,11 @@ import 'package:at_client/at_client.dart';
 import 'package:at_demo_data/at_demo_data.dart' as at_demos;
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
+import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart' as activate_cli;
 import 'package:at_utils/at_utils.dart';
 import 'package:test/test.dart';
+
+import 'onboarding_service_impl_override.dart';
 
 final String atKeysFilePath = '${Platform.environment['HOME']}/.atsign/keys';
 Map<String, bool> keysCreatedMap = {};
@@ -152,6 +155,35 @@ void main() {
     });
 
     tearDown(() async {
+      await tearDownFunc();
+    });
+  });
+
+  group('A group of tests to verify activate_cli', () {
+    String atSign = '@colin🛠';
+    AtOnboardingPreference onboardingPreference = getPreferences(atSign);
+    AtOnboardingService onboardingService =
+    OnboardingServiceImplOverride(atSign, onboardingPreference);
+    test(
+        'A test to verify atSign is activated and .atKeys file is generated using activate_cli',
+        () async {
+      List<String> args = [
+        '-a',
+        atSign,
+        '-c',
+        at_demos.cramKeyMap[atSign]!,
+        '-r',
+        'vip.ve.atsign.zone'
+      ];
+      // perform activation of atSign
+      await activate_cli.main(args);
+
+      expect(await onboardingService.authenticate(), true);
+      // Authenticate atSign with the .atKeys file generated via the activate_cli tool.
+      expect(await File(onboardingPreference.atKeysFilePath!).exists(), true);
+    });
+
+    tearDownAll(() async {
       await tearDownFunc();
     });
   });

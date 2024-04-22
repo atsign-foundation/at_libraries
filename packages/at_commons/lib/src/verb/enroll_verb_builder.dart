@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:at_commons/src/enroll/enrollment.dart';
 import 'package:at_commons/src/verb/abstract_verb_builder.dart';
 import 'package:at_commons/src/verb/enroll_params.dart';
 import 'package:meta/meta.dart';
@@ -35,32 +36,57 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
   String? encryptedDefaultSelfEncryptionKey;
   String? encryptedAPKAMSymmetricKey;
 
+  /// Filters enrollment requests based on provided [EnrollmentStatus] criteria.
+  ///
+  /// Accepts a list of enrollment statuses. Defaults to all EnrollmentStatuses
+  List<EnrollmentStatus>? enrollmentStatusFilter;
+
   @override
   String buildCommand() {
     var sb = StringBuffer();
     sb.write('enroll:');
     sb.write(getEnrollOperation(operation));
 
-    Map<String, dynamic> enrollParams = (EnrollParams()
-          ..enrollmentId = enrollmentId
-          ..appName = appName
-          ..deviceName = deviceName
-          ..apkamPublicKey = apkamPublicKey
-          ..otp = otp
-          ..namespaces = namespaces
-          ..encryptedDefaultEncryptionPrivateKey =
-              encryptedDefaultEncryptionPrivateKey
-          ..encryptedDefaultSelfEncryptionKey =
-              encryptedDefaultSelfEncryptionKey
-          ..encryptedAPKAMSymmetricKey = encryptedAPKAMSymmetricKey)
-        .toJson();
-    enrollParams
-        .removeWhere((key, value) => value == null || value.toString().isEmpty);
-    if (enrollParams.isNotEmpty) {
-      sb.write(':${jsonEncode(enrollParams)}');
+    EnrollParams enrollParams = EnrollParams()
+      ..enrollmentId = enrollmentId
+      ..appName = appName
+      ..deviceName = deviceName
+      ..apkamPublicKey = apkamPublicKey
+      ..otp = otp
+      ..namespaces = namespaces
+      ..encryptedDefaultEncryptionPrivateKey =
+          encryptedDefaultEncryptionPrivateKey
+      ..encryptedDefaultSelfEncryptionKey = encryptedDefaultSelfEncryptionKey
+      ..encryptedAPKAMSymmetricKey = encryptedAPKAMSymmetricKey
+      ..enrollmentStatusFilter = enrollmentStatusFilter;
+
+    Map<String, dynamic> enrollParamsJson = enrollParams.toJson();
+    enrollParamsJson.removeWhere(_removeElements);
+    if (enrollParamsJson.isNotEmpty) {
+      sb.write(':${jsonEncode(enrollParamsJson)}');
     }
     sb.write('\n');
     return sb.toString();
+  }
+
+  /// Compares current EnrollOperation with VerbBuilder params and removes any
+  /// that are NOT applicable
+  ///
+  ///
+  /// Returning "false" will leave the key and its value in the map, which gets added to the
+  /// enroll verb command. Returning true will remove the key and its value from the map to
+  /// to refrain adding the key and its value to the enroll verb command.
+  bool _removeElements(String key, dynamic value) {
+    if (value == null || value.toString().isEmpty) {
+      return true;
+    }
+    // EnrollmentStatusFilter is only applicable to EnrollOperation.list
+    // Remove it from enrollParamsJson for any operation other than list
+    if (key == 'enrollmentStatusFilter' &&
+        operation != EnrollOperationEnum.list) {
+      return true;
+    }
+    return false;
   }
 
   @override

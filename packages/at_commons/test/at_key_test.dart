@@ -2,6 +2,8 @@ import 'package:at_commons/at_commons.dart';
 import 'package:at_commons/src/keystore/at_key_builder_impl.dart';
 import 'package:test/test.dart';
 
+import 'test_utils.dart';
+
 void main() {
   group('A group of positive test to construct a atKey', () {
     test('toString and fromString with namespace', () {
@@ -361,13 +363,6 @@ void main() {
       expect(selfKeyBuilder, isA<SelfKeyBuilder>());
       expect(selfKeyBuilder.build().toString(), 'phone.wavi@bob');
     });
-
-    test('Validate the hidden key builder', () {
-      PrivateKeyBuilder hiddenKeyBuilder =
-          AtKey.private('phone', namespace: 'wavi');
-      expect(hiddenKeyBuilder, isA<PrivateKeyBuilder>());
-      expect(hiddenKeyBuilder.build().toString(), 'privatekey:phone.wavi');
-    });
   });
 
   group('A group of tests to validate the AtKey instances', () {
@@ -392,12 +387,6 @@ void main() {
           AtKey.self('phone', namespace: 'wavi', sharedBy: '@alice').build();
       expect(selfKey, isA<SelfKey>());
       expect(selfKey.toString(), 'phone.wavi@alice');
-    });
-
-    test('Test to verify the hidden key', () {
-      AtKey selfKey = AtKey.private('phone', namespace: 'wavi').build();
-      expect(selfKey, isA<PrivateKey>());
-      expect(selfKey.toString(), 'privatekey:phone.wavi');
     });
   });
 
@@ -817,17 +806,6 @@ void main() {
         ..namespace = 'wavi';
       expect('cached:public:phone.wavi@alice', atKey.toString());
     });
-
-    //Private keys
-    test('Verify a privatekey creation using static factory method', () {
-      var atKey = PrivateKey()..key = 'at_secret';
-      expect('privatekey:at_secret', atKey.toString());
-    });
-
-    test('Verify a privatekey creation', () {
-      var atKey = AtKey()..key = 'privatekey:at_secret';
-      expect('privatekey:at_secret', atKey.toString());
-    });
   });
 
   group('A group of tests to validate local key', () {
@@ -1072,6 +1050,189 @@ void main() {
       expect(metadataMap['ivNonce'], '16');
       expect(metadataMap['skeEncKeyName'], 'dummy_enc_key_name');
       expect(metadataMap['skeEncAlgo'], 'RSA');
+    });
+  });
+  group('A group of tests to verify key length validation', () {
+    test('test to validate key length for a local key', () {
+      var localKey = (LocalKeyBuilder()
+            ..key('phone')
+            ..sharedBy('@alice'))
+          .build();
+      var validationResult = AtKeyValidators.get().validate(
+          localKey.toString(), ValidationContext()..atSign = '@alice');
+      expect(validationResult.isValid, true);
+    });
+    test(
+        'test to validate failure when key length exceeds 248 chars for a local key',
+        () {
+      var localKey = (LocalKeyBuilder()
+            ..key(TestUtils.createRandomString(250))
+            ..sharedBy('@alice'))
+          .build();
+      var validationResult = AtKeyValidators.get().validate(
+          localKey.toString(), ValidationContext()..atSign = '@alice');
+      expect(validationResult.isValid, false);
+      expect(validationResult.failureReason,
+          'Key length exceeds maximum permissible length of ${KeyLengthValidation.maxKeyLengthWithoutCached} characters');
+    });
+    test('test to validate key length for a cached public key', () {
+      var publicKey = (PublicKeyBuilder()
+            ..key('phone')
+            ..sharedBy('@bob')
+            ..cache(10, true)
+            ..namespace('wavi'))
+          .build();
+      var validationResult = AtKeyValidators.get().validate(
+          publicKey.toString(), ValidationContext()..atSign = '@alice');
+      expect(validationResult.isValid, true);
+    });
+    test(
+        'test to validate failure when key length exceeds 255 chars for a cached public key',
+        () {
+      var publicKey = (PublicKeyBuilder()
+            ..key(TestUtils.createRandomString(250))
+            ..sharedBy('@bob')
+            ..cache(10, true))
+          .build();
+      var validationResult = AtKeyValidators.get().validate(
+          publicKey.toString(), ValidationContext()..atSign = '@alice');
+      expect(validationResult.isValid, false);
+      expect(validationResult.failureReason,
+          'Key length exceeds maximum permissible length of ${KeyLengthValidation.maxKeyLength} characters');
+    });
+  });
+  group('A group of tests to verify public key toString', () {
+    test('test to verify public key toString without namespace ', () {
+      var publicKey = (PublicKeyBuilder()
+            ..key('phone')
+            ..sharedBy('@bob'))
+          .build();
+      expect(publicKey.toString(), 'public:phone@bob');
+    });
+    test('test to verify public key toString with namespace ', () {
+      var publicKey = (PublicKeyBuilder()
+            ..key('phone')
+            ..sharedBy('@bob')
+            ..namespace('wavi'))
+          .build();
+      expect(publicKey.toString(), 'public:phone.wavi@bob');
+    });
+    test('test to verify cached public key toString without namespace  ', () {
+      var publicKey = (PublicKeyBuilder()
+            ..key('phone')
+            ..sharedBy('@bob')
+            ..cache(10, true))
+          .build();
+      expect(publicKey.toString(), 'cached:public:phone@bob');
+    });
+    test('test to verify cached public key toString with namespace  ', () {
+      var publicKey = (PublicKeyBuilder()
+            ..key('phone')
+            ..sharedBy('@bob')
+            ..cache(10, true)
+            ..namespace('buzz'))
+          .build();
+      expect(publicKey.toString(), 'cached:public:phone.buzz@bob');
+    });
+  });
+  group('A group of tests to verify self key toString', () {
+    test('test to verify self key toString without namespace and no sharedWith',
+        () {
+      var selfKey = (SelfKeyBuilder()
+            ..key('phone')
+            ..sharedBy('@bob'))
+          .build();
+      expect(selfKey.toString(), 'phone@bob');
+    });
+    test(
+        'test to verify self key toString without namespace and sharedWith set',
+        () {
+      var selfKey = (SelfKeyBuilder()
+            ..key('phone')
+            ..sharedBy('@bob'))
+          .build()
+        ..sharedWith = '@bob';
+      expect(selfKey.toString(), '@bob:phone@bob');
+    });
+    test('test to verify self key toString with namespace and no sharedWith',
+        () {
+      var selfKey = (SelfKeyBuilder()
+            ..key('phone')
+            ..sharedBy('@bob')
+            ..namespace('buzz'))
+          .build();
+      expect(selfKey.toString(), 'phone.buzz@bob');
+    });
+    test('test to verify self key toString with namespace and sharedWith set',
+        () {
+      var selfKey = (SelfKeyBuilder()
+            ..key('phone')
+            ..sharedBy('@bob')
+            ..namespace('buzz'))
+          .build()
+        ..sharedWith = '@bob';
+      expect(selfKey.toString(), '@bob:phone.buzz@bob');
+    });
+    test('test to verify self key mixed case', () {
+      var selfKey = (SelfKeyBuilder()
+            ..key('pHoNE')
+            ..sharedBy('@boB')
+            ..namespace('Buzz'))
+          .build()
+        ..sharedWith = '@bob';
+      expect(selfKey.toString(), '@bob:phone.buzz@bob');
+    });
+    group('A group of tests to verify shared key toString', () {
+      test('test to verify shared key toString without namespace ', () {
+        var sharedKey = (SharedKeyBuilder()
+              ..key('phone')
+              ..sharedBy('@bob')
+              ..sharedWith('@alice'))
+            .build();
+        expect(sharedKey.toString(), '@alice:phone@bob');
+      });
+      test('test to verify shared key toString with namespace', () {
+        var sharedKey = (SharedKeyBuilder()
+              ..key('phone')
+              ..sharedBy('@bob')
+              ..sharedWith('@alice')
+              ..namespace('buzz'))
+            .build();
+        expect(sharedKey.toString(), '@alice:phone.buzz@bob');
+      });
+      test('test to verify shared key toString mixed case', () {
+        var sharedKey = (SharedKeyBuilder()
+              ..key('phone')
+              ..sharedBy('@bob')
+              ..sharedWith('@alice')
+              ..namespace('buzz'))
+            .build();
+        expect(sharedKey.toString(), '@alice:phone.buzz@bob');
+      });
+    });
+    group('A group of tests to verify local key toString', () {
+      test('test to verify localkey toString without namespace', () {
+        var localKey = (LocalKeyBuilder()
+              ..key('secret')
+              ..sharedBy('@bob'))
+            .build();
+        expect(localKey.toString(), 'local:secret@bob');
+      });
+      test('test to verify localkey toString with namespace', () {
+        var localKey = (LocalKeyBuilder()
+              ..key('secret')
+              ..sharedBy('@bob')
+              ..namespace('buzz'))
+            .build();
+        expect(localKey.toString(), 'local:secret.buzz@bob');
+      });
+      test('test to verify localkey toString mixed case', () {
+        var localKey = (LocalKeyBuilder()
+              ..key('seCreT')
+              ..sharedBy('@boB'))
+            .build();
+        expect(localKey.toString(), 'local:secret@bob');
+      });
     });
   });
 }

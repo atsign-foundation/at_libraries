@@ -1,3 +1,8 @@
+## 4.0.6
+- fix: max key length validation changes
+- fix: PublicKey toString method should return 'cached:' when isCached is set in metadata
+## 4.0.5
+- feat: Enhance enroll:list to enable filtering based on enrollment status
 ## 4.0.3
 - fix: "toJson()" invoked on "pubKeyHash" leads to NullPointerException.
 ## 4.0.2

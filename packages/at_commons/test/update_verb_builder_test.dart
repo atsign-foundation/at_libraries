@@ -39,7 +39,7 @@ void main() {
         ..atKey.key = 'email.wavi'
         ..atKey.sharedBy = '@alice'
         ..atKey.sharedWith = '@bob'
-      // ignore: deprecated_member_use_from_same_package
+        // ignore: deprecated_member_use_from_same_package
         ..atKey.metadata.pubKeyCS = pubKeyCS
         ..atKey.metadata.sharedKeyEnc = ske
         ..atKey.metadata.skeEncKeyName = skeEncKeyName
@@ -131,7 +131,7 @@ void main() {
         ..atKey.key = 'cabbages_and_kings.wonderland'
         ..atKey.sharedBy = '@walrus'
         ..atKey.sharedWith = '@carpenter'
-      // ignore: deprecated_member_use_from_same_package
+        // ignore: deprecated_member_use_from_same_package
         ..atKey.metadata.pubKeyCS = pubKeyCS
         ..atKey.metadata.sharedKeyEnc = ske
         ..atKey.metadata.skeEncKeyName = skeEncKeyName
@@ -417,7 +417,7 @@ void main() {
         ..atKey.metadata.isBinary = isBinary
         ..atKey.metadata.isEncrypted = isEncrypted
         ..atKey.metadata.sharedKeyEnc = sharedKeyEncrypted
-      // ignore: deprecated_member_use_from_same_package
+        // ignore: deprecated_member_use_from_same_package
         ..atKey.metadata.pubKeyCS = pubKeyChecksum
         ..atKey.metadata.encoding = encoding
         ..atKey.metadata.encKeyName = encKeyName

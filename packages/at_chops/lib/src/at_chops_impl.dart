@@ -39,6 +39,10 @@ class AtChopsImpl extends AtChops {
     try {
       encryptionAlgorithm ??=
           _getEncryptionAlgorithm(encryptionKeyType, keyName)!;
+      if (encryptionAlgorithm is SymmetricEncryptionAlgorithm && iv == null) {
+        throw AtDecryptionException(
+            'Initialization vector required for decryption using SymmetricKey');
+      }
       final atEncryptionMetaData = AtEncryptionMetaData(
           encryptionAlgorithm.runtimeType.toString(), encryptionKeyType);
       atEncryptionMetaData.keyName = keyName;

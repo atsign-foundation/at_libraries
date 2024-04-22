@@ -1,3 +1,14 @@
+## 2.0.2
+- fix: set default value for app name and device name if they are not passed in the onboarding request.
+## 2.0.1
+- fix: deprecate enableEnrollment flag in OnboardingRequest and removed the check in AtAuthImpl
+## 2.0.0
+- build[deps]: Upgraded the following packages:
+  - at_commons to 4.0.5
+  - at_lookup to 3.0.46
+- Implement new methods for enrollment operations within AtEnrollmentImpl and remove older methods.
+- Enhance readability by renaming the current classes associated with EnrollmentRequest.
+
 ## 1.0.5
 - build[deps]: Upgraded the following packages:
   - at_chops to v2.0.0

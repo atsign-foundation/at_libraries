@@ -1,3 +1,4 @@
+import 'package:at_commons/src/enroll/enrollment.dart';
 import 'package:at_commons/src/verb/enroll_verb_builder.dart';
 import 'package:at_commons/src/verb/operation_enum.dart';
 import 'package:test/test.dart';
@@ -52,7 +53,19 @@ void main() {
       expect(command, 'enroll:revoke:{"enrollmentId":"123"}\n');
     });
 
-    test('A test to verify enroll list operation', () {
+    test('A test to verify to override enroll list status', () {
+      var enrollVerbBuilder = EnrollVerbBuilder()
+        ..operation = EnrollOperationEnum.list
+        ..enrollmentStatusFilter = [
+          EnrollmentStatus.approved,
+          EnrollmentStatus.pending
+        ];
+      var command = enrollVerbBuilder.buildCommand();
+      expect(command,
+          'enroll:list:{"enrollmentStatusFilter":["approved","pending"]}\n');
+    });
+
+    test('A test to validate enroll list command with default filter', () {
       var enrollVerbBuilder = EnrollVerbBuilder()
         ..operation = EnrollOperationEnum.list;
       var command = enrollVerbBuilder.buildCommand();

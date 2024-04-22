@@ -1,28 +1,23 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:at_auth/src/at_auth_base.dart';
+import 'package:at_auth/at_auth.dart';
 import 'package:at_auth/src/auth/cram_authenticator.dart';
 import 'package:at_auth/src/auth/pkam_authenticator.dart';
-import 'package:at_auth/src/enroll/at_enrollment_base.dart';
-import 'package:at_auth/src/enroll/at_enrollment_impl.dart';
-import 'package:at_auth/src/enroll/at_enrollment_response.dart';
-import 'package:at_auth/src/enroll/at_initial_enrollment_request.dart';
-import 'package:at_auth/src/keys/at_auth_keys.dart';
-import 'package:at_auth/src/onboard/at_onboarding_request.dart';
-import 'package:at_auth/src/onboard/at_onboarding_response.dart';
-import 'package:at_auth/src/exception/at_auth_exceptions.dart';
-import 'package:at_auth/src/auth/at_auth_request.dart';
-import 'package:at_auth/src/auth/at_auth_response.dart';
 import 'package:at_auth/src/auth_constants.dart' as auth_constants;
+import 'package:at_auth/src/enroll/first_enrollment_request.dart';
 import 'package:at_chops/at_chops.dart';
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_utils/at_logger.dart';
 
+import 'enroll/at_enrollment_impl.dart';
+
 class AtAuthImpl implements AtAuth {
   final AtSignLogger _logger = AtSignLogger('AtAuthServiceImpl');
+  final String _defaultAppNameForOnboarding = 'firstApp';
+  final String _defaultDeviceNameForOnboarding = 'firstDevice';
   @override
   AtChops? atChops;
 
@@ -108,6 +103,7 @@ class AtAuthImpl implements AtAuth {
   Future<AtOnboardingResponse> onboard(
       AtOnboardingRequest atOnboardingRequest, String cramSecret) async {
     var atOnboardingResponse = AtOnboardingResponse(atOnboardingRequest.atSign);
+    atEnrollmentBase = AtEnrollmentImpl(atOnboardingRequest.atSign);
     atLookUp ??= AtLookupImpl(atOnboardingRequest.atSign,
         atOnboardingRequest.rootDomain, atOnboardingRequest.rootPort);
 
@@ -123,30 +119,20 @@ class AtAuthImpl implements AtAuth {
     //2. generate key pairs
     var atAuthKeys = _generateKeyPairs(atOnboardingRequest.authMode,
         publicKeyId: atOnboardingRequest.publicKeyId);
+
     if (atChops == null) {
       var atChops = _createAtChops(atAuthKeys);
       this.atChops = atChops;
       atLookUp!.atChops = atChops;
     }
 
-    //3. update pkam public key through enrollment or manually based on app preference
+    //3. send onboarding enrollment
     String? enrollmentIdFromServer;
-    if (atOnboardingRequest.enableEnrollment) {
-      // server will update the apkam public key during enrollment.
-      // So don't have to manually update in this scenario.
-      enrollmentIdFromServer = await _sendOnboardingEnrollment(
-          atOnboardingRequest, atAuthKeys, atLookUp!);
-      atAuthKeys.enrollmentId = enrollmentIdFromServer;
-    } else {
-      // update pkam public key to server if enrollment is not set in preference
-      _logger.finer('Updating PkamPublicKey to remote secondary');
-      final pkamPublicKey = atAuthKeys.apkamPublicKey;
-      String updateCommand =
-          'update:${AtConstants.atPkamPublicKey} $pkamPublicKey\n';
-      String? pkamUpdateResult =
-          await atLookUp!.executeCommand(updateCommand, auth: false);
-      _logger.finer('PkamPublicKey update result: $pkamUpdateResult');
-    }
+    // server will update the apkam public key during enrollment.
+    // So don't have to manually update apkam public key in this scenario.
+    enrollmentIdFromServer = await _sendOnboardingEnrollment(
+        atOnboardingRequest, atAuthKeys, atLookUp!);
+    atAuthKeys.enrollmentId = enrollmentIdFromServer;
 
     //4. Close connection to server
     try {
@@ -217,46 +203,50 @@ class AtAuthImpl implements AtAuth {
       AtOnboardingRequest atOnboardingRequest,
       AtAuthKeys atAuthKeys,
       AtLookUp atLookup) async {
-    var symmetricEncryptionAlgo =
+    atOnboardingRequest.appName ??= _defaultAppNameForOnboarding;
+    atOnboardingRequest.deviceName ??= _defaultDeviceNameForOnboarding;
+    AESEncryptionAlgo symmetricEncryptionAlgo =
         AESEncryptionAlgo(AESKey(atAuthKeys.apkamSymmetricKey!));
-    var encryptedDefaultEncryptionPrivateKey = atChops!
+    // Encrypt the defaultEncryptionPrivateKey with APKAM Symmetric key
+    String encryptedDefaultEncryptionPrivateKey = atChops!
         .encryptString(
             atAuthKeys.defaultEncryptionPrivateKey!, EncryptionKeyType.aes256,
             encryptionAlgorithm: symmetricEncryptionAlgo,
             iv: AtChopsUtil.generateIVLegacy())
         .result;
-    var encryptedDefaultSelfEncryptionKey = atChops!
+    // Encrypt the Self Encryption Key with APKAM Symmetric key
+    String encryptedDefaultSelfEncryptionKey = atChops!
         .encryptString(
             atAuthKeys.defaultSelfEncryptionKey!, EncryptionKeyType.aes256,
             encryptionAlgorithm: symmetricEncryptionAlgo,
             iv: AtChopsUtil.generateIVLegacy())
         .result;
+
     _logger.finer('apkamPublicKey: ${atAuthKeys.apkamPublicKey}');
-    var enrollRequestBuilder = AtInitialEnrollmentRequestBuilder()
-      ..setAppName(atOnboardingRequest.appName)
-      ..setDeviceName(atOnboardingRequest.deviceName)
-      ..setEncryptedDefaultEncryptionPrivateKey(
-          encryptedDefaultEncryptionPrivateKey)
-      ..setEncryptedDefaultSelfEncryptionKey(encryptedDefaultSelfEncryptionKey)
-      ..setApkamPublicKey(atAuthKeys.apkamPublicKey)
-      ..setAtAuthKeys(atAuthKeys)
-      ..setEnrollOperationEnum(EnrollOperationEnum.request);
-    atEnrollmentBase ??= AtEnrollmentImpl(atOnboardingRequest.atSign);
-    AtEnrollmentResponse enrollmentResponse;
+
+    FirstEnrollmentRequest firstEnrollmentRequest = FirstEnrollmentRequest(
+        appName: atOnboardingRequest.appName!,
+        deviceName: atOnboardingRequest.deviceName!,
+        apkamPublicKey: atAuthKeys.apkamPublicKey!,
+        encryptedDefaultEncryptionPrivateKey:
+            encryptedDefaultEncryptionPrivateKey,
+        encryptedDefaultSelfEncryptionKey: encryptedDefaultSelfEncryptionKey);
+
+    AtEnrollmentResponse? atEnrollmentResponse;
     try {
-      enrollmentResponse = await atEnrollmentBase!
-          .submitEnrollment(enrollRequestBuilder.build(), atLookUp!);
+      atEnrollmentResponse =
+          await atEnrollmentBase?.submit(firstEnrollmentRequest, atLookUp!);
     } on AtEnrollmentException catch (e) {
       throw AtAuthenticationException('Enrollment error:${e.toString}');
     }
-    _logger.finer('enrollment response: ${enrollmentResponse.toString()}');
-    var enrollmentIdFromServer = enrollmentResponse.enrollmentId;
-    var enrollmentStatus = enrollmentResponse.enrollStatus;
+    _logger.finer('enrollment response: ${atEnrollmentResponse.toString()}');
+    var enrollmentIdFromServer = atEnrollmentResponse?.enrollmentId;
+    var enrollmentStatus = atEnrollmentResponse?.enrollStatus;
     if (enrollmentStatus != EnrollmentStatus.approved) {
       throw AtAuthenticationException(
           'initial enrollment is not approved. Status from server: $enrollmentStatus');
     }
-    return enrollmentIdFromServer;
+    return enrollmentIdFromServer!;
   }
 
   AtAuthKeys _decryptAtKeysFile(

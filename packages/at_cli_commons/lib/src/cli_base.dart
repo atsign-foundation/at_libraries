@@ -142,7 +142,8 @@ class CLIBase {
         atKeysFilePath ?? '$homeDir/.atsign/keys/${this.atSign}_key.atKeys';
     localStoragePathToUse =
         storageDir ?? '$homeDir/.$nameSpace/${this.atSign}/storage';
-    downloadPathToUse = downloadDir ?? '$homeDir/.$nameSpace/${this.atSign}/files';
+    downloadPathToUse =
+        downloadDir ?? '$homeDir/.$nameSpace/${this.atSign}/files';
 
     AtSignLogger.defaultLoggingHandler = AtSignLogger.stdErrLoggingHandler;
 
@@ -189,20 +190,20 @@ class CLIBase {
     Duration retryDuration = Duration(seconds: 3);
     while (!authenticated) {
       try {
-        stdout.write(chalk.brightBlue('\r\x1b[KConnecting ... '));
+        stderr.write(chalk.brightBlue('\r\x1b[KConnecting ... '));
         await Future.delayed(Duration(
             milliseconds:
                 1000)); // Pause just long enough for the retry to be visible
         authenticated = await onboardingService.authenticate();
       } catch (exception) {
-        stdout.write(chalk.brightRed(
+        stderr.write(chalk.brightRed(
             '$exception. Will retry in ${retryDuration.inSeconds} seconds'));
       }
       if (!authenticated) {
         await Future.delayed(retryDuration);
       }
     }
-    stdout.writeln(chalk.brightGreen('Connected'));
+    stderr.writeln(chalk.brightGreen('Connected'));
 
     // Get the AtClient which the onboardingService just authenticated
     atClient = AtClientManager.getInstance().atClient;

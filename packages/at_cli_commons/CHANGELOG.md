@@ -1,3 +1,5 @@
+## 1.0.5
+- fix: Make CLIBase write progress messages to stderr, not stdout
 ## 1.0.4
 - fix: handle malformed atsigns (no leading `@`) in CLIBase constructor
 - build: updated dependencies
