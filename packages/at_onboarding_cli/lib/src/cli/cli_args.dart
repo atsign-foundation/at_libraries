@@ -4,12 +4,13 @@ import 'package:meta/meta.dart';
 enum AuthCliCommand {
   onboard,
   spp,
-  enroll,
+  interactive,
+  listen,
   listEnrollRequests,
   approve,
   deny,
-  listEnrollments,
-  revoke
+  revoke,
+  enroll,
 }
 
 class AuthCliArgs {
@@ -19,6 +20,20 @@ class AuthCliArgs {
 
   final String atDirectoryFqdn;
   final String atRegistrarFqdn;
+
+  static const argNameHelp = 'help';
+  static const argNameVerbose = 'verbose';
+  static const argNameDebug = 'debug';
+  static const argNameAtSign = 'atsign';
+  static const argNameCramSecret = 'cramkey';
+  static const argNameAtDirectoryFqdn  = 'rootServer';
+  static const argNameRegistrarFqdn  = 'registrarUrl';
+  static const argNameSpp  = 'spp';
+  static const argNameAppName  = 'app';
+  static const argNameDeviceName  = 'device';
+  static const argNamePasscode  = 'passcode';
+  static const argNameNamespaceAccessList  = 'namespaces';
+  static const argNameEnrollmentId  = 'enrollmentId';
 
   ArgParser get parser {
     return _aap;
@@ -48,19 +63,19 @@ class AuthCliArgs {
     }
 
     p.addFlag(
-      'help',
+      argNameHelp,
       abbr: 'h',
       help: 'Usage instructions',
       negatable: false,
     );
     p.addFlag(
-      'verbose',
+      argNameVerbose,
       abbr: 'v',
       help: 'INFO-level logging',
       negatable: false,
     );
     p.addFlag(
-      'debug',
+      argNameDebug,
       help: 'FINEST-level logging',
       negatable: false,
     );
@@ -74,11 +89,17 @@ class AuthCliArgs {
       case AuthCliCommand.onboard:
         return createOnboardCommandParser();
 
-      case AuthCliCommand.spp:
-        return createSppCommandParser();
-
       case AuthCliCommand.enroll:
         return createEnrollCommandParser();
+
+      case AuthCliCommand.interactive:
+        return createInteractiveCommandParser();
+
+      case AuthCliCommand.listen:
+        return createListenCommandParser();
+
+      case AuthCliCommand.spp:
+        return createSppCommandParser();
 
       case AuthCliCommand.listEnrollRequests:
         return createListEnrollRequestsCommandParser();
@@ -88,9 +109,6 @@ class AuthCliArgs {
 
       case AuthCliCommand.deny:
         return createDenyCommandParser();
-
-      case AuthCliCommand.listEnrollments:
-        return createListEnrollmentsCommandParser();
 
       case AuthCliCommand.revoke:
         return createRevokeCommandParser();
@@ -105,33 +123,33 @@ class AuthCliArgs {
   ArgParser createOnboardCommandParser() {
     ArgParser p = ArgParser();
     p.addOption(
-      'atsign',
+      argNameAtSign,
       abbr: 'a',
       help: 'atSign to activate',
       mandatory: true,
     );
     p.addOption(
-      'cramkey',
+      argNameCramSecret,
       abbr: 'c',
       help: 'CRAM key',
       mandatory: false,
     );
     p.addOption(
-      'rootServer',
+      argNameAtDirectoryFqdn,
       abbr: 'r',
-      help: 'root server\'s domain name',
+      help: 'atDirectory (root) server\'s domain name',
       defaultsTo: atDirectoryFqdn,
       mandatory: false,
     );
     p.addOption(
-      'registrarUrl',
+      argNameRegistrarFqdn,
       abbr: 'g',
       help: 'url to the registrar api',
       mandatory: false,
       defaultsTo: atRegistrarFqdn,
     );
     p.addFlag(
-      'help',
+      argNameHelp,
       abbr: 'h',
       help: 'Usage instructions',
       negatable: false,
@@ -140,24 +158,62 @@ class AuthCliArgs {
     return p;
   }
 
+  ArgParser createInteractiveCommandParser() {
+    final p = ArgParser();
+
+    p.addOption(
+      argNameAtSign,
+      abbr: 'a',
+      help: 'The atSign',
+      mandatory: true,
+    );
+    p.addOption(
+      argNameAtDirectoryFqdn,
+      abbr: 'r',
+      help: 'root server\'s domain name',
+      defaultsTo: atDirectoryFqdn,
+      mandatory: false,
+    );
+    return p;
+  }
+
+  ArgParser createListenCommandParser() {
+    final p = ArgParser();
+
+    p.addOption(
+      argNameAtSign,
+      abbr: 'a',
+      help: 'The atSign',
+      mandatory: true,
+    );
+    p.addOption(
+      argNameAtDirectoryFqdn,
+      abbr: 'r',
+      help: 'root server\'s domain name',
+      defaultsTo: atDirectoryFqdn,
+      mandatory: false,
+    );
+    return p;
+  }
+
   /// auth spp : require atSign, spp [, atKeys path] [, atDirectory]
   @visibleForTesting
   ArgParser createSppCommandParser() {
     final p = ArgParser();
     p.addOption(
-      'atsign',
+      argNameAtSign,
       abbr: 'a',
       help: 'The atSign for which we are setting the spp (semi-permanent-pin)',
       mandatory: true,
     );
     p.addOption(
-      'spp',
+      argNameSpp,
       abbr: 's',
       help: 'The semi-permanent enrollment pin to set for this atSign',
       mandatory: true,
     );
     p.addOption(
-      'rootServer',
+      argNameAtDirectoryFqdn,
       abbr: 'r',
       help: 'root server\'s domain name',
       defaultsTo: atDirectoryFqdn,
@@ -173,6 +229,48 @@ class AuthCliArgs {
   @visibleForTesting
   ArgParser createEnrollCommandParser() {
     final p = ArgParser();
+    p.addOption(
+      argNameAtSign,
+      abbr: 'a',
+      help: 'The atSign for which we are setting the spp (semi-permanent-pin)',
+      mandatory: true,
+    );
+    p.addOption(
+      argNamePasscode,
+      abbr: 'p',
+      help: 'The passcode to present with this enrollment request.',
+      mandatory: true,
+    );
+    p.addOption(
+      argNameAppName,
+      help: 'The name of the app being enrolled',
+      mandatory: true,
+    );
+    p.addOption(
+      argNameDeviceName,
+      help: 'A name for the device on which this app is running',
+      mandatory: true,
+    );
+    p.addOption(
+      argNameAtDirectoryFqdn,
+      abbr: 'r',
+      help: 'atDirectory (root) server\'s domain name',
+      defaultsTo: atDirectoryFqdn,
+      mandatory: false,
+    );
+    p.addOption(
+      argNameRegistrarFqdn,
+      abbr: 'g',
+      help: 'url to the registrar api',
+      mandatory: false,
+      defaultsTo: atRegistrarFqdn,
+    );
+    p.addFlag(
+      argNameHelp,
+      abbr: 'h',
+      help: 'Usage instructions',
+      negatable: false,
+    );
     return p;
   }
 
@@ -193,13 +291,6 @@ class AuthCliArgs {
   /// auth deny
   @visibleForTesting
   ArgParser createDenyCommandParser() {
-    final p = ArgParser();
-    return p;
-  }
-
-  /// auth list-enrollments
-  @visibleForTesting
-  ArgParser createListEnrollmentsCommandParser() {
     final p = ArgParser();
     return p;
   }
