@@ -131,15 +131,21 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }
 
   @override
-  Future<at_auth.AtEnrollmentResponse> enroll(String appName, String deviceName,
-      String otp, Map<String, String> namespaces,
-      {int? pkamRetryIntervalMins}) async {
+  Future<at_auth.AtEnrollmentResponse> enroll(
+    String appName,
+    String deviceName,
+    String otp,
+    Map<String, String> namespaces, {
+    @Deprecated('Use retryInterval') int? pkamRetryIntervalMins,
+    Duration? retryInterval,
+  }) async {
     if (appName == null || deviceName == null) {
       throw AtEnrollmentException(
           'appName and deviceName are mandatory for enrollment');
     }
-    pkamRetryIntervalMins ??= atOnboardingPreference.apkamAuthRetryDurationMins;
-    final Duration retryInterval = Duration(minutes: pkamRetryIntervalMins);
+    retryInterval ??= Duration(
+        minutes: pkamRetryIntervalMins ??
+            atOnboardingPreference.apkamAuthRetryDurationMins);
 
     AtLookupImpl atLookUpImpl = AtLookupImpl(_atSign,
         atOnboardingPreference.rootDomain, atOnboardingPreference.rootPort);
