@@ -6,6 +6,7 @@ import 'dart:io';
 
 import 'package:at_chops/at_chops.dart';
 import 'package:at_client/at_client.dart';
+import 'package:at_persistence_secondary_server/at_persistence_secondary_server.dart';
 import 'package:at_auth/at_auth.dart' as at_auth;
 import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 import 'package:at_server_status/at_server_status.dart';
@@ -166,6 +167,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     // Upon successful pkam auth, callback _listenToPkamSuccessStream will  be invoked
     _listenToPkamSuccessStream(
         atLookUpImpl,
+        namespaces,
         enrollmentResponse.atAuthKeys!.apkamSymmetricKey!,
         enrollmentResponse.atAuthKeys!.defaultEncryptionPublicKey!,
         enrollmentResponse.atAuthKeys!.apkamPublicKey!,
@@ -176,6 +178,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   void _listenToPkamSuccessStream(
       AtLookupImpl atLookUpImpl,
+      Map<String, String> namespaces,
       String apkamSymmetricKey,
       String defaultEncryptionPublicKey,
       String apkamPublicKey,
@@ -200,6 +203,25 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         ..apkamPrivateKey = apkamPrivateKey;
       logger.finer('Generating keys file for $enrollmentIdFromServer');
       await _generateAtKeysFile(enrollmentIdFromServer, atAuthKeys);
+      // persist enrollment details to local secondary
+      AtChopsKeys atChopsKeys = AtChopsKeys.create(
+          AtEncryptionKeyPair.create(atAuthKeys.defaultEncryptionPublicKey!,
+              atAuthKeys.defaultEncryptionPrivateKey!),
+          AtPkamKeyPair.create(
+              atAuthKeys.apkamPublicKey!, atAuthKeys.apkamPrivateKey!));
+      atChopsKeys.apkamSymmetricKey = AESKey(atAuthKeys.apkamSymmetricKey!);
+
+      final atChops = AtChopsImpl(atChopsKeys);
+      await _initAtClient(atChops, enrollmentId: enrollmentIdFromServer);
+      var atData = AtData();
+      var enrollmentDetails = EnrollmentDetails();
+      enrollmentDetails.namespace = namespaces;
+      atData.data = jsonEncode(enrollmentDetails);
+      final putResult = await atClient!.getLocalSecondary()!.keyStore!.put(
+          '$enrollmentIdFromServer.new.enrollments.__manage${atClient!.getCurrentAtSign()}',
+          atData,
+          skipCommit: true);
+      logger.finer('putResult for storing enrollment details: $putResult');
     });
   }
 
@@ -596,4 +618,18 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   @override
   at_auth.AtAuth? atAuth;
+}
+
+class EnrollmentDetails {
+  late Map<String, dynamic> namespace;
+
+  static EnrollmentDetails fromJSON(Map<String, dynamic> json) {
+    return EnrollmentDetails()..namespace = json['namespace'];
+  }
+
+  Map<String, dynamic> toJson() {
+    Map<String, dynamic> map = {};
+    map['namespace'] = namespace;
+    return map;
+  }
 }

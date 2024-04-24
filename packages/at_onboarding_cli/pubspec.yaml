@@ -28,6 +28,14 @@ dependencies:
    at_server_status: ^1.0.4
    at_utils: ^3.0.16
 
+dependency_overrides:
+  at_client:
+    path: ../../../at_client_sdk/packages/at_client
+#    git:
+#      url: https://github.com/atsign-foundation/at_client_sdk
+#      path: packages/at_client
+#      ref: apkam_authorization_checks
+
 dev_dependencies:
   lints: ^2.1.0
   test: ^1.24.2

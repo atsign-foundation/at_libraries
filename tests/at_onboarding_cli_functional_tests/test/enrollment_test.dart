@@ -27,7 +27,6 @@ void main() {
       String atSign = '@naresh🛠';
       //1. Onboard first client
       AtOnboardingPreference preference_1 = getPreferenceForAuth(atSign);
-      preference_1..enableEnrollmentDuringOnboard = true;
       AtOnboardingService? onboardingService_1 =
           AtOnboardingServiceImpl(atSign, preference_1);
       bool status = await onboardingService_1.onboard();
@@ -121,7 +120,6 @@ void main() {
       String atSign = '@ashish🛠';
       //1. Onboard first client
       AtOnboardingPreference preference_1 = getPreferenceForAuth(atSign);
-      preference_1.enableEnrollmentDuringOnboard = false;
       AtOnboardingService? onboardingService_1 =
           AtOnboardingServiceImpl(atSign, preference_1);
       bool status = await onboardingService_1.onboard();
@@ -148,9 +146,7 @@ void main() {
         ..cramSecret = at_demos.cramKeyMap[atSign]
         ..namespace =
             'wavi' // unique identifier that can be used to identify data from your app
-        ..rootDomain = 'vip.ve.atsign.zone'
-        ..enableEnrollmentDuringOnboard = true;
-
+        ..rootDomain = 'vip.ve.atsign.zone';
       AtOnboardingService? onboardingService_1 =
           AtOnboardingServiceImpl(atSign, preference_1);
       expect(
@@ -174,7 +170,6 @@ void main() {
     String atSign = '@purnima🛠';
     //1. Onboard first client
     AtOnboardingPreference preference_1 = getPreferenceForAuth(atSign);
-    preference_1.enableEnrollmentDuringOnboard = true;
     AtOnboardingService? onboardingService_1 =
         AtOnboardingServiceImpl(atSign, preference_1);
     bool status = await onboardingService_1.onboard();

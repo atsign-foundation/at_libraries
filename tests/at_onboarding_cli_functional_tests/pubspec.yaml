@@ -10,9 +10,9 @@ dependencies:
   at_onboarding_cli:
     path: ../../packages/at_onboarding_cli
 
-dependency_overrides:
-  at_auth:
-    path: ../../packages/at_auth
+#dependency_overrides:
+#  at_auth:
+#    path: ../../packages/at_auth
 
 dev_dependencies:
   lints: ^1.0.0
