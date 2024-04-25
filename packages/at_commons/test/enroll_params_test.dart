@@ -1,6 +1,9 @@
 import 'dart:convert';
+
 import 'package:at_commons/at_commons.dart';
 import 'package:test/test.dart';
+
+import 'syntax_test.dart';
 
 void main() {
   group('A group of tests related to enroll verb', () {
@@ -70,6 +73,16 @@ void main() {
     test('A test to verify enroll list regex without params', () {
       String command = 'enroll:list';
       expect(RegExp(VerbSyntax.enroll).hasMatch(command), true);
+    });
+
+    test('A test to verify enroll fetch with enrollment id', () {
+      String command = 'enroll:fetch:{"enrollmentId":"123"}';
+      expect(RegExp(VerbSyntax.enroll).hasMatch(command), true);
+
+      Map<dynamic, dynamic> enrollmentParams =
+          getVerbParams(VerbSyntax.enroll, command);
+      expect(enrollmentParams['operation'], 'fetch');
+      expect(enrollmentParams['enrollParams'], '{"enrollmentId":"123"}');
     });
   });
 
