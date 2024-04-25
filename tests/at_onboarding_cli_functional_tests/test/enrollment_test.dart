@@ -27,7 +27,6 @@ void main() {
       String atSign = '@naresh🛠';
       //1. Onboard first client
       AtOnboardingPreference preference_1 = getPreferenceForAuth(atSign);
-      preference_1..enableEnrollmentDuringOnboard = true;
       AtOnboardingService? onboardingService_1 =
           AtOnboardingServiceImpl(atSign, preference_1);
       bool status = await onboardingService_1.onboard();
@@ -121,7 +120,6 @@ void main() {
       String atSign = '@ashish🛠';
       //1. Onboard first client
       AtOnboardingPreference preference_1 = getPreferenceForAuth(atSign);
-      preference_1.enableEnrollmentDuringOnboard = false;
       AtOnboardingService? onboardingService_1 =
           AtOnboardingServiceImpl(atSign, preference_1);
       bool status = await onboardingService_1.onboard();
@@ -148,8 +146,7 @@ void main() {
         ..cramSecret = at_demos.cramKeyMap[atSign]
         ..namespace =
             'wavi' // unique identifier that can be used to identify data from your app
-        ..rootDomain = 'vip.ve.atsign.zone'
-        ..enableEnrollmentDuringOnboard = true;
+        ..rootDomain = 'vip.ve.atsign.zone';
 
       AtOnboardingService? onboardingService_1 =
           AtOnboardingServiceImpl(atSign, preference_1);
@@ -174,7 +171,6 @@ void main() {
     String atSign = '@purnima🛠';
     //1. Onboard first client
     AtOnboardingPreference preference_1 = getPreferenceForAuth(atSign);
-    preference_1.enableEnrollmentDuringOnboard = true;
     AtOnboardingService? onboardingService_1 =
         AtOnboardingServiceImpl(atSign, preference_1);
     bool status = await onboardingService_1.onboard();
@@ -197,7 +193,7 @@ void main() {
     expect(totp.length, 6);
     expect(
         totp.contains('0') || totp.contains('o') || totp.contains('O'), false);
-    // check whether otp contains atleast one number and one alphabet
+    // check whether otp contains at least one number and one alphabet
     expect(RegExp(r'^(?=.*[a-zA-Z])(?=.*\d).+$').hasMatch(totp), true);
     //4. enroll second client
     AtOnboardingPreference enrollPreference_2 = getPreferenceForEnroll(atSign);

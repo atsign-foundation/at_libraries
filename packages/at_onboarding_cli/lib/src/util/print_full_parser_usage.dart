@@ -5,23 +5,41 @@ import 'package:args/args.dart';
 extension PrintAllArgParserUsage on ArgParser {
   static final String singleIndentation = '    ';
 
-  printAllCommandsUsage(
-      {String commandName = 'Usage:', IOSink? sink, int indent = 0}) {
+  printAllCommandsUsage({
+    String? header,
+    IOSink? sink,
+    int indent = 0,
+    bool showParams = true,
+    bool showSubCommandParams = false,
+  }) {
     sink ??= stderr;
 
     // header message
-    _writelnWithIndentation(sink, indent, commandName);
-
-    // this parser usage
-    List<String> usageLines = usage.split('\n');
-    for (final l in usageLines) {
-      _writelnWithIndentation(sink, indent + 1, l);
+    if (header != null) {
+      _writelnWithIndentation(sink, indent, header);
     }
 
-    // sub-parsers usage
-    for (final n in commands.keys) {
-      commands[n]!.printAllCommandsUsage(
-          commandName: n, sink: sink, indent: (indent + 1));
+    if (showParams) {
+      // this parser usage
+      List<String> usageLines = usage.split('\n');
+      for (final l in usageLines) {
+        _writelnWithIndentation(sink, indent + 1, l);
+      }
+    }
+
+    if (commands.isNotEmpty) {
+      _writelnWithIndentation(
+          sink, indent, 'Commands: (use "<command> -h" for help)');
+      // sub-parsers usage
+      for (final n in commands.keys) {
+        commands[n]!.printAllCommandsUsage(
+          header: n,
+          sink: sink,
+          indent: (indent + 1),
+          showParams: showSubCommandParams,
+          showSubCommandParams: showSubCommandParams,
+        );
+      }
     }
   }
 

@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:at_auth/at_auth.dart';
+import 'package:at_cli_commons/at_cli_commons.dart';
 import 'package:at_client/at_client.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
@@ -8,31 +12,36 @@ import 'dart:io';
 import 'package:at_utils/at_utils.dart';
 import 'package:meta/meta.dart';
 
-import 'cli_args.dart';
-import 'cli_params_validation.dart';
+import 'auth_cli_args.dart';
+import 'auth_cli_arg_validation.dart';
 
 final AtSignLogger logger = AtSignLogger(' CLI ');
 
-Future<int> main(List<String> arguments) async {
-  ArgParser parser = AuthCliArgs().parser;
+final aca = AuthCliArgs();
 
+Future<int> main(List<String> arguments) async {
+  AtSignLogger.defaultLoggingHandler = AtSignLogger.stdErrLoggingHandler;
   try {
-    return await _main(parser, arguments);
+    return await _main(arguments);
   } on ArgumentError catch (e) {
     stderr.writeln('Invalid argument: ${e.message}');
-    parser.printAllCommandsUsage(sink: stderr);
+    aca.parser.printAllCommandsUsage();
     return 1;
   } catch (e) {
     stderr.writeln('Error: $e');
-    parser.printAllCommandsUsage(sink: stderr);
+    aca.parser.printAllCommandsUsage();
     return 1;
   }
 }
 
-Future<int> _main(ArgParser parser, List<String> arguments) async {
+Future<int> _main(List<String> arguments) async {
   if (arguments.isEmpty) {
-    parser.printAllCommandsUsage(sink: stderr);
-    return 0;
+    stderr.writeln('You must supply a command.');
+    aca.parser.printAllCommandsUsage(showSubCommandParams: false);
+    stderr.writeln('\n'
+        'Use --help or -h flag to show full usage of all commands'
+        '\n');
+    return 1;
   }
 
   final first = arguments.first;
@@ -40,28 +49,22 @@ Future<int> _main(ArgParser parser, List<String> arguments) async {
     // no command found ... legacy ... insert 'onboard' as the command
     arguments = ['onboard', ...arguments];
   }
+
+  final ArgResults topLevelResults = aca.parser.parse(arguments);
+
+  if (topLevelResults.wasParsed(AuthCliArgs.argNameHelp)) {
+    aca.sharedArgsParser
+        .printAllCommandsUsage(header: 'Arguments common to all commands: ');
+    aca.parser.printAllCommandsUsage(showSubCommandParams: true);
+    stderr.writeln();
+    return 0;
+  }
+
   final AuthCliCommand cliCommand;
   try {
     cliCommand = AuthCliCommand.values.byName(arguments.first);
   } catch (e) {
     throw ArgumentError('Unknown command: ${arguments.first}');
-  }
-
-  final ArgResults topLevelResults = parser.parse(arguments);
-
-  if (topLevelResults.wasParsed('help')) {
-    parser.printAllCommandsUsage(sink: stderr);
-    return 0;
-  }
-
-  AtSignLogger.defaultLoggingHandler = AtSignLogger.stdErrLoggingHandler;
-  AtSignLogger.root_level = 'warning';
-
-  if (topLevelResults.wasParsed('verbose')) {
-    AtSignLogger.root_level = 'info';
-  }
-  if (topLevelResults.wasParsed('debug')) {
-    AtSignLogger.root_level = 'finest';
   }
 
   if (topLevelResults.command == null) {
@@ -74,15 +77,34 @@ Future<int> _main(ArgParser parser, List<String> arguments) async {
         ' but parsed command ${commandArgResults.name} ');
   }
 
+  // Parse the command options
+  ArgParser commandParser = aca.parser.commands[cliCommand.name]!;
+
+  if (commandArgResults.wasParsed(AuthCliArgs.argNameHelp)) {
+    commandParser.printAllCommandsUsage(
+        header: 'Usage: ${cliCommand.name}', showSubCommandParams: true);
+    aca.sharedArgsParser.printAllCommandsUsage();
+    stderr.writeln('\n${cliCommand.usage}\n');
+    return 0;
+  }
+
+  // Parse the log levels and act accordingly
+  AtSignLogger.root_level = 'warning';
+
+  if (commandArgResults.wasParsed(AuthCliArgs.argNameVerbose)) {
+    AtSignLogger.root_level = 'info';
+  }
+  if (commandArgResults.wasParsed(AuthCliArgs.argNameDebug)) {
+    AtSignLogger.root_level = 'finest';
+  }
+
   // Execute the command
-
-  logger.info('Chosen command: $cliCommand'
-      ' with options : ${commandArgResults.arguments}'
-      ' and positional args : ${commandArgResults.rest}');
-
-  ArgParser commandParser = parser.commands[cliCommand.name]!;
   try {
     switch (cliCommand) {
+      case AuthCliCommand.help:
+        aca.parser.printAllCommandsUsage(showSubCommandParams: true);
+        break;
+
       case AuthCliCommand.onboard:
         // First time an app is connecting to an atServer.
         // Authenticate with cram secret
@@ -100,30 +122,47 @@ Future<int> _main(ArgParser parser, List<String> arguments) async {
         // already-authenticated authorized atClient - the passcode on
         // enrollment requests is used solely to defend against ddos attacks
         // where users are bombarded with spurious enrollment requests.
-        await setSpp(commandArgResults);
+        await setSpp(
+            commandArgResults, await createAtClient(commandArgResults));
+
+      case AuthCliCommand.otp:
+        // generate a one-time-passcode for this atSign. This is a passcode
+        // which enrolling apps can provide which will signal that this is a
+        // real enrollment request and will be accepted by the atServer.
+        // Note that enrollment requests always require approval from an
+        // already-authenticated authorized atClient - the passcode on
+        // enrollment requests is used solely to defend against ddos attacks
+        // where users are bombarded with spurious enrollment requests.
+        await generateOtp(
+            commandArgResults, await createAtClient(commandArgResults));
 
       case AuthCliCommand.interactive:
         // Interactive session for various enrollment management activities:
         // - listing, approving, denying and revoking enrollments
         // - setting spp, generating otp, etc
-        await interactive(commandArgResults);
+        await interactive(
+            commandArgResults, await createAtClient(commandArgResults));
 
-      case AuthCliCommand.listen:
-        // Interactive session which listens for new enrollment requests
-        // and allows the user to approve or deny them.
-        await listen(commandArgResults);
+      case AuthCliCommand.list:
+        await list(commandArgResults, await createAtClient(commandArgResults));
 
-      case AuthCliCommand.listEnrollRequests:
-        await listEnrollRequests(commandArgResults);
+      case AuthCliCommand.fetch:
+        await fetch(commandArgResults, await createAtClient(commandArgResults));
 
       case AuthCliCommand.approve:
-        await approve(commandArgResults);
+        await approve(
+            commandArgResults, await createAtClient(commandArgResults));
 
       case AuthCliCommand.deny:
-        await deny(commandArgResults);
+        await deny(commandArgResults, await createAtClient(commandArgResults));
+
+      case AuthCliCommand.denyAllPending:
+        await denyAllPending(
+            commandArgResults, await createAtClient(commandArgResults));
 
       case AuthCliCommand.revoke:
-        await revoke(commandArgResults);
+        await revoke(
+            commandArgResults, await createAtClient(commandArgResults));
 
       case AuthCliCommand.enroll:
         // App which doesn't have auth keys and is not the first app.
@@ -137,17 +176,40 @@ Future<int> _main(ArgParser parser, List<String> arguments) async {
     stderr
         .writeln('Argument error for command ${cliCommand.name}: ${e.message}');
     commandParser.printAllCommandsUsage(
-        commandName: 'Usage: ${cliCommand.name}', sink: stderr);
+      header: 'Usage: ${cliCommand.name}',
+    );
+    aca.sharedArgsParser.printAllCommandsUsage();
     return 1;
   } catch (e, st) {
     stderr.writeln('Error for command ${cliCommand.name}: $e');
     stderr.writeln(st);
     commandParser.printAllCommandsUsage(
-        commandName: 'Usage: ${cliCommand.name}', sink: stderr);
+      header: 'Usage: ${cliCommand.name}',
+    );
+    aca.sharedArgsParser.printAllCommandsUsage();
     return 1;
   }
 
   return 0;
+}
+
+Future<AtClient> createAtClient(ArgResults ar) async {
+  String nameSpace = 'at_auth_cli';
+  String atSign = AtUtils.fixAtSign(ar[AuthCliArgs.argNameAtSign]);
+  CLIBase cliBase = CLIBase(
+      atSign: atSign,
+      atKeysFilePath: ar[AuthCliArgs.argNameAtKeys],
+      nameSpace: nameSpace,
+      rootDomain: ar[AuthCliArgs.argNameAtDirectoryFqdn],
+      homeDir: getHomeDirectory(),
+      storageDir: '${getHomeDirectory()}/.atsign/$nameSpace/$atSign/storage'
+          .replaceAll('/', Platform.pathSeparator),
+      verbose: ar[AuthCliArgs.argNameVerbose] || ar[AuthCliArgs.argNameDebug],
+      syncDisabled: true);
+
+  await cliBase.init();
+
+  return cliBase.atClient;
 }
 
 /// When a cramSecret arg is not supplied, we first use the registrar API
@@ -155,16 +217,17 @@ Future<int> _main(ArgParser parser, List<String> arguments) async {
 /// secret from the registrar.
 @visibleForTesting
 Future<void> onboard(ArgResults argResults, {AtOnboardingService? svc}) async {
+  svc ??= createOnboardingService(argResults);
   logger
       .info('Root server is ${argResults[AuthCliArgs.argNameAtDirectoryFqdn]}');
   logger.info(
       'Registrar url provided is ${argResults[AuthCliArgs.argNameRegistrarFqdn]}');
 
-  svc ??= createOnboardingService(argResults);
   stderr.writeln(
       '[Information] Onboarding your atSign. This may take up to 2 minutes.');
   try {
     await svc.onboard();
+    logger.finest('svc.onboard() has returned - will exit(0)');
     exit(0);
   } on InvalidDataException catch (e) {
     stderr.writeln(
@@ -191,15 +254,25 @@ Future<void> onboard(ArgResults argResults, {AtOnboardingService? svc}) async {
 ///         to try to auth, and act appropriately on the atServer response
 @visibleForTesting
 Future<void> enroll(ArgResults argResults, {AtOnboardingService? svc}) async {
+  svc ??= createOnboardingService(argResults);
   logger
       .info('Root server is ${argResults[AuthCliArgs.argNameAtDirectoryFqdn]}');
   logger.info(
       'Registrar url provided is ${argResults[AuthCliArgs.argNameRegistrarFqdn]}');
 
-  svc ??= createOnboardingService(argResults);
+  if (!argResults.wasParsed(AuthCliArgs.argNameAtKeys)) {
+    throw ArgumentError('The --${AuthCliArgs.argNameAtKeys} option is'
+        ' mandatory for the "enroll" command');
+  }
   Map<String, String> namespaces = {};
   String nsArg = argResults[AuthCliArgs.argNameNamespaceAccessList];
-  // TODO nsArg
+  List<String> nsList = nsArg.split(',');
+  for (String item in nsList) {
+    List<String> l = item.split(':');
+    String namespace = l[0].replaceAll('"', '').trim();
+    String permission = l[1].replaceAll('"', '').trim();
+    namespaces[namespace] = permission;
+  }
   try {
     await svc.enroll(
       argResults[AuthCliArgs.argNameAppName],
@@ -216,85 +289,267 @@ Future<void> enroll(ArgResults argResults, {AtOnboardingService? svc}) async {
         '[Error] Enrollment failed. Invalid data provided by user. Please try again\nCause: ${e.message}');
   } on AtActivateException catch (e) {
     stderr.writeln('[Error] ${e.message}');
+  } on AtEnrollmentException catch (e) {
+    stderr.writeln('[Fatal] ${e.message}');
+  } on AtAuthenticationException catch (e) {
+    stderr.writeln('[Error] ${e.message}');
   } on Exception catch (e) {
-    stderr.writeln(
-        '[Error] Enrollment failed. It looks like something went wrong on our side.\n'
-        'Please try again or contact support@atsign.com\nCause: $e');
+    stderr.writeln('[Error] $e');
+    stderr.writeln('[Error] Enrollment failed.\n'
+        '  Cause: $e\n'
+        '  Please try again or contact support@atsign.com');
   }
+  logger.finest('svc.enroll() has returned');
 }
 
 @visibleForTesting
-Future<void> setSpp(ArgResults argResults, {AtClient? atClient}) async {
+Future<void> setSpp(ArgResults argResults, AtClient atClient) async {
   String spp = argResults[AuthCliArgs.argNameSpp];
   if (invalidSpp(spp)) {
     throw ArgumentError(invalidSppMsg);
   }
 
-  if (atClient == null) {
-    AtOnboardingService svc = createOnboardingService(argResults);
-    await svc.authenticate();
-    atClient = svc.atClient!;
-  }
-
   AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
 
   // send command 'otp:put:$spp'
-  String? response = await atLookup.executeCommand('otp:put:$spp\n');
+  String? response =
+      await atLookup.executeCommand('otp:put:$spp\n', auth: true);
+  logger.shout('Server response: $response');
+}
+
+@visibleForTesting
+Future<void> generateOtp(ArgResults argResults, AtClient atClient) async {
+  AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
+
+  // send command 'otp:get[:ttl:$ttl]'
+  String? response = await atLookup.executeCommand('otp:get\n', auth: true);
   logger.shout('Server response: $response');
 }
 
 /// Only usable if there are atKeys already available.
 /// All commands available same as the CLI as a whole, except for
 /// 'onboard' and 'enroll'
-Future<void> interactive(ArgResults argResults) async {}
+Future<void> interactive(ArgResults argResults, AtClient atClient) async {
+  // TODO Factor out code which is shared between here and main()
+  while (true) {
+    stderr.write(r'$ ');
+    List<String> arguments = stdin.readLineSync()!.split(RegExp(r'\s'));
 
-/// Only usable if there are atKeys already available.
-/// Listens for notifications about new enrollment requests then prompts
-/// the user to approve or deny.
-Future<void> listen(ArgResults argResults) async {}
+    final AuthCliCommand cliCommand;
+    try {
+      cliCommand = AuthCliCommand.values.byName(arguments.first);
+    } catch (e) {
+      stderr.writeln('Unknown command: ${arguments.first}');
+      continue;
+    }
 
-Future<void> listEnrollRequests(ArgResults argResults,
-    {AtClient? atClient}) async {
-  if (atClient == null) {
-    AtOnboardingService svc = createOnboardingService(argResults);
-    await svc.authenticate();
-    atClient = svc.atClient!;
+    final ArgResults topLevelResults = aca.parser.parse(arguments);
+
+    if (topLevelResults.wasParsed(AuthCliArgs.argNameHelp)) {
+      aca.sharedArgsParser
+          .printAllCommandsUsage(header: 'Arguments common to all commands: ');
+      aca.parser.printAllCommandsUsage(showSubCommandParams: true);
+      stderr.writeln();
+      continue;
+    }
+
+    if (topLevelResults.command == null) {
+      stderr.writeln('No command was parsed');
+      continue;
+    }
+
+    ArgResults commandArgResults = topLevelResults.command!;
+    if (commandArgResults.name != cliCommand.name) {
+      stderr.writeln('detected command ${cliCommand.name}'
+          ' but parsed command ${commandArgResults.name} ');
+      continue;
+    }
+
+    // Parse the command options
+    ArgParser commandParser = aca.parser.commands[cliCommand.name]!;
+
+    if (commandArgResults.wasParsed(AuthCliArgs.argNameHelp)) {
+      commandParser.printAllCommandsUsage(
+          header: 'Usage: ${cliCommand.name}', showSubCommandParams: true);
+      stderr.writeln('\n${cliCommand.usage}\n');
+      continue;
+    }
+
+    // Execute the command
+    try {
+      switch (cliCommand) {
+        case AuthCliCommand.help:
+          aca.parser.printAllCommandsUsage(showSubCommandParams: true);
+
+        case AuthCliCommand.onboard:
+        case AuthCliCommand.interactive:
+        case AuthCliCommand.enroll:
+          stderr.writeln('The "${cliCommand.name}" command'
+              ' may not be used in interactive session');
+
+        case AuthCliCommand.spp:
+          await setSpp(commandArgResults, atClient);
+
+        case AuthCliCommand.otp:
+          await generateOtp(commandArgResults, atClient);
+
+        case AuthCliCommand.list:
+          await list(commandArgResults, atClient);
+
+        case AuthCliCommand.fetch:
+          await fetch(commandArgResults, atClient);
+
+        case AuthCliCommand.approve:
+          await approve(commandArgResults, atClient);
+
+        case AuthCliCommand.deny:
+          await deny(commandArgResults, atClient);
+
+        case AuthCliCommand.denyAllPending:
+          await denyAllPending(commandArgResults, atClient);
+
+        case AuthCliCommand.revoke:
+          await revoke(commandArgResults, atClient);
+      }
+    } on ArgumentError catch (e) {
+      stderr.writeln(
+          'Argument error for command ${cliCommand.name}: ${e.message}');
+      commandParser.printAllCommandsUsage(header: 'Usage: ${cliCommand.name}');
+    }
   }
-
-  // 'enroll:list:{"enrollmentStatusFilter":["approved"]}'
-  // 'enroll:list:{"enrollmentStatusFilter":["revoked"]}'
-  // 'enroll:list:{"enrollmentStatusFilter":["denied"]}'
-  // 'enroll:list:{"enrollmentStatusFilter":["pending"]}'
 }
 
-Future<void> approve(ArgResults argResults, {AtClient? atClient}) async {
-  if (atClient == null) {
-    AtOnboardingService svc = createOnboardingService(argResults);
-    await svc.authenticate();
-    atClient = svc.atClient!;
+Future<Map> _list(String? statusFilter, AtLookUp atLookup) async {
+  String command = 'enroll:list';
+  if (statusFilter != null) {
+    command += ':{"enrollmentStatusFilter":["$statusFilter"]}';
   }
+  String rawResponse = (await atLookup.executeCommand(
+    '$command\n',
+    auth: true,
+  ))!;
 
-  // 'enroll:approve:{"enrollmentId":"$secondEnrollId"}'
+  if (rawResponse.startsWith('data:')) {
+    rawResponse = rawResponse.substring(rawResponse.indexOf('data:') + 5);
+    return jsonDecode(rawResponse);
+  } else {
+    logger.shout('Exiting: Unexpected server response: $rawResponse');
+    exit(1);
+  }
 }
 
-Future<void> deny(ArgResults argResults, {AtClient? atClient}) async {
-  if (atClient == null) {
-    AtOnboardingService svc = createOnboardingService(argResults);
-    await svc.authenticate();
-    atClient = svc.atClient!;
-  }
+Future<void> list(ArgResults ar, AtClient atClient) async {
+  AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
 
-  // 'enroll:deny:{"enrollmentId":"$secondEnrollId"}'
+  String? statusFilter = ar[AuthCliArgs.argNameEnrollmentStatus];
+
+  Map json = await _list(statusFilter, atLookup);
+  for (final eId in json.keys) {
+    stderr.writeln('Enrollment ID: $eId');
+    final e = json[eId] as Map;
+    stderr.writeln('         Status: ${e['status']}');
+    stderr.writeln('       App Name: ${e['appName']}');
+    stderr.writeln('    Device Name: ${e['deviceName']}');
+    stderr.writeln('     Namespaces: ${e['namespace']}');
+  }
 }
 
-Future<void> revoke(ArgResults argResults, {AtClient? atClient}) async {
-  if (atClient == null) {
-    AtOnboardingService svc = createOnboardingService(argResults);
-    await svc.authenticate();
-    atClient = svc.atClient!;
+Future<Map?> _fetch(String eId, AtLookUp atLookup) async {
+  String rawResponse = (await atLookup.executeCommand(
+      'enroll:list:'
+      '{"enrollmentId":"$eId"}'
+      '\n',
+      auth: true))!;
+
+  if (rawResponse.startsWith('data:')) {
+    rawResponse = rawResponse.substring(rawResponse.indexOf('data:') + 5);
+    // response is a Map of enrollmentId:enrollmentJson
+    final Map json = jsonDecode(rawResponse);
+    if (json.keys.isEmpty) {
+      return null;
+    } else {
+      if (json.keys.length > 1) {
+        logger.shout('Error: Fetched more than one enrollment request'
+            ' - will return the first one');
+        logger.shout(json);
+      }
+      return json[json.keys.first];
+    }
+  } else {
+    logger.shout('Exiting: Unexpected server response: $rawResponse');
+    exit(1);
+  }
+}
+
+Future<void> fetch(ArgResults argResults, AtClient atClient) async {
+  String eId = argResults[AuthCliArgs.argNameEnrollmentId];
+  AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
+
+  Map? er = await _fetch(eId, atLookup);
+  if (er == null) {
+    logger.shout('Enrollment ID $eId not found');
+    return;
+  } else {
+    stderr.writeln('Fetched enrollment OK: $er');
+  }
+}
+
+Future<void> approve(ArgResults argResults, AtClient atClient) async {
+  String eId = argResults[AuthCliArgs.argNameEnrollmentId];
+  AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
+
+  // First fetch the enrollment request
+  Map? er = await _fetch(eId, atLookup);
+  if (er == null) {
+    logger.shout('Enrollment ID $eId not found');
+    return;
   }
 
+  stderr.writeln('Fetched enrollment OK: $er');
+
+  // Then make a 'decision' object using data from the enrollment request
+  EnrollmentRequestDecision decision = EnrollmentRequestDecision.approved(
+      ApprovedRequestDecisionBuilder(
+          enrollmentId: eId,
+          encryptedAPKAMSymmetricKey: er['encryptedAPKAMSymmetricKey']));
+
+  // Finally call approve method via an AtEnrollment object
+  final response = await atAuthBase
+      .atEnrollment(atClient.getCurrentAtSign()!)
+      .approve(decision, atLookup);
+  // 'enroll:approve:{"enrollmentId":"$enrollmentId"}'
+  logger.shout('Server response: $response');
+}
+
+Future<void> deny(ArgResults argResults, AtClient atClient) async {
+  String eId = argResults[AuthCliArgs.argNameEnrollmentId];
+  AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
+  // 'enroll:deny:{"enrollmentId":"$enrollmentId"}'
+  String? response = await atLookup
+      .executeCommand('enroll:deny:{"enrollmentId":"$eId"}\n', auth: true);
+  logger.shout('Server response: $response');
+}
+
+Future<void> denyAllPending(ArgResults argResults, AtClient atClient) async {
+  AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
+  Map json = await _list(EnrollmentStatus.pending.name, atLookup);
+  for (final String eIdKey in json.keys) {
+    String eId = eIdKey.substring(0, eIdKey.indexOf('.'));
+    stderr.writeln('Denying enrollment request: $eId ($eIdKey)');
+    // 'enroll:deny:{"enrollmentId":"$enrollmentId"}'
+    String? response = await atLookup
+        .executeCommand('enroll:deny:{"enrollmentId":"$eId"}\n', auth: true);
+    stderr.writeln('    => Server response: $response');
+  }
+}
+
+Future<void> revoke(ArgResults argResults, AtClient atClient) async {
+  String eId = argResults[AuthCliArgs.argNameEnrollmentId];
+  AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
   // 'enroll:revoke:{"enrollmentid":"$enrollmentId"}'
+  String? response = await atLookup
+      .executeCommand('enroll:revoke:{"enrollmentId":"$eId"}\n', auth: true);
+  logger.shout('Server response: $response');
 }
 
 @visibleForTesting
@@ -303,7 +558,8 @@ AtOnboardingService createOnboardingService(ArgResults ar) {
   AtOnboardingPreference atOnboardingPreference = AtOnboardingPreference()
     ..rootDomain = ar[AuthCliArgs.argNameAtDirectoryFqdn]
     ..registrarUrl = ar[AuthCliArgs.argNameRegistrarFqdn]
-    ..cramSecret = ar[AuthCliArgs.argNameCramSecret];
+    ..cramSecret = ar[AuthCliArgs.argNameCramSecret]
+    ..atKeysFilePath = ar[AuthCliArgs.argNameAtKeys];
 
   return AtOnboardingServiceImpl(atSign, atOnboardingPreference);
 }
