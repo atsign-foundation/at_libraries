@@ -71,5 +71,15 @@ void main() {
       var command = enrollVerbBuilder.buildCommand();
       expect(command, 'enroll:list\n');
     });
+
+    test('A test to validate the enroll fetch command', () {
+      EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
+        ..operation = EnrollOperationEnum.fetch
+        ..enrollmentId = '123';
+
+      var command = enrollVerbBuilder.buildCommand();
+
+      expect(command, 'enroll:fetch:{"enrollmentId":"123"}\n');
+    });
   });
 }
