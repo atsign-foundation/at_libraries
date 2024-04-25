@@ -41,13 +41,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   /// a [DefaultAtServiceFactory]
   AtServiceFactory? atServiceFactory;
 
-  at_auth.AtEnrollmentBase? _atEnrollmentBase;
+  at_auth.AtEnrollmentBase? _atEnrollment;
 
   AtOnboardingServiceImpl(atsign, this.atOnboardingPreference,
       {this.atServiceFactory, String? enrollmentId}) {
     // performs atSign format checks on the atSign
     _atSign = AtUtils.fixAtSign(atsign);
-    _atEnrollmentBase ??= at_auth.atAuthBase.atEnrollment(_atSign);
+    _atEnrollment ??= at_auth.atAuthBase.atEnrollment(_atSign);
     // set default LocalStorage paths for this instance
     atOnboardingPreference.commitLogPath ??=
         HomeDirectoryUtil.getCommitLogPath(_atSign, enrollmentId: enrollmentId);
@@ -166,11 +166,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     atLookUpImpl.atChops = AtChopsImpl(atChopsKeys);
 
     // Pkam auth will be attempted asynchronously until enrollment is approved/denied
-    _attemptPkamAuthAsync(
+    await _attemptPkamAuthAsync(
         atLookUpImpl, enrollmentResponse.enrollmentId, retryInterval);
 
     // Upon successful pkam auth, callback _listenToPkamSuccessStream will  be invoked
-    _listenToPkamSuccessStream(
+    await _listenToPkamSuccessStream(
         atLookUpImpl,
         enrollmentResponse.atAuthKeys!.apkamSymmetricKey!,
         enrollmentResponse.atAuthKeys!.defaultEncryptionPublicKey!,
@@ -180,12 +180,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     return enrollmentResponse;
   }
 
-  void _listenToPkamSuccessStream(
+  Future<void> _listenToPkamSuccessStream (
       AtLookupImpl atLookUpImpl,
       String apkamSymmetricKey,
       String defaultEncryptionPublicKey,
       String apkamPublicKey,
-      String apkamPrivateKey) {
+      String apkamPrivateKey) async {
+    Completer c = Completer<void>();
     _onPkamSuccess.listen((enrollmentIdFromServer) async {
       logger.finer('_listenToPkamSuccessStream invoked');
       var decryptedEncryptionPrivateKey = EncryptionUtil.decryptValue(
@@ -206,7 +207,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         ..apkamPrivateKey = apkamPrivateKey;
       logger.finer('Generating keys file for $enrollmentIdFromServer');
       await _generateAtKeysFile(enrollmentIdFromServer, atAuthKeys);
+      c.complete();
     });
+    return c.future;
   }
 
   Future<String> _getEncryptionPrivateKeyFromServer(
@@ -258,15 +261,15 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       String enrollmentIdFromServer, Duration retryInterval) async {
     // Pkam auth will be retried until server approves/denies/expires the enrollment
     while (true) {
-      logger.finer('Attempting pkam for $enrollmentIdFromServer');
+      logger.shout('Attempting to authenticate');
       bool pkamAuthResult = await _attemptPkamAuth(
           atLookUpImpl, enrollmentIdFromServer, retryInterval);
       if (pkamAuthResult) {
-        logger.finer('Pkam auth successful for $enrollmentIdFromServer');
+        logger.shout('Authentication succeeded - enrollment request was approved');
         _pkamSuccessController.add(enrollmentIdFromServer);
         break;
       }
-      logger.finer('Retrying pkam after mins: $retryInterval');
+      logger.shout('Will retry pkam in ${retryInterval.inSeconds} seconds');
       await Future.delayed(retryInterval); // Delay and retry
     }
   }
@@ -274,21 +277,28 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   Future<bool> _attemptPkamAuth(AtLookUp atLookUp,
       String enrollmentIdFromServer, Duration retryInterval) async {
     try {
+      logger.finer('_attemptPkamAuth: Calling atLookUp.pkamAuthenticate');
       var pkamResult =
           await atLookUp.pkamAuthenticate(enrollmentId: enrollmentIdFromServer);
+      logger.finer('_attemptPkamAuth: atLookUp.pkamAuthenticate returned $pkamResult');
       if (pkamResult) {
         return true;
       }
     } on UnAuthenticatedException catch (e) {
       if (e.message.contains('error:AT0401') ||
           e.message.contains('error:AT0026')) {
-        logger.finer('Pkam auth failed: ${e.message}');
+        logger.info('Pkam auth failed: ${e.message}');
         return false;
       } else if (e.message.contains('error:AT0025')) {
-        logger.finer(
-            'enrollmentId $enrollmentIdFromServer denied.Exiting pkam retry logic');
+        logger.shout(
+            'enrollmentId $enrollmentIdFromServer denied. Exiting pkam retry logic');
         throw AtEnrollmentException('enrollment denied');
       }
+    } catch (e) {
+      logger.shout('Unexpected exception: $e');
+      rethrow;
+    } finally {
+      logger.finer('_attemptPkamAuth: complete');
     }
     return false;
   }
@@ -306,7 +316,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
             namespaces: namespaces,
             otp: otp);
     logger.finer('calling at_enrollment_impl submit enrollment');
-    return await _atEnrollmentBase!
+    return await _atEnrollment!
         .submit(newClientEnrollmentRequest, atLookUpImpl);
   }
 
