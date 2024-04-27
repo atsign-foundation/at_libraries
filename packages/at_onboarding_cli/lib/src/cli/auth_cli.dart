@@ -456,25 +456,15 @@ Future<void> list(ArgResults ar, AtClient atClient) async {
 
 Future<Map?> _fetch(String eId, AtLookUp atLookup) async {
   String rawResponse = (await atLookup.executeCommand(
-      'enroll:list:'
+      'enroll:fetch:'
       '{"enrollmentId":"$eId"}'
       '\n',
       auth: true))!;
 
   if (rawResponse.startsWith('data:')) {
     rawResponse = rawResponse.substring(rawResponse.indexOf('data:') + 5);
-    // response is a Map of enrollmentId:enrollmentJson
-    final Map json = jsonDecode(rawResponse);
-    if (json.keys.isEmpty) {
-      return null;
-    } else {
-      if (json.keys.length > 1) {
-        logger.shout('Error: Fetched more than one enrollment request'
-            ' - will return the first one');
-        logger.shout(json);
-      }
-      return json[json.keys.first];
-    }
+    // response is a Map
+    return jsonDecode(rawResponse);
   } else {
     logger.shout('Exiting: Unexpected server response: $rawResponse');
     exit(1);
