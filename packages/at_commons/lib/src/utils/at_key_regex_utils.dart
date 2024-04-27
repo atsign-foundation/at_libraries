@@ -29,8 +29,8 @@ abstract class Regexes {
       '|(?<=$ownershipFragmentWithoutNamedGroup:)signing_privatekey'
       '|(?<=^@($sharedWithFragment))shared_key'
       '|(?<=public:)publickey'
-      ')(?=$ownershipFragment)'
       '|(shared_key\\.$ownershipFragmentWithoutAtPrefix)'
+      ')(?=$ownershipFragment)'
       ')';
 
   static const String namespaceFragment = '\\.(?<namespace>$charsInNamespace)';
