@@ -21,16 +21,23 @@ abstract class Regexes {
 
   /// The following reserved keys are suffixed by the atsign. [ownershipFragment]
   /// at the end represents the atsign
-  static const _reservedKeysWithAtsignSuffix = r'(((?<=private:)blocklist'
+  static const _reservedKeysWithAtsignSuffix = r'('
+      '('
+      '(?<=private:)'
+      'blocklist'
       '|(?<=public:)signing_publickey'
       '|(?<=$ownershipFragmentWithoutNamedGroup:)signing_privatekey'
       '|(?<=^@($sharedWithFragment))shared_key'
-      '|(?<=public:)publickey)(?=$ownershipFragment))';
+      '|(?<=public:)publickey'
+      ')(?=$ownershipFragment)'
+      '|(shared_key\\.$ownershipFragmentWithoutAtPrefix)'
+      ')';
 
-  static const String namespaceFragment =
-      '''\\.(?<namespace>$charsInNamespace)''';
+  static const String namespaceFragment = '\\.(?<namespace>$charsInNamespace)';
+  static const String ownershipFragmentWithoutAtPrefix =
+      '(($charsInAtSign|$allowedEmoji){1,55})';
   static const String ownershipFragment =
-      '''@(?<owner>($charsInAtSign|$allowedEmoji){1,55})''';
+      '@(?<owner>$ownershipFragmentWithoutAtPrefix)';
   static const String ownershipFragmentWithoutNamedGroup =
       '''@($charsInAtSign|$allowedEmoji){1,55}''';
   static const String sharedWithFragment =
@@ -56,12 +63,19 @@ abstract class Regexes {
       '''(?<visibility>(local:){1})$entityFragment''';
 
   String get publicKey;
+
   String get privateKey;
+
   String get selfKey;
+
   String get sharedKey;
+
   String get cachedSharedKey;
+
   String get cachedPublicKey;
+
   String get reservedKey;
+
   String get localKey;
 
   static final Regexes _regexesWithMandatoryNamespace =

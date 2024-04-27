@@ -98,8 +98,9 @@ void main() {
       var keyTypeList = [];
       var fails = [];
       // keys with atsign
+      keyTypeList.add('shared_key.bob@alice');
+      keyTypeList.add('@bob:shared_key@alice');
       keyTypeList.add('${AtConstants.atBlocklist}@☎️_0002');
-      keyTypeList.add('@bob:${AtConstants.atEncryptionSharedKey}@alice');
       keyTypeList.add('@allen:${AtConstants.atSigningPrivateKey}@allen');
       keyTypeList.add('${AtConstants.atEncryptionPublicKey}@owner');
       keyTypeList.add('public:signing_publickey@alice');

@@ -270,6 +270,7 @@ void main() {
         () {
       String key = '_latestNotificationId';
       var type = RegexUtil.keyType(key, false);
+      print('Expected reservedKey, got $type for $key');
       expect(type, KeyType.reservedKey);
 
       var matches = RegexUtil.matchesByGroup(Regexes(false).reservedKey, key);

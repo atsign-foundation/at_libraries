@@ -1,3 +1,6 @@
+## 4.0.8
+- fix: Add shared_key.atsign@atsign to reservedKey regex
+- fix: change inconsistent field name encryptedApkamSymmetricKey to encryptedAPKAMSymmetricKey
 ## 4.0.7
 - fix: Add fetch operation to enroll verb to get the enrollment details
 ## 4.0.6
