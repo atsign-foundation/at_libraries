@@ -123,7 +123,7 @@ void main() {
         var type = RegexUtil.keyType(key, false);
         print(key);
         if (type != KeyType.reservedKey) {
-          fails.add('$key classified as $type - should be ${KeyType.reservedKey}');
+          fails.add('$key classified as $type - should be reservedKey');
         }
       }
       expect(fails, []);
