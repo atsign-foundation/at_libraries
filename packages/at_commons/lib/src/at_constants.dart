@@ -106,7 +106,7 @@ class AtConstants {
       'encryptedDefaultEncPrivateKey';
   static const String apkamEncryptedDefaultSelfEncryptionKey =
       'encryptedDefaultSelfEncryptionKey';
-  static const String apkamEncryptedSymmetricKey = 'encryptedAPKAMSymmetricKey';
+  static const String apkamEncryptedSymmetricKey = 'encryptedApkamSymmetricKey';
   static const String apkamPublicKey = 'apkamPublicKey';
   static const String apkamNamespaces = 'namespaces';
   static const String defaultEncryptionPrivateKey = 'default_enc_private_key';
