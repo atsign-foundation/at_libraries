@@ -57,7 +57,7 @@ void main() {
         ..atKey.key = 'email'
         ..atKey.sharedBy = '@alice'
         ..atKey.sharedWith = '@bob'
-      // ignore: deprecated_member_use_from_same_package
+        // ignore: deprecated_member_use_from_same_package
         ..atKey.metadata.pubKeyCS = '123'
         ..atKey.metadata.sharedKeyEnc = 'abc'
         ..ttln = 100;
@@ -83,7 +83,7 @@ void main() {
         ..atKey.key = 'email'
         ..atKey.sharedBy = '@alice'
         ..atKey.sharedWith = '@bob'
-      // ignore: deprecated_member_use_from_same_package
+        // ignore: deprecated_member_use_from_same_package
         ..atKey.metadata.pubKeyCS = '123'
         ..atKey.metadata.sharedKeyEnc = 'abc'
         ..atKey.metadata.isEncrypted = true;
