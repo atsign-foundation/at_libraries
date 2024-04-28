@@ -261,5 +261,49 @@ void main() {
       var result = await atLookup.executeCommand(llookupCommand);
       expect(result, llookupResponse);
     });
+
+    test('executeCommand - test non json error handling', () async {
+      final atLookup = AtLookupImpl('@alice', atServerHost, 64,
+          secondaryAddressFinder: mockSecondaryAddressFinder,
+          secureSocketFactory: mockSocketFactory,
+          socketListenerFactory: mockSecureSocketListenerFactory,
+          outboundConnectionFactory: mockOutboundConnectionFactory);
+      atLookup.atChops = mockAtChops;
+      final llookupCommand = 'llookup:phone@alice\n';
+      final llookupResponse = 'error:AT0015-Exception: fubar';
+      when(() => mockOutBoundConnection.write(llookupCommand))
+          .thenAnswer((invocation) {
+        mockSecureSocket.write(llookupCommand);
+        return Future.value();
+      });
+      when(() => mockOutboundListener.read())
+          .thenAnswer((_) => Future.value(llookupResponse));
+      await expectLater(
+          atLookup.executeCommand(llookupCommand),
+          throwsA(predicate((e) =>
+              e is AtLookUpException && e.errorMessage == 'Exception: fubar')));
+    });
+
+    test('executeCommand - test json error handling', () async {
+      final atLookup = AtLookupImpl('@alice', atServerHost, 64,
+          secondaryAddressFinder: mockSecondaryAddressFinder,
+          secureSocketFactory: mockSocketFactory,
+          socketListenerFactory: mockSecureSocketListenerFactory,
+          outboundConnectionFactory: mockOutboundConnectionFactory);
+      atLookup.atChops = mockAtChops;
+      final llookupCommand = 'llookup:phone@alice\n';
+      final llookupResponse = 'error:{"errorCode":"AT0015","errorDescription":"Exception: fubar"}';
+      when(() => mockOutBoundConnection.write(llookupCommand))
+          .thenAnswer((invocation) {
+        mockSecureSocket.write(llookupCommand);
+        return Future.value();
+      });
+      when(() => mockOutboundListener.read())
+          .thenAnswer((_) => Future.value(llookupResponse));
+      await expectLater(
+          atLookup.executeCommand(llookupCommand),
+          throwsA(predicate((e) =>
+              e is AtLookUpException && e.errorMessage == 'Exception: fubar')));
+    });
   });
 }
