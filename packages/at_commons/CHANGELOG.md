@@ -1,3 +1,7 @@
+## 4.0.8
+- fix: Add shared_key.atsign@atsign to reservedKey regex
+## 4.0.7
+- fix: Add fetch operation to enroll verb to get the enrollment details
 ## 4.0.6
 - fix: max key length validation changes
 - fix: PublicKey toString method should return 'cached:' when isCached is set in metadata

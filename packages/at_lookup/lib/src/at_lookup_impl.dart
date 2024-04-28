@@ -335,12 +335,10 @@ class AtLookupImpl implements AtLookUp {
       // Catching the FormatException to preserve backward compatibility - responses without jsonEncoding.
       // TODO: Can we remove the below catch block in next release once all the servers are migrated to new version.
       if (verbResult.contains('-')) {
-        if (verbResult.split('-')[0].isNotEmpty) {
-          errorCode = verbResult.split('-')[0];
-        }
-        if (verbResult.split('-')[1].isNotEmpty) {
-          errorDescription = verbResult.split('-')[1];
-        }
+        errorCode = verbResult.substring(0, verbResult.indexOf('-'));
+        errorDescription = verbResult.substring(verbResult.indexOf('-')+1);
+      } else {
+        errorDescription += ": $verbResult";
       }
     }
 

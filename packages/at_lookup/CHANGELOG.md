@@ -1,3 +1,6 @@
+## 3.0.47
+- fix: Fixed legacy error handling so error message isn't truncated if it 
+  contains a hyphen
 ## 3.0.46
 - fix: Modify "executeCommand" to parse the error response from server and return appropriate exception
 ## 3.0.45
