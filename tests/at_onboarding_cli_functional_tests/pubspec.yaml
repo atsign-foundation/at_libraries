@@ -10,6 +10,13 @@ dependencies:
   at_onboarding_cli:
     path: ../../packages/at_onboarding_cli
 
+dependency_overrides:
+  at_client:
+    git:
+      url: https://github.com/atsign-foundation/at_client_sdk
+      path: packages/at_client
+      ref: apkam_authorization_checks
+
 #dependency_overrides:
 #  at_auth:
 #    path: ../../packages/at_auth

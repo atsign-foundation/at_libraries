@@ -16,7 +16,7 @@ var encryptionPublicKey;
 var encryptionPrivateKey;
 var selfEncryptionKey;
 void main() {
-  AtSignLogger.root_level = 'info';
+  AtSignLogger.root_level = 'finest';
   final logger = AtSignLogger('OnboardingEnrollmentTest');
   group('A group of tests to assert on authenticate functionality', () {
     test(
@@ -109,6 +109,17 @@ void main() {
       bool authResultWithEnrollment =
           await onboardingService_2.authenticate(enrollmentId: enrollmentId);
       expect(authResultWithEnrollment, true);
+      // check client side authorization
+      var atBuzzKey = AtKey()..key='phone'..sharedWith=atSign..sharedBy=atSign..namespace='buzz';
+      var buzzKeyResult = await onboardingService_2.atClient!.put(atBuzzKey, '1234');
+      print('buzzKeyResult: $buzzKeyResult');
+      try {
+        var atWaviKey = AtKey()..key='phone'..sharedWith=atSign..sharedBy=atSign..namespace='wavi';
+        var waviKeyResult = await onboardingService_2.atClient!.put(atWaviKey, '1234');
+        print(waviKeyResult);
+      }  on Exception catch(e) {
+        print(e);
+      }
       enrolledClientKeysFile.deleteSync();
     }, timeout: Timeout(Duration(minutes: 3)));
 
