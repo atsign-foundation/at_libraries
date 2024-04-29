@@ -1,3 +1,5 @@
+## 4.0.7
+- feat: introduce force flag for enroll:revoke
 ## 4.0.6
 - fix: max key length validation changes
 - fix: PublicKey toString method should return 'cached:' when isCached is set in metadata
