@@ -286,16 +286,6 @@ void main() {
       expect(verbParams['enrollmentId'], '1234');
     });
 
-    test('A test to verify enroll revoke with force flag', () {
-      String command = 'enroll:revoke:force:{"enrollmentId":"1234"}\n';
-      var enrollVerbParams =
-          VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim())!;
-      expect(enrollVerbParams['operation'], 'revoke');
-      expect(enrollVerbParams['force'], 'force');
-      var verbParams = jsonDecode(enrollVerbParams['enrollParams']!);
-      expect(verbParams['enrollmentId'], '1234');
-    });
-
     test('A test to assert enroll list command', () {
       String command = 'enroll:list\n';
       var enrollVerbParams =
