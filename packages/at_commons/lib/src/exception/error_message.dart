@@ -23,7 +23,7 @@ const Map error_codes = {
   'ServerIsPausedException': 'AT0024',
   'AtThrottleLimitException': 'AT0028',
   'AtInvalidEnrollmentException': 'AT0029',
-  'AtEnrollmentException': 'AT0031'
+  'AtEnrollmentRevokeException': 'AT0031'
 };
 
 // ignore: constant_identifier_names
@@ -55,5 +55,5 @@ const Map error_description = {
   'AT0028': 'Too Many Requests',
   'AT0029': 'Apkam Enrollment Expired',
   'AT0030': 'Invalid Enrollment Status',
-  'AT0031': 'Invalid Enrollment Request'
+  'AT0031': 'Cannot revoke self enrollment'
 };
