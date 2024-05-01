@@ -1,5 +1,5 @@
 ## 4.0.9
-- feat: enroll verb syntax change for enroll:revoke:force
+- feat: enroll verb syntax change for enroll:revoke:force and added new exception AtEnrollmentRevokeException
 ## 4.0.8
 - fix: Add shared_key.atsign@atsign to reservedKey regex
 ## 4.0.7
