@@ -1,0 +1,17 @@
+name: at_register
+description: Package that has code to interact with the AtRegistrar API
+version: 1.0.0
+repository: https://github.com/atsign-foundation/at_libraries
+
+environment:
+  sdk: '>=2.15.1 <4.0.0'
+
+dependencies:
+  at_commons: ^4.0.3
+  at_utils: ^3.0.16
+  http: ^1.2.1
+
+dev_dependencies:
+  lints: ^3.0.0
+  test: ^1.24.0
+  mocktail: ^1.0.3

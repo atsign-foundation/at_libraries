@@ -9,6 +9,8 @@ environment:
 dependencies:
   at_onboarding_cli:
     path: ../../packages/at_onboarding_cli
+  at_register:
+    path:  ../../packages/at_register
 
 dependency_overrides:
   at_auth:
