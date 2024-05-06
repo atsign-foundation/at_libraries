@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:args/args.dart';
 import 'package:at_auth/at_auth.dart';
 import 'package:at_auth/src/at_auth_impl.dart';
