@@ -521,19 +521,18 @@ Future<void> fetch(ArgResults argResults, AtClient atClient) async {
 }
 
 Future<Map> _fetchOrListAndFilter(
-  AtLookUp atLookup, {
+  AtLookUp atLookup,
+  String statusFilter, {
   String? eId,
-  String? statusFilter,
   String? arx,
   String? drx,
 }) async {
   if (eId == null && arx == null && drx == null) {
-    logger.shout('At least one of'
-        ' ${AuthCliArgs.argNameEnrollmentId},'
-        ' ${AuthCliArgs.argNameAppNameRegex}'
-        ' or ${AuthCliArgs.argNameDeviceNameRegex}'
+    throw ArgumentError('At least one of'
+        ' --${AuthCliArgs.argNameEnrollmentId},'
+        ' --${AuthCliArgs.argNameAppNameRegex}'
+        ' or --${AuthCliArgs.argNameDeviceNameRegex}'
         ' must be provided');
-    return {};
   }
 
   Map enrollmentMap = {};
@@ -560,7 +559,7 @@ Future<void> approve(ArgResults ar, AtClient atClient) async {
 
   Map toApprove = await _fetchOrListAndFilter(
     atLookup,
-    statusFilter: EnrollmentStatus.pending.name, // must be status pending
+    EnrollmentStatus.pending.name, // must be status pending
     eId: ar[AuthCliArgs.argNameEnrollmentId],
     arx: ar[AuthCliArgs.argNameAppNameRegex],
     drx: ar[AuthCliArgs.argNameDeviceNameRegex],
@@ -595,7 +594,7 @@ Future<void> deny(ArgResults ar, AtClient atClient) async {
 
   Map toDeny = await _fetchOrListAndFilter(
     atLookup,
-    statusFilter: EnrollmentStatus.pending.name, // must be status pending
+    EnrollmentStatus.pending.name, // must be status pending
     eId: ar[AuthCliArgs.argNameEnrollmentId],
     arx: ar[AuthCliArgs.argNameAppNameRegex],
     drx: ar[AuthCliArgs.argNameDeviceNameRegex],
@@ -621,7 +620,7 @@ Future<void> revoke(ArgResults ar, AtClient atClient) async {
 
   Map toRevoke = await _fetchOrListAndFilter(
     atLookup,
-    statusFilter: EnrollmentStatus.approved.name, // must be status approved
+    EnrollmentStatus.approved.name, // must be status approved
     eId: ar[AuthCliArgs.argNameEnrollmentId],
     arx: ar[AuthCliArgs.argNameAppNameRegex],
     drx: ar[AuthCliArgs.argNameDeviceNameRegex],
