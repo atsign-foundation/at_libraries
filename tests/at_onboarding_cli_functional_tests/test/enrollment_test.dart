@@ -3,18 +3,19 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:at_client/at_client.dart';
-import 'package:at_lookup/at_lookup.dart';
 import 'package:at_demo_data/at_demo_data.dart' as at_demos;
+import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
+import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 import 'package:at_utils/at_utils.dart';
 import 'package:test/test.dart';
-import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 
 var pkamPublicKey;
 var pkamPrivateKey;
 var encryptionPublicKey;
 var encryptionPrivateKey;
 var selfEncryptionKey;
+
 void main() {
   AtSignLogger.root_level = 'info';
   final logger = AtSignLogger('OnboardingEnrollmentTest');
