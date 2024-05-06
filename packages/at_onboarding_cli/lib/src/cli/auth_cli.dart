@@ -156,10 +156,6 @@ Future<int> _main(List<String> arguments) async {
       case AuthCliCommand.deny:
         await deny(commandArgResults, await createAtClient(commandArgResults));
 
-      case AuthCliCommand.denyAllPending:
-        await denyAllPending(
-            commandArgResults, await createAtClient(commandArgResults));
-
       case AuthCliCommand.revoke:
         await revoke(
             commandArgResults, await createAtClient(commandArgResults));
@@ -405,9 +401,6 @@ Future<void> interactive(ArgResults argResults, AtClient atClient) async {
         case AuthCliCommand.deny:
           await deny(commandArgResults, atClient);
 
-        case AuthCliCommand.denyAllPending:
-          await denyAllPending(commandArgResults, atClient);
-
         case AuthCliCommand.revoke:
           await revoke(commandArgResults, atClient);
       }
@@ -419,7 +412,12 @@ Future<void> interactive(ArgResults argResults, AtClient atClient) async {
   }
 }
 
-Future<Map> _list(String? statusFilter, AtLookUp atLookup) async {
+Future<Map> _list(
+  String? statusFilter,
+  AtLookUp atLookup, {
+  String? arx,
+  String? drx,
+}) async {
   String command = 'enroll:list';
   if (statusFilter != null) {
     command += ':{"enrollmentStatusFilter":["$statusFilter"]}';
@@ -429,9 +427,36 @@ Future<Map> _list(String? statusFilter, AtLookUp atLookup) async {
     auth: true,
   ))!;
 
+  RegExp? ar;
+  RegExp? dr;
+  if (arx != null) {
+    ar = RegExp(arx);
+  }
+  if (drx != null) {
+    dr = RegExp(drx);
+  }
   if (rawResponse.startsWith('data:')) {
     rawResponse = rawResponse.substring(rawResponse.indexOf('data:') + 5);
-    return jsonDecode(rawResponse);
+    Map unfiltered = jsonDecode(rawResponse);
+    Map filtered = {};
+    for (final String ek in unfiltered.keys) {
+      final e = unfiltered[ek];
+      String appName = e['appName'] as String;
+      if (ar != null) {
+        if (! ar.hasMatch(appName)) {
+          continue;
+        }
+      }
+      String deviceName = e['deviceName'] as String;
+      if (dr != null) {
+        if (! dr.hasMatch(deviceName)) {
+          continue;
+        }
+      }
+      filtered[ek.substring(0, ek.indexOf('.'))] = e;
+    }
+    logger.shout("Found ${filtered.length} matching enrollment records");
+    return filtered;
   } else {
     logger.shout('Exiting: Unexpected server response: $rawResponse');
     exit(1);
@@ -442,15 +467,26 @@ Future<void> list(ArgResults ar, AtClient atClient) async {
   AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
 
   String? statusFilter = ar[AuthCliArgs.argNameEnrollmentStatus];
+  String? arx = ar[AuthCliArgs.argNameAppNameRegex];
+  String? drx = ar[AuthCliArgs.argNameDeviceNameRegex];
 
-  Map json = await _list(statusFilter, atLookup);
+  Map json = await _list(statusFilter, atLookup, arx: arx, drx: drx);
+  stdout.write('Enrollment ID'.padRight(38));
+  stdout.write('Status'.padRight(10));
+  stdout.write('AppName'.padRight(20));
+  stdout.write('DeviceName'.padRight(38));
+  stdout.writeln('Namespaces');
   for (final eId in json.keys) {
-    stderr.writeln('Enrollment ID: $eId');
     final e = json[eId] as Map;
-    stderr.writeln('         Status: ${e['status']}');
-    stderr.writeln('       App Name: ${e['appName']}');
-    stderr.writeln('    Device Name: ${e['deviceName']}');
-    stderr.writeln('     Namespaces: ${e['namespace']}');
+    final String status = e['status'];
+    final String appName = e['appName'];
+    final String deviceName = e['deviceName'];
+    final namespaces = e['namespace'];
+    stdout.writeln('${eId.padRight(38)}'
+        '${status.padRight(10)}'
+        '${appName.padRight(20)}'
+        '${deviceName.padRight(38)}'
+        '$namespaces');
   }
 }
 
@@ -484,62 +520,126 @@ Future<void> fetch(ArgResults argResults, AtClient atClient) async {
   }
 }
 
-Future<void> approve(ArgResults argResults, AtClient atClient) async {
-  String eId = argResults[AuthCliArgs.argNameEnrollmentId];
+Future<Map> _fetchOrListAndFilter(
+  AtLookUp atLookup, {
+  String? eId,
+  String? statusFilter,
+  String? arx,
+  String? drx,
+}) async {
+  if (eId == null && arx == null && drx == null) {
+    logger.shout('At least one of'
+        ' ${AuthCliArgs.argNameEnrollmentId},'
+        ' ${AuthCliArgs.argNameAppNameRegex}'
+        ' or ${AuthCliArgs.argNameDeviceNameRegex}'
+        ' must be provided');
+    return {};
+  }
+
+  Map enrollmentMap = {};
+  if (eId != null) {
+    // First fetch the enrollment request
+    Map? er = await _fetch(eId, atLookup);
+    if (er == null) {
+      logger.shout('Enrollment ID $eId not found');
+    }
+    enrollmentMap[eId] = er;
+  } else {
+    enrollmentMap = await _list(
+      statusFilter,
+      atLookup,
+      arx: arx,
+      drx: drx,
+    );
+  }
+  return enrollmentMap;
+}
+
+Future<void> approve(ArgResults ar, AtClient atClient) async {
   AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
 
-  // First fetch the enrollment request
-  Map? er = await _fetch(eId, atLookup);
-  if (er == null) {
-    logger.shout('Enrollment ID $eId not found');
+  Map toApprove = await _fetchOrListAndFilter(
+    atLookup,
+    statusFilter: EnrollmentStatus.pending.name, // must be status pending
+    eId: ar[AuthCliArgs.argNameEnrollmentId],
+    arx: ar[AuthCliArgs.argNameAppNameRegex],
+    drx: ar[AuthCliArgs.argNameDeviceNameRegex],
+  );
+
+  if (toApprove.isEmpty) {
+    logger.shout('No matching enrollment(s) found');
     return;
   }
 
-  stderr.writeln('Fetched enrollment OK: $er');
+  // Iterate through the requests, approve each one
+  for (String eId in toApprove.keys) {
+    Map er = toApprove[eId];
+    logger.shout('Approving enrollmentId $eId');
+    // Then make a 'decision' object using data from the enrollment request
+    EnrollmentRequestDecision decision = EnrollmentRequestDecision.approved(
+        ApprovedRequestDecisionBuilder(
+            enrollmentId: eId,
+            encryptedAPKAMSymmetricKey: er['encryptedAPKAMSymmetricKey']));
 
-  // Then make a 'decision' object using data from the enrollment request
-  EnrollmentRequestDecision decision = EnrollmentRequestDecision.approved(
-      ApprovedRequestDecisionBuilder(
-          enrollmentId: eId,
-          encryptedAPKAMSymmetricKey: er['encryptedAPKAMSymmetricKey']));
-
-  // Finally call approve method via an AtEnrollment object
-  final response = await atAuthBase
-      .atEnrollment(atClient.getCurrentAtSign()!)
-      .approve(decision, atLookup);
-  // 'enroll:approve:{"enrollmentId":"$enrollmentId"}'
-  logger.shout('Server response: $response');
-}
-
-Future<void> deny(ArgResults argResults, AtClient atClient) async {
-  String eId = argResults[AuthCliArgs.argNameEnrollmentId];
-  AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
-  // 'enroll:deny:{"enrollmentId":"$enrollmentId"}'
-  String? response = await atLookup
-      .executeCommand('enroll:deny:{"enrollmentId":"$eId"}\n', auth: true);
-  logger.shout('Server response: $response');
-}
-
-Future<void> denyAllPending(ArgResults argResults, AtClient atClient) async {
-  AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
-  Map json = await _list(EnrollmentStatus.pending.name, atLookup);
-  for (final String eIdKey in json.keys) {
-    String eId = eIdKey.substring(0, eIdKey.indexOf('.'));
-    stderr.writeln('Denying enrollment request: $eId ($eIdKey)');
-    // 'enroll:deny:{"enrollmentId":"$enrollmentId"}'
-    String? response = await atLookup
-        .executeCommand('enroll:deny:{"enrollmentId":"$eId"}\n', auth: true);
-    stderr.writeln('    => Server response: $response');
+    // Finally call approve method via an AtEnrollment object
+    final response = await atAuthBase
+        .atEnrollment(atClient.getCurrentAtSign()!)
+        .approve(decision, atLookup);
+    // 'enroll:approve:{"enrollmentId":"$enrollmentId"}'
+    logger.shout('Server response: $response');
   }
 }
 
-Future<void> revoke(ArgResults argResults, AtClient atClient) async {
-  String eId = argResults[AuthCliArgs.argNameEnrollmentId];
+Future<void> deny(ArgResults ar, AtClient atClient) async {
   AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
-  // 'enroll:revoke:{"enrollmentid":"$enrollmentId"}'
-  String? response = await atLookup
-      .executeCommand('enroll:revoke:{"enrollmentId":"$eId"}\n', auth: true);
-  logger.shout('Server response: $response');
+
+  Map toDeny = await _fetchOrListAndFilter(
+    atLookup,
+    statusFilter: EnrollmentStatus.pending.name, // must be status pending
+    eId: ar[AuthCliArgs.argNameEnrollmentId],
+    arx: ar[AuthCliArgs.argNameAppNameRegex],
+    drx: ar[AuthCliArgs.argNameDeviceNameRegex],
+  );
+
+  if (toDeny.isEmpty) {
+    logger.shout('No matching enrollment(s) found');
+    return;
+  }
+
+  // Iterate through the requests, deny each one
+  for (String eId in toDeny.keys) {
+    logger.shout('Denying enrollmentId $eId');
+    // 'enroll:deny:{"enrollmentId":"$enrollmentId"}'
+    String? response = await atLookup
+        .executeCommand('enroll:deny:{"enrollmentId":"$eId"}\n', auth: true);
+    logger.shout('Server response: $response');
+  }
+}
+
+Future<void> revoke(ArgResults ar, AtClient atClient) async {
+  AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
+
+  Map toRevoke = await _fetchOrListAndFilter(
+    atLookup,
+    statusFilter: EnrollmentStatus.approved.name, // must be status approved
+    eId: ar[AuthCliArgs.argNameEnrollmentId],
+    arx: ar[AuthCliArgs.argNameAppNameRegex],
+    drx: ar[AuthCliArgs.argNameDeviceNameRegex],
+  );
+
+  if (toRevoke.isEmpty) {
+    logger.shout('No matching enrollment(s) found');
+    return;
+  }
+
+  // Iterate through the requests, revoke each one
+  for (String eId in toRevoke.keys) {
+    logger.shout('Revoking enrollmentId $eId');
+    // 'enroll:revoke:{"enrollmentid":"$enrollmentId"}'
+    String? response = await atLookup
+        .executeCommand('enroll:revoke:{"enrollmentId":"$eId"}\n', auth: true);
+    logger.shout('Server response: $response');
+  }
 }
 
 @visibleForTesting

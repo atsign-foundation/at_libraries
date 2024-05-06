@@ -35,7 +35,6 @@ enum AuthCliCommand {
   fetch(usage: 'Fetch a specific enrollment request'),
   approve(usage: 'Approve a pending enrollment request'),
   deny(usage: 'Deny a pending enrollment request'),
-  denyAllPending(usage: 'Deny all pending enrollment requests'),
   revoke(usage: 'Revoke approval of a previously-approved enrollment'),
   enroll(usage: 'Enroll is used when a program needs to authenticate and'
       ' "atKeys" are not available, and "onboard" has already been run'
@@ -81,6 +80,8 @@ class AuthCliArgs {
   static const argNameNamespaceAccessList = 'namespaces';
   static const argNameEnrollmentId = 'enrollmentId';
   static const argNameEnrollmentStatus = 'enrollmentStatus';
+  static const argNameAppNameRegex = 'arx';
+  static const argNameDeviceNameRegex = 'drx';
 
   ArgParser get parser {
     return _aap;
@@ -149,9 +150,6 @@ class AuthCliArgs {
 
       case AuthCliCommand.deny:
         return createDenyCommandParser();
-
-      case AuthCliCommand.denyAllPending:
-        return createDenyAllPendingCommandParser();
 
       case AuthCliCommand.revoke:
         return createRevokeCommandParser();
@@ -310,6 +308,8 @@ class AuthCliArgs {
       allowed: EnrollmentStatus.values.map((c) => c.name).toList(),
       mandatory: false,
     );
+    _addAppNameRegexOption(p);
+    _addDeviceNameRegexOption(p);
     return p;
   }
 
@@ -317,16 +317,32 @@ class AuthCliArgs {
   @visibleForTesting
   ArgParser createFetchCommandParser() {
     ArgParser p = createSharedArgParser(hide: true);
-    _addEnrollmentIdOption(p);
+    _addEnrollmentIdOption(p, mandatory: true);
     return p;
   }
 
-  void _addEnrollmentIdOption(ArgParser p) {
+  void _addAppNameRegexOption(ArgParser p) {
+    p.addOption(
+      argNameAppNameRegex,
+      help: 'Filter responses via regular expression on app name',
+      mandatory: false,
+    );
+  }
+
+  void _addDeviceNameRegexOption(ArgParser p) {
+    p.addOption(
+      argNameDeviceNameRegex,
+      help: 'Filter responses via regular expression on device name',
+      mandatory: false,
+    );
+  }
+
+  void _addEnrollmentIdOption(ArgParser p, {bool mandatory = false}) {
     p.addOption(
       argNameEnrollmentId,
       abbr: 'i',
       help: 'The ID of the enrollment request',
-      mandatory: true,
+      mandatory: mandatory,
     );
   }
 
@@ -335,6 +351,8 @@ class AuthCliArgs {
   ArgParser createApproveCommandParser() {
     ArgParser p = createSharedArgParser(hide: true);
     _addEnrollmentIdOption(p);
+    _addAppNameRegexOption(p);
+    _addDeviceNameRegexOption(p);
     return p;
   }
 
@@ -343,13 +361,8 @@ class AuthCliArgs {
   ArgParser createDenyCommandParser() {
     ArgParser p = createSharedArgParser(hide: true);
     _addEnrollmentIdOption(p);
-    return p;
-  }
-
-  /// auth deny all pending
-  @visibleForTesting
-  ArgParser createDenyAllPendingCommandParser() {
-    ArgParser p = createSharedArgParser(hide: true);
+    _addAppNameRegexOption(p);
+    _addDeviceNameRegexOption(p);
     return p;
   }
 
@@ -358,6 +371,8 @@ class AuthCliArgs {
   ArgParser createRevokeCommandParser() {
     ArgParser p = createSharedArgParser(hide: true);
     _addEnrollmentIdOption(p);
+    _addAppNameRegexOption(p);
+    _addDeviceNameRegexOption(p);
     return p;
   }
 }
