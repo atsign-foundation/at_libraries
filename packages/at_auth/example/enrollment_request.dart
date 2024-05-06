@@ -23,7 +23,6 @@ void main(List<String> args) async {
           help: 'root server domain',
           mandatory: false,
           defaultsTo: 'root.atsign.org');
-    ;
     final argResults = parser.parse(args);
     AtLookUp atLookUp =
         AtLookupImpl(argResults['atsign'], argResults['rootDomain'], 64);
