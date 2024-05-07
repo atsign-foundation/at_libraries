@@ -35,7 +35,11 @@ class CLIBase {
         help: 'Root Domain',
         defaultsTo: 'root.atsign.org')
     ..addFlag('verbose', abbr: 'v', negatable: false, help: 'More logging')
-    ..addFlag('never-sync', negatable: false, help: 'Do not run sync');
+    ..addFlag('never-sync', negatable: false, help: 'Do not run sync')
+    ..addOption('max-connect-attempts',
+        help: 'Number of times to attempt to initially connect to atServer.'
+            ' Note: there is a 3-second delay between connection attempts.',
+        defaultsTo: "100");
 
   /// Constructs a CLIBase from a list of command-line arguments
   /// and calls [init] on it.
@@ -61,15 +65,17 @@ class CLIBase {
     }
 
     CLIBase cliBase = CLIBase(
-        atSign: parsedArgs['atsign'],
-        atKeysFilePath: parsedArgs['key-file'],
-        nameSpace: parsedArgs['namespace'],
-        rootDomain: parsedArgs['root-domain'],
-        homeDir: getHomeDirectory(),
-        storageDir: parsedArgs['storage-dir'],
-        verbose: parsedArgs['verbose'],
-        cramSecret: parsedArgs['cram-secret'],
-        syncDisabled: parsedArgs['never-sync']);
+      atSign: parsedArgs['atsign'],
+      atKeysFilePath: parsedArgs['key-file'],
+      nameSpace: parsedArgs['namespace'],
+      rootDomain: parsedArgs['root-domain'],
+      homeDir: getHomeDirectory(),
+      storageDir: parsedArgs['storage-dir'],
+      verbose: parsedArgs['verbose'],
+      cramSecret: parsedArgs['cram-secret'],
+      syncDisabled: parsedArgs['never-sync'],
+      maxConnectAttempts: int.parse(parsedArgs['max-connect-attempts']),
+    );
 
     await cliBase.init();
 
@@ -85,6 +91,7 @@ class CLIBase {
   final String? downloadDir;
   final String? cramSecret;
   final bool syncDisabled;
+  final int maxConnectAttempts;
 
   late final String atKeysFilePathToUse;
   late final String localStoragePathToUse;
@@ -111,17 +118,19 @@ class CLIBase {
   ///     cliBase.logger.logger.level = Level.FINEST;
   /// ```
   /// Throws an [IllegalArgumentException] if the parameters fail validation.
-  CLIBase(
-      {required String atSign,
-      required this.nameSpace,
-      required this.rootDomain,
-      this.homeDir,
-      this.verbose = false,
-      this.atKeysFilePath,
-      this.storageDir,
-      this.downloadDir,
-      this.cramSecret,
-      this.syncDisabled = false}) {
+  CLIBase({
+    required String atSign,
+    required this.nameSpace,
+    required this.rootDomain,
+    this.homeDir,
+    this.verbose = false,
+    this.atKeysFilePath,
+    this.storageDir,
+    this.downloadDir,
+    this.cramSecret,
+    this.syncDisabled = false,
+    this.maxConnectAttempts = 5,
+  }) {
     this.atSign = AtUtils.fixAtSign(atSign);
     if (homeDir == null) {
       if (atKeysFilePath == null) {
@@ -188,9 +197,11 @@ class CLIBase {
 
     bool authenticated = false;
     Duration retryDuration = Duration(seconds: 3);
-    while (!authenticated) {
+    int attempts = 0;
+    while (!authenticated && attempts < maxConnectAttempts) {
       try {
         stderr.write(chalk.brightBlue('\r\x1b[KConnecting ... '));
+        attempts++;
         await Future.delayed(Duration(
             milliseconds:
                 1000)); // Pause just long enough for the retry to be visible
