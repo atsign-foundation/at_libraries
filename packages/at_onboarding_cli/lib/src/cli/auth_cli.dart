@@ -193,15 +193,17 @@ Future<AtClient> createAtClient(ArgResults ar) async {
   String nameSpace = 'at_auth_cli';
   String atSign = AtUtils.fixAtSign(ar[AuthCliArgs.argNameAtSign]);
   CLIBase cliBase = CLIBase(
-      atSign: atSign,
-      atKeysFilePath: ar[AuthCliArgs.argNameAtKeys],
-      nameSpace: nameSpace,
-      rootDomain: ar[AuthCliArgs.argNameAtDirectoryFqdn],
-      homeDir: getHomeDirectory(),
-      storageDir: '${getHomeDirectory()}/.atsign/$nameSpace/$atSign/storage'
-          .replaceAll('/', Platform.pathSeparator),
-      verbose: ar[AuthCliArgs.argNameVerbose] || ar[AuthCliArgs.argNameDebug],
-      syncDisabled: true);
+    atSign: atSign,
+    atKeysFilePath: ar[AuthCliArgs.argNameAtKeys],
+    nameSpace: nameSpace,
+    rootDomain: ar[AuthCliArgs.argNameAtDirectoryFqdn],
+    homeDir: getHomeDirectory(),
+    storageDir: '${getHomeDirectory()}/.atsign/$nameSpace/$atSign/storage'
+        .replaceAll('/', Platform.pathSeparator),
+    verbose: ar[AuthCliArgs.argNameVerbose] || ar[AuthCliArgs.argNameDebug],
+    syncDisabled: true,
+    maxConnectAttempts: 10, // 10 * 3 == 30 seconds
+  );
 
   await cliBase.init();
 
@@ -448,13 +450,13 @@ Future<Map> _list(
       final e = unfiltered[ek];
       String appName = e['appName'] as String;
       if (ar != null) {
-        if (! ar.hasMatch(appName)) {
+        if (!ar.hasMatch(appName)) {
           continue;
         }
       }
       String deviceName = e['deviceName'] as String;
       if (dr != null) {
-        if (! dr.hasMatch(deviceName)) {
+        if (!dr.hasMatch(deviceName)) {
           continue;
         }
       }
