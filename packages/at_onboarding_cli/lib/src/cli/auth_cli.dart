@@ -310,6 +310,7 @@ Future<void> setSpp(ArgResults argResults, AtClient atClient) async {
   // send command 'otp:put:$spp'
   String? response =
       await atLookup.executeCommand('otp:put:$spp\n', auth: true);
+
   logger.shout('Server response: $response');
 }
 
@@ -319,7 +320,11 @@ Future<void> generateOtp(ArgResults argResults, AtClient atClient) async {
 
   // send command 'otp:get[:ttl:$ttl]'
   String? response = await atLookup.executeCommand('otp:get\n', auth: true);
-  logger.shout('Server response: $response');
+  if (response != null && response.startsWith('data:')) {
+    stdout.writeln(response.substring('data:'.length));
+  } else {
+    logger.shout('Failed to generate OTP: server response was $response');
+  }
 }
 
 /// Only usable if there are atKeys already available.
