@@ -82,6 +82,7 @@ class AuthCliArgs {
   static const argNameEnrollmentStatus = 'enrollmentStatus';
   static const argNameAppNameRegex = 'arx';
   static const argNameDeviceNameRegex = 'drx';
+  static const argNameMaxConnectAttempts = 'mca';
 
   ArgParser get parser {
     return _aap;
@@ -201,6 +202,14 @@ class AuthCliArgs {
       help: 'FINEST-level logging',
       negatable: false,
       hide: true,
+    );
+    p.addOption(
+      argNameMaxConnectAttempts,
+      help: 'Max # attempts to make initial connection to atServer.'
+          ' Note: there is a 3-second delay between connection attempts.',
+      mandatory: false,
+      defaultsTo: "10",
+      hide: hide,
     );
     p.addOption(
       argNameRegistrarFqdn,
