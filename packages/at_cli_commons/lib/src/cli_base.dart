@@ -11,6 +11,7 @@ import 'package:logging/logging.dart';
 import 'package:version/version.dart';
 
 class CLIBase {
+  static const defaultMaxConnectAttempts = 20;
   /// An ArgParser which has all of the options and flags required by [CLIBase]
   /// Used by [fromCommandLineArgs] if the `parser` parameter isn't supplied.
   static final ArgParser argsParser = ArgParser()
@@ -39,7 +40,7 @@ class CLIBase {
     ..addOption('max-connect-attempts',
         help: 'Number of times to attempt to initially connect to atServer.'
             ' Note: there is a 3-second delay between connection attempts.',
-        defaultsTo: "100");
+        defaultsTo: defaultMaxConnectAttempts.toString());
 
   /// Constructs a CLIBase from a list of command-line arguments
   /// and calls [init] on it.
@@ -129,7 +130,7 @@ class CLIBase {
     this.downloadDir,
     this.cramSecret,
     this.syncDisabled = false,
-    this.maxConnectAttempts = 5,
+    this.maxConnectAttempts = defaultMaxConnectAttempts,
   }) {
     this.atSign = AtUtils.fixAtSign(atSign);
     if (homeDir == null) {

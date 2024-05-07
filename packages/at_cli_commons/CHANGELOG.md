@@ -1,8 +1,8 @@
 ## 1.1.0
 
-- feat: Add `maxConnectAttempts` parameter to CLIBase. The default is 100,
-  which means 20 attempts to connect, with a 3-second delay between attempts.
-  In scripted situations, this is important as the previous behaviour (retry
+- feat: Add `maxConnectAttempts` parameter to CLIBase. The default is 20,
+  i.e. 20 attempts to connect, with a 3-second delay between attempts. When 
+  used in scripts this is important, as the previous behaviour (retry 
   forever) is usually not what is required.
 
 ## 1.0.5
