@@ -252,16 +252,19 @@ Future<void> onboard(ArgResults argResults, {AtOnboardingService? svc}) async {
 ///         to try to auth, and act appropriately on the atServer response
 @visibleForTesting
 Future<void> enroll(ArgResults argResults, {AtOnboardingService? svc}) async {
-  svc ??= createOnboardingService(argResults);
-  logger
-      .info('Root server is ${argResults[AuthCliArgs.argNameAtDirectoryFqdn]}');
-  logger.info(
-      'Registrar url provided is ${argResults[AuthCliArgs.argNameRegistrarFqdn]}');
-
   if (!argResults.wasParsed(AuthCliArgs.argNameAtKeys)) {
     throw ArgumentError('The --${AuthCliArgs.argNameAtKeys} option is'
         ' mandatory for the "enroll" command');
   }
+
+  File f = File(argResults[AuthCliArgs.argNameAtKeys]);
+  if (f.existsSync()) {
+    stderr.writeln('Error: atKeys file ${f.path} already exists');
+    return;
+  }
+
+  svc ??= createOnboardingService(argResults);
+
   Map<String, String> namespaces = {};
   String nsArg = argResults[AuthCliArgs.argNameNamespaceAccessList];
   List<String> nsList = nsArg.split(',');
@@ -272,13 +275,24 @@ Future<void> enroll(ArgResults argResults, {AtOnboardingService? svc}) async {
     namespaces[namespace] = permission;
   }
   try {
-    await svc.enroll(
+    stderr.writeln('Submitting enrollment request');
+    AtEnrollmentResponse er = await svc.sendEnrollRequest(
       argResults[AuthCliArgs.argNameAppName],
       argResults[AuthCliArgs.argNameDeviceName],
       argResults[AuthCliArgs.argNamePasscode],
       namespaces,
-      retryInterval: Duration(seconds: 10),
     );
+    stdout.writeln('Enrollment ID: ${er.enrollmentId}');
+
+    stderr.writeln('Waiting for approval; will check every 10 seconds');
+    await svc.awaitApproval(
+      er,
+      retryInterval: Duration(seconds: 10),
+      logProgress: true,
+    );
+
+    stderr.writeln('Creating atKeys file');
+    await svc.createAtKeysFile(er, allowOverwrite: false);
   } on InvalidDataException catch (e) {
     stderr.writeln(
         '[Error] Enrollment failed. Invalid data provided by user. Please try again\nCause: ${e.message}');
@@ -297,7 +311,6 @@ Future<void> enroll(ArgResults argResults, {AtOnboardingService? svc}) async {
         '  Cause: $e\n'
         '  Please try again or contact support@atsign.com');
   }
-  logger.finest('svc.enroll() has returned');
 }
 
 @visibleForTesting
@@ -313,7 +326,7 @@ Future<void> setSpp(ArgResults argResults, AtClient atClient) async {
   String? response =
       await atLookup.executeCommand('otp:put:$spp\n', auth: true);
 
-  logger.shout('Server response: $response');
+  stdout.writeln('Server response: $response');
 }
 
 @visibleForTesting
@@ -325,7 +338,7 @@ Future<void> generateOtp(ArgResults argResults, AtClient atClient) async {
   if (response != null && response.startsWith('data:')) {
     stdout.writeln(response.substring('data:'.length));
   } else {
-    logger.shout('Failed to generate OTP: server response was $response');
+    stderr.writeln('Failed to generate OTP: server response was $response');
   }
 }
 
@@ -462,10 +475,10 @@ Future<Map> _list(
       }
       filtered[ek.substring(0, ek.indexOf('.'))] = e;
     }
-    logger.shout("Found ${filtered.length} matching enrollment records");
+    stdout.writeln("Found ${filtered.length} matching enrollment records");
     return filtered;
   } else {
-    logger.shout('Exiting: Unexpected server response: $rawResponse');
+    stderr.writeln('Exiting: Unexpected server response: $rawResponse');
     exit(1);
   }
 }
@@ -509,7 +522,7 @@ Future<Map?> _fetch(String eId, AtLookUp atLookup) async {
     // response is a Map
     return jsonDecode(rawResponse);
   } else {
-    logger.shout('Exiting: Unexpected server response: $rawResponse');
+    stderr.writeln('Exiting: Unexpected server response: $rawResponse');
     exit(1);
   }
 }
@@ -520,10 +533,10 @@ Future<void> fetch(ArgResults argResults, AtClient atClient) async {
 
   Map? er = await _fetch(eId, atLookup);
   if (er == null) {
-    logger.shout('Enrollment ID $eId not found');
+    stderr.writeln('Enrollment ID $eId not found');
     return;
   } else {
-    stderr.writeln('Fetched enrollment OK: $er');
+    stdout.writeln('Fetched enrollment OK: $er');
   }
 }
 
@@ -547,7 +560,7 @@ Future<Map> _fetchOrListAndFilter(
     // First fetch the enrollment request
     Map? er = await _fetch(eId, atLookup);
     if (er == null) {
-      logger.shout('Enrollment ID $eId not found');
+      stderr.writeln('Enrollment ID $eId not found');
     }
     enrollmentMap[eId] = er;
   } else {
@@ -573,14 +586,14 @@ Future<void> approve(ArgResults ar, AtClient atClient) async {
   );
 
   if (toApprove.isEmpty) {
-    logger.shout('No matching enrollment(s) found');
+    stderr.writeln('No matching enrollment(s) found');
     return;
   }
 
   // Iterate through the requests, approve each one
   for (String eId in toApprove.keys) {
     Map er = toApprove[eId];
-    logger.shout('Approving enrollmentId $eId');
+    stdout.writeln('Approving enrollmentId $eId');
     // Then make a 'decision' object using data from the enrollment request
     EnrollmentRequestDecision decision = EnrollmentRequestDecision.approved(
         ApprovedRequestDecisionBuilder(
@@ -592,7 +605,7 @@ Future<void> approve(ArgResults ar, AtClient atClient) async {
         .atEnrollment(atClient.getCurrentAtSign()!)
         .approve(decision, atLookup);
     // 'enroll:approve:{"enrollmentId":"$enrollmentId"}'
-    logger.shout('Server response: $response');
+    stdout.writeln('Server response: $response');
   }
 }
 
@@ -608,17 +621,17 @@ Future<void> deny(ArgResults ar, AtClient atClient) async {
   );
 
   if (toDeny.isEmpty) {
-    logger.shout('No matching enrollment(s) found');
+    stderr.writeln('No matching enrollment(s) found');
     return;
   }
 
   // Iterate through the requests, deny each one
   for (String eId in toDeny.keys) {
-    logger.shout('Denying enrollmentId $eId');
+    stdout.writeln('Denying enrollmentId $eId');
     // 'enroll:deny:{"enrollmentId":"$enrollmentId"}'
     String? response = await atLookup
         .executeCommand('enroll:deny:{"enrollmentId":"$eId"}\n', auth: true);
-    logger.shout('Server response: $response');
+    stdout.writeln('Server response: $response');
   }
 }
 
@@ -634,17 +647,17 @@ Future<void> revoke(ArgResults ar, AtClient atClient) async {
   );
 
   if (toRevoke.isEmpty) {
-    logger.shout('No matching enrollment(s) found');
+    stderr.writeln('No matching enrollment(s) found');
     return;
   }
 
   // Iterate through the requests, revoke each one
   for (String eId in toRevoke.keys) {
-    logger.shout('Revoking enrollmentId $eId');
+    stdout.writeln('Revoking enrollmentId $eId');
     // 'enroll:revoke:{"enrollmentid":"$enrollmentId"}'
     String? response = await atLookup
         .executeCommand('enroll:revoke:{"enrollmentId":"$eId"}\n', auth: true);
-    logger.shout('Server response: $response');
+    stdout.writeln('Server response: $response');
   }
 }
 

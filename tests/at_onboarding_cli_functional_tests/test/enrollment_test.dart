@@ -322,8 +322,7 @@ AtOnboardingPreference getPreferenceForEnroll(String atSign) {
         '${Platform.environment['HOME']}/.atsign/keys/${atSign}_buzzkey.atKeys'
     ..appName = 'buzz'
     ..deviceName = 'iphone'
-    ..rootDomain = 'vip.ve.atsign.zone'
-    ..apkamAuthRetryDurationMins = 1;
+    ..rootDomain = 'vip.ve.atsign.zone';
   return atOnboardingPreference;
 }
 
