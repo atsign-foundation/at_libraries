@@ -202,7 +202,8 @@ Future<AtClient> createAtClient(ArgResults ar) async {
         .replaceAll('/', Platform.pathSeparator),
     verbose: ar[AuthCliArgs.argNameVerbose] || ar[AuthCliArgs.argNameDebug],
     syncDisabled: true,
-    maxConnectAttempts: int.parse(ar[AuthCliArgs.argNameMaxConnectAttempts]), // 10 * 3 == 30 seconds
+    maxConnectAttempts: int.parse(
+        ar[AuthCliArgs.argNameMaxConnectAttempts]), // 10 * 3 == 30 seconds
   );
 
   await cliBase.init();

@@ -64,7 +64,8 @@ class Register {
         .add(ValidateOtp())
         .start();
 
-    await activate_cli.main(['-a', params['atsign']!, '-c', params['cramkey']!]);
+    await activate_cli
+        .main(['-a', params['atsign']!, '-c', params['cramkey']!]);
   }
 }
 

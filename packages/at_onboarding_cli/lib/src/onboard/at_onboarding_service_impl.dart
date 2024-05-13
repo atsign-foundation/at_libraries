@@ -130,14 +130,14 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   @override
   Future<at_auth.AtEnrollmentResponse> enroll(
-      String appName,
-      String deviceName,
-      String otp,
-      Map<String, String> namespaces, {
-        Duration retryInterval = AtOnboardingService.defaultApkamRetryInterval,
-        File? atKeysFile,
-        bool allowOverwrite = false,
-      }) async {
+    String appName,
+    String deviceName,
+    String otp,
+    Map<String, String> namespaces, {
+    Duration retryInterval = AtOnboardingService.defaultApkamRetryInterval,
+    File? atKeysFile,
+    bool allowOverwrite = false,
+  }) async {
     AtEnrollmentResponse enrollmentResponse = await sendEnrollRequest(
       appName,
       deviceName,
@@ -159,10 +159,10 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   @override
   Future<File> createAtKeysFile(
-      AtEnrollmentResponse er, {
-        File? atKeysFile,
-        bool allowOverwrite = false,
-      }) async {
+    AtEnrollmentResponse er, {
+    File? atKeysFile,
+    bool allowOverwrite = false,
+  }) async {
     return await _generateAtKeysFile(
       er.atAuthKeys!,
       enrollmentId: er.enrollmentId,

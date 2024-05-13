@@ -5,4 +5,3 @@ const String invalidSppMsg = 'SPP must be $sppFormatHelp';
 bool invalidSpp(String test) {
   return RegExp(sppRegex).allMatches(test).first.group(0) != test;
 }
-

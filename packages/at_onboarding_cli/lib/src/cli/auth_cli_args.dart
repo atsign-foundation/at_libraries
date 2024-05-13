@@ -6,46 +6,50 @@ import 'package:meta/meta.dart';
 
 enum AuthCliCommand {
   help(usage: 'Show help'),
-  onboard(usage: '"onboard" is used when first authenticating to an atServer.'
-      ' It generates "atKeys" (stored to filesystem or keychain) which'
-      ' may be used for authentication thereafter.'
-      '\n\n'
-      'When another program'
-      ' needs to be able to authenticate, it may use the atKeys file if it is'
-      ' available - however when the program is on a different device, or on '
-      ' the same device but in a different, sandboxed app, the recommended'
-      ' approach is to use the "enroll" command.'),
-  otp(usage: 'Generate a one-time passcode which may be used by a single'
-      ' enrollment request.'
-      '\n\n'
-      'Note that the passcode is used only to allow the'
-      ' atServer to identify that an enrollment request is not'
-      ' spurious / malicious / spam - i.e. enrollment requests which have a valid'
-      ' passcode will be accepted.'),
-  spp(usage: 'Set a semi-permanent passcode which may be used by multiple'
-      ' enrollment requests. This is particularly useful when programs will '
-      ' need to be run on many different devices.'
-      '\n\n'
-      'Note that the passcode is used only to allow the'
-      ' atServer to identify that an enrollment request is not'
-      ' spurious / malicious / spam - i.e. enrollment requests which have a valid'
-      ' passcode will be accepted.'),
+  onboard(
+      usage: '"onboard" is used when first authenticating to an atServer.'
+          ' It generates "atKeys" (stored to filesystem or keychain) which'
+          ' may be used for authentication thereafter.'
+          '\n\n'
+          'When another program'
+          ' needs to be able to authenticate, it may use the atKeys file if it is'
+          ' available - however when the program is on a different device, or on '
+          ' the same device but in a different, sandboxed app, the recommended'
+          ' approach is to use the "enroll" command.'),
+  otp(
+      usage: 'Generate a one-time passcode which may be used by a single'
+          ' enrollment request.'
+          '\n\n'
+          'Note that the passcode is used only to allow the'
+          ' atServer to identify that an enrollment request is not'
+          ' spurious / malicious / spam - i.e. enrollment requests which have a valid'
+          ' passcode will be accepted.'),
+  spp(
+      usage: 'Set a semi-permanent passcode which may be used by multiple'
+          ' enrollment requests. This is particularly useful when programs will '
+          ' need to be run on many different devices.'
+          '\n\n'
+          'Note that the passcode is used only to allow the'
+          ' atServer to identify that an enrollment request is not'
+          ' spurious / malicious / spam - i.e. enrollment requests which have a valid'
+          ' passcode will be accepted.'),
   interactive(usage: 'Run in interactive mode'),
   list(usage: 'List enrollment requests'),
   fetch(usage: 'Fetch a specific enrollment request'),
   approve(usage: 'Approve a pending enrollment request'),
   deny(usage: 'Deny a pending enrollment request'),
   revoke(usage: 'Revoke approval of a previously-approved enrollment'),
-  enroll(usage: 'Enroll is used when a program needs to authenticate and'
-      ' "atKeys" are not available, and "onboard" has already been run'
-      ' by another program.'
-      '\n\n'
-      'Enrollment requests require a valid passcode in order'
-      ' for them to be accepted by the atServer; accepted requests will then'
-      ' be delivered to some other program(s) which have'
-      ' permission to approve or deny the requests. Typically that will be'
-      ' the program which first onboarded; however it can also be an enrolled'
-      ' program which has "rw" access to the "__manage" namespace.');
+  enroll(
+      usage: 'Enroll is used when a program needs to authenticate and'
+          ' "atKeys" are not available, and "onboard" has already been run'
+          ' by another program.'
+          '\n\n'
+          'Enrollment requests require a valid passcode in order'
+          ' for them to be accepted by the atServer; accepted requests will then'
+          ' be delivered to some other program(s) which have'
+          ' permission to approve or deny the requests. Typically that will be'
+          ' the program which first onboarded; however it can also be an enrolled'
+          ' program which has "rw" access to the "__manage" namespace.');
 
   const AuthCliCommand({this.usage = ''});
   final String usage;
@@ -159,7 +163,8 @@ class AuthCliArgs {
 
   /// Make an ArgParser with the args which are common to every command
   @visibleForTesting
-  ArgParser createSharedArgParser({required bool hide, bool forOnboard=false}) {
+  ArgParser createSharedArgParser(
+      {required bool hide, bool forOnboard = false}) {
     ArgParser p = ArgParser(
         usageLineLength: stdout.hasTerminal ? stdout.terminalColumns : null);
     p.addOption(
@@ -180,7 +185,8 @@ class AuthCliArgs {
     p.addOption(
       argNameAtKeys,
       abbr: 'k',
-      help: 'Path to atKeys file to create (onboard / enroll) or use (approve / deny / etc)',
+      help:
+          'Path to atKeys file to create (onboard / enroll) or use (approve / deny / etc)',
       mandatory: false,
       hide: hide,
     );
