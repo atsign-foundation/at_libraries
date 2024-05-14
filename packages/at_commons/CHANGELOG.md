@@ -1,3 +1,5 @@
+## 4.0.10
+- chore: deprecate MessageTypeEnum.text
 ## 4.0.9
 - feat: enroll verb syntax change for enroll:revoke:force and added new exception AtEnrollmentRevokeException
 ## 4.0.8
