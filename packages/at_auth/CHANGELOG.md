@@ -1,3 +1,5 @@
+## 2.0.3
+- fix: Add optional parameters to the "atAuth" method in "AtAuthInterface"
 ## 2.0.2
 - fix: set default value for app name and device name if they are not passed in the onboarding request.
 ## 2.0.1

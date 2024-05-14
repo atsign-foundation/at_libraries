@@ -3,18 +3,19 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:at_client/at_client.dart';
-import 'package:at_lookup/at_lookup.dart';
 import 'package:at_demo_data/at_demo_data.dart' as at_demos;
+import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
+import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 import 'package:at_utils/at_utils.dart';
 import 'package:test/test.dart';
-import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 
 var pkamPublicKey;
 var pkamPrivateKey;
 var encryptionPublicKey;
 var encryptionPrivateKey;
 var selfEncryptionKey;
+
 void main() {
   AtSignLogger.root_level = 'info';
   final logger = AtSignLogger('OnboardingEnrollmentTest');
@@ -27,7 +28,6 @@ void main() {
       String atSign = '@naresh🛠';
       //1. Onboard first client
       AtOnboardingPreference preference_1 = getPreferenceForAuth(atSign);
-      preference_1..enableEnrollmentDuringOnboard = true;
       AtOnboardingService? onboardingService_1 =
           AtOnboardingServiceImpl(atSign, preference_1);
       bool status = await onboardingService_1.onboard();
@@ -121,7 +121,6 @@ void main() {
       String atSign = '@ashish🛠';
       //1. Onboard first client
       AtOnboardingPreference preference_1 = getPreferenceForAuth(atSign);
-      preference_1.enableEnrollmentDuringOnboard = false;
       AtOnboardingService? onboardingService_1 =
           AtOnboardingServiceImpl(atSign, preference_1);
       bool status = await onboardingService_1.onboard();
@@ -148,8 +147,7 @@ void main() {
         ..cramSecret = at_demos.cramKeyMap[atSign]
         ..namespace =
             'wavi' // unique identifier that can be used to identify data from your app
-        ..rootDomain = 'vip.ve.atsign.zone'
-        ..enableEnrollmentDuringOnboard = true;
+        ..rootDomain = 'vip.ve.atsign.zone';
 
       AtOnboardingService? onboardingService_1 =
           AtOnboardingServiceImpl(atSign, preference_1);
@@ -174,7 +172,6 @@ void main() {
     String atSign = '@purnima🛠';
     //1. Onboard first client
     AtOnboardingPreference preference_1 = getPreferenceForAuth(atSign);
-    preference_1.enableEnrollmentDuringOnboard = true;
     AtOnboardingService? onboardingService_1 =
         AtOnboardingServiceImpl(atSign, preference_1);
     bool status = await onboardingService_1.onboard();

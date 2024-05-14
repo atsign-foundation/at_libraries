@@ -176,6 +176,11 @@ class AtInvalidEnrollmentException extends AtException {
   AtInvalidEnrollmentException(message) : super(message);
 }
 
+/// Exception thrown when a client tries to revoke its own enrollment
+class AtEnrollmentRevokeException extends AtEnrollmentException {
+  AtEnrollmentRevokeException(message) : super(message);
+}
+
 /// Exception thrown when the enrollment requests exceed the limit
 /// in the given time window
 class AtThrottleLimitExceeded extends AtException {

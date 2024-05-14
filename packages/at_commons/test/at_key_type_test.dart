@@ -98,8 +98,9 @@ void main() {
       var keyTypeList = [];
       var fails = [];
       // keys with atsign
+      keyTypeList.add('shared_key.bob@alice');
+      keyTypeList.add('@bob:shared_key@alice');
       keyTypeList.add('${AtConstants.atBlocklist}@☎️_0002');
-      keyTypeList.add('@bob:${AtConstants.atEncryptionSharedKey}@alice');
       keyTypeList.add('@allen:${AtConstants.atSigningPrivateKey}@allen');
       keyTypeList.add('${AtConstants.atEncryptionPublicKey}@owner');
       keyTypeList.add('public:signing_publickey@alice');
@@ -122,7 +123,7 @@ void main() {
         var type = RegexUtil.keyType(key, false);
         print(key);
         if (type != KeyType.reservedKey) {
-          fails.add('$key classified as $type - actually a reserved key');
+          fails.add('$key classified as $type - should be reservedKey');
         }
       }
       expect(fails, []);
@@ -136,7 +137,8 @@ void main() {
       keyTypeList.add('public:publickey');
       keyTypeList.add('public:signing_publickey');
       keyTypeList.add(AtConstants.atBlocklist);
-      keyTypeList.add('@bob:${AtConstants.atEncryptionSharedKey}');
+      keyTypeList.add('@bob:shared_key');
+      keyTypeList.add('shared_key.bob');
       keyTypeList.add(AtConstants.atEncryptionSharedKey);
       keyTypeList.add('@allen:${AtConstants.atSigningPrivateKey}');
       keyTypeList.add(AtConstants.atSigningPrivateKey);
