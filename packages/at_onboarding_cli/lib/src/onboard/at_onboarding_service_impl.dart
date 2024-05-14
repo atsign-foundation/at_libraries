@@ -233,12 +233,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     try {
       var getPrivateKeyResult =
           await atLookUp.executeCommand(privateKeyCommand, auth: true);
-      if (getPrivateKeyResult == null || getPrivateKeyResult.isEmpty) {
+      getPrivateKeyResult = getPrivateKeyResult?.replaceFirst('data:', '');
+      var privateKeyResultJson = jsonDecode(getPrivateKeyResult!);
+      encryptionPrivateKeyFromServer = privateKeyResultJson['value'];
+      if (encryptionPrivateKeyFromServer == null ||
+          encryptionPrivateKeyFromServer.isEmpty) {
         throw AtEnrollmentException('$privateKeyCommand returned null/empty');
       }
-      getPrivateKeyResult = getPrivateKeyResult.replaceFirst('data:', '');
-      var privateKeyResultJson = jsonDecode(getPrivateKeyResult);
-      encryptionPrivateKeyFromServer = privateKeyResultJson['value'];
     } on Exception catch (e) {
       throw AtEnrollmentException(
           'Exception while getting encrypted private key/self key from server: $e');
@@ -254,15 +255,15 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     try {
       var getSelfEncryptionKeyResult =
           await atLookUp.executeCommand(selfEncryptionKeyCommand, auth: true);
-      if (getSelfEncryptionKeyResult == null ||
-          getSelfEncryptionKeyResult.isEmpty) {
+      getSelfEncryptionKeyResult =
+          getSelfEncryptionKeyResult?.replaceFirst('data:', '');
+      var selfEncryptionKeyResultJson = jsonDecode(getSelfEncryptionKeyResult!);
+      selfEncryptionKeyFromServer = selfEncryptionKeyResultJson['value'];
+      if (selfEncryptionKeyFromServer == null ||
+          selfEncryptionKeyFromServer.isEmpty) {
         throw AtEnrollmentException(
             '$selfEncryptionKeyCommand returned null/empty');
       }
-      getSelfEncryptionKeyResult =
-          getSelfEncryptionKeyResult.replaceFirst('data:', '');
-      var selfEncryptionKeyResultJson = jsonDecode(getSelfEncryptionKeyResult);
-      selfEncryptionKeyFromServer = selfEncryptionKeyResultJson['value'];
     } on Exception catch (e) {
       throw AtEnrollmentException(
           'Exception while getting encrypted private key/self key from server: $e');
@@ -302,7 +303,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         return false;
       } else if (e.message.contains('error:AT0025')) {
         logger.finer(
-            'enrollmentId $enrollmentIdFromServer denied.Exiting pkam retry logic');
+            'enrollmentId $enrollmentIdFromServer denied. Exiting pkam retry logic');
         throw AtEnrollmentException('enrollment denied');
       }
     }
@@ -443,6 +444,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     json.decode(atAuthData).forEach((String key, dynamic value) {
       jsonData[key] = value.toString();
     });
+
+    /// ToDo: real enrollmentId if present in the keys file
     return jsonData;
   }
 
@@ -592,7 +595,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     _atLookUp = null;
     atClient = null;
     logger.info('Closing current instance of at_onboarding_cli (exit code: 0)');
-    exit(0);
+    // exit(0);
   }
 
   @override
