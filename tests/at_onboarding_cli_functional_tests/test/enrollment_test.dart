@@ -194,7 +194,7 @@ void main() {
     expect(totp.length, 6);
     expect(
         totp.contains('0') || totp.contains('o') || totp.contains('O'), false);
-    // check whether otp contains atleast one number and one alphabet
+    // check whether otp contains at least one number and one alphabet
     expect(RegExp(r'^(?=.*[a-zA-Z])(?=.*\d).+$').hasMatch(totp), true);
     //4. enroll second client
     AtOnboardingPreference enrollPreference_2 = getPreferenceForEnroll(atSign);
@@ -322,8 +322,7 @@ AtOnboardingPreference getPreferenceForEnroll(String atSign) {
         '${Platform.environment['HOME']}/.atsign/keys/${atSign}_buzzkey.atKeys'
     ..appName = 'buzz'
     ..deviceName = 'iphone'
-    ..rootDomain = 'vip.ve.atsign.zone'
-    ..apkamAuthRetryDurationMins = 1;
+    ..rootDomain = 'vip.ve.atsign.zone';
   return atOnboardingPreference;
 }
 

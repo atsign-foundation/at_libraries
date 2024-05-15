@@ -15,14 +15,18 @@ Future<void> main(List<String> args) async {
     ..atKeysFilePath = argResults['atKeysPath']
     ..appName = 'buzz'
     ..deviceName = 'iphone'
-    ..rootDomain = 'vip.ve.atsign.zone'
-    ..apkamAuthRetryDurationMins = 1;
+    ..rootDomain = 'vip.ve.atsign.zone';
   AtOnboardingService? onboardingService =
       AtOnboardingServiceImpl(atSign, atOnboardingPreference);
   Map<String, String> namespaces = {"buzz": "rw"};
   // run totp:get from enrolled client and pass the otp
   var enrollmentResponse = await onboardingService.enroll(
-      'buzz', 'iphone', argResults['otp'], namespaces);
+    'buzz',
+    'iphone',
+    argResults['otp'],
+    namespaces,
+    retryInterval: Duration(seconds: 10),
+  );
   print('enrollmentResponse: $enrollmentResponse');
 }
 
