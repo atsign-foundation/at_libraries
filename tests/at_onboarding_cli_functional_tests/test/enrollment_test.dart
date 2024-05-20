@@ -77,17 +77,17 @@ void main() {
       totp = totp.trim();
       logger.finer('otp: $totp');
 
-      //3.3. enroll second client with valid otp
+      //3.3. send enroll request for second client with valid otp
       print ('OnboardingEnrollmentTest: sending enroll request with new OTP');
       var enrollResponse =
-          await onboardingService_2.enroll('buzz', 'iphone', totp, namespaces);
+          await onboardingService_2.sendEnrollRequest('buzz', 'iphone', totp, namespaces);
       logger.finer('enroll response $enrollResponse');
       // enrollment id from the response
       var enrollmentId = enrollResponse.enrollmentId;
       expect(enrollmentId, isNotEmpty);
       expect(enrollResponse.enrollStatus, EnrollmentStatus.pending);
-      var completer = Completer<void>(); // Create a Completer
 
+      var completer = Completer<void>();
       //4. listen for notification from first client and invoke callback which approves the enrollment
       print ('OnboardingEnrollmentTest: listening for request');
       onboardingService_1.atClient!.notificationService
@@ -104,6 +104,14 @@ void main() {
         completer.complete();
       });
       await completer.future;
+
+      // Wait for the enrolling client to successfully connect following approval
+      await onboardingService_2
+          .awaitApproval(enrollResponse, retryInterval: Duration(seconds: 2))
+          .timeout(Duration(seconds: 20));
+
+      // Wait for the enrolling client to generate its keys file
+      await onboardingService_2.createAtKeysFile(enrollResponse);
 
       //5. assert that the keys file is created for enrolled app
       final enrolledClientKeysFile = File(enrollPreference_2.atKeysFilePath!);
