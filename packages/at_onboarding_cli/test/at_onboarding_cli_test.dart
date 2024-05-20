@@ -29,7 +29,7 @@ void main() {
     test('A test to check authenticate true', () async {
       final atSign = '@alice🛠';
       AtOnboardingPreference onboardingPreference = AtOnboardingPreference()
-        ..atKeysFilePath = 'test/data/@alice🛠.atKeys'
+        ..atKeysFilePath = 'test/data/@alice🛠_key.atKeys'
         ..namespace = 'unit_test';
       AtOnboardingService onboardingService =
           AtOnboardingServiceImpl(atSign, onboardingPreference);
