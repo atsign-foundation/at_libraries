@@ -31,7 +31,7 @@ void main() {
       AtOnboardingService? onboardingService_1 =
           AtOnboardingServiceImpl(atSign, preference_1);
 
-      logger.info('OnboardingEnrollmentTest: onboarding $atSign');
+      logger.info('onboarding $atSign');
       bool status = await onboardingService_1.onboard();
       expect(status, true);
 
@@ -45,7 +45,7 @@ void main() {
       expect(keysFileJson['apkamSymmetricKey'], isNotEmpty);
 
       //2. authenticate first client
-      logger.info('OnboardingEnrollmentTest: authenticating $atSign');
+      logger.info('authenticating $atSign using onboarding keys');
       var authResult = await onboardingService_1.authenticate();
       expect(authResult, true);
       await _setLastReceivedNotificationDateTime(
@@ -59,7 +59,7 @@ void main() {
       final onboardingService_2 =
           AtOnboardingServiceImpl(atSign, enrollPreference_2);
 
-      logger.info('OnboardingEnrollmentTest: trying with invalid OTP');
+      logger.info('trying enrollment with invalid OTP');
       await expectLater(
           onboardingService_2.enroll('buzz', 'iphone', totp, namespaces),
           throwsA(predicate((dynamic e) =>
@@ -69,51 +69,56 @@ void main() {
                   .contains('invalid otp. Cannot process enroll request'))));
 
       //3.2 run otp:get from first client
-      logger.info('OnboardingEnrollmentTest: generating new OTP');
+      logger.info('generating new OTP');
       totp = (await onboardingService_1.atClient!
           .getRemoteSecondary()!
           .executeCommand('otp:get\n', auth: true))!;
       totp = totp.replaceFirst('data:', '');
       totp = totp.trim();
-      logger.finer('otp: $totp');
+      logger.info('Got new otp: $totp');
 
-      //3.3. send enroll request for second client with valid otp
-      logger.info('OnboardingEnrollmentTest: sending enroll request with new OTP');
-      var enrollResponse = await onboardingService_2.sendEnrollRequest(
-          'buzz', 'iphone', totp, namespaces);
-      logger.finer('enroll response $enrollResponse');
-      // enrollment id from the response
-      var enrollmentId = enrollResponse.enrollmentId;
-      expect(enrollmentId, isNotEmpty);
-      expect(enrollResponse.enrollStatus, EnrollmentStatus.pending);
-
+      //4.1 Start listening for notification from first client and invoke callback which approves the enrollment
       var completer = Completer<void>();
-      //4. listen for notification from first client and invoke callback which approves the enrollment
-      logger.info('OnboardingEnrollmentTest: listening for request');
+
+      logger.info('OnboardingEnrollmentTest: listening for enrollment requests');
       onboardingService_1.atClient!.notificationService
           .subscribe(regex: '.__manage')
           .listen((notification) async {
         if (completer.isCompleted) {
           return;
         }
-        logger.info('got enroll notification: $notification');
-
         logger.info('OnboardingEnrollmentTest: approving request');
         await _notificationCallback(
             notification, onboardingService_1.atClient!, 'approve');
         completer.complete();
       });
+
+      // 4.2 send enroll request for second client with valid otp
+      logger.info('OnboardingEnrollmentTest: sending enroll request with new OTP');
+      var enrollResponse = await onboardingService_2.sendEnrollRequest(
+          'buzz', 'iphone', totp, namespaces);
+      logger.info('enroll response $enrollResponse');
+      // enrollment id from the response
+      var enrollmentId = enrollResponse.enrollmentId;
+      expect(enrollmentId, isNotEmpty);
+      expect(enrollResponse.enrollStatus, EnrollmentStatus.pending);
+
+      // 4.3 Wait for the approval to happen
+      logger.info('Waiting for the approval to be given');
       await completer.future;
 
-      // Wait for the enrolling client to successfully connect following approval
+      // 4.4 Wait for the enrolling client to successfully connect following approval
+      logger.info('Waiting for the post-approval connection success');
       await onboardingService_2
           .awaitApproval(enrollResponse, retryInterval: Duration(seconds: 2))
           .timeout(Duration(seconds: 20));
 
-      // Wait for the enrolling client to generate its keys file
+      // 4.5 Wait for the enrolling client to generate its keys file
+      logger.info('Creating atKeys file');
       await onboardingService_2.createAtKeysFile(enrollResponse);
 
-      //5. assert that the keys file is created for enrolled app
+      // 4.6 assert that the keys file is created for enrolled app
+      logger.info('Verifying atKeys file');
       final enrolledClientKeysFile = File(enrollPreference_2.atKeysFilePath!);
       while (!await enrolledClientKeysFile.exists()) {
         logger.info('Sleeping for 10 seconds until atKeys file has been created');
@@ -126,14 +131,16 @@ void main() {
           jsonDecode(enrolledClientKeysFileContent);
       expect(enrolledClientKeysFileJson['enrollmentId'], isNotEmpty);
       expect(enrolledClientKeysFileJson['apkamSymmetricKey'], isNotEmpty);
-      //  Authenticate now with the approved enrollmentID
-      // assert that authentication is successful
+
+      // 4.7 Authenticate now with the approved enrollmentID
       logger.info('Authenticating with enrollment atKeys');
       bool authResultWithEnrollment =
           await onboardingService_2.authenticate(enrollmentId: enrollmentId);
       expect(authResultWithEnrollment, true);
       enrolledClientKeysFile.deleteSync();
-    }, timeout: Timeout(Duration(minutes: 3)));
+
+      logger.info('Enroll / approve / auth test completed');
+    });
 
     test(
         'A test to verify pkam authentication is successful when enableEnrollmentDuringOnboard flag is set to false',
