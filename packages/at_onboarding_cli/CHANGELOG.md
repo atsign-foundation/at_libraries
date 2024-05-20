@@ -1,4 +1,4 @@
-## 1.5.1
+## 1.6.0
 - feat: add 'status' command to the activate cli to check the status of an 
   atSign
 ## 1.5.0
