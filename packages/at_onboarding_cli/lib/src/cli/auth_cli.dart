@@ -105,6 +105,9 @@ Future<int> _main(List<String> arguments) async {
         aca.parser.printAllCommandsUsage(showSubCommandParams: true);
         break;
 
+      case AuthCliCommand.status:
+        return await status(commandArgResults);
+
       case AuthCliCommand.onboard:
         // First time an app is connecting to an atServer.
         // Authenticate with cram secret
@@ -186,6 +189,60 @@ Future<int> _main(List<String> arguments) async {
     return 1;
   }
 
+  return 0;
+}
+
+/// Check the status of an atSign - returns
+///  - 4 if the atDirectory cannot be reached
+///  - 3 if atDirectory is reachable but the atSign does not exist
+///  - 2 if the atSign exists but the atServer cannot be reached
+///  - 1 if the atServer is reachable but there is no public:publickey@<atsign>
+///  - 0 if the atServer is reachable and public:publickey@<atsign> exists
+Future<int> status(ArgResults ar) async {
+  String atSign = AtUtils.fixAtSign(ar[AuthCliArgs.argNameAtSign]);
+
+  SecondaryAddressFinder saf = CacheableSecondaryAddressFinder(
+      ar[AuthCliArgs.argNameAtDirectoryFqdn], 64);
+  try {
+    await saf.findSecondary(atSign);
+  } on SecondaryNotFoundException {
+    stderr.writeln('returning 3: atDirectory has no record for $atSign');
+    return 3;
+  } catch (e) {
+    stderr.writeln('returning 4: Caught ${e.runtimeType} : $e');
+    return 4;
+  }
+
+  String? pk;
+  try {
+    AtLookUp al = AtLookupImpl(
+      atSign,
+      ar[AuthCliArgs.argNameAtDirectoryFqdn],
+      64,
+    );
+    try {
+      pk = await al.executeCommand('lookup:publickey$atSign\n', auth: false);
+    } on AtLookUpException catch (e) {
+      final e1 = AtExceptionUtils.get(e.errorCode ?? '', e.errorMessage ?? '');
+      throw e1;
+    }
+  } on SecondaryServerConnectivityException catch (e) {
+    stderr.writeln('returning 2: atServer cannot be reached $atSign ($e)');
+    return 2;
+  } on KeyNotFoundException catch (e) {
+    stderr.writeln('returning 1: $e');
+    return 1;
+  } catch (e) {
+    stderr.writeln('returning 2: Caught unexpected ${e.runtimeType} : $e');
+    return 2;
+  }
+
+  if (pk == null || !pk.startsWith("data:")) {
+    stderr.writeln('returning 1: response was $pk');
+    return 1;
+  }
+
+  stderr.writeln('returning 0: found public:publickey$atSign OK');
   return 0;
 }
 
@@ -400,6 +457,7 @@ Future<void> interactive(ArgResults argResults, AtClient atClient) async {
 
         case AuthCliCommand.onboard:
         case AuthCliCommand.interactive:
+        case AuthCliCommand.status:
         case AuthCliCommand.enroll:
           stderr.writeln('The "${cliCommand.name}" command'
               ' may not be used in interactive session');
