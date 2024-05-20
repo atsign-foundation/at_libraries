@@ -16,9 +16,9 @@ var encryptionPublicKey;
 var encryptionPrivateKey;
 var selfEncryptionKey;
 
+final logger = AtSignLogger('OnboardingEnrollmentTest');
 void main() {
   AtSignLogger.root_level = 'info';
-  final logger = AtSignLogger('OnboardingEnrollmentTest');
   group('A group of tests to assert on authenticate functionality', () {
     test(
         'A test to verify send enroll request, approve enrollment and auth by enrollmentId',
@@ -31,7 +31,7 @@ void main() {
       AtOnboardingService? onboardingService_1 =
           AtOnboardingServiceImpl(atSign, preference_1);
 
-      print ('OnboardingEnrollmentTest: onboarding $atSign');
+      logger.info('OnboardingEnrollmentTest: onboarding $atSign');
       bool status = await onboardingService_1.onboard();
       expect(status, true);
 
@@ -45,7 +45,7 @@ void main() {
       expect(keysFileJson['apkamSymmetricKey'], isNotEmpty);
 
       //2. authenticate first client
-      print ('OnboardingEnrollmentTest: authenticating $atSign');
+      logger.info('OnboardingEnrollmentTest: authenticating $atSign');
       var authResult = await onboardingService_1.authenticate();
       expect(authResult, true);
       await _setLastReceivedNotificationDateTime(
@@ -59,7 +59,7 @@ void main() {
       final onboardingService_2 =
           AtOnboardingServiceImpl(atSign, enrollPreference_2);
 
-      print ('OnboardingEnrollmentTest: trying with invalid OTP');
+      logger.info('OnboardingEnrollmentTest: trying with invalid OTP');
       await expectLater(
           onboardingService_2.enroll('buzz', 'iphone', totp, namespaces),
           throwsA(predicate((dynamic e) =>
@@ -69,7 +69,7 @@ void main() {
                   .contains('invalid otp. Cannot process enroll request'))));
 
       //3.2 run otp:get from first client
-      print ('OnboardingEnrollmentTest: generating new OTP');
+      logger.info('OnboardingEnrollmentTest: generating new OTP');
       totp = (await onboardingService_1.atClient!
           .getRemoteSecondary()!
           .executeCommand('otp:get\n', auth: true))!;
@@ -78,9 +78,9 @@ void main() {
       logger.finer('otp: $totp');
 
       //3.3. send enroll request for second client with valid otp
-      print ('OnboardingEnrollmentTest: sending enroll request with new OTP');
-      var enrollResponse =
-          await onboardingService_2.sendEnrollRequest('buzz', 'iphone', totp, namespaces);
+      logger.info('OnboardingEnrollmentTest: sending enroll request with new OTP');
+      var enrollResponse = await onboardingService_2.sendEnrollRequest(
+          'buzz', 'iphone', totp, namespaces);
       logger.finer('enroll response $enrollResponse');
       // enrollment id from the response
       var enrollmentId = enrollResponse.enrollmentId;
@@ -89,7 +89,7 @@ void main() {
 
       var completer = Completer<void>();
       //4. listen for notification from first client and invoke callback which approves the enrollment
-      print ('OnboardingEnrollmentTest: listening for request');
+      logger.info('OnboardingEnrollmentTest: listening for request');
       onboardingService_1.atClient!.notificationService
           .subscribe(regex: '.__manage')
           .listen((notification) async {
@@ -98,7 +98,7 @@ void main() {
         }
         logger.info('got enroll notification: $notification');
 
-        print('OnboardingEnrollmentTest: approving request');
+        logger.info('OnboardingEnrollmentTest: approving request');
         await _notificationCallback(
             notification, onboardingService_1.atClient!, 'approve');
         completer.complete();
@@ -116,7 +116,7 @@ void main() {
       //5. assert that the keys file is created for enrolled app
       final enrolledClientKeysFile = File(enrollPreference_2.atKeysFilePath!);
       while (!await enrolledClientKeysFile.exists()) {
-        print('Sleeping for 10 seconds until atKeys file has been created');
+        logger.info('Sleeping for 10 seconds until atKeys file has been created');
         await Future.delayed(Duration(seconds: 10));
       }
       expect(await enrolledClientKeysFile.exists(), true);
@@ -128,7 +128,7 @@ void main() {
       expect(enrolledClientKeysFileJson['apkamSymmetricKey'], isNotEmpty);
       //  Authenticate now with the approved enrollmentID
       // assert that authentication is successful
-      print('Authenticating with enrollment atKeys');
+      logger.info('Authenticating with enrollment atKeys');
       bool authResultWithEnrollment =
           await onboardingService_2.authenticate(enrollmentId: enrollmentId);
       expect(authResultWithEnrollment, true);
@@ -251,7 +251,7 @@ void main() {
 
 Future<void> _notificationCallback(
     AtNotification notification, AtClient atClient, String response) async {
-  print('enroll notification received: ${notification.toString()}');
+  logger.info('enroll notification received: ${notification.toString()}');
   final notificationKey = notification.key;
   final enrollmentId =
       notificationKey.substring(0, notificationKey.indexOf('.new.enrollments'));
@@ -276,15 +276,15 @@ Future<void> _notificationCallback(
       encryptedDefaultSelfEncKey;
   if (response == 'approve') {
     enrollRequest = 'enroll:approve:${jsonEncode(enrollParamsJson)}\n';
-    print('enroll approval request to server: $enrollRequest');
+    logger.info('enroll approval request to server: $enrollRequest');
   } else {
     enrollRequest = 'enroll:deny:${jsonEncode(enrollParamsJson)}\n';
-    print('enroll denial request $enrollRequest');
+    logger.info('enroll denial request $enrollRequest');
   }
   String? enrollResponse = await atClient
       .getRemoteSecondary()!
       .executeCommand(enrollRequest, auth: true);
-  print('enroll Response from server: $enrollResponse');
+  logger.info('enroll Response from server: $enrollResponse');
   expect(enrollResponse, isNotEmpty);
   enrollResponse = enrollResponse!.replaceFirst('data:', '');
   var enrollResponseJson = jsonDecode(enrollResponse);
