@@ -56,8 +56,14 @@ Future<void> _notificationCallback(AtNotification notification,
   var enrollParamsJson = {};
   enrollParamsJson['enrollmentId'] = enrollmentId;
   if (approveResponse == 'yes') {
-    final encryptedAPKAMSymmetricKey =
+    var encryptedAPKAMSymmetricKey =
         jsonDecode(notification.value!)['encryptedAPKAMSymmetricKey'];
+    // workaround for a server issue where it may send encryptedAPKAMSymmetricKey or encryptedApkamSymmetricKey
+    if (encryptedAPKAMSymmetricKey == null ||
+        encryptedAPKAMSymmetricKey.isEmpty) {
+      encryptedAPKAMSymmetricKey =
+          jsonDecode(notification.value!)['encryptedApkamSymmetricKey'];
+    }
     final apkamSymmetricKey = EncryptionUtil.decryptKey(
         encryptedAPKAMSymmetricKey, atAuthKeys.defaultEncryptionPrivateKey!);
     print('decrypted apkam symmetric key: $apkamSymmetricKey');
