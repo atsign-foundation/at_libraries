@@ -161,7 +161,7 @@ void main() {
   });
 
   group('A group of tests to verify activate_cli', () {
-    String atSign = '@colin🛠';
+    String atSign = '@murali🛠';
     AtOnboardingPreference onboardingPreference = getPreferences(atSign);
     AtOnboardingService onboardingService =
         OnboardingServiceImplOverride(atSign, onboardingPreference);
