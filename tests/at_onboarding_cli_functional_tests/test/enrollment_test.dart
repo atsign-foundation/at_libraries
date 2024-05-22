@@ -162,7 +162,9 @@ void main() {
     }, timeout: Timeout(Duration(minutes: 10)));
 
     test(
-        'A test to verify an onboarding exception is thrown when enableEnrollmentDuringOnboard is set to true and deviceName and appName are not passed',
+        'A test to verify an onboarding exception is NOT thrown'
+            ' when enableEnrollmentDuringOnboard is set to true'
+            ' and deviceName and appName are not passed',
         () async {
       // if onboard is testing use distinct demo atsign per test,
       // since cram keys get deleted on server for already onboarded atsign
@@ -180,13 +182,8 @@ void main() {
 
       AtOnboardingService? onboardingService_1 =
           AtOnboardingServiceImpl(atSign, preference_1);
-      expect(
-          () async => await onboardingService_1.onboard(),
-          throwsA(predicate((dynamic e) =>
-              e is AtOnboardingException &&
-              e.message ==
-                  'appName and deviceName are mandatory for onboarding. Please set the params in AtOnboardingPreference')));
-    }, timeout: Timeout(Duration(minutes: 10)));
+      await onboardingService_1.onboard();
+    });
 
     tearDown(() async {
       await tearDownFunc();
@@ -225,35 +222,42 @@ void main() {
         totp.contains('0') || totp.contains('o') || totp.contains('O'), false);
     // check whether otp contains at least one number and one alphabet
     expect(RegExp(r'^(?=.*[a-zA-Z])(?=.*\d).+$').hasMatch(totp), true);
-    //4. enroll second client
+
+    var completer = Completer<void>(); // Create a Completer
+
+    //4. Subscribe to enrollment notifications; we will deny it when it arrives
+    onboardingService_1.atClient!.notificationService
+        .subscribe(regex: '.__manage')
+        .listen(expectAsync1((notification) async {
+      logger.finer('got enroll notification');
+      expect(notification.value, isNotNull);
+      var notificationValueJson = jsonDecode(notification.value!);
+      expect(
+          notificationValueJson['encryptedApkamSymmetricKey'], isNotEmpty);
+      expect(notificationValueJson['appName'], 'buzz');
+      expect(notificationValueJson['deviceName'], 'iphone');
+      expect(notificationValueJson['namespace']['buzz'], 'rw');
+      await _notificationCallback(
+          notification, onboardingService_1.atClient!, 'deny');
+      completer.complete();
+    }, count: 1, max: -1));
+
+    //5. enroll second client
     AtOnboardingPreference enrollPreference_2 = getPreferenceForEnroll(atSign);
     final onboardingService_2 =
         AtOnboardingServiceImpl(atSign, enrollPreference_2);
 
-    var enrollResponse =
-        await onboardingService_2.enroll('buzz', 'iphone', totp, namespaces);
+    var enrollResponse = await onboardingService_2.enroll(
+      'buzz',
+      'iphone',
+      totp,
+      namespaces,
+      retryInterval: Duration(seconds: 5),
+    );
     logger.finer('enroll response $enrollResponse');
 
-    var completer = Completer<void>(); // Create a Completer
-
-    //5. listen for notification from first client and invoke callback which denies the enrollment
-    onboardingService_1.atClient!.notificationService
-        .subscribe(regex: '.__manage')
-        .listen(expectAsync1((notification) async {
-          logger.finer('got enroll notification');
-          expect(notification.value, isNotNull);
-          var notificationValueJson = jsonDecode(notification.value!);
-          expect(
-              notificationValueJson['encryptedApkamSymmetricKey'], isNotEmpty);
-          expect(notificationValueJson['appName'], 'buzz');
-          expect(notificationValueJson['deviceName'], 'iphone');
-          expect(notificationValueJson['namespace']['buzz'], 'rw');
-          await _notificationCallback(
-              notification, onboardingService_1.atClient!, 'deny');
-          completer.complete();
-        }, count: 1, max: -1));
     await completer.future;
-  }, timeout: Timeout(Duration(minutes: 5)));
+  });
 }
 
 Future<void> _notificationCallback(
