@@ -101,7 +101,7 @@ jobs:
   functional_tests_at_onboarding_cli:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         package:
           - at_onboarding_cli_functional_tests
