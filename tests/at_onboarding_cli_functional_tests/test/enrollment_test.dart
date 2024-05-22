@@ -18,7 +18,7 @@ var selfEncryptionKey;
 final logger = AtSignLogger('OnboardingEnrollmentTest');
 
 void main() {
-  AtSignLogger.root_level = 'info';
+  AtSignLogger.root_level = 'WARNING';
   group('A group of tests to assert on authenticate functionality', () {
     test(
         'A test to verify send enroll request, approve enrollment and auth by enrollmentId',
