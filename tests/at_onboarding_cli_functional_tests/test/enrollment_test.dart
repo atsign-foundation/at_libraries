@@ -249,16 +249,25 @@ void main() {
     final onboardingService_2 =
         AtOnboardingServiceImpl(atSign, enrollPreference_2);
 
-    await expectLater(
-        onboardingService_2.enroll(
-          'buzz',
-          'iphone',
-          totp,
-          namespaces,
-          retryInterval: Duration(seconds: 5),
-        ),
-        throwsA(predicate((dynamic e) =>
-            e is AtEnrollmentException && e.message == 'enrollment denied')));
+    // await expectLater(
+    //     onboardingService_2.enroll(
+    //       'buzz',
+    //       'iphone',
+    //       totp,
+    //       namespaces,
+    //       retryInterval: Duration(seconds: 5),
+    //     ),
+    //     throwsA(predicate((dynamic e) =>
+    //         e is AtEnrollmentException && e.message == 'enrollment denied')));
+
+    // quick check to verify that the fail-fast strategy change has the desired effect
+    await onboardingService_2.enroll(
+      'buzz',
+      'iphone',
+      totp,
+      namespaces,
+      retryInterval: Duration(seconds: 5),
+    );
 
     await completer.future;
   });
