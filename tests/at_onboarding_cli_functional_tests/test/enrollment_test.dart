@@ -6,7 +6,6 @@ import 'package:at_client/at_client.dart';
 import 'package:at_demo_data/at_demo_data.dart' as at_demos;
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
-import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 import 'package:at_utils/at_utils.dart';
 import 'package:test/test.dart';
 
@@ -17,6 +16,7 @@ var encryptionPrivateKey;
 var selfEncryptionKey;
 
 final logger = AtSignLogger('OnboardingEnrollmentTest');
+
 void main() {
   AtSignLogger.root_level = 'info';
   group('A group of tests to assert on authenticate functionality', () {
@@ -80,7 +80,8 @@ void main() {
       //4.1 Start listening for notification from first client and invoke callback which approves the enrollment
       var completer = Completer<void>();
 
-      logger.info('OnboardingEnrollmentTest: listening for enrollment requests');
+      logger
+          .info('OnboardingEnrollmentTest: listening for enrollment requests');
       onboardingService_1.atClient!.notificationService
           .subscribe(regex: '.__manage')
           .listen((notification) async {
@@ -94,7 +95,8 @@ void main() {
       });
 
       // 4.2 send enroll request for second client with valid otp
-      logger.info('OnboardingEnrollmentTest: sending enroll request with new OTP');
+      logger.info(
+          'OnboardingEnrollmentTest: sending enroll request with new OTP');
       var enrollResponse = await onboardingService_2.sendEnrollRequest(
           'buzz', 'iphone', totp, namespaces);
       logger.info('enroll response $enrollResponse');
@@ -121,7 +123,8 @@ void main() {
       logger.info('Verifying atKeys file');
       final enrolledClientKeysFile = File(enrollPreference_2.atKeysFilePath!);
       while (!await enrolledClientKeysFile.exists()) {
-        logger.info('Sleeping for 10 seconds until atKeys file has been created');
+        logger
+            .info('Sleeping for 10 seconds until atKeys file has been created');
         await Future.delayed(Duration(seconds: 10));
       }
       expect(await enrolledClientKeysFile.exists(), true);
@@ -163,9 +166,8 @@ void main() {
 
     test(
         'A test to verify an onboarding exception is NOT thrown'
-            ' when enableEnrollmentDuringOnboard is set to true'
-            ' and deviceName and appName are not passed',
-        () async {
+        ' when enableEnrollmentDuringOnboard is set to true'
+        ' and deviceName and appName are not passed', () async {
       // if onboard is testing use distinct demo atsign per test,
       // since cram keys get deleted on server for already onboarded atsign
       String atSign = '@colin🛠';
@@ -229,18 +231,18 @@ void main() {
     onboardingService_1.atClient!.notificationService
         .subscribe(regex: '.__manage')
         .listen(expectAsync1((notification) async {
-      logger.finer('got enroll notification');
-      expect(notification.value, isNotNull);
-      var notificationValueJson = jsonDecode(notification.value!);
-      expect(
-          notificationValueJson['encryptedApkamSymmetricKey'], isNotEmpty);
-      expect(notificationValueJson['appName'], 'buzz');
-      expect(notificationValueJson['deviceName'], 'iphone');
-      expect(notificationValueJson['namespace']['buzz'], 'rw');
-      await _notificationCallback(
-          notification, onboardingService_1.atClient!, 'deny');
-      completer.complete();
-    }, count: 1, max: -1));
+          logger.finer('got enroll notification');
+          expect(notification.value, isNotNull);
+          var notificationValueJson = jsonDecode(notification.value!);
+          expect(
+              notificationValueJson['encryptedApkamSymmetricKey'], isNotEmpty);
+          expect(notificationValueJson['appName'], 'buzz');
+          expect(notificationValueJson['deviceName'], 'iphone');
+          expect(notificationValueJson['namespace']['buzz'], 'rw');
+          await _notificationCallback(
+              notification, onboardingService_1.atClient!, 'deny');
+          completer.complete();
+        }, count: 1, max: -1));
 
     //5. enroll second client
     AtOnboardingPreference enrollPreference_2 = getPreferenceForEnroll(atSign);
@@ -256,8 +258,7 @@ void main() {
           retryInterval: Duration(seconds: 5),
         ),
         throwsA(predicate((dynamic e) =>
-            e is AtEnrollmentException &&
-            e.message == 'enrollment denied')));
+            e is AtEnrollmentException && e.message == 'enrollment denied')));
 
     await completer.future;
   });

@@ -5,7 +5,8 @@ import 'package:at_client/at_client.dart';
 import 'package:at_demo_data/at_demo_data.dart' as at_demos;
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
-import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart' as activate_cli;
+import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart'
+    as activate_cli;
 import 'package:at_utils/at_utils.dart';
 import 'package:test/test.dart';
 
@@ -163,7 +164,7 @@ void main() {
     String atSign = '@colin🛠';
     AtOnboardingPreference onboardingPreference = getPreferences(atSign);
     AtOnboardingService onboardingService =
-    OnboardingServiceImplOverride(atSign, onboardingPreference);
+        OnboardingServiceImplOverride(atSign, onboardingPreference);
     test(
         'A test to verify atSign is activated and .atKeys file is generated using activate_cli',
         () async {
