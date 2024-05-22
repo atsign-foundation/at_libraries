@@ -247,14 +247,17 @@ void main() {
     final onboardingService_2 =
         AtOnboardingServiceImpl(atSign, enrollPreference_2);
 
-    var enrollResponse = await onboardingService_2.enroll(
-      'buzz',
-      'iphone',
-      totp,
-      namespaces,
-      retryInterval: Duration(seconds: 5),
-    );
-    logger.finer('enroll response $enrollResponse');
+    await expectLater(
+        onboardingService_2.enroll(
+          'buzz',
+          'iphone',
+          totp,
+          namespaces,
+          retryInterval: Duration(seconds: 5),
+        ),
+        throwsA(predicate((dynamic e) =>
+            e is AtEnrollmentException &&
+            e.message == 'enrollment denied')));
 
     await completer.future;
   });
