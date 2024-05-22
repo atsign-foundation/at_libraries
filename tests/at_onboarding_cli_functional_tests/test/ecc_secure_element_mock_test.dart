@@ -12,7 +12,7 @@ import 'onboarding_service_impl_override.dart';
 
 /// Usage: dart main.dart <cram_secret>
 void main() {
-  AtSignLogger.root_level = 'FINER';
+  AtSignLogger.root_level = 'INFO';
   var logger = AtSignLogger('OnboardSecureElement');
 
   final atSign = '@egcreditbureau🛠'.trim();

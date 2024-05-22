@@ -25,7 +25,7 @@ void main() {
     registerFallbackValue(FakeAtAuthRequest());
   });
   group('A group of tests to verify at_chops creation in onboarding_cli', () {
-    AtSignLogger.root_level = 'FINER';
+    AtSignLogger.root_level = 'INFO';
     test('A test to check authenticate true', () async {
       final atSign = '@alice🛠';
       AtOnboardingPreference onboardingPreference = AtOnboardingPreference()

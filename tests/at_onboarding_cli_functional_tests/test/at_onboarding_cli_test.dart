@@ -15,7 +15,7 @@ import 'onboarding_service_impl_override.dart';
 final String atKeysFilePath = '${Platform.environment['HOME']}/.atsign/keys';
 Map<String, bool> keysCreatedMap = {};
 void main() {
-  AtSignLogger.root_level = 'finer';
+  AtSignLogger.root_level = 'INFO';
   // These group of tests run on docker container with only cram key available on secondary
   // Perform cram auth and update keys manually.
   Future<void> _createKeys(String atSign) async {
@@ -146,9 +146,9 @@ void main() {
       AtOnboardingService atOnboardingService =
           AtOnboardingServiceImpl(atSign, atOnboardingPreference);
       bool status = await atOnboardingService.onboard();
-      expect(true, status);
+      expect(status, true);
       bool status2 = await atOnboardingService.authenticate();
-      expect(true, status2);
+      expect(status2, true);
       expect(await atOnboardingService.isOnboarded(), true);
 
       /// Assert .atKeys file is generated for the atSign
