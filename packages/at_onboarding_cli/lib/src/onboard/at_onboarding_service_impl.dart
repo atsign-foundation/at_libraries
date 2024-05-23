@@ -103,7 +103,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     await _waitUntilSecondaryCreated(atLookUpImpl);
 
     if (await isOnboarded()) {
-      throw AtActivateException('atsign is already activated');
+      throw AtActivateException('atsign $_atSign is already activated');
     }
 
     atAuth ??= at_auth.atAuthBase.atAuth();

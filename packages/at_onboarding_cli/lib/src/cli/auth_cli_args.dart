@@ -6,6 +6,13 @@ import 'package:meta/meta.dart';
 
 enum AuthCliCommand {
   help(usage: 'Show help'),
+  status(
+      usage: 'Check the status of an atSign - will return one of '
+          '\n  4 if the atDirectory cannot be reached'
+          '\n  3 if atDirectory is reachable but the atSign does not exist'
+          '\n  2 if the atSign exists but the atServer cannot be reached'
+          '\n  1 if the atServer is reachable but there is no public:publickey@<atsign>'
+          '\n  0 if the atServer is reachable and public:publickey@<atsign> exists'),
   onboard(
       usage: '"onboard" is used when first authenticating to an atServer.'
           ' It generates "atKeys" (stored to filesystem or keychain) which'
@@ -126,6 +133,9 @@ class AuthCliArgs {
   @visibleForTesting
   ArgParser createParserForCommand(AuthCliCommand c) {
     switch (c) {
+      case AuthCliCommand.status:
+        return createStatusCommandParser();
+
       case AuthCliCommand.help:
         return createHelpCommandParser();
 
@@ -265,6 +275,12 @@ class AuthCliArgs {
       help: 'The semi-permanent enrollment passcode to set for this atSign',
       mandatory: true,
     );
+    return p;
+  }
+
+  @visibleForTesting
+  ArgParser createStatusCommandParser() {
+    ArgParser p = createSharedArgParser(hide: true);
     return p;
   }
 
