@@ -12,7 +12,7 @@ import 'onboarding_service_impl_override.dart';
 
 /// Usage: dart main.dart <cram_secret>
 void main() {
-  AtSignLogger.root_level = 'FINER';
+  AtSignLogger.root_level = 'WARNING';
   var logger = AtSignLogger('OnboardSecureElement');
 
   final atSign = '@egcreditbureau🛠'.trim();
@@ -39,7 +39,7 @@ void main() {
     AtClient? atClient = await onboardingService.atClient;
     await insertSelfEncKey(atClient, atSign,
         selfEncryptionKey:
-        await getSelfEncryptionKey(preference.atKeysFilePath!));
+            await getSelfEncryptionKey(preference.atKeysFilePath!));
     AtKey key = AtKey();
     key.key = 'securedKey';
     key.namespace = 'wavi';
@@ -69,7 +69,6 @@ AtOnboardingPreference getPreferences(String atSign) {
     ..rootDomain = 'vip.ve.atsign.zone'
     ..fetchOfflineNotifications = true
     ..atKeysFilePath = 'storage/files/$atSign' + '_key.atKeys'
-    ..useAtChops = true
     ..signingAlgoType = SigningAlgoType.ecc_secp256r1
     ..hashingAlgoType = HashingAlgoType.sha256
     ..authMode = PkamAuthMode.sim
@@ -91,8 +90,8 @@ Future<String?> getSelfEncryptionKey(String atKeysFilePath) async {
 
 Future<void> insertSelfEncKey(AtClient? atClient, String atsign,
     {String? selfEncryptionKey}) async {
-  await atClient?.getLocalSecondary()?.putValue(
-      AtConstants.atEncryptionSelfKey, selfEncryptionKey ?? at_demos.aesKeyMap[atsign]!);
+  await atClient?.getLocalSecondary()?.putValue(AtConstants.atEncryptionSelfKey,
+      selfEncryptionKey ?? at_demos.aesKeyMap[atsign]!);
   return;
 }
 

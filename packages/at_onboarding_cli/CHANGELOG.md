@@ -1,3 +1,6 @@
+## 1.6.0
+- feat: add 'status' command to the activate cli to check the status of an 
+  atSign
 ## 1.5.0
 - feat: 'activate' CLI is now APKAM-aware, and supports 
   - onboarding (as before)
