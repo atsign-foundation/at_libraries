@@ -53,6 +53,15 @@ void main() {
       expect(command, 'enroll:revoke:{"enrollmentId":"123"}\n');
     });
 
+    test('A test to verify enroll force revoke operation', () {
+      var enrollVerbBuilder = EnrollVerbBuilder()
+        ..operation = EnrollOperationEnum.revoke
+        ..enrollmentId = '123'
+        ..force = true;
+      var command = enrollVerbBuilder.buildCommand();
+      expect(command, 'enroll:revoke:force:{"enrollmentId":"123"}\n');
+    });
+
     test('A test to verify to override enroll list status', () {
       var enrollVerbBuilder = EnrollVerbBuilder()
         ..operation = EnrollOperationEnum.list
