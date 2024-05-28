@@ -1,3 +1,13 @@
+## 1.6.0
+- feat: add 'status' command to the activate cli to check the status of an 
+  atSign
+## 1.5.0
+- feat: 'activate' CLI is now APKAM-aware, and supports 
+  - onboarding (as before)
+  - submitting enrollment requests
+  - listing / approving / denying / revoking enrollment requests
+  - generating one-time passcodes
+  - setting semi-permanent passcode
 ## 1.4.4
 - feat: uptake changes for at_auth 2.0.0
 - build[deps]: upgrade at_auth to 2.0.2 | at_lookup to 3.0.46 | at_client to 3.0.75 \

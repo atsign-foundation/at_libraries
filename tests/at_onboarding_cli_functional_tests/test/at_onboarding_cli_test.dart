@@ -5,7 +5,8 @@ import 'package:at_client/at_client.dart';
 import 'package:at_demo_data/at_demo_data.dart' as at_demos;
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
-import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart' as activate_cli;
+import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart'
+    as activate_cli;
 import 'package:at_utils/at_utils.dart';
 import 'package:test/test.dart';
 
@@ -14,7 +15,7 @@ import 'onboarding_service_impl_override.dart';
 final String atKeysFilePath = '${Platform.environment['HOME']}/.atsign/keys';
 Map<String, bool> keysCreatedMap = {};
 void main() {
-  AtSignLogger.root_level = 'finer';
+  AtSignLogger.root_level = 'WARNING';
   // These group of tests run on docker container with only cram key available on secondary
   // Perform cram auth and update keys manually.
   Future<void> _createKeys(String atSign) async {
@@ -145,9 +146,9 @@ void main() {
       AtOnboardingService atOnboardingService =
           AtOnboardingServiceImpl(atSign, atOnboardingPreference);
       bool status = await atOnboardingService.onboard();
-      expect(true, status);
+      expect(status, true);
       bool status2 = await atOnboardingService.authenticate();
-      expect(true, status2);
+      expect(status2, true);
       expect(await atOnboardingService.isOnboarded(), true);
 
       /// Assert .atKeys file is generated for the atSign
@@ -160,10 +161,10 @@ void main() {
   });
 
   group('A group of tests to verify activate_cli', () {
-    String atSign = '@colin🛠';
+    String atSign = '@murali🛠';
     AtOnboardingPreference onboardingPreference = getPreferences(atSign);
     AtOnboardingService onboardingService =
-    OnboardingServiceImplOverride(atSign, onboardingPreference);
+        OnboardingServiceImplOverride(atSign, onboardingPreference);
     test(
         'A test to verify atSign is activated and .atKeys file is generated using activate_cli',
         () async {

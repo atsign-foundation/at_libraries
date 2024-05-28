@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:at_chops/at_chops.dart';
-import 'package:at_chops/src/algorithm/ecc_signing_algo.dart';
 import 'package:elliptic/elliptic.dart';
 
 class AtChopsSecureElementMock extends AtChopsImpl {
@@ -36,6 +35,7 @@ class AtChopsSecureElementMock extends AtChopsImpl {
 
   Uint8List _getBytes(dynamic data) {
     if (data is String) {
+      // ignore: unnecessary_cast
       return utf8.encode(data) as Uint8List;
     } else if (data is Uint8List) {
       return data;
