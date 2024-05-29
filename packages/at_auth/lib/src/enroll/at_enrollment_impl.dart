@@ -167,6 +167,26 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
     return enrollmentResponse;
   }
 
+  @override
+  Future<AtEnrollmentResponse> revoke(
+      EnrollmentRequestDecision enrollmentRequestDecision,
+      AtLookUp atLookUp) async {
+    EnrollVerbBuilder revokeEnrollVerbBuilder = EnrollVerbBuilder()
+      ..enrollmentId = enrollmentRequestDecision.enrollmentId
+      ..operation = EnrollOperationEnum.revoke
+      ..force = enrollmentRequestDecision.force;
+
+    String? enrollmentResponseStr = await atLookUp
+        .executeCommand(revokeEnrollVerbBuilder.buildCommand(), auth: true);
+
+    enrollmentResponseStr = enrollmentResponseStr?.replaceAll('data:', '');
+    var enrollmentJsonMap = jsonDecode(enrollmentResponseStr!);
+    AtEnrollmentResponse enrollmentResponse = AtEnrollmentResponse(
+        enrollmentJsonMap['enrollmentId'],
+        _convertEnrollmentStatusToEnum(enrollmentJsonMap['status']));
+    return enrollmentResponse;
+  }
+
   Future<String> _getDefaultEncryptionPublicKey(AtLookUp atLookupImpl) async {
     var lookupVerbBuilder = LookupVerbBuilder()
       ..atKey = (AtKey()
