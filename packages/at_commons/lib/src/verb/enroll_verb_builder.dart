@@ -36,6 +36,9 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
   String? encryptedDefaultSelfEncryptionKey;
   String? encryptedAPKAMSymmetricKey;
 
+  /// Used to force revoke the enrollment request.
+  bool force = false;
+
   /// Filters enrollment requests based on provided [EnrollmentStatus] criteria.
   ///
   /// Accepts a list of enrollment statuses. Defaults to all EnrollmentStatuses
@@ -46,6 +49,9 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
     var sb = StringBuffer();
     sb.write('enroll:');
     sb.write(getEnrollOperation(operation));
+    if (force) {
+      sb.write(':force');
+    }
 
     EnrollParams enrollParams = EnrollParams()
       ..enrollmentId = enrollmentId
