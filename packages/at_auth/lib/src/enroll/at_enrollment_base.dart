@@ -102,7 +102,7 @@ abstract class AtEnrollmentBase {
   /// Returns a [Future] containing an [AtEnrollmentResponse] representing the result of the approval/denial of an enrollment.
   ///
   /// ```dart
-  ///  To approve an enrollment request
+  ///  To deny an enrollment request
   ///
   /// AtEnrollmentBase atEnrollmentBase = AtEnrollmentImpl('@alice');
   /// AtLookup atLookup = AtLookupImpl('@alice', 'dummy-root-domain', 64);
@@ -111,5 +111,24 @@ abstract class AtEnrollmentBase {
   /// AtEnrollmentResponse atEnrollmentResponse = await atEnrollmentBase.deny(enrollmentRequestDecision, atLookupImpl);
   /// ```
   Future<AtEnrollmentResponse> deny(
+      EnrollmentRequestDecision enrollmentRequestDecision, AtLookUp atLookUp);
+
+  /// Revokes an approved enrollment, closing any active connections and making it inactive for future use.
+  ///
+  /// Accepts [EnrollmentRequestDecision] which encapsulates the enrollment request details necessary to revoke an enrollment.
+  /// The [atLookUp] parameter is used to perform lookups during approval management.
+  ///
+  /// Returns a [Future] containing an [AtEnrollmentResponse] representing the result of the revoke of an enrollment.
+  ///
+  /// ```dart
+  ///  To revoke an enrollment request
+  ///
+  /// AtEnrollmentBase atEnrollmentBase = AtEnrollmentImpl('@alice');
+  /// AtLookup atLookup = AtLookupImpl('@alice', 'dummy-root-domain', 64);
+  ///
+  /// EnrollmentRequestDecision enrollmentRequestDecision = EnrollmentRequestDecision.revoked('dummy-enrollment-id');
+  /// AtEnrollmentResponse atEnrollmentResponse = await atEnrollmentBase.revoke(enrollmentRequestDecision, atLookupImpl);
+  /// ```
+  Future<AtEnrollmentResponse> revoke(
       EnrollmentRequestDecision enrollmentRequestDecision, AtLookUp atLookUp);
 }

@@ -32,10 +32,19 @@ import 'package:at_commons/at_commons.dart';
 /// ```dart
 ///  EnrollmentRequestDecision enrollmentRequestDecision = EnrollmentRequestDecision.denied('dummy-enrollment-id');
 /// ```
+///
+/// To revoke an enrollment request. Optionally, set "force" parameter to true to revoke the enrollment permission of the current client
+/// which defaults to false.
+///
+/// Example:
+/// ```dart
+/// EnrollmentRequestDecision enrollmentRequestDecision = EnrollmentRequestDecision.revoked('enrollment123', force: false);
+/// ```
 class EnrollmentRequestDecision {
   late final String _enrollmentId;
   late final String _encryptedAPKAMSymmetricKey;
   late final EnrollOperationEnum _enrollOperationEnum;
+  bool force = false;
 
   String get enrollmentId => _enrollmentId;
 
@@ -75,7 +84,7 @@ class EnrollmentRequestDecision {
     return enrollmentRequestDecision;
   }
 
-  /// If the request is denied, the requester is prevented from logging into the application.
+  /// If the request is denied, the requester application is prevented from authenticating to the atServer.
   ///
   /// ```dart
   ///  EnrollmentRequestDecision enrollmentRequestDecision = EnrollmentRequestDecision.denied('dummy-enrollment-id');
@@ -84,6 +93,25 @@ class EnrollmentRequestDecision {
     return EnrollmentRequestDecision._()
       .._enrollmentId = enrollmentId
       .._enrollOperationEnum = EnrollOperationEnum.deny;
+  }
+
+  /// Revokes an approved enrollment, closing any active connections and making it inactive for future use.
+  ///
+  /// Creates an [EnrollmentRequestDecision] to revoke an enrollment. This method generates an [EnrollmentRequestDecision]
+  /// instance configured to revoke the enrollment specified by the provided [enrollmentId].
+  /// By default, the current client cannot revoke its own enrollment permission. To allow the current client to revoke
+  /// its own enrollment, set the force parameter to true.
+  ///
+  /// Example:
+  /// ```dart
+  /// EnrollmentRequestDecision enrollmentRequestDecision = EnrollmentRequestDecision.revoked('enrollment123', force: false);
+  /// ```
+  static EnrollmentRequestDecision revoked(String enrollmentId,
+      {bool force = false}) {
+    return EnrollmentRequestDecision._()
+      .._enrollmentId = enrollmentId
+      .._enrollOperationEnum = EnrollOperationEnum.revoke
+      ..force = force;
   }
 }
 
