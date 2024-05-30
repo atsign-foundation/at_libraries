@@ -84,7 +84,7 @@ class EnrollmentRequestDecision {
     return enrollmentRequestDecision;
   }
 
-  /// If the request is denied, the requester application is prevented from logging into the application.
+  /// If the request is denied, the requester application is prevented from authenticating to the atServer.
   ///
   /// ```dart
   ///  EnrollmentRequestDecision enrollmentRequestDecision = EnrollmentRequestDecision.denied('dummy-enrollment-id');
