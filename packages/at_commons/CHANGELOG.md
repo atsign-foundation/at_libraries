@@ -1,7 +1,8 @@
+## 4.0.11
+- chore: deprecate MessageTypeEnum.text
 ## 4.0.10
 - fix: Add a "force" variable to enroll_verb_builder to propagate enroll:revoke:force value
 - fix: Deprecate apkam in PkamAuthMode enum
-- chore: deprecate MessageTypeEnum.text
 ## 4.0.9
 - feat: enroll verb syntax change for enroll:revoke:force and added new exception AtEnrollmentRevokeException
 ## 4.0.8
