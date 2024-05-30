@@ -12,7 +12,7 @@ enum StrategyEnum { all, latest }
 String getStrategy(StrategyEnum? strategyEnum) =>
     '$strategyEnum'.split('.').last;
 
-enum MessageTypeEnum { key, text }
+enum MessageTypeEnum { key, @Deprecated('text based notifications are deprecated') text }
 
 String getMessageType(MessageTypeEnum? messageTypeEnum) =>
     '$messageTypeEnum'.split('.').last;
