@@ -1,3 +1,5 @@
+## 2.0.4
+- fix: Add "revoke" to the "AtEnrollmentBase" to support enroll:revoke operation
 ## 2.0.3
 - fix: Add optional parameters to the "atAuth" method in "AtAuthInterface"
 ## 2.0.2
