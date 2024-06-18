@@ -8,6 +8,7 @@ import 'package:at_auth/at_auth.dart';
 import 'package:at_chops/at_chops.dart';
 import 'package:at_client/at_client.dart';
 import 'package:at_auth/at_auth.dart' as at_auth;
+import 'package:at_persistence_secondary_server/at_persistence_secondary_server.dart';
 import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 import 'package:at_server_status/at_server_status.dart';
 import 'package:at_utils/at_utils.dart';
@@ -148,6 +149,19 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
     await awaitApproval(enrollmentResponse, retryInterval: retryInterval);
 
+    await _initAtClient(_atLookUp!.atChops!,
+        enrollmentId: enrollmentResponse.enrollmentId);
+    var atData = AtData();
+    var enrollmentDetails = EnrollmentDetails();
+    enrollmentDetails.namespace = namespaces;
+    atData.data = jsonEncode(enrollmentDetails);
+    // Cannot use atClient.put since The "_isAuthorized" method fetches enrollment info from the key-store. Since there is no enrollment info, it returns null and throws throws AtKeyNotFoundException.
+    final putResult = await atClient!.getLocalSecondary()!.keyStore!.put(
+        '${enrollmentResponse.enrollmentId}.new.enrollments.__manage${atClient!.getCurrentAtSign()}',
+        atData,
+        skipCommit: true);
+    logger.finer('putResult for storing enrollment details: $putResult');
+
     await createAtKeysFile(
       enrollmentResponse,
       atKeysFile: atKeysFile,
@@ -220,6 +234,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         atOnboardingPreference.rootDomain, atOnboardingPreference.rootPort);
 
     atLookUpImpl.atChops = AtChopsImpl(atChopsKeys);
+
+    _atLookUp = atLookUpImpl;
 
     // Pkam auth will be attempted asynchronously until enrollment is approved
     // or denied or times out. If denied or timed out, an exception will be
@@ -657,4 +673,18 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   @override
   at_auth.AtAuth? atAuth;
+}
+
+class EnrollmentDetails {
+  late Map<String, dynamic> namespace;
+
+  static EnrollmentDetails fromJSON(Map<String, dynamic> json) {
+    return EnrollmentDetails()..namespace = json['namespace'];
+  }
+
+  Map<String, dynamic> toJson() {
+    Map<String, dynamic> map = {};
+    map['namespace'] = namespace;
+    return map;
+  }
 }
