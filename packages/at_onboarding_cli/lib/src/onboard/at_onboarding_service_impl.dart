@@ -17,6 +17,7 @@ import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:crypton/crypton.dart';
 import 'package:encrypt/encrypt.dart';
+import 'package:meta/meta.dart';
 import 'package:zxing2/qrcode.dart';
 import 'package:image/image.dart';
 import 'package:path/path.dart' as path;
@@ -209,10 +210,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     AtLookupImpl atLookUpImpl = AtLookupImpl(_atSign,
         atOnboardingPreference.rootDomain, atOnboardingPreference.rootPort);
     logger.finer('sendEnrollRequest: submitting enrollment request');
-    AtEnrollmentResponse response = await _atEnrollment!.submit(
-      newClientEnrollmentRequest,
-      atLookUpImpl,
-    );
+    AtEnrollmentResponse response =
+        await _atEnrollment!.submit(newClientEnrollmentRequest, atLookUpImpl);
     logger.finer('sendEnrollRequest: received server response: $response');
 
     return response;
@@ -236,14 +235,14 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         atOnboardingPreference.rootDomain, atOnboardingPreference.rootPort);
 
     atLookUpImpl.atChops = AtChopsImpl(atChopsKeys);
-
-    _atLookUp = atLookUpImpl;
+    // ?? to support mocking
+    _atLookUp ??= atLookUpImpl;
 
     // Pkam auth will be attempted asynchronously until enrollment is approved
     // or denied or times out. If denied or timed out, an exception will be
     // thrown
     await _waitForPkamAuthSuccess(
-      atLookUpImpl,
+      _atLookUp!,
       enrollmentResponse.enrollmentId,
       retryInterval,
       logProgress: logProgress,
@@ -251,11 +250,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
     var decryptedEncryptionPrivateKey = EncryptionUtil.decryptValue(
         await _getEncryptionPrivateKeyFromServer(
-            enrollmentResponse.enrollmentId, atLookUpImpl),
+            enrollmentResponse.enrollmentId, _atLookUp!),
         enrollmentResponse.atAuthKeys!.apkamSymmetricKey!);
     var decryptedSelfEncryptionKey = EncryptionUtil.decryptValue(
         await _getSelfEncryptionKeyFromServer(
-            enrollmentResponse.enrollmentId, atLookUpImpl),
+            enrollmentResponse.enrollmentId, _atLookUp!),
         enrollmentResponse.atAuthKeys!.apkamSymmetricKey!);
 
     enrollmentResponse.atAuthKeys!.defaultEncryptionPrivateKey =
@@ -272,12 +271,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     try {
       var getPrivateKeyResult =
           await atLookUp.executeCommand(privateKeyCommand, auth: true);
-      if (getPrivateKeyResult == null || getPrivateKeyResult.isEmpty) {
+      getPrivateKeyResult = getPrivateKeyResult?.replaceFirst('data:', '');
+      var privateKeyResultJson = jsonDecode(getPrivateKeyResult!);
+      encryptionPrivateKeyFromServer = privateKeyResultJson['value'];
+      if (encryptionPrivateKeyFromServer == null ||
+          encryptionPrivateKeyFromServer.isEmpty) {
         throw AtEnrollmentException('$privateKeyCommand returned null/empty');
       }
-      getPrivateKeyResult = getPrivateKeyResult.replaceFirst('data:', '');
-      var privateKeyResultJson = jsonDecode(getPrivateKeyResult);
-      encryptionPrivateKeyFromServer = privateKeyResultJson['value'];
     } on Exception catch (e) {
       throw AtEnrollmentException(
           'Exception while getting encrypted private key/self key from server: $e');
@@ -293,15 +293,15 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     try {
       var getSelfEncryptionKeyResult =
           await atLookUp.executeCommand(selfEncryptionKeyCommand, auth: true);
-      if (getSelfEncryptionKeyResult == null ||
-          getSelfEncryptionKeyResult.isEmpty) {
+      getSelfEncryptionKeyResult =
+          getSelfEncryptionKeyResult?.replaceFirst('data:', '');
+      var selfEncryptionKeyResultJson = jsonDecode(getSelfEncryptionKeyResult!);
+      selfEncryptionKeyFromServer = selfEncryptionKeyResultJson['value'];
+      if (selfEncryptionKeyFromServer == null ||
+          selfEncryptionKeyFromServer.isEmpty) {
         throw AtEnrollmentException(
             '$selfEncryptionKeyCommand returned null/empty');
       }
-      getSelfEncryptionKeyResult =
-          getSelfEncryptionKeyResult.replaceFirst('data:', '');
-      var selfEncryptionKeyResultJson = jsonDecode(getSelfEncryptionKeyResult);
-      selfEncryptionKeyFromServer = selfEncryptionKeyResultJson['value'];
     } on Exception catch (e) {
       throw AtEnrollmentException(
           'Exception while getting encrypted private key/self key from server: $e');
@@ -311,7 +311,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   /// Pkam auth will be retried until server approves/denies/expires the enrollment
   Future<void> _waitForPkamAuthSuccess(
-    AtLookupImpl atLookUpImpl,
+    AtLookUp atLookUp,
     String enrollmentIdFromServer,
     Duration retryInterval, {
     bool logProgress = true,
@@ -322,7 +322,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         stderr.write('Checking ... ');
       }
       bool pkamAuthSucceeded = await _attemptPkamAuth(
-        atLookUpImpl,
+        atLookUp,
         enrollmentIdFromServer,
       );
       if (pkamAuthSucceeded) {
@@ -379,10 +379,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }) async {
     if (atKeysFile == null) {
       if (!atOnboardingPreference.atKeysFilePath!.endsWith('.atKeys')) {
-        atOnboardingPreference.atKeysFilePath =
-            path.join(atOnboardingPreference.atKeysFilePath!, '.atKeys');
+        _constructCompleteAtKeysFilePath(enrollmentId: enrollmentId);
       }
-
       atKeysFile = File(atOnboardingPreference.atKeysFilePath!);
     }
 
@@ -588,8 +586,29 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
   }
 
-  ///Method to check if secondary belonging to [_atSign] exists
-  ///If not, wait until secondary is created
+  /// Constructs a proper filePath when the user-provided file path is NOT complete
+  /// path: case EnrollmentId present -> userProvidedDir/atsign_enrollmentId_key.atKeys
+  /// path: case EnrollmentId NOT present -> userProvidedDir/atsign_keys.atKeys
+  void _constructCompleteAtKeysFilePath({String? enrollmentId}) {
+    // if path provided by user is a directory -> create a new file in the same directory
+    // if user provided path is a file, but missing .atKeys -> append .atKeys
+    bool isDirectory =
+        Directory(atOnboardingPreference.atKeysFilePath!).existsSync();
+    switch (isDirectory) {
+      case true:
+        String fileName = enrollmentId.isNull
+            ? '${_atSign}_key'
+            : '${_atSign}_${enrollmentId}_key';
+        atOnboardingPreference.atKeysFilePath = path.join(
+            atOnboardingPreference.atKeysFilePath!, '$fileName.atKeys');
+      case false:
+        atOnboardingPreference.atKeysFilePath =
+            '${atOnboardingPreference.atKeysFilePath}.atKeys';
+    }
+  }
+
+  /// Method to check if secondary belonging to [_atSign] has been created
+  /// If not, wait until secondary is created. Makes 50 retry attempts, 2 sec apart
   Future<void> _waitUntilSecondaryCreated(AtLookupImpl atLookupImpl) async {
     final maxRetries = 50;
     int retryCount = 1;
@@ -664,6 +683,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   @override
   set atLookUp(AtLookUp? atLookUp) {
     _atLookUp = atLookUp;
+  }
+
+  @visibleForTesting
+  set enrollmentBase(at_auth.AtEnrollmentBase enrollmentBase) {
+    _atEnrollment = enrollmentBase;
   }
 
   @override
