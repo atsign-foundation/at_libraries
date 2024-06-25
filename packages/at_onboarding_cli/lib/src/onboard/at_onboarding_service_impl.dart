@@ -155,7 +155,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     var enrollmentDetails = EnrollmentDetails();
     enrollmentDetails.namespace = namespaces;
     atData.data = jsonEncode(enrollmentDetails);
-    // Cannot use atClient.put since The "_isAuthorized" method fetches enrollment info from the key-store. Since there is no enrollment info, it returns null and throws throws AtKeyNotFoundException.
+    // Cannot use atClient.put since The "_isAuthorized" method fetches enrollment
+    // info from the key-store. Since there is no enrollment info,
+    // it returns null and throws throws AtKeyNotFoundException.
     final putResult = await atClient!.getLocalSecondary()!.keyStore!.put(
         '${enrollmentResponse.enrollmentId}.new.enrollments.__manage${atClient!.getCurrentAtSign()}',
         atData,
