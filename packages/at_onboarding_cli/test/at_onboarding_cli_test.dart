@@ -24,7 +24,7 @@ class MockAtClient extends Mock implements AtClient {}
 class MockEnrollmentBase extends Mock implements AtEnrollmentBase {}
 
 void main() {
-  AtSignLogger.root_level = 'FINER';
+  AtSignLogger.root_level = 'INFO';
   AtLookupImpl mockAtLookup = MockAtLookupImpl();
   AtAuth mockAtAuth = MockAtAuthImpl();
 
