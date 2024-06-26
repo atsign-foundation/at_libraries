@@ -115,7 +115,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     atOnboardingRequest.appName = atOnboardingPreference.appName;
     atOnboardingRequest.deviceName = atOnboardingPreference.deviceName;
     atOnboardingRequest.publicKeyId = atOnboardingPreference.publicKeyId;
-    var atOnboardingResponse = await atAuth!
+    atOnboardingRequest.authMode = atOnboardingPreference.authMode;
+
+    AtOnboardingResponse atOnboardingResponse = await atAuth!
         .onboard(atOnboardingRequest, atOnboardingPreference.cramSecret!);
     logger.finer('Onboarding Response: $atOnboardingResponse');
     if (atOnboardingResponse.isSuccessful) {
@@ -472,7 +474,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       ..atKeysFilePath = atOnboardingPreference.atKeysFilePath
       ..authMode = atOnboardingPreference.authMode
       ..rootDomain = atOnboardingPreference.rootDomain
-      ..rootPort = atOnboardingPreference.rootPort;
+      ..rootPort = atOnboardingPreference.rootPort
+    ..publicKeyId = atOnboardingPreference.publicKeyId;
     var atAuthResponse = await atAuth!.authenticate(atAuthRequest);
     logger.finer('Auth response: $atAuthResponse');
     if (atAuthResponse.isSuccessful &&
