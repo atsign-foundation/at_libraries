@@ -10,6 +10,7 @@ dependencies:
   at_onboarding_cli: ^1.4.4
 
 dependency_overrides:
+  at_client: 3.0.75
   at_auth:
     path: ../../packages/at_auth
   at_onboarding_cli:
