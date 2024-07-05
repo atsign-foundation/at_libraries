@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:at_auth/src/enroll/at_enrollment_response.dart';
 import 'package:at_client/at_client.dart';
@@ -22,7 +23,8 @@ final logger = AtSignLogger('OnboardingEnrollmentTest');
 
 void main() {
   AtSignLogger.root_level = 'FINER';
-  String storageDir = '/home/srie/Desktop/temp';
+  String storageDir = 'test/testStorage';
+
   group('A group of tests to assert on authenticate functionality', () {
     test(
         'A test to verify send enroll request, approve enrollment and auth by enrollmentId',
@@ -190,16 +192,96 @@ void main() {
           AtOnboardingServiceImpl(atSign, preference_1);
       await onboardingService_1.onboard();
     });
+  });
+
+  group('tests to validate enrollment behaviour post approval/denial', () {
+    test(
+        'A test to verify send enroll request, deny enrollment and auth by enrollmentId should fail',
+        () async {
+      // if onboard is testing use distinct demo atsign per test,
+      // since cram keys get deleted on server for already onboarded atsign
+      String atSign = '@purnima🛠';
+      //1. Onboard first client
+      AtOnboardingPreference preference_1 = getPreferenceForAuth(atSign);
+      AtOnboardingService? onboardingService_1 =
+          AtOnboardingServiceImpl(atSign, preference_1);
+      bool status = await onboardingService_1.onboard();
+      expect(status, true);
+      preference_1.privateKey = pkamPrivateKey;
+
+      //2. authenticate first client
+      await onboardingService_1.authenticate();
+      await _setLastReceivedNotificationDateTime(
+          onboardingService_1.atClient!, atSign);
+
+      //3. run otp:get from first client
+      String? totp = await onboardingService_1.atClient!
+          .getRemoteSecondary()!
+          .executeCommand('otp:get\n', auth: true);
+      totp = totp!.replaceFirst('data:', '');
+      totp = totp.trim();
+      logger.finer('otp: $totp');
+      Map<String, String> namespaces = {"buzz": "rw"};
+      expect(totp.length, 6);
+      expect(totp.contains('0') || totp.contains('o') || totp.contains('O'),
+          false);
+      // check whether otp contains at least one number and one alphabet
+      expect(RegExp(r'^(?=.*[a-zA-Z])(?=.*\d).+$').hasMatch(totp), true);
+
+      var completer = Completer<void>(); // Create a Completer
+
+      //4. Subscribe to enrollment notifications; we will deny it when it arrives
+      onboardingService_1.atClient!.notificationService
+          .subscribe(regex: '.__manage')
+          .listen(expectAsync1((notification) async {
+            logger.finer('got enroll notification');
+            expect(notification.value, isNotNull);
+            var notificationValueJson = jsonDecode(notification.value!);
+            expect(notificationValueJson['encryptedApkamSymmetricKey'],
+                isNotEmpty);
+            expect(notificationValueJson['appName'], 'buzz');
+            expect(notificationValueJson['deviceName'], 'iphone');
+            expect(notificationValueJson['namespace']['buzz'], 'rw');
+            await _notificationCallback(
+                notification, onboardingService_1.atClient!, 'deny');
+            completer.complete();
+          }, count: 1, max: -1));
+
+      //5. enroll second client
+      AtOnboardingPreference enrollPreference_2 =
+          getPreferenceForEnroll(atSign);
+      final onboardingService_2 =
+          AtOnboardingServiceImpl(atSign, enrollPreference_2);
+
+      await expectLater(
+          onboardingService_2.enroll(
+            'buzz',
+            'iphone',
+            totp,
+            namespaces,
+            retryInterval: Duration(seconds: 5),
+          ),
+          throwsA(predicate((dynamic e) =>
+              e is AtEnrollmentException && e.message == 'enrollment denied')));
+
+      await completer.future;
+    });
 
     test('validate enrollment only has access to approved namespaces',
         () async {
-      String atsign = '@eve🛠';
+      String atsign = '@srie';
       String appName = 'test_app_name';
       String deviceName = 'functional_test_1';
       Map<String, String> namespaces = {'wavi': 'rw'};
-      String existingAtKeysFilePath = 'keys/@eve🛠_key.atKeys';
+
+      // fetch a keys file from package:at_demo_data
       String newEnrollmentKeysPath =
-          '$storageDir/generated_keys/@eve_wavi.atKeys';
+          '$storageDir/generated_keys/@${atsign}_wavi_key.atKeys';
+      // final packageUri =
+      //     Uri.parse('package:at_demo_data/assets/atkeys/@purnima🛠.atKeys');
+      // final resolvedPackage = await Isolate.resolvePackageUri(packageUri);
+      // final purminaKeysFile = File.fromUri(resolvedPackage!);
+      // String existingAtKeysFilePath = purminaKeysFile.absolute.path;
 
       AtOnboardingPreference preference = AtOnboardingPreference()
         ..rootDomain = 'vip.ve.atsign.zone'
@@ -213,22 +295,23 @@ void main() {
 
       AtOnboardingService onboardingService =
           AtOnboardingServiceImpl(atsign, preference);
-      String? otp = await EnrollmentOperations()
-          .getOtp(atsign, atKeysFilePath: existingAtKeysFilePath);
+      EnrollmentOperations enrollmentOperations = EnrollmentOperations(atsign);
+      await enrollmentOperations.onboard(cramKey: at_demos.cramKeyMap[atsign]!);
+      String? otp = await enrollmentOperations.getOtp();
       // Send enrollment request to server
-      // await has NOT been added so that the onboardingService.enroll method call
-      // does not starve the rest of the test; but still will be waiting for
-      // enrollment approval in the background
-      Future<AtEnrollmentResponse> enrollRequestResponse =
-          onboardingService.enroll(appName, deviceName, otp!, namespaces);
-      String encryptedApkamSymmetricKey = EncryptionUtil.encryptKey(
+      // await has NOT been added so that the onboardingService.enroll() method
+      // call does not starve the rest of the test; but still will be waiting
+      // for enrollment approval in the background
+            String encryptedApkamSymmetricKey = EncryptionUtil.encryptKey(
           at_demos.apkamSymmetricKeyMap[atsign]!,
           at_demos.encryptionPublicKeyMap[atsign]!);
+      Future<AtEnrollmentResponse> enrollRequestResponse =
+      onboardingService.enroll(appName, deviceName, otp!, namespaces);
+      Future.delayed(Duration(seconds: 10));
       // approves this enrollment by creating a new instance of OnboardingCLI,
       // using the existing master AtKeys file
-      AtEnrollmentResponse enrollApproveResponse = await EnrollmentOperations()
-          .approve(atsign,
-              atKeysFilePath: existingAtKeysFilePath,
+      AtEnrollmentResponse? enrollApproveResponse =
+          await enrollmentOperations.approve(
               appName: appName,
               deviceName: deviceName,
               encApkamSymmKey: encryptedApkamSymmetricKey);
@@ -253,77 +336,6 @@ void main() {
     tearDown(() async {
       // await tearDownFunc();
     });
-  });
-
-  test(
-      'A test to verify send enroll request, deny enrollment and auth by enrollmentId should fail',
-      () async {
-    // if onboard is testing use distinct demo atsign per test,
-    // since cram keys get deleted on server for already onboarded atsign
-    String atSign = '@purnima🛠';
-    //1. Onboard first client
-    AtOnboardingPreference preference_1 = getPreferenceForAuth(atSign);
-    AtOnboardingService? onboardingService_1 =
-        AtOnboardingServiceImpl(atSign, preference_1);
-    bool status = await onboardingService_1.onboard();
-    expect(status, true);
-    preference_1.privateKey = pkamPrivateKey;
-
-    //2. authenticate first client
-    await onboardingService_1.authenticate();
-    await _setLastReceivedNotificationDateTime(
-        onboardingService_1.atClient!, atSign);
-
-    //3. run otp:get from first client
-    String? totp = await onboardingService_1.atClient!
-        .getRemoteSecondary()!
-        .executeCommand('otp:get\n', auth: true);
-    totp = totp!.replaceFirst('data:', '');
-    totp = totp.trim();
-    logger.finer('otp: $totp');
-    Map<String, String> namespaces = {"buzz": "rw"};
-    expect(totp.length, 6);
-    expect(
-        totp.contains('0') || totp.contains('o') || totp.contains('O'), false);
-    // check whether otp contains at least one number and one alphabet
-    expect(RegExp(r'^(?=.*[a-zA-Z])(?=.*\d).+$').hasMatch(totp), true);
-
-    var completer = Completer<void>(); // Create a Completer
-
-    //4. Subscribe to enrollment notifications; we will deny it when it arrives
-    onboardingService_1.atClient!.notificationService
-        .subscribe(regex: '.__manage')
-        .listen(expectAsync1((notification) async {
-          logger.finer('got enroll notification');
-          expect(notification.value, isNotNull);
-          var notificationValueJson = jsonDecode(notification.value!);
-          expect(
-              notificationValueJson['encryptedApkamSymmetricKey'], isNotEmpty);
-          expect(notificationValueJson['appName'], 'buzz');
-          expect(notificationValueJson['deviceName'], 'iphone');
-          expect(notificationValueJson['namespace']['buzz'], 'rw');
-          await _notificationCallback(
-              notification, onboardingService_1.atClient!, 'deny');
-          completer.complete();
-        }, count: 1, max: -1));
-
-    //5. enroll second client
-    AtOnboardingPreference enrollPreference_2 = getPreferenceForEnroll(atSign);
-    final onboardingService_2 =
-        AtOnboardingServiceImpl(atSign, enrollPreference_2);
-
-    await expectLater(
-        onboardingService_2.enroll(
-          'buzz',
-          'iphone',
-          totp,
-          namespaces,
-          retryInterval: Duration(seconds: 5),
-        ),
-        throwsA(predicate((dynamic e) =>
-            e is AtEnrollmentException && e.message == 'enrollment denied')));
-
-    await completer.future;
   });
 }
 

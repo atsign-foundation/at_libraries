@@ -249,11 +249,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       retryInterval,
       logProgress: logProgress,
     );
+    logger.shout(enrollmentResponse.atAuthKeys!.apkamSymmetricKey);
 
     var decryptedEncryptionPrivateKey = EncryptionUtil.decryptValue(
         await _getEncryptionPrivateKeyFromServer(
             enrollmentResponse.enrollmentId, _atLookUp!),
         enrollmentResponse.atAuthKeys!.apkamSymmetricKey!);
+
     var decryptedSelfEncryptionKey = EncryptionUtil.decryptValue(
         await _getSelfEncryptionKeyFromServer(
             enrollmentResponse.enrollmentId, _atLookUp!),
