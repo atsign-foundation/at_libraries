@@ -16,6 +16,7 @@ import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:crypton/crypton.dart';
 import 'package:encrypt/encrypt.dart';
+import 'package:meta/meta.dart';
 import 'package:zxing2/qrcode.dart';
 import 'package:image/image.dart';
 import 'package:path/path.dart' as path;
@@ -234,11 +235,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       retryInterval,
       logProgress: logProgress,
     );
+    logger.shout(enrollmentResponse.atAuthKeys!.apkamSymmetricKey);
 
     var decryptedEncryptionPrivateKey = EncryptionUtil.decryptValue(
         await _getEncryptionPrivateKeyFromServer(
             enrollmentResponse.enrollmentId, atLookUpImpl),
         enrollmentResponse.atAuthKeys!.apkamSymmetricKey!);
+
     var decryptedSelfEncryptionKey = EncryptionUtil.decryptValue(
         await _getSelfEncryptionKeyFromServer(
             enrollmentResponse.enrollmentId, atLookUpImpl),
