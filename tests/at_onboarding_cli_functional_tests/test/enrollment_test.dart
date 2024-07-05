@@ -2,12 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:at_auth/src/enroll/at_enrollment_response.dart';
 import 'package:at_client/at_client.dart';
 import 'package:at_demo_data/at_demo_data.dart' as at_demos;
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_utils/at_utils.dart';
 import 'package:test/test.dart';
+
+import 'enrollment_operations.dart';
 
 var pkamPublicKey;
 var pkamPrivateKey;
@@ -18,7 +21,8 @@ var selfEncryptionKey;
 final logger = AtSignLogger('OnboardingEnrollmentTest');
 
 void main() {
-  AtSignLogger.root_level = 'WARNING';
+  AtSignLogger.root_level = 'FINER';
+  String storageDir = '/home/srie/Desktop/temp';
   group('A group of tests to assert on authenticate functionality', () {
     test(
         'A test to verify send enroll request, approve enrollment and auth by enrollmentId',
@@ -187,8 +191,67 @@ void main() {
       await onboardingService_1.onboard();
     });
 
+    test('validate enrollment only has access to approved namespaces',
+        () async {
+      String atsign = '@eve🛠';
+      String appName = 'test_app_name';
+      String deviceName = 'functional_test_1';
+      Map<String, String> namespaces = {'wavi': 'rw'};
+      String existingAtKeysFilePath = 'keys/@eve🛠_key.atKeys';
+      String newEnrollmentKeysPath =
+          '$storageDir/generated_keys/@eve_wavi.atKeys';
+
+      AtOnboardingPreference preference = AtOnboardingPreference()
+        ..rootDomain = 'vip.ve.atsign.zone'
+        ..isLocalStoreRequired = true
+        ..hiveStoragePath = '$storageDir/hive/client'
+        ..commitLogPath = '$storageDir/hive/client/commit'
+        ..namespace =
+            'wavi' // unique identifier that can be used to identify data from your app
+        ..rootDomain = 'vip.ve.atsign.zone'
+        ..atKeysFilePath = newEnrollmentKeysPath;
+
+      AtOnboardingService onboardingService =
+          AtOnboardingServiceImpl(atsign, preference);
+      String? otp = await EnrollmentOperations()
+          .getOtp(atsign, atKeysFilePath: existingAtKeysFilePath);
+      // Send enrollment request to server
+      // await has NOT been added so that the onboardingService.enroll method call
+      // does not starve the rest of the test; but still will be waiting for
+      // enrollment approval in the background
+      Future<AtEnrollmentResponse> enrollRequestResponse =
+          onboardingService.enroll(appName, deviceName, otp!, namespaces);
+      String encryptedApkamSymmetricKey = EncryptionUtil.encryptKey(
+          at_demos.apkamSymmetricKeyMap[atsign]!,
+          at_demos.encryptionPublicKeyMap[atsign]!);
+      // approves this enrollment by creating a new instance of OnboardingCLI,
+      // using the existing master AtKeys file
+      AtEnrollmentResponse enrollApproveResponse = await EnrollmentOperations()
+          .approve(atsign,
+              atKeysFilePath: existingAtKeysFilePath,
+              appName: appName,
+              deviceName: deviceName,
+              encApkamSymmKey: encryptedApkamSymmetricKey);
+
+      await enrollRequestResponse.whenComplete(() {
+        assert(File(preference.atKeysFilePath!).existsSync());
+      });
+      // close existing onboardingCLI instance and open a new one
+      await onboardingService.close(shouldExit: false);
+      onboardingService = AtOnboardingServiceImpl(atsign, preference);
+      bool authStatus = await onboardingService.authenticate(
+          enrollmentId: enrollApproveResponse.enrollmentId);
+      expect(authStatus, true);
+
+      AtClient? client = onboardingService.atClient;
+      AtKey buzzKey =
+          AtKey.public('dummy_key_27', namespace: 'buzz', sharedBy: atsign)
+              .build();
+      await client?.put(buzzKey, 'value');
+    }, timeout: Timeout(Duration(minutes: 5)));
+
     tearDown(() async {
-      await tearDownFunc();
+      // await tearDownFunc();
     });
   });
 
@@ -381,8 +444,8 @@ Future<void> getAtKeys(String atSign) async {
 }
 
 Future<void> tearDownFunc() async {
-  bool isExists = await Directory('storage/').exists();
+  bool isExists = await Directory('test/storage/').exists();
   if (isExists) {
-    Directory('storage/').deleteSync(recursive: true);
+    Directory('test/storage/').deleteSync(recursive: true);
   }
 }
