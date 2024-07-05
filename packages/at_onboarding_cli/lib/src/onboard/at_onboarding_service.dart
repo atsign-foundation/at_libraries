@@ -8,13 +8,16 @@ import 'package:at_auth/at_auth.dart';
 abstract class AtOnboardingService {
   static const Duration defaultApkamRetryInterval = Duration(seconds: 10);
 
-  ///perform initial one_time authentication to activate the atsign
-  ///returns true if onboarded
+  /// Perform initial one_time authentication to activate the atsign
+  /// returns true if successfully onboarded
   Future<bool> onboard();
 
-  ///Authenticate into secondary server using PKAM privateKey for legacy clients
-  ///For clients that are enrolled through APKAM, pass the enrollmentId and auth is done using APKAM private key
-  ///returns true if authenticated
+  /// Authenticate into secondary server using PKAM privateKey for legacy clients
+  ///
+  /// For clients that are enrolled through APKAM, pass the enrollmentId and
+  /// auth is done using APKAM private key
+  ///
+  /// Returns true if authentication is successful
   Future<bool> authenticate({String? enrollmentId});
 
   /// Sends an enroll request to the server, and waits for the request to be
@@ -67,19 +70,19 @@ abstract class AtOnboardingService {
     bool allowOverwrite = false,
   });
 
-  ///returns an authenticated instance of AtClient
+  /// Returns an authenticated instance of AtClient
   @Deprecated('use getter')
   Future<AtClient?> getAtClient();
 
   // return true if atsign is onboarded and keys are persisted in local storage. false otherwise
   Future<bool> isOnboarded();
 
-  ///returns authenticated instance of AtLookup
+  /// Returns authenticated instance of AtLookup
   @Deprecated('use getter')
   AtLookUp? getAtLookup();
 
-  ///Closes the current instance of onboarding_service
-  Future<void> close();
+  /// Closes the current instance of onboarding_service
+  Future<void> close({bool shouldExit = true, int exitCode = 0});
 
   set atClient(AtClient? atClient);
 

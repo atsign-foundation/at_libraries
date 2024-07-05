@@ -113,7 +113,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     atOnboardingRequest.appName = atOnboardingPreference.appName;
     atOnboardingRequest.deviceName = atOnboardingPreference.deviceName;
     atOnboardingRequest.publicKeyId = atOnboardingPreference.publicKeyId;
-    var atOnboardingResponse = await atAuth!
+    atOnboardingRequest.authMode = atOnboardingPreference.authMode;
+
+    AtOnboardingResponse atOnboardingResponse = await atAuth!
         .onboard(atOnboardingRequest, atOnboardingPreference.cramSecret!);
     logger.finer('Onboarding Response: $atOnboardingResponse');
     if (atOnboardingResponse.isSuccessful) {
@@ -220,6 +222,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         atOnboardingPreference.rootDomain, atOnboardingPreference.rootPort);
 
     atLookUpImpl.atChops = AtChopsImpl(atChopsKeys);
+    // ?? to support mocking
+    _atLookUp ??= atLookUpImpl;
 
     // Pkam auth will be attempted asynchronously until enrollment is approved
     // or denied or times out. If denied or timed out, an exception will be
@@ -624,14 +628,16 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }
 
   @override
-  Future<void> close() async {
+  Future<void> close({bool shouldExit = true, int exitCode = 0}) async {
     if (_atLookUp != null) {
       await (_atLookUp as AtLookupImpl).close();
     }
     _atLookUp = null;
     atClient = null;
-    logger.info('Closing current instance of at_onboarding_cli (exit code: 0)');
-    exit(0);
+    logger.info('Closing current instance of at_onboarding_cli');
+    if(shouldExit){
+      exit(exitCode);
+    }
   }
 
   @override
@@ -646,6 +652,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   @override
   set atLookUp(AtLookUp? atLookUp) {
     _atLookUp = atLookUp;
+  }
+
+  @visibleForTesting
+  set enrollmentBase(at_auth.AtEnrollmentBase enrollmentBase) {
+    _atEnrollment = enrollmentBase;
   }
 
   @override
