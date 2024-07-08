@@ -23,7 +23,7 @@ final logger = AtSignLogger('OnboardingEnrollmentTest');
 
 void main() {
   AtSignLogger.root_level = 'FINER';
-  String storageDir = 'test/testStorage';
+  String storageDir = 'test/storage';
 
   group('A group of tests to assert on authenticate functionality', () {
     test(
@@ -273,15 +273,10 @@ void main() {
       String appName = 'test_app_name';
       String deviceName = 'functional_test_1';
       Map<String, String> namespaces = {'wavi': 'rw'};
-
       // fetch a keys file from package:at_demo_data
-      String newEnrollmentKeysPath =
-          '$storageDir/generated_keys/@${atsign}_wavi_key.atKeys';
-      // final packageUri =
-      //     Uri.parse('package:at_demo_data/assets/atkeys/@purnima🛠.atKeys');
-      // final resolvedPackage = await Isolate.resolvePackageUri(packageUri);
-      // final purminaKeysFile = File.fromUri(resolvedPackage!);
-      // String existingAtKeysFilePath = purminaKeysFile.absolute.path;
+      String masterKeysFilePath = '$storageDir/keys/${atsign}_key.atKeys';
+      String enrollmentAtKeysFilePath =
+          '$storageDir/keys/${atsign}_wavi_key.atKeys';
 
       AtOnboardingPreference preference = AtOnboardingPreference()
         ..rootDomain = 'vip.ve.atsign.zone'
@@ -290,38 +285,45 @@ void main() {
         ..commitLogPath = '$storageDir/hive/client/commit'
         ..namespace =
             'wavi' // unique identifier that can be used to identify data from your app
-        ..rootDomain = 'vip.ve.atsign.zone'
-        ..atKeysFilePath = newEnrollmentKeysPath;
+        ..rootDomain = 'vip.ve.atsign.zone';
 
-      AtOnboardingService onboardingService =
-          AtOnboardingServiceImpl(atsign, preference);
+      AtOnboardingService onboardingService = AtOnboardingServiceImpl(
+          atsign,
+          preference
+            ..cramSecret = at_demos.cramKeyMap[atsign]
+            ..atKeysFilePath = masterKeysFilePath);
+      await onboardingService.onboard();
+      await onboardingService.close(shouldExit: false);
+
       EnrollmentOperations enrollmentOperations = EnrollmentOperations(atsign);
-      await enrollmentOperations.onboard(cramKey: at_demos.cramKeyMap[atsign]!);
-      String? otp = await enrollmentOperations.getOtp();
+      String? otp = await enrollmentOperations.getOtp(masterKeysFilePath);
       // Send enrollment request to server
       // await has NOT been added so that the onboardingService.enroll() method
       // call does not starve the rest of the test; but still will be waiting
       // for enrollment approval in the background
-            String encryptedApkamSymmetricKey = EncryptionUtil.encryptKey(
-          at_demos.apkamSymmetricKeyMap[atsign]!,
-          at_demos.encryptionPublicKeyMap[atsign]!);
+      onboardingService = AtOnboardingServiceImpl(
+          atsign, preference..atKeysFilePath = enrollmentAtKeysFilePath);
       Future<AtEnrollmentResponse> enrollRequestResponse =
-      onboardingService.enroll(appName, deviceName, otp!, namespaces);
+          onboardingService.enroll(appName, deviceName, otp!, namespaces);
+      logger.shout('Sleeping for 10s');
       Future.delayed(Duration(seconds: 10));
       // approves this enrollment by creating a new instance of OnboardingCLI,
       // using the existing master AtKeys file
       AtEnrollmentResponse? enrollApproveResponse =
           await enrollmentOperations.approve(
+              atKeysFilePath: masterKeysFilePath,
               appName: appName,
-              deviceName: deviceName,
-              encApkamSymmKey: encryptedApkamSymmetricKey);
+              deviceName: deviceName);
 
       await enrollRequestResponse.whenComplete(() {
-        assert(File(preference.atKeysFilePath!).existsSync());
+        logger.info('OnboardingService.enroll() completed execution');
+        assert(File(enrollmentAtKeysFilePath).existsSync());
       });
-      // close existing onboardingCLI instance and open a new one
+      // close existing onboardingCLI instance and overwrite with a fresh instance
       await onboardingService.close(shouldExit: false);
       onboardingService = AtOnboardingServiceImpl(atsign, preference);
+      // authenticate using the newly created atKeys that only has access to
+      // 'wavi' namespace
       bool authStatus = await onboardingService.authenticate(
           enrollmentId: enrollApproveResponse.enrollmentId);
       expect(authStatus, true);
@@ -330,11 +332,11 @@ void main() {
       AtKey buzzKey =
           AtKey.public('dummy_key_27', namespace: 'buzz', sharedBy: atsign)
               .build();
-      await client?.put(buzzKey, 'value');
+      print(await client?.put(buzzKey, 'value'));
     }, timeout: Timeout(Duration(minutes: 5)));
 
     tearDown(() async {
-      // await tearDownFunc();
+      await tearDownFunc();
     });
   });
 }
