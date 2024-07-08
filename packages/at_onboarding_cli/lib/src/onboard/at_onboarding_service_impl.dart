@@ -427,7 +427,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   Future<void> _persistKeysLocalSecondary() async {
     //when authenticating keys need to be fetched from atKeys file
     at_auth.AtAuthKeys atAuthKeys = _decryptAtKeysFile(
-        (await _readAtKeysFile(atOnboardingPreference.atKeysFilePath)));
+        (await readAtKeysFile(atOnboardingPreference.atKeysFilePath)));
     //backup keys into local secondary
     bool? response = await atClient
         ?.getLocalSecondary()
@@ -479,7 +479,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   ///method to read and return data from .atKeysFile
   ///returns map containing encryption keys
-  Future<Map<String, String>> _readAtKeysFile(String? atKeysFilePath) async {
+  @visibleForTesting
+  Future<Map<String, String>> readAtKeysFile(String? atKeysFilePath) async {
     if (atKeysFilePath == null || atKeysFilePath.isEmpty) {
       throw AtClientException.message(
           'atKeys filePath is empty. atKeysFile is required to authenticate');
@@ -638,7 +639,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     _atLookUp = null;
     atClient = null;
     logger.info('Closing current instance of at_onboarding_cli');
-    if(shouldExit){
+    if (shouldExit) {
       exit(exitCode);
     }
   }
