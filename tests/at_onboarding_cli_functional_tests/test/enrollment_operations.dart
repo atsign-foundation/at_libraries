@@ -6,11 +6,12 @@ import 'package:at_client/at_client.dart';
 
 import 'package:at_client/src/service/enrollment_service_impl.dart';
 
+/// Contains methods that perform common enrollment operations like getOtp, approve, etc.
+///
+/// Each method requires an atKeysFile that has authorization to perform operations
 class EnrollmentOperations {
   late String atsign;
-  EnrollmentService? enrollmentService;
   String storageDir = 'test/storage/temp';
-  bool isAuthenticated = false;
 
   EnrollmentOperations(this.atsign);
 
@@ -24,6 +25,7 @@ class EnrollmentOperations {
     stdout.writeln('[Test | EnrollmentOps] Fetch OTP response: $response');
     response = response?.replaceFirst('data:', '');
     await onboardingService.close(shouldExit: false);
+    AtClientManager.getInstance().reset();
     return response;
   }
 
@@ -36,17 +38,17 @@ class EnrollmentOperations {
     AtOnboardingService onboardingService = AtOnboardingServiceImpl(
         atsign, getOnboardingPreference(atKeysFilePath: atKeysFilePath));
     await onboardingService.authenticate();
-    enrollmentService = EnrollmentServiceImpl(
+    EnrollmentService enrollmentService = EnrollmentServiceImpl(
         onboardingService.atClient!, atAuthBase.atEnrollment(atsign));
 
-    // when enrollmentId is not provided. Fetches all enrollment requests based
-    // on appName and deviceName and uses the data from the first request
+    // when enrollmentId is not provided. Fetches all enrollment requests for
+    // the given appName and deviceName and uses the data of the first request
     //
-    // the assumption is that the first request with the given appName and deviceName
-    // is the one that needs to be approved
+    // the assumption is that the first request with the given appName and
+    // deviceName is the one that needs to be approved
     Enrollment? enrollment;
     if (enrollmentId == null) {
-      enrollment = await fetchEnrollment(onboardingService.atClient!,
+      enrollment = await fetchEnrollment(enrollmentService,
           appName: appName!, deviceName: deviceName!);
       enrollmentId = enrollment.enrollmentId;
       encApkamSymmetricKey = enrollment.encryptedAPKAMSymmetricKey;
@@ -56,22 +58,24 @@ class EnrollmentOperations {
             enrollmentId: enrollmentId!,
             encryptedAPKAMSymmetricKey: encApkamSymmetricKey!));
     AtEnrollmentResponse? enrollmentResponse =
-        await enrollmentService?.approve(decision);
+        await enrollmentService.approve(decision);
     print('Enroll Approve Response: $enrollmentResponse');
-
-    return enrollmentResponse!;
+    await onboardingService.close(shouldExit: false);
+    AtClientManager.getInstance().reset();
+    return enrollmentResponse;
   }
 
   /// Fetches enrollment requests from server based on the [appName] and [deviceName] provided
   ///
   /// Always returns the first enrollmentId from the list fetched from server
-  Future<Enrollment> fetchEnrollment(AtClient client,
+  Future<Enrollment> fetchEnrollment(EnrollmentService enrollmentService,
       {required String appName, required String deviceName}) async {
     EnrollmentListRequestParam requestParam = EnrollmentListRequestParam()
       ..appName = appName
       ..deviceName = deviceName
       ..enrollmentListFilter = [EnrollmentStatus.pending];
-    return (await enrollmentService!
+
+    return (await enrollmentService
         .fetchEnrollmentRequests(enrollmentListParams: requestParam))[0];
   }
 

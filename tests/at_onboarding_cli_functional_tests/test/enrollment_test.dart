@@ -5,6 +5,7 @@ import 'dart:isolate';
 
 import 'package:at_auth/src/enroll/at_enrollment_response.dart';
 import 'package:at_client/at_client.dart';
+import 'package:at_commons/at_builders.dart';
 import 'package:at_demo_data/at_demo_data.dart' as at_demos;
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
@@ -269,11 +270,12 @@ void main() {
 
     test('validate enrollment only has access to approved namespaces',
         () async {
+      // creates an enrollment with rw access to wavi namespace. Then validate
+      // that updating a key with buzz namespace fails.
       String atsign = '@srie';
       String appName = 'test_app_name';
       String deviceName = 'functional_test_1';
       Map<String, String> namespaces = {'wavi': 'rw'};
-      // fetch a keys file from package:at_demo_data
       String masterKeysFilePath = '$storageDir/keys/${atsign}_key.atKeys';
       String enrollmentAtKeysFilePath =
           '$storageDir/keys/${atsign}_wavi_key.atKeys';
@@ -284,55 +286,88 @@ void main() {
         ..hiveStoragePath = '$storageDir/hive/client'
         ..commitLogPath = '$storageDir/hive/client/commit'
         ..namespace =
-            'wavi' // unique identifier that can be used to identify data from your app
+            'wavi' // Unique identifier that can be used to identify data from your app
         ..rootDomain = 'vip.ve.atsign.zone';
 
+      // Init an OnboardingService instance and onboard. Creates a master
+      // atKeys file at the location provided in variable 'masterKeysFilePath'
       AtOnboardingService onboardingService = AtOnboardingServiceImpl(
-          atsign,
-          preference
-            ..cramSecret = at_demos.cramKeyMap[atsign]
-            ..atKeysFilePath = masterKeysFilePath);
+        atsign,
+        preference
+          ..cramSecret = at_demos.cramKeyMap[atsign]
+          ..atKeysFilePath = masterKeysFilePath,
+      );
       await onboardingService.onboard();
       await onboardingService.close(shouldExit: false);
+      AtClientManager.getInstance().reset();
 
+      // Fetch otp
       EnrollmentOperations enrollmentOperations = EnrollmentOperations(atsign);
       String? otp = await enrollmentOperations.getOtp(masterKeysFilePath);
-      // Send enrollment request to server
-      // await has NOT been added so that the onboardingService.enroll() method
-      // call does not starve the rest of the test; but still will be waiting
-      // for enrollment approval in the background
+
+      // Create a new instance of OnboardingService that will be used to send an
+      // enrollment request. Once this request is approved, this creates a new
+      // atKeys file at the location provided in 'enrollmentAtKeysFilePath'
       onboardingService = AtOnboardingServiceImpl(
-          atsign, preference..atKeysFilePath = enrollmentAtKeysFilePath);
+        atsign,
+        preference..atKeysFilePath = enrollmentAtKeysFilePath,
+      );
+
+      // Await has NOT been added below to ensure that the onboardingService.enroll()
+      // method call does not starve the rest of the test; but still will be
+      // waiting for enrollment approval in the background
       Future<AtEnrollmentResponse> enrollRequestResponse =
-          onboardingService.enroll(appName, deviceName, otp!, namespaces);
+          onboardingService.enroll(
+        appName,
+        deviceName,
+        otp!,
+        namespaces,
+      );
       logger.shout('Sleeping for 10s');
-      Future.delayed(Duration(seconds: 10));
-      // approves this enrollment by creating a new instance of OnboardingCLI,
-      // using the existing master AtKeys file
+      await Future.delayed(Duration(seconds: 10));
+
+      // Approve the new enrollment request
       AtEnrollmentResponse? enrollApproveResponse =
           await enrollmentOperations.approve(
-              atKeysFilePath: masterKeysFilePath,
-              appName: appName,
-              deviceName: deviceName);
-
+        atKeysFilePath: masterKeysFilePath,
+        appName: appName,
+        deviceName: deviceName,
+      );
       await enrollRequestResponse.whenComplete(() {
         logger.info('OnboardingService.enroll() completed execution');
         assert(File(enrollmentAtKeysFilePath).existsSync());
       });
-      // close existing onboardingCLI instance and overwrite with a fresh instance
+      AtClientImpl.atClientInstanceMap.clear();
       await onboardingService.close(shouldExit: false);
-      onboardingService = AtOnboardingServiceImpl(atsign, preference);
-      // authenticate using the newly created atKeys that only has access to
-      // 'wavi' namespace
+      AtClientManager.getInstance().reset();
+
+      // Create a new instance of OnboardingCli and authenticate using the newly
+      // created atKeys file that only has access to wavi namespace
+      onboardingService = AtOnboardingServiceImpl(
+        atsign,
+        preference..atKeysFilePath = enrollmentAtKeysFilePath,
+      );
       bool authStatus = await onboardingService.authenticate(
-          enrollmentId: enrollApproveResponse.enrollmentId);
+        enrollmentId: enrollApproveResponse.enrollmentId,
+      );
       expect(authStatus, true);
 
+      // Fetch the atClient instance in OnboardingCli. Then update a key with
+      // buzz namespace
       AtClient? client = onboardingService.atClient;
-      AtKey buzzKey =
-          AtKey.public('dummy_key_27', namespace: 'buzz', sharedBy: atsign)
-              .build();
-      print(await client?.put(buzzKey, 'value'));
+      AtKey buzzKey = AtKey.public(
+        'dummy_key_27',
+        namespace: 'buzz',
+        sharedBy: atsign,
+      ).build();
+      String expectedExceptionMessage =
+          'Exception: Cannot perform update on public:dummy_key_27.buzz@srie due to insufficient privilege';
+
+      // The put operation is expected to fail as the new enrollment only has
+      // access to wavi namespace
+      expect(() => client?.put(buzzKey, 'value'), throwsA(predicate((e) {
+        return e.toString() == expectedExceptionMessage;
+      })));
     }, timeout: Timeout(Duration(minutes: 5)));
 
     tearDown(() async {

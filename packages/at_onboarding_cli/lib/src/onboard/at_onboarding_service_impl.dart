@@ -59,7 +59,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   Future<void> _initAtClient(AtChops atChops, {String? enrollmentId}) async {
     AtClientManager atClientManager = AtClientManager.getInstance();
-    if (atOnboardingPreference.skipSync == true) {
+    if (atOnboardingPreference.skipSync) {
       atServiceFactory = ServiceFactoryWithNoOpSyncService();
     }
     await atClientManager.setCurrentAtSign(
@@ -477,7 +477,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       ..authMode = atOnboardingPreference.authMode
       ..rootDomain = atOnboardingPreference.rootDomain
       ..rootPort = atOnboardingPreference.rootPort
-    ..publicKeyId = atOnboardingPreference.publicKeyId;
+      ..publicKeyId = atOnboardingPreference.publicKeyId;
     var atAuthResponse = await atAuth!.authenticate(atAuthRequest);
     logger.finer('Auth response: $atAuthResponse');
     if (atAuthResponse.isSuccessful &&
@@ -673,9 +673,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     _atLookUp = null;
     atClient = null;
     logger.info('Closing current instance of at_onboarding_cli');
-    if (shouldExit) {
-      exit(exitCode);
-    }
+    if (shouldExit) exit(exitCode);
   }
 
   @override
