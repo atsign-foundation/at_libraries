@@ -1,11 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:at_auth/src/enroll/at_enrollment_response.dart';
 import 'package:at_client/at_client.dart';
-import 'package:at_commons/at_builders.dart';
 import 'package:at_demo_data/at_demo_data.dart' as at_demos;
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
@@ -23,7 +21,7 @@ var selfEncryptionKey;
 final logger = AtSignLogger('OnboardingEnrollmentTest');
 
 void main() {
-  AtSignLogger.root_level = 'FINER';
+  AtSignLogger.root_level = 'WARNING';
   String storageDir = 'test/storage';
 
   group('A group of tests to assert on authenticate functionality', () {
@@ -323,7 +321,7 @@ void main() {
         otp!,
         namespaces,
       );
-      logger.shout('Sleeping for 10s');
+      logger.info('Sleeping for 10s');
       await Future.delayed(Duration(seconds: 10));
 
       // Approve the new enrollment request
@@ -425,7 +423,7 @@ void main() {
         otp!,
         namespaces,
       );
-      logger.shout('Sleeping for 10s');
+      logger.info('Sleeping for 10s');
       await Future.delayed(Duration(seconds: 10));
 
       // Approve the new enrollment request
