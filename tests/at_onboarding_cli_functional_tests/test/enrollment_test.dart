@@ -361,14 +361,117 @@ void main() {
         sharedBy: atsign,
       ).build();
       String expectedExceptionMessage =
-          'Exception: Cannot perform update on public:dummy_key_27.buzz@srie due to insufficient privilege';
+          'Exception: Cannot perform update on ${buzzKey} due to insufficient privilege';
 
       // The put operation is expected to fail as the new enrollment only has
       // access to wavi namespace
       expect(() => client?.put(buzzKey, 'value'), throwsA(predicate((e) {
         return e.toString() == expectedExceptionMessage;
       })));
-    }, timeout: Timeout(Duration(minutes: 5)));
+    });
+
+    test('validate enrollment only has specified level of authorization',
+        () async {
+      // creates an enrollment with r access to 'delta' namespace.
+      // Then validate that updating a key with buzz namespace fails.
+      String atsign = '@eve🛠';
+      String appName = 'access_test_appname';
+      String deviceName = 'functional_test_2';
+      Map<String, String> namespaces = {'delta': 'r'};
+      String masterKeysFilePath = '$storageDir/keys/${atsign}_key.atKeys';
+      String enrollmentAtKeysFilePath =
+          '$storageDir/keys/${atsign}_wavi_key.atKeys';
+
+      AtOnboardingPreference preference = AtOnboardingPreference()
+        ..rootDomain = 'vip.ve.atsign.zone'
+        ..isLocalStoreRequired = true
+        ..hiveStoragePath = '$storageDir/hive/client'
+        ..commitLogPath = '$storageDir/hive/client/commit'
+        ..namespace =
+            'wavi' // Unique identifier that can be used to identify data from your app
+        ..rootDomain = 'vip.ve.atsign.zone';
+
+      // Init an OnboardingService instance and onboard. Creates a master
+      // atKeys file at the location provided in variable 'masterKeysFilePath'
+      AtOnboardingService onboardingService = AtOnboardingServiceImpl(
+        atsign,
+        preference
+          ..cramSecret = at_demos.cramKeyMap[atsign]
+          ..atKeysFilePath = masterKeysFilePath,
+      );
+      await onboardingService.onboard();
+      await onboardingService.close(shouldExit: false);
+      AtClientManager.getInstance().reset();
+
+      // Fetch otp
+      EnrollmentOperations enrollmentOperations = EnrollmentOperations(atsign);
+      String? otp = await enrollmentOperations.getOtp(masterKeysFilePath);
+
+      // Create a new instance of OnboardingService that will be used to send an
+      // enrollment request. Once this request is approved, this creates a new
+      // atKeys file at the location provided in 'enrollmentAtKeysFilePath'
+      onboardingService = AtOnboardingServiceImpl(
+        atsign,
+        preference..atKeysFilePath = enrollmentAtKeysFilePath,
+      );
+
+      // Await has NOT been added below to ensure that the onboardingService.enroll()
+      // method call does not starve the rest of the test; but still will be
+      // waiting for enrollment approval in the background
+      Future<AtEnrollmentResponse> enrollRequestResponse =
+          onboardingService.enroll(
+        appName,
+        deviceName,
+        otp!,
+        namespaces,
+      );
+      logger.shout('Sleeping for 10s');
+      await Future.delayed(Duration(seconds: 10));
+
+      // Approve the new enrollment request
+      AtEnrollmentResponse? enrollApproveResponse =
+          await enrollmentOperations.approve(
+        atKeysFilePath: masterKeysFilePath,
+        appName: appName,
+        deviceName: deviceName,
+      );
+      await enrollRequestResponse.whenComplete(() {
+        logger.info('OnboardingService.enroll() completed execution');
+        assert(File(enrollmentAtKeysFilePath).existsSync());
+      });
+      AtClientImpl.atClientInstanceMap.clear();
+      await onboardingService.close(shouldExit: false);
+      AtClientManager.getInstance().reset();
+
+      // Create a new instance of OnboardingCli and authenticate using the newly
+      // created atKeys file that only has access to wavi namespace
+      onboardingService = AtOnboardingServiceImpl(
+        atsign,
+        preference..atKeysFilePath = enrollmentAtKeysFilePath,
+      );
+      bool authStatus = await onboardingService.authenticate(
+        enrollmentId: enrollApproveResponse.enrollmentId,
+      );
+      expect(authStatus, true);
+
+      // Fetch the atClient instance in OnboardingCli. Then update a key with
+      // buzz namespace
+      AtClient? client = onboardingService.atClient;
+      AtKey deltaKey = AtKey.public(
+        'dummy_key_28',
+        namespace: 'delta',
+        sharedBy: atsign,
+      ).build();
+      String expectedExceptionMessage =
+          'Exception: Cannot perform update on ${deltaKey} due to insufficient privilege';
+
+      // The put operation is expected to fail as the new enrollment only has
+      // read access to 'delta' namespace
+      expect(() async => await client?.put(deltaKey, 'value'),
+          throwsA(predicate((e) {
+        return e.toString() == expectedExceptionMessage;
+      })));
+    });
 
     tearDown(() async {
       await tearDownFunc();

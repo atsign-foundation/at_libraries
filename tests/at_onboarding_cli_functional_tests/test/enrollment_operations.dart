@@ -67,7 +67,7 @@ class EnrollmentOperations {
 
   /// Fetches enrollment requests from server based on the [appName] and [deviceName] provided
   ///
-  /// Always returns the first enrollmentId from the list fetched from server
+  /// Always returns the first enrollment from the list fetched from server
   Future<Enrollment> fetchEnrollment(EnrollmentService enrollmentService,
       {required String appName, required String deviceName}) async {
     EnrollmentListRequestParam requestParam = EnrollmentListRequestParam()
