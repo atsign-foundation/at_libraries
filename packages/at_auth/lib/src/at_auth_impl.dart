@@ -74,9 +74,9 @@ class AtAuthImpl implements AtAuth {
     }
     atLookUp ??= AtLookupImpl(
         atAuthRequest.atSign, atAuthRequest.rootDomain, atAuthRequest.rootPort);
-    var atChops = _createAtChops(atAuthKeys);
-    this.atChops = atChops;
-    atLookUp!.atChops = atChops;
+    atLookUp?.signingAlgoType = atAuthRequest.signingAlgoType;
+    atLookUp?.hashingAlgoType = atAuthRequest.hashingAlgoType;
+    atLookUp!.atChops = atChops = _createAtChops(atAuthKeys);
     _logger.finer('Authenticating using PKAM');
     var isPkamAuthenticated = false;
     pkamAuthenticator ??= PkamAuthenticator(atAuthRequest.atSign, atLookUp!);
@@ -106,6 +106,8 @@ class AtAuthImpl implements AtAuth {
     atEnrollmentBase = AtEnrollmentImpl(atOnboardingRequest.atSign);
     atLookUp ??= AtLookupImpl(atOnboardingRequest.atSign,
         atOnboardingRequest.rootDomain, atOnboardingRequest.rootPort);
+    atLookUp?.signingAlgoType = atOnboardingRequest.signingAlgoType;
+    atLookUp?.hashingAlgoType = atOnboardingRequest.hashingAlgoType;
 
     //1. cram auth
     cramAuthenticator ??=

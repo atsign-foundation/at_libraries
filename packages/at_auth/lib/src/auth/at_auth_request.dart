@@ -1,4 +1,5 @@
 import 'package:at_auth/src/keys/at_auth_keys.dart';
+import 'package:at_chops/at_chops.dart';
 import 'package:at_commons/at_commons.dart';
 
 /// Represents an authentication request of an atSign.
@@ -31,4 +32,10 @@ class AtAuthRequest {
 
   /// public key id from secure element if [authMode] is [PkamAuthMode.sim]
   String? publicKeyId;
+
+  /// Signing algorithm to use for pkam authentication
+  SigningAlgoType signingAlgoType = SigningAlgoType.rsa2048;
+
+  /// Hashing algorithm to use for pkam authentication
+  HashingAlgoType hashingAlgoType = HashingAlgoType.sha256;
 }
