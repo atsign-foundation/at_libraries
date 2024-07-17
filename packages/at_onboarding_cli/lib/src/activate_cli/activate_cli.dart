@@ -70,21 +70,27 @@ Future<void> activate(ArgResults argResults,
       AtOnboardingServiceImpl(argResults['atsign'], atOnboardingPreference);
   stdout.writeln(
       '[Information] Activating your atSign. This may take up to 2 minutes.');
+  int retCode = 0;
   try {
     await atOnboardingService.onboard();
   } on InvalidDataException catch (e) {
     stderr.writeln(
         '[Error] Activation failed. Invalid data provided by user. Please try again\nCause: ${e.message}');
+    retCode = 1;
   } on InvalidRequestException catch (e) {
     stderr.writeln(
         '[Error] Activation failed. Invalid data provided by user. Please try again\nCause: ${e.message}');
+    retCode = 2;
   } on AtActivateException catch (e) {
     stdout.writeln('[Error] ${e.message}');
-  } on Exception catch (e) {
+    retCode = 3;
+  } catch (e) {
     stderr.writeln(
         '[Error] Activation failed. It looks like something went wrong on our side.\n'
         'Please try again or contact support@atsign.com\nCause: $e');
+    retCode = 4;
   } finally {
     await atOnboardingService.close();
+    exit(retCode);
   }
 }
