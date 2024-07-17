@@ -52,7 +52,7 @@ Future<void> main(List<String> arguments) async {
   await activate(argResults);
 }
 
-Future<void> activate(ArgResults argResults,
+Future<int> activate(ArgResults argResults,
     {AtOnboardingService? atOnboardingService}) async {
   stdout.writeln('[Information] Root server is ${argResults['rootServer']}');
   stdout.writeln(
@@ -91,6 +91,6 @@ Future<void> activate(ArgResults argResults,
     retCode = 4;
   } finally {
     await atOnboardingService.close();
-    exit(retCode);
   }
+  return retCode;
 }
