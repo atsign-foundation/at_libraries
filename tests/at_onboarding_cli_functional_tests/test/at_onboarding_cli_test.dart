@@ -16,9 +16,6 @@ final String atKeysFilePath = '${Platform.environment['HOME']}/.atsign/keys';
 Map<String, bool> keysCreatedMap = {};
 void main() {
   AtSignLogger.root_level = 'WARNING';
-  test('Deliberately failing test', () {
-    expect(false, true);
-  });
 
   // These group of tests run on docker container with only cram key available on secondary
   // Perform cram auth and update keys manually.
