@@ -178,7 +178,7 @@ void main() {
         'vip.ve.atsign.zone'
       ];
       // perform activation of atSign
-      await activate_cli.main(args);
+      await activate_cli.wrappedMain(args);
 
       expect(await onboardingService.authenticate(), true);
       // Authenticate atSign with the .atKeys file generated via the activate_cli tool.

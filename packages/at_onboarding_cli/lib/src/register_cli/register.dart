@@ -65,7 +65,7 @@ class Register {
         .start();
 
     await activate_cli
-        .main(['-a', params['atsign']!, '-c', params['cramkey']!]);
+        .wrappedMain(['-a', params['atsign']!, '-c', params['cramkey']!]);
   }
 }
 
