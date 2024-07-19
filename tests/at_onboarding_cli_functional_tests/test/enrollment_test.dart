@@ -296,7 +296,7 @@ void main() {
           ..atKeysFilePath = masterKeysFilePath,
       );
       await onboardingService.onboard();
-      await onboardingService.close(shouldExit: false);
+      await onboardingService.close();
       AtClientManager.getInstance().reset();
 
       // Fetch otp
@@ -336,7 +336,7 @@ void main() {
         assert(File(enrollmentAtKeysFilePath).existsSync());
       });
       AtClientImpl.atClientInstanceMap.clear();
-      await onboardingService.close(shouldExit: false);
+      await onboardingService.close();
       AtClientManager.getInstance().reset();
 
       // Create a new instance of OnboardingCli and authenticate using the newly
@@ -398,7 +398,7 @@ void main() {
           ..atKeysFilePath = masterKeysFilePath,
       );
       await onboardingService.onboard();
-      await onboardingService.close(shouldExit: false);
+      await onboardingService.close();
       AtClientManager.getInstance().reset();
 
       // Fetch otp
@@ -438,7 +438,7 @@ void main() {
         assert(File(enrollmentAtKeysFilePath).existsSync());
       });
       AtClientImpl.atClientInstanceMap.clear();
-      await onboardingService.close(shouldExit: false);
+      await onboardingService.close();
       AtClientManager.getInstance().reset();
 
       // Create a new instance of OnboardingCli and authenticate using the newly

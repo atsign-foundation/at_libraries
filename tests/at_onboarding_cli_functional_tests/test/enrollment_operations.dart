@@ -24,7 +24,7 @@ class EnrollmentOperations {
         ?.executeCommand('otp:get\n', auth: true);
     stdout.writeln('[Test | EnrollmentOps] Fetch OTP response: $response');
     response = response?.replaceFirst('data:', '');
-    await onboardingService.close(shouldExit: false);
+    await onboardingService.close();
     AtClientManager.getInstance().reset();
     return response;
   }
@@ -60,7 +60,7 @@ class EnrollmentOperations {
     AtEnrollmentResponse? enrollmentResponse =
         await enrollmentService.approve(decision);
     print('Enroll Approve Response: $enrollmentResponse');
-    await onboardingService.close(shouldExit: false);
+    await onboardingService.close();
     AtClientManager.getInstance().reset();
     return enrollmentResponse;
   }
