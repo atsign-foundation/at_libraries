@@ -59,7 +59,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   Future<void> _initAtClient(AtChops atChops, {String? enrollmentId}) async {
     AtClientManager atClientManager = AtClientManager.getInstance();
-    if (atOnboardingPreference.skipSync == true) {
+    if (atOnboardingPreference.skipSync) {
       atServiceFactory = ServiceFactoryWithNoOpSyncService();
     }
     await atClientManager.setCurrentAtSign(
@@ -254,6 +254,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         await _getEncryptionPrivateKeyFromServer(
             enrollmentResponse.enrollmentId, _atLookUp!),
         enrollmentResponse.atAuthKeys!.apkamSymmetricKey!);
+
     var decryptedSelfEncryptionKey = EncryptionUtil.decryptValue(
         await _getSelfEncryptionKeyFromServer(
             enrollmentResponse.enrollmentId, _atLookUp!),
@@ -438,7 +439,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   Future<void> _persistKeysLocalSecondary() async {
     //when authenticating keys need to be fetched from atKeys file
     at_auth.AtAuthKeys atAuthKeys = _decryptAtKeysFile(
-        (await _readAtKeysFile(atOnboardingPreference.atKeysFilePath)));
+        (await readAtKeysFile(atOnboardingPreference.atKeysFilePath)));
     //backup keys into local secondary
     bool? response = await atClient
         ?.getLocalSecondary()
@@ -475,7 +476,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       ..authMode = atOnboardingPreference.authMode
       ..rootDomain = atOnboardingPreference.rootDomain
       ..rootPort = atOnboardingPreference.rootPort
-    ..publicKeyId = atOnboardingPreference.publicKeyId;
+      ..publicKeyId = atOnboardingPreference.publicKeyId;
     var atAuthResponse = await atAuth!.authenticate(atAuthRequest);
     logger.finer('Auth response: $atAuthResponse');
     if (atAuthResponse.isSuccessful &&
@@ -491,7 +492,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   ///method to read and return data from .atKeysFile
   ///returns map containing encryption keys
-  Future<Map<String, String>> _readAtKeysFile(String? atKeysFilePath) async {
+  @visibleForTesting
+  Future<Map<String, String>> readAtKeysFile(String? atKeysFilePath) async {
     if (atKeysFilePath == null || atKeysFilePath.isEmpty) {
       throw AtClientException.message(
           'atKeys filePath is empty. atKeysFile is required to authenticate');
@@ -663,14 +665,14 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }
 
   @override
-  Future<void> close() async {
+  Future<void> close({bool shouldExit = true, int exitCode = 0}) async {
     if (_atLookUp != null) {
       await (_atLookUp as AtLookupImpl).close();
     }
     _atLookUp = null;
     atClient = null;
-    logger.info('Closing current instance of at_onboarding_cli (exit code: 0)');
-    exit(0);
+    logger.info('Closing current instance of at_onboarding_cli');
+    if (shouldExit) exit(exitCode);
   }
 
   @override
