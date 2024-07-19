@@ -289,7 +289,7 @@ void main() {
 
       // Init an OnboardingService instance and onboard. Creates a master
       // atKeys file at the location provided in variable 'masterKeysFilePath'
-      AtOnboardingService onboardingService = AtOnboardingServiceImpl(
+      AtOnboardingService? onboardingService = AtOnboardingServiceImpl(
         atsign,
         preference
           ..cramSecret = at_demos.cramKeyMap[atsign]
@@ -297,6 +297,7 @@ void main() {
       );
       await onboardingService.onboard();
       await onboardingService.close();
+      onboardingService = null;
       AtClientManager.getInstance().reset();
 
       // Fetch otp
@@ -337,6 +338,7 @@ void main() {
       });
       AtClientImpl.atClientInstanceMap.clear();
       await onboardingService.close();
+      onboardingService = null;
       AtClientManager.getInstance().reset();
 
       // Create a new instance of OnboardingCli and authenticate using the newly
@@ -372,7 +374,7 @@ void main() {
         () async {
       // creates an enrollment with r access to 'delta' namespace.
       // Then validate that updating a key with buzz namespace fails.
-      String atsign = '@eve🛠';
+      String atsign = '@eggovagency🛠';
       String appName = 'access_test_appname';
       String deviceName = 'functional_test_2';
       Map<String, String> namespaces = {'delta': 'r'};
@@ -391,7 +393,7 @@ void main() {
 
       // Init an OnboardingService instance and onboard. Creates a master
       // atKeys file at the location provided in variable 'masterKeysFilePath'
-      AtOnboardingService onboardingService = AtOnboardingServiceImpl(
+      AtOnboardingService? onboardingService = AtOnboardingServiceImpl(
         atsign,
         preference
           ..cramSecret = at_demos.cramKeyMap[atsign]
@@ -399,6 +401,7 @@ void main() {
       );
       await onboardingService.onboard();
       await onboardingService.close();
+      onboardingService = null;
       AtClientManager.getInstance().reset();
 
       // Fetch otp
@@ -439,6 +442,7 @@ void main() {
       });
       AtClientImpl.atClientInstanceMap.clear();
       await onboardingService.close();
+      onboardingService = null;
       AtClientManager.getInstance().reset();
 
       // Create a new instance of OnboardingCli and authenticate using the newly

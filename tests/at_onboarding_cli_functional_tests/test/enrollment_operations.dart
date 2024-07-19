@@ -16,7 +16,7 @@ class EnrollmentOperations {
   EnrollmentOperations(this.atsign);
 
   Future<String?> getOtp(String atKeysFilePath) async {
-    AtOnboardingService onboardingService = AtOnboardingServiceImpl(
+    AtOnboardingService? onboardingService = AtOnboardingServiceImpl(
         atsign, getOnboardingPreference(atKeysFilePath: atKeysFilePath));
     await onboardingService.authenticate();
     String? response = await onboardingService.atClient
@@ -25,6 +25,7 @@ class EnrollmentOperations {
     stdout.writeln('[Test | EnrollmentOps] Fetch OTP response: $response');
     response = response?.replaceFirst('data:', '');
     await onboardingService.close();
+    onboardingService = null;
     AtClientManager.getInstance().reset();
     return response;
   }
