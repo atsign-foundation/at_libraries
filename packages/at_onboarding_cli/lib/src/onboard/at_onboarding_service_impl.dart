@@ -665,14 +665,14 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }
 
   @override
-  Future<void> close({bool shouldExit = true, int exitCode = 0}) async {
+  Future<void> close() async {
+    logger.info('Closing');
     if (_atLookUp != null) {
       await (_atLookUp as AtLookupImpl).close();
     }
     _atLookUp = null;
     atClient = null;
-    logger.info('Closing current instance of at_onboarding_cli');
-    if (shouldExit) exit(exitCode);
+    logger.info('Closed');
   }
 
   @override

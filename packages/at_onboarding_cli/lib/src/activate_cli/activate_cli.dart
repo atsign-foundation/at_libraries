@@ -7,6 +7,11 @@ import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 import 'package:at_utils/at_logger.dart';
 
 Future<void> main(List<String> arguments) async {
+  int exitCode = await wrappedMain(arguments);
+  exit(exitCode);
+}
+
+Future<int> wrappedMain(List<String> arguments) async {
   //defaults
   String rootServer = 'root.atsign.org';
   String registrarUrl = 'my.atsign.com';
@@ -40,7 +45,7 @@ Future<void> main(List<String> arguments) async {
 
   if (argResults.wasParsed('help')) {
     stdout.writeln(parser.usage);
-    return;
+    return 0;
   }
 
   if (!argResults.wasParsed('atsign')) {
@@ -49,10 +54,10 @@ Future<void> main(List<String> arguments) async {
     throw IllegalArgumentException('atSign is required');
   }
 
-  await activate(argResults);
+  return await activate(argResults);
 }
 
-Future<void> activate(ArgResults argResults,
+Future<int> activate(ArgResults argResults,
     {AtOnboardingService? atOnboardingService}) async {
   stdout.writeln('[Information] Root server is ${argResults['rootServer']}');
   stdout.writeln(
@@ -70,21 +75,27 @@ Future<void> activate(ArgResults argResults,
       AtOnboardingServiceImpl(argResults['atsign'], atOnboardingPreference);
   stdout.writeln(
       '[Information] Activating your atSign. This may take up to 2 minutes.');
+  int retCode = 0;
   try {
     await atOnboardingService.onboard();
   } on InvalidDataException catch (e) {
     stderr.writeln(
         '[Error] Activation failed. Invalid data provided by user. Please try again\nCause: ${e.message}');
+    retCode = 1;
   } on InvalidRequestException catch (e) {
     stderr.writeln(
         '[Error] Activation failed. Invalid data provided by user. Please try again\nCause: ${e.message}');
+    retCode = 2;
   } on AtActivateException catch (e) {
     stdout.writeln('[Error] ${e.message}');
-  } on Exception catch (e) {
+    retCode = 3;
+  } catch (e) {
     stderr.writeln(
         '[Error] Activation failed. It looks like something went wrong on our side.\n'
         'Please try again or contact support@atsign.com\nCause: $e');
+    retCode = 4;
   } finally {
     await atOnboardingService.close();
   }
+  return retCode;
 }

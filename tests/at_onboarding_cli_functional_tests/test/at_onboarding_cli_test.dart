@@ -16,6 +16,7 @@ final String atKeysFilePath = '${Platform.environment['HOME']}/.atsign/keys';
 Map<String, bool> keysCreatedMap = {};
 void main() {
   AtSignLogger.root_level = 'WARNING';
+
   // These group of tests run on docker container with only cram key available on secondary
   // Perform cram auth and update keys manually.
   Future<void> _createKeys(String atSign) async {
@@ -179,7 +180,7 @@ void main() {
         'vip.ve.atsign.zone'
       ];
       // perform activation of atSign
-      await activate_cli.main(args);
+      await activate_cli.wrappedMain(args);
 
       /// ToDo: test should NOT exit with status 0 after activation is complete
       /// Exiting with status 0 is ideal behaviour, but for the sake of the test we need to be
