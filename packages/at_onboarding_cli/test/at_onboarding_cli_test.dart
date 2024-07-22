@@ -51,8 +51,8 @@ void main() {
       onboardingService.atLookUp = mockAtLookup;
       mockAtAuth.atChops = AtChopsImpl(AtChopsKeys());
       onboardingService.atAuth = mockAtAuth;
-      onboardingService.atClient =
-          await AtClientImpl.create(atSign, '.wavi', getAtClientPreferenceAlice());
+      onboardingService.atClient = await AtClientImpl.create(
+          atSign, '.wavi', getAtClientPreferenceAlice());
       when(() => mockAtLookup.pkamAuthenticate())
           .thenAnswer((_) => Future.value(true));
       when(() => mockAtAuth.authenticate(any())).thenAnswer(
@@ -98,8 +98,8 @@ void main() {
       var keyStore = SecondaryPersistenceStoreFactory.getInstance()
           .getSecondaryPersistenceStore(atsign)
           ?.getSecondaryKeyStore();
-      LocalSecondary localSecondary = LocalSecondary(mockAtClient,
-          keyStore: keyStore);
+      LocalSecondary localSecondary =
+          LocalSecondary(mockAtClient, keyStore: keyStore);
 
       // mocking OnboardingServiceImpl
       AtOnboardingServiceImpl onboardingService =
@@ -152,8 +152,8 @@ void main() {
       await onboardingService.enroll(appName, deviceName, otp, namespaces);
 
       // verify stored data in LocalSecondary
-      AtData response = await localSecondary.keyStore
-          ?.get('$dummyEnrollmentId.new.enrollments.__manage$atsign');
+      AtData response =
+          await localSecondary.keyStore?.get('local:$dummyEnrollmentId$atsign');
       Map<String, dynamic> jsonDecodedResponse = jsonDecode(response.data!);
       expect(jsonDecodedResponse['namespace'], namespaces);
     });
