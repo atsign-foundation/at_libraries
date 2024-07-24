@@ -23,7 +23,7 @@ dependencies:
    zxing2: ^0.2.0
    at_auth: ^2.0.2
    at_chops: ^2.0.0
-   at_client: ^3.0.75
+   at_client: ^3.0.76
    at_commons: ^4.0.8
    at_lookup: ^3.0.47
    at_server_status: ^1.0.4
