@@ -21,7 +21,7 @@ var selfEncryptionKey;
 final logger = AtSignLogger('OnboardingEnrollmentTest');
 
 void main() {
-  AtSignLogger.root_level = 'WARNING';
+  AtSignLogger.root_level = 'FINER';
   String storageDir = 'test/storage';
 
   group('A group of tests to assert on authenticate functionality', () {
@@ -61,7 +61,7 @@ void main() {
       String totp = 'a6b4df';
       AtOnboardingPreference enrollPreference_2 =
           getPreferenceForEnroll(atSign);
-      final onboardingService_2 =
+      AtOnboardingService? onboardingService_2 =
           AtOnboardingServiceImpl(atSign, enrollPreference_2);
 
       logger.info('trying enrollment with invalid OTP');
@@ -95,7 +95,7 @@ void main() {
         }
         logger.info('OnboardingEnrollmentTest: approving request');
         await _notificationCallback(
-            notification, onboardingService_1.atClient!, 'approve');
+            notification, onboardingService_1!.atClient!, 'approve');
         completer.complete();
       });
 
@@ -147,6 +147,9 @@ void main() {
       expect(authResultWithEnrollment, true);
       enrolledClientKeysFile.deleteSync();
 
+      await onboardingService_1.close();
+      await onboardingService_2.close();
+      onboardingService_1 = onboardingService_2 = null;
       logger.info('Enroll / approve / auth test completed');
     });
 
@@ -167,13 +170,15 @@ void main() {
       //2. authenticate first client
       var authStatus = await onboardingService_1.authenticate();
       expect(authStatus, true);
-    }, timeout: Timeout(Duration(minutes: 10)));
+
+      await onboardingService_1.close();
+      onboardingService_1 = null;
+    });
 
     test(
-        'A test to verify an onboarding exception is NOT thrown'
-        ' when enableEnrollmentDuringOnboard is set to true'
-        ' and deviceName and appName are not passed', () async {
-      // if onboard is testing use distinct demo atsign per test,
+        'A test to verify an onboarding exception is NOT thrown when enableEnrollmentDuringOnboard is set to true and deviceName and appName are not passed',
+        () async {
+      // when testing onboard() use distinct demo atsign per test,
       // since cram keys get deleted on server for already onboarded atsign
       String atSign = '@colin🛠';
       // preference without appName and deviceName
@@ -189,17 +194,20 @@ void main() {
 
       AtOnboardingService? onboardingService_1 =
           AtOnboardingServiceImpl(atSign, preference_1);
-      await onboardingService_1.onboard();
-    });
-  });
+      bool onboardStatus = await onboardingService_1.onboard();
+      expect(onboardStatus, true);
 
-  group('tests to validate enrollment behaviour post approval/denial', () {
+      await onboardingService_1.close();
+      onboardingService_1 = null;
+    });
+
     test(
         'A test to verify send enroll request, deny enrollment and auth by enrollmentId should fail',
         () async {
       // if onboard is testing use distinct demo atsign per test,
       // since cram keys get deleted on server for already onboarded atsign
       String atSign = '@purnima🛠';
+      // String atSign = '@srie';
       //1. Onboard first client
       AtOnboardingPreference preference_1 = getPreferenceForAuth(atSign);
       AtOnboardingService? onboardingService_1 =
@@ -242,17 +250,16 @@ void main() {
             expect(notificationValueJson['deviceName'], 'iphone');
             expect(notificationValueJson['namespace']['buzz'], 'rw');
             await _notificationCallback(
-                notification, onboardingService_1.atClient!, 'deny');
+                notification, onboardingService_1!.atClient!, 'deny');
             completer.complete();
           }, count: 1, max: -1));
 
       //5. enroll second client
-      AtOnboardingPreference enrollPreference_2 =
-          getPreferenceForEnroll(atSign);
-      final onboardingService_2 =
-          AtOnboardingServiceImpl(atSign, enrollPreference_2);
+      preference_1 = getPreferenceForEnroll(atSign);
+      AtOnboardingServiceImpl? onboardingService_2 =
+          AtOnboardingServiceImpl(atSign, preference_1);
 
-      await expectLater(
+      Future<dynamic> expectLaterFuture = expectLater(
           onboardingService_2.enroll(
             'buzz',
             'iphone',
@@ -262,10 +269,17 @@ void main() {
           ),
           throwsA(predicate((dynamic e) =>
               e is AtEnrollmentException && e.message == 'enrollment denied')));
-
+      print(await expectLaterFuture);
       await completer.future;
+      await onboardingService_1.close();
+      await onboardingService_2.close();
+      onboardingService_1 = onboardingService_2 = null;
     });
 
+    tearDown(() => tearDownFunc());
+  });
+
+  group('tests to validate enrollment access control', () {
     test('validate enrollment only has access to approved namespaces',
         () async {
       // creates an enrollment with rw access to wavi namespace. Then validate
@@ -301,7 +315,7 @@ void main() {
       AtClientManager.getInstance().reset();
 
       // Fetch otp
-      EnrollmentOperations enrollmentOperations = EnrollmentOperations(atsign);
+      EnrollmentOperations? enrollmentOperations = EnrollmentOperations(atsign);
       String? otp = await enrollmentOperations.getOtp(masterKeysFilePath);
 
       // Create a new instance of OnboardingService that will be used to send an
@@ -339,6 +353,7 @@ void main() {
       AtClientImpl.atClientInstanceMap.clear();
       await onboardingService.close();
       onboardingService = null;
+      enrollmentOperations = null;
       AtClientManager.getInstance().reset();
 
       // Create a new instance of OnboardingCli and authenticate using the newly
@@ -361,13 +376,18 @@ void main() {
         sharedBy: atsign,
       ).build();
       String expectedExceptionMessage =
-          'Exception: Cannot perform update on ${buzzKey} due to insufficient privilege';
+          'Exception: Cannot perform update on $buzzKey due to insufficient privilege';
 
       // The put operation is expected to fail as the new enrollment only has
       // access to wavi namespace
-      expect(() => client?.put(buzzKey, 'value'), throwsA(predicate((e) {
+      expect(() async => await client?.put(buzzKey, 'value'),
+          throwsA(predicate((e) {
         return e.toString() == expectedExceptionMessage;
       })));
+      onboardingService.atClient?.notificationService.stopAllSubscriptions();
+      onboardingService.atClient?.syncService.removeAllProgressListeners();
+      await onboardingService.close();
+      onboardingService = null;
     });
 
     test('validate enrollment only has specified level of authorization',
@@ -465,7 +485,7 @@ void main() {
         sharedBy: atsign,
       ).build();
       String expectedExceptionMessage =
-          'Exception: Cannot perform update on ${deltaKey} due to insufficient privilege';
+          'Exception: Cannot perform update on $deltaKey due to insufficient privilege';
 
       // The put operation is expected to fail as the new enrollment only has
       // read access to 'delta' namespace
@@ -473,6 +493,8 @@ void main() {
           throwsA(predicate((e) {
         return e.toString() == expectedExceptionMessage;
       })));
+
+      await onboardingService.close();
     });
 
     tearDown(() async {
@@ -598,6 +620,7 @@ Future<void> getAtKeys(String atSign) async {
 }
 
 Future<void> tearDownFunc() async {
+  AtClientManager.getInstance().reset();
   bool isExists = await Directory('test/storage/').exists();
   if (isExists) {
     Directory('test/storage/').deleteSync(recursive: true);

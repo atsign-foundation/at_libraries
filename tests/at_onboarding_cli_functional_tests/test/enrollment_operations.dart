@@ -66,6 +66,38 @@ class EnrollmentOperations {
     return enrollmentResponse;
   }
 
+  Future<AtEnrollmentResponse> deny(
+      {required String atKeysFilePath,
+      String? enrollmentId,
+      String? appName,
+      String? deviceName}) async {
+    AtOnboardingService onboardingService = AtOnboardingServiceImpl(
+        atsign, getOnboardingPreference(atKeysFilePath: atKeysFilePath));
+    await onboardingService.authenticate();
+    EnrollmentService enrollmentService = EnrollmentServiceImpl(
+        onboardingService.atClient!, atAuthBase.atEnrollment(atsign));
+
+    // when enrollmentId is not provided. Fetches all enrollment requests for
+    // the given appName and deviceName and uses the data of the first request
+    //
+    // the assumption is that the first request with the given appName and
+    // deviceName is the one that needs to be denied
+    Enrollment? enrollment;
+    if (enrollmentId == null) {
+      enrollment = await fetchEnrollment(enrollmentService,
+          appName: appName!, deviceName: deviceName!);
+      enrollmentId = enrollment.enrollmentId;
+    }
+    EnrollmentRequestDecision decision =
+        EnrollmentRequestDecision.denied(enrollmentId!);
+    AtEnrollmentResponse? enrollmentResponse =
+        await enrollmentService.deny(decision);
+    print('Enroll Approve Response: $enrollmentResponse');
+    await onboardingService.close();
+    AtClientManager.getInstance().reset();
+    return enrollmentResponse;
+  }
+
   /// Fetches enrollment requests from server based on the [appName] and [deviceName] provided
   ///
   /// Always returns the first enrollment from the list fetched from server
@@ -76,8 +108,8 @@ class EnrollmentOperations {
       ..deviceName = deviceName
       ..enrollmentListFilter = [EnrollmentStatus.pending];
 
-    return (await enrollmentService
-        .fetchEnrollmentRequests(enrollmentListParams: requestParam))[0];
+    return (await enrollmentService.fetchEnrollmentRequests(
+        enrollmentListParams: requestParam))[0];
   }
 
   AtOnboardingPreference getOnboardingPreference(
