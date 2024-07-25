@@ -8,9 +8,9 @@ import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:test/test.dart';
 import 'package:at_demo_data/at_demo_data.dart' as at_demos;
-import 'at_chops_secure_element_mock.dart';
+import 'utils/at_chops_secure_element_mock.dart';
 import 'package:at_auth/at_auth.dart' as at_auth;
-import 'onboarding_service_impl_override.dart';
+import 'utils/onboarding_service_impl_override.dart';
 
 /// Usage: dart main.dart <cram_secret>
 void main() {

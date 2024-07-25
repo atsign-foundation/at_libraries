@@ -10,7 +10,7 @@ import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart'
 import 'package:at_utils/at_utils.dart';
 import 'package:test/test.dart';
 
-import 'onboarding_service_impl_override.dart';
+import 'utils/onboarding_service_impl_override.dart';
 
 final String atKeysFilePath = '${Platform.environment['HOME']}/.atsign/keys';
 Map<String, bool> keysCreatedMap = {};

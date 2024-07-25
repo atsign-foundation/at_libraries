@@ -626,7 +626,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
     while (retryCount <= maxRetries && secondaryAddress == null) {
       await Future.delayed(Duration(seconds: 2));
-      logger.finer('retrying find secondary.......$retryCount/$maxRetries');
+      logger.finer(
+          'retrying find secondary for $_atSign... #[$retryCount/$maxRetries]');
       try {
         secondaryAddress =
             await atLookupImpl.secondaryAddressFinder.findSecondary(_atSign);
@@ -648,7 +649,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
     while (!connectionFlag && retryCount <= maxRetries) {
       await Future.delayed(Duration(seconds: 2));
-      stdout.writeln('Connecting to secondary ...$retryCount/$maxRetries');
+      stdout.writeln(
+          'Connecting to secondary for $_atSign... #[$retryCount/$maxRetries]');
       try {
         secureSocket = await SecureSocket.connect(
             secondaryAddress.host, secondaryAddress.port,
@@ -671,9 +673,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   @override
   Future<void> close() async {
     logger.info('Closing');
-    if (_atLookUp != null && (_atLookUp as AtLookupImpl).isConnectionAvailable()) {
-      await (_atLookUp as AtLookupImpl).close();
-    }
+    await _atLookUp?.close();
     atClient?.notificationService.stopAllSubscriptions();
     atClient?.syncService.removeAllProgressListeners();
     _atLookUp = null;

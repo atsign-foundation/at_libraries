@@ -10,7 +10,7 @@ import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_utils/at_utils.dart';
 import 'package:test/test.dart';
 
-import 'enrollment_operations.dart';
+import 'utils/enrollment_operations.dart';
 
 var pkamPublicKey;
 var pkamPrivateKey;
@@ -21,7 +21,7 @@ var selfEncryptionKey;
 final logger = AtSignLogger('OnboardingEnrollmentTest');
 
 void main() {
-  AtSignLogger.root_level = 'FINER';
+  AtSignLogger.root_level = 'WARNING';
   String storageDir = 'test/storage';
 
   group('A group of tests to assert on authenticate functionality', () {
@@ -207,7 +207,6 @@ void main() {
       // if onboard is testing use distinct demo atsign per test,
       // since cram keys get deleted on server for already onboarded atsign
       String atSign = '@purnima🛠';
-      // String atSign = '@srie';
       //1. Onboard first client
       AtOnboardingPreference preference_1 = getPreferenceForAuth(atSign);
       AtOnboardingService? onboardingService_1 =
