@@ -453,9 +453,11 @@ class Metadata {
   /// See also [skeEncKeyName]
   String? sharedKeyEnc;
 
-  /// Stores the checksum of the encryption public key used to encrypt the [sharedKeyEnc]. We use this
-  /// to verify that the encryption key-pair used to encrypt and decrypt the value are same
-  @Deprecated('Use pubKeyHash')
+  /// Stores the checksum of the encryption public key used to encrypt the
+  /// [sharedKeyEnc]. We use this to verify that the encryption key-pairs used
+  /// to encrypt and decrypt the value are the same
+  /// Will be marked as `@Deprecated('Use pubKeyHash')` once at_server and
+  /// at_client_sdk fully support pubKeyHash
   String? pubKeyCS;
 
   /// Stores the hash of the encryption public key used to encrypt the [sharedKeyEnc]
