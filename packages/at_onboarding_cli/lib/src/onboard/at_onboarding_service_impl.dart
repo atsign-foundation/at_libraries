@@ -361,8 +361,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }) async {
     if (atKeysFile == null) {
       if (!atOnboardingPreference.atKeysFilePath!.endsWith('.atKeys')) {
-        atOnboardingPreference.atKeysFilePath =
-            path.join(atOnboardingPreference.atKeysFilePath!, '.atKeys');
+        _constructCompleteAtKeysFilePath(enrollmentId: enrollmentId);
       }
 
       atKeysFile = File(atOnboardingPreference.atKeysFilePath!);
@@ -567,6 +566,26 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     } on Exception catch (e) {
       stdout.writeln('exception while getting secret from QR code: $e');
       return null;
+    }
+  }
+
+  /// Constructs a proper filePath when the user-provided file path is NOT complete
+  /// path: case EnrollmentId present -> userProvidedDir/atsign_enrollmentId_key.atKeys
+  /// path: case EnrollmentId NOT present -> userProvidedDir/atsign_key.atKeys
+  void _constructCompleteAtKeysFilePath({String? enrollmentId}) {
+    // if path provided by user is a directory -> create a new file in the same directory
+    // if user provided path is a file, but missing .atKeys -> append .atKeys
+    bool isDirectory =
+        Directory(atOnboardingPreference.atKeysFilePath!).existsSync();
+    if (isDirectory) {
+      String fileName = enrollmentId.isNull
+          ? '${_atSign}_key'
+          : '${_atSign}_${enrollmentId}_key';
+      atOnboardingPreference.atKeysFilePath =
+          path.join(atOnboardingPreference.atKeysFilePath!, '$fileName.atKeys');
+    } else {
+      atOnboardingPreference.atKeysFilePath =
+          '${atOnboardingPreference.atKeysFilePath}.atKeys';
     }
   }
 
