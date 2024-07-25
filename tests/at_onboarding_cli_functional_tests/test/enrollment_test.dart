@@ -270,12 +270,13 @@ void main() {
               e is AtEnrollmentException && e.message == 'enrollment denied')));
       print(await expectLaterFuture);
       await completer.future;
+
       await onboardingService_1.close();
       await onboardingService_2.close();
       onboardingService_1 = onboardingService_2 = null;
     });
 
-    tearDown(() => tearDownFunc());
+    tearDown(() async => await tearDownFunc());
   });
 
   group('tests to validate enrollment access control', () {

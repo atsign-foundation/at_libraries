@@ -654,9 +654,10 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   @override
   Future<void> close() async {
     logger.info('Closing');
-    await _atLookUp?.close();
+    if (_atLookUp != null && (_atLookUp as AtLookupImpl).isConnectionAvailable()) {
+      await _atLookUp!.close();
+    }
     atClient?.notificationService.stopAllSubscriptions();
-    atClient?.syncService.removeAllProgressListeners();
     _atLookUp = null;
     atClient = null;
     logger.info('Closed');
