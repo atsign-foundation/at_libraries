@@ -1,3 +1,5 @@
+## 4.0.12
+- fix: remove deprecated annotation from Metadata.pubKeyCS
 ## 4.0.11
 - chore: deprecate MessageTypeEnum.text
 ## 4.0.10
