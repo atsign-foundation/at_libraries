@@ -39,7 +39,7 @@
 - feat: Introduce "AtThrottleLimitExceeded" exception which is thrown when enrollment request exceeds the limit
 - feat: Introduce new error codes for apkam enrollments
 ## 3.0.54
-- fix: Modify "totp" verb regex to include alpha-numeric characters
+- fix: Modify "totp" verb regex to include alphanumeric characters
 - feat: Introduce "EnrollResponse" class which represents the enrollment response.
 ## 3.0.53
 - feat: Modify "enroll" verb regex.
@@ -130,7 +130,7 @@
 - Add constant for stats notification id
 ## 3.0.20
 - Enhance notify verb to include the isEncrypted field
-- Add intent and exception scenario to AtException sub-classes
+- Add intent and exception scenario to AtException subclasses
 - Introducing class SecureSocketConfig to store config params to create security context for secure sockets.
 ## 3.0.19
 - Rename byPassCache to bypassCache in lookup, plookup verb builders and at_constants
