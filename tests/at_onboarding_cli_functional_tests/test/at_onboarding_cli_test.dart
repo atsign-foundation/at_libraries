@@ -189,7 +189,7 @@ void main() {
       // Authenticate atSign with the .atKeys file generated via the activate_cli tool
       expect(await File(onboardingPreference.atKeysFilePath!).exists(), true);
       expect(await onboardingService.authenticate(), true);
-    }, skip: true);
+    });
 
     tearDownAll(() async {
       await tearDownFunc();

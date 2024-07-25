@@ -380,8 +380,7 @@ void main() {
 
       // The put operation is expected to fail as the new enrollment only has
       // access to wavi namespace
-      expect(() async => await client?.put(buzzKey, 'value'),
-          throwsA(predicate((e) {
+      await expectLater(client?.put(buzzKey, 'value'), throwsA(predicate((e) {
         return e.toString() == expectedExceptionMessage;
       })));
       onboardingService.atClient?.notificationService.stopAllSubscriptions();
@@ -489,8 +488,7 @@ void main() {
 
       // The put operation is expected to fail as the new enrollment only has
       // read access to 'delta' namespace
-      expect(() async => await client?.put(deltaKey, 'value'),
-          throwsA(predicate((e) {
+      await expectLater(client?.put(deltaKey, 'value'), throwsA(predicate((e) {
         return e.toString() == expectedExceptionMessage;
       })));
 
