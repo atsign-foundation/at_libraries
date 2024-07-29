@@ -11,13 +11,14 @@ import 'package:at_demo_data/at_demo_data.dart' as at_demos;
 import 'utils/at_chops_secure_element_mock.dart';
 import 'package:at_auth/at_auth.dart' as at_auth;
 import 'utils/onboarding_service_impl_override.dart';
+import 'package:at_auth/src/at_auth_impl.dart';
 
 /// Usage: dart main.dart <cram_secret>
 void main() {
   AtSignLogger.root_level = 'WARNING';
   var logger = AtSignLogger('OnboardSecureElementTest');
-
   final atSign = '@egcreditbureau🛠'.trim();
+
   test('Test auth functionality using secure element mock', () async {
     AtOnboardingPreference preference = getPreferences(atSign);
     AtOnboardingService onboardingService =
@@ -25,14 +26,11 @@ void main() {
     // create empty keys in AtChops. Encryption key pair will be set later on after generation
     final atChopsImpl =
         AtChopsSecureElementMock(AtChopsKeys.create(null, null));
-    AtLookUp atLookupInstance =
-        AtLookupImpl(atSign, preference.rootDomain, preference.rootPort);
-    atLookupInstance.signingAlgoType = preference.signingAlgoType;
-    atLookupInstance.hashingAlgoType = preference.hashingAlgoType;
     at_auth.AtAuth atAuthInstance = at_auth.atAuthBase
-        .atAuth(atLookUp: atLookupInstance, atChops: atChopsImpl);
+        .atAuth(atChops: atChopsImpl);
     onboardingService.atAuth = atAuthInstance;
     atChopsImpl.init();
+
     logger.info('Onboarding the atSign: $atSign');
     bool isOnboarded = await onboardingService.onboard();
     expect(isOnboarded, true);
@@ -44,7 +42,7 @@ void main() {
     logger.info('Authentication completed successfully for atSign: $atSign');
 
     // update a key
-    AtClient? atClient = await onboardingService.atClient;
+    AtClient? atClient = onboardingService.atClient;
     await insertSelfEncKey(atClient, atSign,
         selfEncryptionKey:
             await getSelfEncryptionKey(preference.atKeysFilePath!));
@@ -60,6 +58,11 @@ void main() {
     var deleteResponse = await atClient?.delete(key);
     stdout.writeln('[Test] Got Delete Response: $deleteResponse');
     expect(deleteResponse, true);
+    // validate that signing algo and hashing algo set in AtOnboardingPreference
+    // is passed forward to AtAuth instance
+    AtLookupImpl? atLookupImpl = (onboardingService.atAuth as AtAuthImpl).atLookUp as AtLookupImpl?;
+    expect(atLookupImpl!.signingAlgoType, SigningAlgoType.ecc_secp256r1);
+    expect(atLookupImpl.hashingAlgoType, HashingAlgoType.sha256);
   });
 
   tearDown(() async {
@@ -79,7 +82,7 @@ AtOnboardingPreference getPreferences(String atSign) {
     ..commitLogPath = 'storage/commitLog'
     ..rootDomain = 'vip.ve.atsign.zone'
     ..fetchOfflineNotifications = true
-    ..atKeysFilePath = 'test/storage/files/$atSign' + '_key.atKeys'
+    ..atKeysFilePath = 'test/storage/files/${atSign}_key.atKeys'
     ..signingAlgoType = SigningAlgoType.ecc_secp256r1
     ..hashingAlgoType = HashingAlgoType.sha256
     ..authMode = PkamAuthMode.sim
