@@ -72,13 +72,12 @@ class AtAuthImpl implements AtAuth {
           'Unable to read PkamPrivateKey from provided atKeys file/atAuthKeys object',
           exceptionScenario: ExceptionScenario.invalidValueProvided);
     }
-    atLookUp ??= AtLookupImpl(
-        atAuthRequest.atSign, atAuthRequest.rootDomain, atAuthRequest.rootPort);
-    atLookUp?.signingAlgoType = atAuthRequest.signingAlgoType;
-    atLookUp?.hashingAlgoType = atAuthRequest.hashingAlgoType;
-    atLookUp!.atChops = atChops = _createAtChops(atAuthKeys);
     // ??= to support mocking
     atChops ??= _createAtChops(atAuthKeys);
+    atLookUp ??= AtLookupImpl(
+        atAuthRequest.atSign, atAuthRequest.rootDomain, atAuthRequest.rootPort);
+    atLookUp!.signingAlgoType = atAuthRequest.signingAlgoType;
+    atLookUp!.hashingAlgoType = atAuthRequest.hashingAlgoType;
     atLookUp!.atChops = atChops;
 
     _logger.finer('Authenticating using PKAM');
@@ -106,6 +105,11 @@ class AtAuthImpl implements AtAuth {
   @override
   Future<AtOnboardingResponse> onboard(
       AtOnboardingRequest atOnboardingRequest, String cramSecret) async {
+    if (atOnboardingRequest.authMode == PkamAuthMode.sim && atChops == null) {
+      throw AtPublicKeyNotFoundException(
+          'AtChops cannot be null when AuthMode is sim. '
+              'PKAMPublicKey needs to be read from sim using AtChops');
+    }
     var atOnboardingResponse = AtOnboardingResponse(atOnboardingRequest.atSign);
     atEnrollmentBase = AtEnrollmentImpl(atOnboardingRequest.atSign);
     atLookUp ??= AtLookupImpl(atOnboardingRequest.atSign,
@@ -145,8 +149,8 @@ class AtAuthImpl implements AtAuth {
     }
 
     //5. Init _atLookUp again and attempt pkam auth
-    // atLookUp = AtLookupImpl(atOnboardingRequest.atSign,
-    //     atOnboardingRequest.rootDomain, atOnboardingRequest.rootPort);
+    atLookUp = AtLookupImpl(atOnboardingRequest.atSign,
+        atOnboardingRequest.rootDomain, atOnboardingRequest.rootPort);
     atLookUp!.atChops = atChops;
 
     var isPkamAuthenticated = false;
@@ -161,7 +165,7 @@ class AtAuthImpl implements AtAuth {
       throw AtAuthenticationException('Pkam auth failed - $e ');
     }
     if (!isPkamAuthenticated) {
-      throw AtAuthenticationException('Pkam auth returned false');
+      throw AtAuthenticationException('Pkam auth unsuccessful');
     }
 
     //7. If Pkam auth is success, update encryption public key to secondary
@@ -331,7 +335,7 @@ class AtAuthImpl implements AtAuth {
     } else if (authMode == PkamAuthMode.sim) {
       // get the public key from secure element
       pkamPublicKey = atChops!.readPublicKey(publicKeyId!);
-      _logger.info('pkam  public key from sim: ${atKeysFile.apkamPublicKey}');
+      _logger.info('PKAM public key from sim: $pkamPublicKey');
 
       // encryption key pair and self encryption symmetric key
       // are not available to injected at_chops. Set it here
@@ -340,8 +344,8 @@ class AtAuthImpl implements AtAuth {
       atChops!.atChopsKeys.apkamSymmetricKey = apkamSymmetricKey;
     }
     atKeysFile.apkamPublicKey = pkamPublicKey;
-    //Standard order of an atKeys file is ->
-    // pkam keypair -> encryption keypair -> selfEncryption key -> enrollmentId --> apkam symmetric key -->
+    // Standard order of an atKeys file is -> pkam keypair -> encryption keypair
+    // --> selfEncryption key -> enrollmentId --> apkam symmetric key -->
     // @sign: selfEncryptionKey[self encryption key again]
     // note: "->" stands for "followed by"
     atKeysFile.defaultEncryptionPublicKey =
