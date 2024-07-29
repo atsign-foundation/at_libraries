@@ -10,12 +10,13 @@ import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart'
 import 'package:at_utils/at_utils.dart';
 import 'package:test/test.dart';
 
-import 'onboarding_service_impl_override.dart';
+import 'utils/onboarding_service_impl_override.dart';
 
 final String atKeysFilePath = '${Platform.environment['HOME']}/.atsign/keys';
 Map<String, bool> keysCreatedMap = {};
 void main() {
   AtSignLogger.root_level = 'WARNING';
+
   // These group of tests run on docker container with only cram key available on secondary
   // Perform cram auth and update keys manually.
   Future<void> _createKeys(String atSign) async {
@@ -160,6 +161,8 @@ void main() {
     });
   });
 
+  // This test exiting with status 0 is skipping the rest of the functional tests
+  // Skipping this test until the issue can be resolved
   group('A group of tests to verify activate_cli', () {
     String atSign = '@murali🛠';
     AtOnboardingPreference onboardingPreference = getPreferences(atSign);
@@ -177,11 +180,15 @@ void main() {
         'vip.ve.atsign.zone'
       ];
       // perform activation of atSign
-      await activate_cli.main(args);
+      await activate_cli.wrappedMain(args);
 
-      expect(await onboardingService.authenticate(), true);
-      // Authenticate atSign with the .atKeys file generated via the activate_cli tool.
+      /// ToDo: test should NOT exit with status 0 after activation is complete
+      /// Exiting with status 0 is ideal behaviour, but for the sake of the test we need to be
+      /// able to run the following assertions.
+
+      // Authenticate atSign with the .atKeys file generated via the activate_cli tool
       expect(await File(onboardingPreference.atKeysFilePath!).exists(), true);
+      expect(await onboardingService.authenticate(), true);
     });
 
     tearDownAll(() async {

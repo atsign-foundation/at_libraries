@@ -1,3 +1,5 @@
+## 1.6.1
+- feat: save enrollment details to local keystore
 ## 1.6.0
 - feat: add 'status' command to the activate cli to check the status of an 
   atSign

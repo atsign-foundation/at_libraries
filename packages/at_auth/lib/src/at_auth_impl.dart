@@ -77,6 +77,10 @@ class AtAuthImpl implements AtAuth {
     atLookUp?.signingAlgoType = atAuthRequest.signingAlgoType;
     atLookUp?.hashingAlgoType = atAuthRequest.hashingAlgoType;
     atLookUp!.atChops = atChops = _createAtChops(atAuthKeys);
+    // ??= to support mocking
+    atChops ??= _createAtChops(atAuthKeys);
+    atLookUp!.atChops = atChops;
+
     _logger.finer('Authenticating using PKAM');
     var isPkamAuthenticated = false;
     pkamAuthenticator ??= PkamAuthenticator(atAuthRequest.atSign, atLookUp!);
@@ -122,11 +126,8 @@ class AtAuthImpl implements AtAuth {
     var atAuthKeys = _generateKeyPairs(atOnboardingRequest.authMode,
         publicKeyId: atOnboardingRequest.publicKeyId);
 
-    if (atChops == null) {
-      var atChops = _createAtChops(atAuthKeys);
-      this.atChops = atChops;
-      atLookUp!.atChops = atChops;
-    }
+    atChops ??= _createAtChops(atAuthKeys);
+    atLookUp!.atChops = atChops;
 
     //3. send onboarding enrollment
     String? enrollmentIdFromServer;
