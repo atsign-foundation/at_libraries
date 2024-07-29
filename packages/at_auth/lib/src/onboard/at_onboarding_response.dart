@@ -9,6 +9,6 @@ class AtOnboardingResponse {
 
   @override
   String toString() {
-    return 'AtOnboardingResponse{atSign: $atSign, enrollmentId: $enrollmentId, isSuccessful: $isSuccessful}';
+    return 'AtOnboardingResponse: {atSign: $atSign, enrollmentId: $enrollmentId, isSuccessful: $isSuccessful}';
   }
 }

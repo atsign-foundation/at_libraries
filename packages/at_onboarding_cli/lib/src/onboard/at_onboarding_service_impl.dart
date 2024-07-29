@@ -116,6 +116,10 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     atOnboardingRequest.deviceName = atOnboardingPreference.deviceName;
     atOnboardingRequest.publicKeyId = atOnboardingPreference.publicKeyId;
     atOnboardingRequest.authMode = atOnboardingPreference.authMode;
+    atOnboardingRequest.signingAlgoType =
+        atOnboardingPreference.signingAlgoType;
+    atOnboardingRequest.hashingAlgoType =
+        atOnboardingPreference.hashingAlgoType;
 
     AtOnboardingResponse atOnboardingResponse = await atAuth!
         .onboard(atOnboardingRequest, atOnboardingPreference.cramSecret!);
@@ -481,7 +485,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       ..authMode = atOnboardingPreference.authMode
       ..rootDomain = atOnboardingPreference.rootDomain
       ..rootPort = atOnboardingPreference.rootPort
-      ..publicKeyId = atOnboardingPreference.publicKeyId;
+      ..publicKeyId = atOnboardingPreference.publicKeyId
+      ..signingAlgoType = atOnboardingPreference.signingAlgoType
+      ..hashingAlgoType = atOnboardingPreference.hashingAlgoType;
     var atAuthResponse = await atAuth!.authenticate(atAuthRequest);
     logger.finer('Auth response: $atAuthResponse');
     if (atAuthResponse.isSuccessful &&
@@ -654,7 +660,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   @override
   Future<void> close() async {
     logger.info('Closing');
-    if (_atLookUp != null && (_atLookUp as AtLookupImpl).isConnectionAvailable()) {
+    if (_atLookUp != null &&
+        (_atLookUp as AtLookupImpl).isConnectionAvailable()) {
       await _atLookUp!.close();
     }
     atClient?.notificationService.stopAllSubscriptions();
