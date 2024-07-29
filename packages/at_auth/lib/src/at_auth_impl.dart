@@ -141,20 +141,15 @@ class AtAuthImpl implements AtAuth {
         atOnboardingRequest, atAuthKeys, atLookUp!);
     atAuthKeys.enrollmentId = enrollmentIdFromServer;
 
-    //4. Close connection to server
+    //4. Close existing authenticated connection to server
     try {
       await (atLookUp as AtLookupImpl).close();
     } on Exception catch (e) {
       _logger.severe('error while closing connection to server: $e');
     }
 
-    //5. Init _atLookUp again and attempt pkam auth
-    atLookUp = AtLookupImpl(atOnboardingRequest.atSign,
-        atOnboardingRequest.rootDomain, atOnboardingRequest.rootPort);
-    atLookUp!.atChops = atChops;
-
     var isPkamAuthenticated = false;
-    //6. Do pkam auth
+    //5. Do pkam auth
     pkamAuthenticator ??=
         PkamAuthenticator(atOnboardingRequest.atSign, atLookUp!);
     try {
@@ -168,7 +163,7 @@ class AtAuthImpl implements AtAuth {
       throw AtAuthenticationException('Pkam auth unsuccessful');
     }
 
-    //7. If Pkam auth is success, update encryption public key to secondary
+    //6. If Pkam auth is success, update encryption public key to secondary
     // and delete cram key from server
     final encryptionPublicKey = atAuthKeys.defaultEncryptionPublicKey;
     UpdateVerbBuilder updateBuilder = UpdateVerbBuilder()
@@ -180,7 +175,7 @@ class AtAuthImpl implements AtAuth {
     String? encryptKeyUpdateResult = await atLookUp!.executeVerb(updateBuilder);
     _logger.info('Encryption public key update result $encryptKeyUpdateResult');
 
-    //8.  Delete cram secret from the keystore as cram auth is complete
+    //7.  Delete cram secret from the keystore as cram auth is complete
     DeleteVerbBuilder deleteBuilder = DeleteVerbBuilder()
       ..atKey = (AtKey()..key = AtConstants.atCramSecret);
     String? deleteResponse = await atLookUp!.executeVerb(deleteBuilder);

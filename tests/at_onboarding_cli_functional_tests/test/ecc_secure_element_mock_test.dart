@@ -19,15 +19,15 @@ void main() {
   var logger = AtSignLogger('OnboardSecureElementTest');
   final atSign = '@egcreditbureau🛠'.trim();
 
-  test('Test auth functionality using secure element mock', () async {
+  test('Validate auth functionality using secure element mock', () async {
     AtOnboardingPreference preference = getPreferences(atSign);
     AtOnboardingService onboardingService =
         OnboardingServiceImplOverride(atSign, preference);
     // create empty keys in AtChops. Encryption key pair will be set later on after generation
     final atChopsImpl =
         AtChopsSecureElementMock(AtChopsKeys.create(null, null));
-    at_auth.AtAuth atAuthInstance = at_auth.atAuthBase
-        .atAuth(atChops: atChopsImpl);
+    at_auth.AtAuth atAuthInstance =
+        at_auth.atAuthBase.atAuth(atChops: atChopsImpl);
     onboardingService.atAuth = atAuthInstance;
     atChopsImpl.init();
 
@@ -60,7 +60,8 @@ void main() {
     expect(deleteResponse, true);
     // validate that signing algo and hashing algo set in AtOnboardingPreference
     // is passed forward to AtAuth instance
-    AtLookupImpl? atLookupImpl = (onboardingService.atAuth as AtAuthImpl).atLookUp as AtLookupImpl?;
+    AtLookupImpl? atLookupImpl =
+        (onboardingService.atAuth as AtAuthImpl).atLookUp as AtLookupImpl?;
     expect(atLookupImpl!.signingAlgoType, SigningAlgoType.ecc_secp256r1);
     expect(atLookupImpl.hashingAlgoType, HashingAlgoType.sha256);
   });
