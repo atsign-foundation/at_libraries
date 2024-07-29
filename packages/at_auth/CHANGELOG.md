@@ -1,3 +1,8 @@
+## 2.0.5
+- fix: set atChops in atLookup before pkam auth in AtAuthImpl
+- build[deps]: Upgraded the following packages:
+  - at_commons to 4.0.11
+  - at_lookup to 3.0.47
 ## 2.0.4
 - fix: Add "revoke" to the "AtEnrollmentBase" to support enroll:revoke operation
 ## 2.0.3
