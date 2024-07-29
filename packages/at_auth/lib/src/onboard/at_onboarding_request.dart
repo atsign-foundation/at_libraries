@@ -1,3 +1,4 @@
+import 'package:at_chops/at_chops.dart';
 import 'package:at_commons/at_commons.dart';
 
 class AtOnboardingRequest {
@@ -13,4 +14,10 @@ class AtOnboardingRequest {
 
   /// public key id if [authMode] is [PkamAuthMode.sim]
   String? publicKeyId;
+
+  /// Signing algorithm to use for cram authentication
+  SigningAlgoType signingAlgoType = SigningAlgoType.rsa2048;
+
+  /// Hashing algorithm to use for cram authentication
+  HashingAlgoType hashingAlgoType = HashingAlgoType.sha256;
 }
