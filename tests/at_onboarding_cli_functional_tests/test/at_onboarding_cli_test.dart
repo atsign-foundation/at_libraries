@@ -9,6 +9,8 @@ import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart'
     as activate_cli;
 import 'package:at_utils/at_utils.dart';
 import 'package:test/test.dart';
+import 'package:at_auth/src/at_auth_impl.dart';
+import 'package:at_chops/at_chops.dart';
 
 import 'utils/onboarding_service_impl_override.dart';
 
@@ -77,7 +79,7 @@ void main() {
       AtOnboardingService onboardingService =
           AtOnboardingServiceImpl(atSign, preference);
       await onboardingService.authenticate();
-      AtClient? atClient = await onboardingService.atClient;
+      AtClient? atClient = onboardingService.atClient;
       AtKey key = AtKey();
       key.key = 'testKey3';
       key.namespace = 'wavi';
@@ -85,6 +87,32 @@ void main() {
       AtValue? response = await atClient?.get(key);
       expect('value3', response?.value);
     });
+
+    test(
+        'validate that signing algo and hashing algo set in AtOnboardingPreference is passed forward to AtAuth instance',
+        () async {
+          /// test is being skipped as sha512 is not being recognized by at_server
+          /// as a valid hashing algo although at_chops supports sha512. This
+          /// test can be un-skipped once this bug has been resolved
+      String atSign = '@eve🛠';
+      await _createKeys(atSign);
+      AtOnboardingPreference preference = getPreferences(atSign);
+      await generateAtKeysFile(atSign, preference.atKeysFilePath!);
+      SigningAlgoType signingAlgo = SigningAlgoType.rsa2048;
+      HashingAlgoType hashingAlgo = HashingAlgoType.sha512;
+      preference.hashingAlgoType = hashingAlgo;
+      preference.signingAlgoType = signingAlgo;
+      AtOnboardingService onboardingService =
+          AtOnboardingServiceImpl(atSign, preference);
+      await onboardingService.authenticate();
+      // validating on the atLookup instance in AtAuth to ensure that the algo's
+      // passed through OnboardingPref are passed to the AtLookup instance that
+      // communicates with the at_server
+      AtLookupImpl? atLookupImpl =
+          (onboardingService.atAuth as AtAuthImpl).atLookUp as AtLookupImpl?;
+      expect(atLookupImpl!.signingAlgoType, signingAlgo);
+      expect(atLookupImpl.hashingAlgoType, hashingAlgo);
+    }, skip: true);
 
     test('A test to verify atKeysFilePath is set when null is provided',
         () async {
@@ -115,7 +143,7 @@ void main() {
       await generateAtKeysFile(atSign, atOnboardingPreference.atKeysFilePath!);
       await _createKeys(atSign);
       bool status = await atOnboardingService.authenticate();
-      atClient = await atOnboardingService.atClient;
+      atClient = atOnboardingService.atClient;
       expect(true, status);
 
       expect(at_demos.pkamPrivateKeyMap[atSign],
@@ -146,6 +174,7 @@ void main() {
         () async {
       AtOnboardingService atOnboardingService =
           AtOnboardingServiceImpl(atSign, atOnboardingPreference);
+
       bool status = await atOnboardingService.onboard();
       expect(status, true);
       bool status2 = await atOnboardingService.authenticate();
@@ -165,9 +194,6 @@ void main() {
   // Skipping this test until the issue can be resolved
   group('A group of tests to verify activate_cli', () {
     String atSign = '@murali🛠';
-    AtOnboardingPreference onboardingPreference = getPreferences(atSign);
-    AtOnboardingService onboardingService =
-        OnboardingServiceImplOverride(atSign, onboardingPreference);
     test(
         'A test to verify atSign is activated and .atKeys file is generated using activate_cli',
         () async {
@@ -182,10 +208,9 @@ void main() {
       // perform activation of atSign
       await activate_cli.wrappedMain(args);
 
-      /// ToDo: test should NOT exit with status 0 after activation is complete
-      /// Exiting with status 0 is ideal behaviour, but for the sake of the test we need to be
-      /// able to run the following assertions.
-
+      AtOnboardingPreference onboardingPreference = getPreferences(atSign);
+      AtOnboardingService onboardingService =
+          AtOnboardingServiceImpl(atSign, onboardingPreference);
       // Authenticate atSign with the .atKeys file generated via the activate_cli tool
       expect(await File(onboardingPreference.atKeysFilePath!).exists(), true);
       expect(await onboardingService.authenticate(), true);
