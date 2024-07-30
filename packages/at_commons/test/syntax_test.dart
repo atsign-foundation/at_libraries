@@ -51,12 +51,14 @@ void main() {
               e.message == 'command does not match the regex')));
     });
   });
+
   group('A group of tests to verify pkam verb regex', () {
     test('pkam regex without signing algo', () {
       var command = 'pkam:abcd1234';
       var verbParams = getVerbParams(VerbSyntax.pkam, command);
       expect(verbParams[AtConstants.atPkamSignature], 'abcd1234');
     });
+
     test('pkam regex with rsa2048 signing algo and sha256 hashing algo', () {
       var command = 'pkam:signingAlgo:rsa2048:hashingAlgo:sha256:abcd1234';
       var verbParams = getVerbParams(VerbSyntax.pkam, command);
@@ -64,6 +66,7 @@ void main() {
       expect(verbParams[AtConstants.atPkamHashingAlgo], 'sha256');
       expect(verbParams[AtConstants.atPkamSignature], 'abcd1234');
     });
+
     test('pkam regex with ecc signing algo and sha256 hashing algo', () {
       var command =
           'pkam:signingAlgo:ecc_secp256r1:hashingAlgo:sha256:abcd1234';
@@ -72,17 +75,37 @@ void main() {
       expect(verbParams[AtConstants.atPkamHashingAlgo], 'sha256');
       expect(verbParams[AtConstants.atPkamSignature], 'abcd1234');
     });
+
+    test('pkam regex with ecc signing algo and sha512 hashing algo', () {
+      var command =
+          'pkam:signingAlgo:ecc_secp256r1:hashingAlgo:sha512:abcd1234';
+      var verbParams = getVerbParams(VerbSyntax.pkam, command);
+      expect(verbParams[AtConstants.atPkamSigningAlgo], 'ecc_secp256r1');
+      expect(verbParams[AtConstants.atPkamHashingAlgo], 'sha512');
+      expect(verbParams[AtConstants.atPkamSignature], 'abcd1234');
+    });
+
+    test('pkam regex with rsa signing algo and sha512 hashing algo', () {
+      var command = 'pkam:signingAlgo:rsa2048:hashingAlgo:sha512:abcd1234';
+      var verbParams = getVerbParams(VerbSyntax.pkam, command);
+      expect(verbParams[AtConstants.atPkamSigningAlgo], 'rsa2048');
+      expect(verbParams[AtConstants.atPkamHashingAlgo], 'sha512');
+      expect(verbParams[AtConstants.atPkamSignature], 'abcd1234');
+    });
+
     test('pkam regex with invalid signing algo', () {
       var command = 'pkam:signingAlgo:ecc:abcd1234';
       var verbParams = getVerbParams(VerbSyntax.pkam, command);
       expect(verbParams[AtConstants.atPkamSigningAlgo], isNull);
     });
+
     test('pkam regex with invalid hashing algo', () {
       var command = 'pkam:hashingAlgo:md5:abcd1234';
       var verbParams = getVerbParams(VerbSyntax.pkam, command);
       expect(verbParams[AtConstants.atPkamHashingAlgo], isNull);
     });
   });
+
   group('A group of positive tests to verify keys verb regex', () {
     test('keys verb  - put public key', () {
       var command =
