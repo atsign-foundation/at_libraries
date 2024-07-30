@@ -1,5 +1,6 @@
 ## 1.6.1
 - feat: save enrollment details to local keystore
+- build[deps]: upgrade at_auth to 2.0.5 | at_commons to 4.0.11
 ## 1.6.0
 - feat: add 'status' command to the activate cli to check the status of an 
   atSign
