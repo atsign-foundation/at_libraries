@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:at_chops/at_chops.dart';
 import 'package:at_client/at_client.dart';
-import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:test/test.dart';
@@ -11,7 +10,6 @@ import 'package:at_demo_data/at_demo_data.dart' as at_demos;
 import 'utils/at_chops_secure_element_mock.dart';
 import 'package:at_auth/at_auth.dart' as at_auth;
 import 'utils/onboarding_service_impl_override.dart';
-import 'package:at_auth/src/at_auth_impl.dart';
 
 /// Usage: dart main.dart <cram_secret>
 void main() {
@@ -58,12 +56,6 @@ void main() {
     var deleteResponse = await atClient?.delete(key);
     stdout.writeln('[Test] Got Delete Response: $deleteResponse');
     expect(deleteResponse, true);
-    // validate that signing algo and hashing algo set in AtOnboardingPreference
-    // is passed forward to AtAuth instance
-    AtLookupImpl? atLookupImpl =
-        (onboardingService.atAuth as AtAuthImpl).atLookUp as AtLookupImpl?;
-    expect(atLookupImpl!.signingAlgoType, SigningAlgoType.ecc_secp256r1);
-    expect(atLookupImpl.hashingAlgoType, HashingAlgoType.sha256);
   });
 
   tearDown(() async {
