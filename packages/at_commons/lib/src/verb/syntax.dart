@@ -7,7 +7,7 @@ class VerbSyntax {
   static const pol = r'^pol$';
   static const cram = r'^cram:(?<digest>.+$)';
   static const pkam =
-      r'^pkam:(signingAlgo:(?<signingAlgo>ecc_secp256r1|rsa2048):)?(hashingAlgo:(?<hashingAlgo>sha256):)?(enrollmentId:(?<enrollmentId>.+):)?(?<signature>.+$)';
+      r'^pkam:(signingAlgo:(?<signingAlgo>ecc_secp256r1|rsa2048):)?(hashingAlgo:(?<hashingAlgo>sha256|sha512):)?(enrollmentId:(?<enrollmentId>.+):)?(?<signature>.+$)';
   static const llookup = r'^llookup'
       r'(:(?<operation>meta|all))?'
       r'(:cached)?'
