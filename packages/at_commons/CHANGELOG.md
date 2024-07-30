@@ -1,7 +1,8 @@
+## 4.0.12
+- fix: update pkam regex to accept sha512 as hashing algo
 ## 4.0.11
 - chore: deprecate MessageTypeEnum.text
 - fix: remove deprecated annotation from Metadata.pubKeyCS
-
 ## 4.0.10
 - fix: Add a "force" variable to enroll_verb_builder to propagate enroll:revoke:force value
 - fix: Deprecate apkam in PkamAuthMode enum
