@@ -158,6 +158,65 @@ void main() {
       expect(jsonDecodedResponse['namespace'], namespaces);
     });
 
+    group('Set of tests to validate atKeys file path based on user input', () {
+      test(
+          'validate atKeys file path when user provided path is a directory - case enrollmentID null',
+          () {
+        String atsign = '@peekaboo';
+        String atKeysFilePath = 'test/storage';
+        AtOnboardingPreference onboardingPreference = getOnboardingPreference();
+        onboardingPreference.atKeysFilePath = atKeysFilePath;
+        AtOnboardingServiceImpl onboardingServiceImpl =
+            AtOnboardingServiceImpl(atsign, onboardingPreference);
+        onboardingServiceImpl.constructCompleteAtKeysFilePath();
+        expect(onboardingPreference.atKeysFilePath,
+            '$atKeysFilePath/${atsign}_key.atKeys');
+      });
+
+      test(
+          'validate atKeys file path when user provided path is a file but misses .atKeys suffix - case enrollmentID null',
+          () {
+        String atsign = '@charlie';
+        String atKeysFilePath = 'test/storage/charlie';
+        AtOnboardingPreference onboardingPreference = getOnboardingPreference();
+        onboardingPreference.atKeysFilePath = atKeysFilePath;
+        AtOnboardingServiceImpl onboardingServiceImpl =
+            AtOnboardingServiceImpl(atsign, onboardingPreference);
+        onboardingServiceImpl.constructCompleteAtKeysFilePath();
+        expect(onboardingPreference.atKeysFilePath,
+            'test/storage/charlie.atKeys');
+      });
+
+      test(
+          'validate atKeys file path when user provided path is a directory - case enrollmentID present',
+              () {
+            String atsign = '@peekaboo';
+            String atKeysFilePath = 'test/storage';
+            String enrollmentId = '1234';
+            AtOnboardingPreference onboardingPreference = getOnboardingPreference();
+            onboardingPreference.atKeysFilePath = atKeysFilePath;
+            AtOnboardingServiceImpl onboardingServiceImpl =
+            AtOnboardingServiceImpl(atsign, onboardingPreference);
+            onboardingServiceImpl.constructCompleteAtKeysFilePath(enrollmentId: enrollmentId);
+            expect(onboardingPreference.atKeysFilePath,
+                '$atKeysFilePath/${atsign}_${enrollmentId}_key.atKeys');
+          });
+
+      test(
+          'validate atKeys file path when user provided path is a file but misses .atKeys suffix - case enrollmentID present',
+              () {
+            String atsign = '@charlie';
+            String atKeysFilePath = 'test/storage/charlie';
+            AtOnboardingPreference onboardingPreference = getOnboardingPreference();
+            onboardingPreference.atKeysFilePath = atKeysFilePath;
+            AtOnboardingServiceImpl onboardingServiceImpl =
+            AtOnboardingServiceImpl(atsign, onboardingPreference);
+            onboardingServiceImpl.constructCompleteAtKeysFilePath();
+            expect(onboardingPreference.atKeysFilePath,
+                'test/storage/charlie.atKeys');
+          });
+    });
+
     tearDown(() async {
       await tearDownFunc();
     });
