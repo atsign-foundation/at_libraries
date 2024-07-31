@@ -8,6 +8,7 @@ import 'package:at_auth/at_auth.dart';
 import 'package:at_chops/at_chops.dart';
 import 'package:at_client/at_client.dart';
 import 'package:at_auth/at_auth.dart' as at_auth;
+import 'package:at_persistence_secondary_server/at_persistence_secondary_server.dart';
 import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 import 'package:at_server_status/at_server_status.dart';
 import 'package:at_utils/at_utils.dart';
@@ -16,6 +17,7 @@ import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:crypton/crypton.dart';
 import 'package:encrypt/encrypt.dart';
+import 'package:meta/meta.dart';
 import 'package:zxing2/qrcode.dart';
 import 'package:image/image.dart';
 import 'package:path/path.dart' as path;
@@ -57,7 +59,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   Future<void> _initAtClient(AtChops atChops, {String? enrollmentId}) async {
     AtClientManager atClientManager = AtClientManager.getInstance();
-    if (atOnboardingPreference.skipSync == true) {
+    if (atOnboardingPreference.skipSync) {
       atServiceFactory = ServiceFactoryWithNoOpSyncService();
     }
     await atClientManager.setCurrentAtSign(
@@ -113,7 +115,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     atOnboardingRequest.appName = atOnboardingPreference.appName;
     atOnboardingRequest.deviceName = atOnboardingPreference.deviceName;
     atOnboardingRequest.publicKeyId = atOnboardingPreference.publicKeyId;
-    var atOnboardingResponse = await atAuth!
+    atOnboardingRequest.authMode = atOnboardingPreference.authMode;
+
+    AtOnboardingResponse atOnboardingResponse = await atAuth!
         .onboard(atOnboardingRequest, atOnboardingPreference.cramSecret!);
     logger.finer('Onboarding Response: $atOnboardingResponse');
     if (atOnboardingResponse.isSuccessful) {
@@ -147,6 +151,25 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     logger.finer('EnrollmentResponse from server: $enrollmentResponse');
 
     await awaitApproval(enrollmentResponse, retryInterval: retryInterval);
+
+    await _initAtClient(_atLookUp!.atChops!,
+        enrollmentId: enrollmentResponse.enrollmentId);
+    var atData = AtData();
+    var enrollmentDetails = EnrollmentDetails();
+    enrollmentDetails.namespace = namespaces;
+    atData.data = jsonEncode(enrollmentDetails);
+    // Cannot use atClient.put since The "_isAuthorized" method fetches enrollment
+    // info from the key-store. Since there is no enrollment info,
+    // it returns null and throws throws AtKeyNotFoundException.
+    var localEnrollmentKey = AtKey()
+      ..isLocal = true
+      ..key = enrollmentResponse.enrollmentId
+      ..sharedBy = atClient!.getCurrentAtSign();
+    final putResult = await atClient!
+        .getLocalSecondary()!
+        .keyStore!
+        .put(localEnrollmentKey.toString(), atData);
+    logger.finer('putResult for storing enrollment details: $putResult');
 
     await createAtKeysFile(
       enrollmentResponse,
@@ -193,10 +216,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     AtLookupImpl atLookUpImpl = AtLookupImpl(_atSign,
         atOnboardingPreference.rootDomain, atOnboardingPreference.rootPort);
     logger.finer('sendEnrollRequest: submitting enrollment request');
-    AtEnrollmentResponse response = await _atEnrollment!.submit(
-      newClientEnrollmentRequest,
-      atLookUpImpl,
-    );
+    AtEnrollmentResponse response =
+        await _atEnrollment!.submit(newClientEnrollmentRequest, atLookUpImpl);
     logger.finer('sendEnrollRequest: received server response: $response');
 
     return response;
@@ -220,12 +241,14 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         atOnboardingPreference.rootDomain, atOnboardingPreference.rootPort);
 
     atLookUpImpl.atChops = AtChopsImpl(atChopsKeys);
+    // ?? to support mocking
+    _atLookUp ??= atLookUpImpl;
 
     // Pkam auth will be attempted asynchronously until enrollment is approved
     // or denied or times out. If denied or timed out, an exception will be
     // thrown
     await _waitForPkamAuthSuccess(
-      atLookUpImpl,
+      _atLookUp!,
       enrollmentResponse.enrollmentId,
       retryInterval,
       logProgress: logProgress,
@@ -233,11 +256,12 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
     var decryptedEncryptionPrivateKey = EncryptionUtil.decryptValue(
         await _getEncryptionPrivateKeyFromServer(
-            enrollmentResponse.enrollmentId, atLookUpImpl),
+            enrollmentResponse.enrollmentId, _atLookUp!),
         enrollmentResponse.atAuthKeys!.apkamSymmetricKey!);
+
     var decryptedSelfEncryptionKey = EncryptionUtil.decryptValue(
         await _getSelfEncryptionKeyFromServer(
-            enrollmentResponse.enrollmentId, atLookUpImpl),
+            enrollmentResponse.enrollmentId, _atLookUp!),
         enrollmentResponse.atAuthKeys!.apkamSymmetricKey!);
 
     enrollmentResponse.atAuthKeys!.defaultEncryptionPrivateKey =
@@ -254,12 +278,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     try {
       var getPrivateKeyResult =
           await atLookUp.executeCommand(privateKeyCommand, auth: true);
-      if (getPrivateKeyResult == null || getPrivateKeyResult.isEmpty) {
+      getPrivateKeyResult = getPrivateKeyResult?.replaceFirst('data:', '');
+      var privateKeyResultJson = jsonDecode(getPrivateKeyResult!);
+      encryptionPrivateKeyFromServer = privateKeyResultJson['value'];
+      if (encryptionPrivateKeyFromServer == null ||
+          encryptionPrivateKeyFromServer.isEmpty) {
         throw AtEnrollmentException('$privateKeyCommand returned null/empty');
       }
-      getPrivateKeyResult = getPrivateKeyResult.replaceFirst('data:', '');
-      var privateKeyResultJson = jsonDecode(getPrivateKeyResult);
-      encryptionPrivateKeyFromServer = privateKeyResultJson['value'];
     } on Exception catch (e) {
       throw AtEnrollmentException(
           'Exception while getting encrypted private key/self key from server: $e');
@@ -275,15 +300,15 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     try {
       var getSelfEncryptionKeyResult =
           await atLookUp.executeCommand(selfEncryptionKeyCommand, auth: true);
-      if (getSelfEncryptionKeyResult == null ||
-          getSelfEncryptionKeyResult.isEmpty) {
+      getSelfEncryptionKeyResult =
+          getSelfEncryptionKeyResult?.replaceFirst('data:', '');
+      var selfEncryptionKeyResultJson = jsonDecode(getSelfEncryptionKeyResult!);
+      selfEncryptionKeyFromServer = selfEncryptionKeyResultJson['value'];
+      if (selfEncryptionKeyFromServer == null ||
+          selfEncryptionKeyFromServer.isEmpty) {
         throw AtEnrollmentException(
             '$selfEncryptionKeyCommand returned null/empty');
       }
-      getSelfEncryptionKeyResult =
-          getSelfEncryptionKeyResult.replaceFirst('data:', '');
-      var selfEncryptionKeyResultJson = jsonDecode(getSelfEncryptionKeyResult);
-      selfEncryptionKeyFromServer = selfEncryptionKeyResultJson['value'];
     } on Exception catch (e) {
       throw AtEnrollmentException(
           'Exception while getting encrypted private key/self key from server: $e');
@@ -293,7 +318,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   /// Pkam auth will be retried until server approves/denies/expires the enrollment
   Future<void> _waitForPkamAuthSuccess(
-    AtLookupImpl atLookUpImpl,
+    AtLookUp atLookUp,
     String enrollmentIdFromServer,
     Duration retryInterval, {
     bool logProgress = true,
@@ -304,7 +329,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         stderr.write('Checking ... ');
       }
       bool pkamAuthSucceeded = await _attemptPkamAuth(
-        atLookUpImpl,
+        atLookUp,
         enrollmentIdFromServer,
       );
       if (pkamAuthSucceeded) {
@@ -363,7 +388,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       if (!atOnboardingPreference.atKeysFilePath!.endsWith('.atKeys')) {
         _constructCompleteAtKeysFilePath(enrollmentId: enrollmentId);
       }
-
       atKeysFile = File(atOnboardingPreference.atKeysFilePath!);
     }
 
@@ -419,7 +443,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   Future<void> _persistKeysLocalSecondary() async {
     //when authenticating keys need to be fetched from atKeys file
     at_auth.AtAuthKeys atAuthKeys = _decryptAtKeysFile(
-        (await _readAtKeysFile(atOnboardingPreference.atKeysFilePath)));
+        (await readAtKeysFile(atOnboardingPreference.atKeysFilePath)));
     //backup keys into local secondary
     bool? response = await atClient
         ?.getLocalSecondary()
@@ -455,7 +479,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       ..atKeysFilePath = atOnboardingPreference.atKeysFilePath
       ..authMode = atOnboardingPreference.authMode
       ..rootDomain = atOnboardingPreference.rootDomain
-      ..rootPort = atOnboardingPreference.rootPort;
+      ..rootPort = atOnboardingPreference.rootPort
+      ..publicKeyId = atOnboardingPreference.publicKeyId;
     var atAuthResponse = await atAuth!.authenticate(atAuthRequest);
     logger.finer('Auth response: $atAuthResponse');
     if (atAuthResponse.isSuccessful &&
@@ -471,7 +496,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   ///method to read and return data from .atKeysFile
   ///returns map containing encryption keys
-  Future<Map<String, String>> _readAtKeysFile(String? atKeysFilePath) async {
+  @visibleForTesting
+  Future<Map<String, String>> readAtKeysFile(String? atKeysFilePath) async {
     if (atKeysFilePath == null || atKeysFilePath.isEmpty) {
       throw AtClientException.message(
           'atKeys filePath is empty. atKeysFile is required to authenticate');
@@ -600,7 +626,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
     while (retryCount <= maxRetries && secondaryAddress == null) {
       await Future.delayed(Duration(seconds: 2));
-      logger.finer('retrying find secondary.......$retryCount/$maxRetries');
+      logger.finer(
+          'retrying find secondary for $_atSign... #[$retryCount/$maxRetries]');
       try {
         secondaryAddress =
             await atLookupImpl.secondaryAddressFinder.findSecondary(_atSign);
@@ -622,7 +649,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
     while (!connectionFlag && retryCount <= maxRetries) {
       await Future.delayed(Duration(seconds: 2));
-      stdout.writeln('Connecting to secondary ...$retryCount/$maxRetries');
+      stdout.writeln(
+          'Connecting to secondary for $_atSign... #[$retryCount/$maxRetries]');
       try {
         secureSocket = await SecureSocket.connect(
             secondaryAddress.host, secondaryAddress.port,
@@ -645,9 +673,10 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   @override
   Future<void> close() async {
     logger.info('Closing');
-    if (_atLookUp != null) {
-      await (_atLookUp as AtLookupImpl).close();
+    if (_atLookUp != null && (_atLookUp as AtLookupImpl).isConnectionAvailable()) {
+      await _atLookUp!.close();
     }
+    atClient?.notificationService.stopAllSubscriptions();
     _atLookUp = null;
     atClient = null;
     logger.info('Closed');
@@ -667,6 +696,11 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     _atLookUp = atLookUp;
   }
 
+  @visibleForTesting
+  set enrollmentBase(at_auth.AtEnrollmentBase enrollmentBase) {
+    _atEnrollment = enrollmentBase;
+  }
+
   @override
   AtLookUp? get atLookUp => _atLookUp;
 
@@ -676,4 +710,18 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
   @override
   at_auth.AtAuth? atAuth;
+}
+
+class EnrollmentDetails {
+  late Map<String, dynamic> namespace;
+
+  static EnrollmentDetails fromJSON(Map<String, dynamic> json) {
+    return EnrollmentDetails()..namespace = json['namespace'];
+  }
+
+  Map<String, dynamic> toJson() {
+    Map<String, dynamic> map = {};
+    map['namespace'] = namespace;
+    return map;
+  }
 }
