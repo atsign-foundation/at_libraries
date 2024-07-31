@@ -386,7 +386,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }) async {
     if (atKeysFile == null) {
       if (!atOnboardingPreference.atKeysFilePath!.endsWith('.atKeys')) {
-        constructCompleteAtKeysFilePath(enrollmentId: enrollmentId);
+        constructCompleteAtKeysFilePath();
       }
       atKeysFile = File(atOnboardingPreference.atKeysFilePath!);
     }
@@ -598,17 +598,14 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   /// Constructs a proper filePath when the user-provided file path is NOT complete
   /// path: case EnrollmentId present -> userProvidedDir/atsign_enrollmentId_key.atKeys
   /// path: case EnrollmentId NOT present -> userProvidedDir/atsign_key.atKeys
-  void constructCompleteAtKeysFilePath({String? enrollmentId}) {
+  void constructCompleteAtKeysFilePath() {
     // if path provided by user is a directory -> create a new file in the same directory
     // if user provided path is a file, but missing .atKeys -> append .atKeys
     bool isDirectory =
         Directory(atOnboardingPreference.atKeysFilePath!).existsSync();
     if (isDirectory) {
-      String fileName = enrollmentId.isNull
-          ? '${_atSign}_key'
-          : '${_atSign}_${enrollmentId}_key';
-      atOnboardingPreference.atKeysFilePath =
-          path.join(atOnboardingPreference.atKeysFilePath!, '$fileName.atKeys');
+      atOnboardingPreference.atKeysFilePath = path.join(
+          atOnboardingPreference.atKeysFilePath!, '${_atSign}_key.atKeys');
     } else {
       atOnboardingPreference.atKeysFilePath =
           '${atOnboardingPreference.atKeysFilePath}.atKeys';
@@ -673,7 +670,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   @override
   Future<void> close() async {
     logger.info('Closing');
-    if (_atLookUp != null && (_atLookUp as AtLookupImpl).isConnectionAvailable()) {
+    if (_atLookUp != null &&
+        (_atLookUp as AtLookupImpl).isConnectionAvailable()) {
       await _atLookUp!.close();
     }
     atClient?.notificationService.stopAllSubscriptions();
