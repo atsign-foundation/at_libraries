@@ -386,7 +386,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }) async {
     if (atKeysFile == null) {
       if (!atOnboardingPreference.atKeysFilePath!.endsWith('.atKeys')) {
-        _constructCompleteAtKeysFilePath(enrollmentId: enrollmentId);
+        constructCompleteAtKeysFilePath(enrollmentId: enrollmentId);
       }
       atKeysFile = File(atOnboardingPreference.atKeysFilePath!);
     }
@@ -598,7 +598,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   /// Constructs a proper filePath when the user-provided file path is NOT complete
   /// path: case EnrollmentId present -> userProvidedDir/atsign_enrollmentId_key.atKeys
   /// path: case EnrollmentId NOT present -> userProvidedDir/atsign_key.atKeys
-  void _constructCompleteAtKeysFilePath({String? enrollmentId}) {
+  void constructCompleteAtKeysFilePath({String? enrollmentId}) {
     // if path provided by user is a directory -> create a new file in the same directory
     // if user provided path is a file, but missing .atKeys -> append .atKeys
     bool isDirectory =
