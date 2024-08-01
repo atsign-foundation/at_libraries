@@ -596,8 +596,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }
 
   /// Constructs a proper filePath when the user-provided file path is NOT complete
-  /// path: case EnrollmentId present -> userProvidedDir/atsign_enrollmentId_key.atKeys
-  /// path: case EnrollmentId NOT present -> userProvidedDir/atsign_key.atKeys
   void constructCompleteAtKeysFilePath() {
     // if path provided by user is a directory -> create a new file in the same directory
     // if user provided path is a file, but missing .atKeys -> append .atKeys
