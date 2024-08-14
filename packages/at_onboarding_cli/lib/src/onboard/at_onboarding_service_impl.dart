@@ -386,8 +386,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }) async {
     if (atKeysFile == null) {
       if (!atOnboardingPreference.atKeysFilePath!.endsWith('.atKeys')) {
-        atOnboardingPreference.atKeysFilePath =
-            path.join(atOnboardingPreference.atKeysFilePath!, '.atKeys');
+        atOnboardingPreference.atKeysFilePath = path.setExtension(
+            atOnboardingPreference.atKeysFilePath!, '.atKeys');
       }
       atKeysFile = File(atOnboardingPreference.atKeysFilePath!);
     }
