@@ -1,3 +1,5 @@
+## 1.6.2
+- fix: AtKeys file is generated in the wrong location
 ## 1.6.1
 - feat: save enrollment details to local keystore
 - build[deps]: upgrade at_auth to 2.0.5 | at_commons to 4.0.11
