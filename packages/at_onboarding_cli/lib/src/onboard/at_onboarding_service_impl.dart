@@ -4,23 +4,22 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:at_auth/at_auth.dart' as at_auth;
 import 'package:at_auth/at_auth.dart';
 import 'package:at_chops/at_chops.dart';
 import 'package:at_client/at_client.dart';
-import 'package:at_auth/at_auth.dart' as at_auth;
-import 'package:at_persistence_secondary_server/at_persistence_secondary_server.dart';
-import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
-import 'package:at_server_status/at_server_status.dart';
-import 'package:at_utils/at_utils.dart';
-import 'package:at_onboarding_cli/src/factory/service_factories.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
+import 'package:at_onboarding_cli/src/factory/service_factories.dart';
+import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
+import 'package:at_persistence_secondary_server/at_persistence_secondary_server.dart';
+import 'package:at_server_status/at_server_status.dart';
+import 'package:at_utils/at_utils.dart';
 import 'package:crypton/crypton.dart';
 import 'package:encrypt/encrypt.dart';
+import 'package:image/image.dart';
 import 'package:meta/meta.dart';
 import 'package:zxing2/qrcode.dart';
-import 'package:image/image.dart';
-import 'package:path/path.dart' as path;
 
 import '../util/home_directory_util.dart';
 import '../util/onboarding_util.dart';
@@ -386,8 +385,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }) async {
     if (atKeysFile == null) {
       if (!atOnboardingPreference.atKeysFilePath!.endsWith('.atKeys')) {
-        atOnboardingPreference.atKeysFilePath = path.setExtension(
-            atOnboardingPreference.atKeysFilePath!, '.atKeys');
+        atOnboardingPreference.atKeysFilePath =
+            '${atOnboardingPreference.atKeysFilePath}.atKeys';
       }
       atKeysFile = File(atOnboardingPreference.atKeysFilePath!);
     }
@@ -654,7 +653,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   @override
   Future<void> close() async {
     logger.info('Closing');
-    if (_atLookUp != null && (_atLookUp as AtLookupImpl).isConnectionAvailable()) {
+    if (_atLookUp != null &&
+        (_atLookUp as AtLookupImpl).isConnectionAvailable()) {
       await _atLookUp!.close();
     }
     atClient?.notificationService.stopAllSubscriptions();
