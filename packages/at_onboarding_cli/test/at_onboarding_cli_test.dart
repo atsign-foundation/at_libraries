@@ -196,7 +196,102 @@ void main() {
       // Delete the file at the end of the test.
       file.deleteSync(recursive: true);
     });
-    ;
+
+    test(
+        'A test to verify createAtKeys when keys location as . in the filename',
+        () async {
+      String atsign = '@alice_test';
+      AtOnboardingPreference atOnboardingPreference = getOnboardingPreference()
+        ..atKeysFilePath = '${Directory.current.path}/test/$atsign.me';
+      AtOnboardingServiceImpl onboardingService =
+          AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+
+      AtEnrollmentResponse atEnrollmentResponse =
+          AtEnrollmentResponse('123', EnrollmentStatus.approved);
+
+      RSAKeypair encryptionRsaKeyPair = onboardingService.generateRsaKeypair();
+      atEnrollmentResponse.atAuthKeys = AtAuthKeys()
+        ..enrollmentId = '123'
+        ..defaultSelfEncryptionKey = onboardingService.generateAESKey()
+        ..defaultEncryptionPublicKey = encryptionRsaKeyPair.publicKey.toString()
+        ..defaultEncryptionPrivateKey =
+            encryptionRsaKeyPair.privateKey.toString()
+        ..apkamPrivateKey = encryptionRsaKeyPair.privateKey.toString()
+        ..apkamPublicKey = encryptionRsaKeyPair.publicKey.toString()
+        ..apkamSymmetricKey = onboardingService.generateAESKey();
+
+      var f = await onboardingService.createAtKeysFile(atEnrollmentResponse);
+      expect(f.path.endsWith('$atsign.me.atKeys'), true);
+
+      File file = File(f.path);
+      expect(file.existsSync(), true);
+      // Delete the file at the end of the test.
+      file.deleteSync(recursive: true);
+    });
+
+    test(
+        'A test to verify createAtKeys when keys location as - in the filename',
+        () async {
+      String atsign = '@alice_test';
+      AtOnboardingPreference atOnboardingPreference = getOnboardingPreference()
+        ..atKeysFilePath = '${Directory.current.path}/test/$atsign-me';
+      AtOnboardingServiceImpl onboardingService =
+          AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+
+      AtEnrollmentResponse atEnrollmentResponse =
+          AtEnrollmentResponse('123', EnrollmentStatus.approved);
+
+      RSAKeypair encryptionRsaKeyPair = onboardingService.generateRsaKeypair();
+      atEnrollmentResponse.atAuthKeys = AtAuthKeys()
+        ..enrollmentId = '123'
+        ..defaultSelfEncryptionKey = onboardingService.generateAESKey()
+        ..defaultEncryptionPublicKey = encryptionRsaKeyPair.publicKey.toString()
+        ..defaultEncryptionPrivateKey =
+            encryptionRsaKeyPair.privateKey.toString()
+        ..apkamPrivateKey = encryptionRsaKeyPair.privateKey.toString()
+        ..apkamPublicKey = encryptionRsaKeyPair.publicKey.toString()
+        ..apkamSymmetricKey = onboardingService.generateAESKey();
+
+      var f = await onboardingService.createAtKeysFile(atEnrollmentResponse);
+      expect(f.path.endsWith('$atsign-me.atKeys'), true);
+
+      File file = File(f.path);
+      expect(file.existsSync(), true);
+      // Delete the file at the end of the test.
+      file.deleteSync(recursive: true);
+    });
+
+    test(
+        'A test to verify createAtKeys does not append .atKeys when filename has .atKeys extension',
+        () async {
+      String atsign = '@alice_test';
+      AtOnboardingPreference atOnboardingPreference = getOnboardingPreference()
+        ..atKeysFilePath = '${Directory.current.path}/test/$atsign-me.atKeys';
+      AtOnboardingServiceImpl onboardingService =
+          AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+
+      AtEnrollmentResponse atEnrollmentResponse =
+          AtEnrollmentResponse('123', EnrollmentStatus.approved);
+
+      RSAKeypair encryptionRsaKeyPair = onboardingService.generateRsaKeypair();
+      atEnrollmentResponse.atAuthKeys = AtAuthKeys()
+        ..enrollmentId = '123'
+        ..defaultSelfEncryptionKey = onboardingService.generateAESKey()
+        ..defaultEncryptionPublicKey = encryptionRsaKeyPair.publicKey.toString()
+        ..defaultEncryptionPrivateKey =
+            encryptionRsaKeyPair.privateKey.toString()
+        ..apkamPrivateKey = encryptionRsaKeyPair.privateKey.toString()
+        ..apkamPublicKey = encryptionRsaKeyPair.publicKey.toString()
+        ..apkamSymmetricKey = onboardingService.generateAESKey();
+
+      var f = await onboardingService.createAtKeysFile(atEnrollmentResponse);
+      expect(f.path.endsWith('$atsign-me.atKeys'), true);
+
+      File file = File(f.path);
+      expect(file.existsSync(), true);
+      // Delete the file at the end of the test.
+      file.deleteSync(recursive: true);
+    });
   });
 }
 
