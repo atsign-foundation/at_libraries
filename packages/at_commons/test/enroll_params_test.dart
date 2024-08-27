@@ -84,6 +84,16 @@ void main() {
       expect(enrollmentParams['operation'], 'fetch');
       expect(enrollmentParams['enrollParams'], '{"enrollmentId":"123"}');
     });
+
+    test('A test to verify enroll unrevoke params', () {
+      String command = 'enroll:unrevoke:{"enrollmentId":"123"}';
+      expect(RegExp(VerbSyntax.enroll).hasMatch(command), true);
+
+      Map<dynamic, dynamic> enrollmentParams =
+          getVerbParams(VerbSyntax.enroll, command);
+      expect(enrollmentParams['operation'], 'unrevoke');
+      expect(enrollmentParams['enrollParams'], '{"enrollmentId":"123"}');
+    });
   });
 
   group('A group of tests to verify toJson and fromJson in EnrollParams', () {
