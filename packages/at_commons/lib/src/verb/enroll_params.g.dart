@@ -1,5 +1,4 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
-// dart run build_runner build to generate this file
 
 part of 'enroll_params.dart';
 
@@ -23,7 +22,10 @@ EnrollParams _$EnrollParamsFromJson(Map<String, dynamic> json) => EnrollParams()
   ..apkamPublicKey = json['apkamPublicKey'] as String?
   ..enrollmentStatusFilter = (json['enrollmentStatusFilter'] as List<dynamic>?)
       ?.map((e) => $enumDecode(_$EnrollmentStatusEnumMap, e))
-      .toList();
+      .toList()
+  ..apkamKeysExpiryDuration = json['apkamKeysExpiryInMillis'] == null
+      ? null
+      : Duration(milliseconds: json['apkamKeysExpiryInMillis']);
 
 Map<String, dynamic> _$EnrollParamsToJson(EnrollParams instance) =>
     <String, dynamic>{
@@ -41,6 +43,8 @@ Map<String, dynamic> _$EnrollParamsToJson(EnrollParams instance) =>
       'enrollmentStatusFilter': instance.enrollmentStatusFilter
           ?.map((e) => _$EnrollmentStatusEnumMap[e]!)
           .toList(),
+      'apkamKeysExpiryInMillis':
+          instance.apkamKeysExpiryDuration?.inMilliseconds,
     };
 
 const _$EnrollmentStatusEnumMap = {

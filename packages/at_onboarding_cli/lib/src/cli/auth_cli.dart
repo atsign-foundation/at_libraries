@@ -1,19 +1,19 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:args/args.dart';
 import 'package:at_auth/at_auth.dart';
 import 'package:at_cli_commons/at_cli_commons.dart';
 import 'package:at_client/at_client.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
-import 'package:args/args.dart';
 import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 import 'package:at_onboarding_cli/src/util/print_full_parser_usage.dart';
-import 'dart:io';
 import 'package:at_utils/at_utils.dart';
 import 'package:meta/meta.dart';
 
-import 'auth_cli_args.dart';
 import 'auth_cli_arg_validation.dart';
+import 'auth_cli_args.dart';
 
 final AtSignLogger logger = AtSignLogger(' CLI ');
 
@@ -334,12 +334,16 @@ Future<void> enroll(ArgResults argResults, {AtOnboardingService? svc}) async {
   }
   try {
     stderr.writeln('Submitting enrollment request');
+    int apkamKeysExpiryInMins =
+        (argResults[AuthCliArgs.argNameApkamKeysExpiryInMins] == null)
+            ? 0
+            : int.parse(argResults[AuthCliArgs.argNameApkamKeysExpiryInMins]);
     AtEnrollmentResponse er = await svc.sendEnrollRequest(
-      argResults[AuthCliArgs.argNameAppName],
-      argResults[AuthCliArgs.argNameDeviceName],
-      argResults[AuthCliArgs.argNamePasscode],
-      namespaces,
-    );
+        argResults[AuthCliArgs.argNameAppName],
+        argResults[AuthCliArgs.argNameDeviceName],
+        argResults[AuthCliArgs.argNamePasscode],
+        namespaces,
+        apkamKeysExpiryDuration: Duration(minutes: apkamKeysExpiryInMins));
     stdout.writeln('Enrollment ID: ${er.enrollmentId}');
 
     stderr.writeln('Waiting for approval; will check every 10 seconds');

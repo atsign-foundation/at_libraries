@@ -1,6 +1,6 @@
+import 'package:at_commons/at_commons.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import 'package:at_commons/at_commons.dart';
 part 'enroll_params.g.dart';
 
 @JsonSerializable()
@@ -15,7 +15,10 @@ class EnrollParams {
   String? encryptedAPKAMSymmetricKey;
   String? apkamPublicKey;
   List<EnrollmentStatus>? enrollmentStatusFilter;
+  Duration? apkamKeysExpiryDuration;
+
   EnrollParams();
+
   factory EnrollParams.fromJson(Map<String, dynamic> json) =>
       _$EnrollParamsFromJson(json);
 

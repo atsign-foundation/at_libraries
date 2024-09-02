@@ -59,6 +59,7 @@ enum AuthCliCommand {
           ' program which has "rw" access to the "__manage" namespace.');
 
   const AuthCliCommand({this.usage = ''});
+
   final String usage;
 }
 
@@ -94,6 +95,7 @@ class AuthCliArgs {
   static const argNameAppNameRegex = 'arx';
   static const argNameDeviceNameRegex = 'drx';
   static const argNameMaxConnectAttempts = 'mca';
+  static const argNameApkamKeysExpiryInMins = 'apkamKeysExpiryInMins';
 
   ArgParser get parser {
     return _aap;
@@ -324,6 +326,10 @@ class AuthCliArgs {
           ' e.g. "buzz:rw,contacts:rw,__manage:rw"',
       mandatory: true,
     );
+    p.addOption(argNameApkamKeysExpiryInMins,
+        abbr: 'e',
+        help: 'The duration of time in minutes the APKAM keys remain active',
+        mandatory: false);
     return p;
   }
 
