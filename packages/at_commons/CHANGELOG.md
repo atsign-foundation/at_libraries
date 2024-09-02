@@ -1,4 +1,4 @@
-## 4.0.12
+## 4.1.0
 - feat: Add "unrevoke" operation to the enroll verb to restore revoked APKAM keys
 ## 4.0.11
 - chore: deprecate MessageTypeEnum.text
