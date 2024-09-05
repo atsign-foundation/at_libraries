@@ -1,3 +1,7 @@
+## 1.6.3
+- fix: `.atKeys` filename was trimmed when filename has period('.') in it
+## 1.6.2
+- fix: `.atKeys` file was being generated in the wrong location in some cases
 ## 1.6.1
 - feat: save enrollment details to local keystore
 - build[deps]: upgrade at_auth to 2.0.5 | at_commons to 4.0.11

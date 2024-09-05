@@ -1,17 +1,18 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:at_auth/at_auth.dart';
 import 'package:at_chops/at_chops.dart';
+import 'package:at_client/at_client.dart';
 import 'package:at_commons/at_builders.dart';
+import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_persistence_secondary_server/at_persistence_secondary_server.dart';
 import 'package:at_utils/at_logger.dart';
+import 'package:crypton/crypton.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:at_lookup/at_lookup.dart';
-import 'package:at_client/at_client.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
-import 'package:at_auth/at_auth.dart';
 
 class MockAtLookupImpl extends Mock implements AtLookupImpl {}
 
@@ -160,6 +161,136 @@ void main() {
 
     tearDown(() async {
       await tearDownFunc();
+    });
+  });
+
+  group('A group of tests related to generation of AtKeys', () {
+    test(
+        'A test to verify createAtKeys generates atKeys in the location specified in onboarding preference atKeysFilePath',
+        () async {
+      String atsign = '@alice_test';
+      AtOnboardingPreference atOnboardingPreference = getOnboardingPreference()
+        ..atKeysFilePath = '${Directory.current.path}/test/$atsign';
+      AtOnboardingServiceImpl onboardingService =
+          AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+
+      AtEnrollmentResponse atEnrollmentResponse =
+          AtEnrollmentResponse('123', EnrollmentStatus.approved);
+
+      RSAKeypair encryptionRsaKeyPair = onboardingService.generateRsaKeypair();
+      atEnrollmentResponse.atAuthKeys = AtAuthKeys()
+        ..enrollmentId = '123'
+        ..defaultSelfEncryptionKey = onboardingService.generateAESKey()
+        ..defaultEncryptionPublicKey = encryptionRsaKeyPair.publicKey.toString()
+        ..defaultEncryptionPrivateKey =
+            encryptionRsaKeyPair.privateKey.toString()
+        ..apkamPrivateKey = encryptionRsaKeyPair.privateKey.toString()
+        ..apkamPublicKey = encryptionRsaKeyPair.publicKey.toString()
+        ..apkamSymmetricKey = onboardingService.generateAESKey();
+
+      var f = await onboardingService.createAtKeysFile(atEnrollmentResponse);
+      expect(f.path.endsWith('$atsign.atKeys'), true);
+
+      File file = File(f.path);
+      expect(file.existsSync(), true);
+      // Delete the file at the end of the test.
+      file.deleteSync(recursive: true);
+    });
+
+    test(
+        'A test to verify createAtKeys when keys location as . in the filename',
+        () async {
+      String atsign = '@alice_test';
+      AtOnboardingPreference atOnboardingPreference = getOnboardingPreference()
+        ..atKeysFilePath = '${Directory.current.path}/test/$atsign.me';
+      AtOnboardingServiceImpl onboardingService =
+          AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+
+      AtEnrollmentResponse atEnrollmentResponse =
+          AtEnrollmentResponse('123', EnrollmentStatus.approved);
+
+      RSAKeypair encryptionRsaKeyPair = onboardingService.generateRsaKeypair();
+      atEnrollmentResponse.atAuthKeys = AtAuthKeys()
+        ..enrollmentId = '123'
+        ..defaultSelfEncryptionKey = onboardingService.generateAESKey()
+        ..defaultEncryptionPublicKey = encryptionRsaKeyPair.publicKey.toString()
+        ..defaultEncryptionPrivateKey =
+            encryptionRsaKeyPair.privateKey.toString()
+        ..apkamPrivateKey = encryptionRsaKeyPair.privateKey.toString()
+        ..apkamPublicKey = encryptionRsaKeyPair.publicKey.toString()
+        ..apkamSymmetricKey = onboardingService.generateAESKey();
+
+      var f = await onboardingService.createAtKeysFile(atEnrollmentResponse);
+      expect(f.path.endsWith('$atsign.me.atKeys'), true);
+
+      File file = File(f.path);
+      expect(file.existsSync(), true);
+      // Delete the file at the end of the test.
+      file.deleteSync(recursive: true);
+    });
+
+    test(
+        'A test to verify createAtKeys when keys location as - in the filename',
+        () async {
+      String atsign = '@alice_test';
+      AtOnboardingPreference atOnboardingPreference = getOnboardingPreference()
+        ..atKeysFilePath = '${Directory.current.path}/test/$atsign-me';
+      AtOnboardingServiceImpl onboardingService =
+          AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+
+      AtEnrollmentResponse atEnrollmentResponse =
+          AtEnrollmentResponse('123', EnrollmentStatus.approved);
+
+      RSAKeypair encryptionRsaKeyPair = onboardingService.generateRsaKeypair();
+      atEnrollmentResponse.atAuthKeys = AtAuthKeys()
+        ..enrollmentId = '123'
+        ..defaultSelfEncryptionKey = onboardingService.generateAESKey()
+        ..defaultEncryptionPublicKey = encryptionRsaKeyPair.publicKey.toString()
+        ..defaultEncryptionPrivateKey =
+            encryptionRsaKeyPair.privateKey.toString()
+        ..apkamPrivateKey = encryptionRsaKeyPair.privateKey.toString()
+        ..apkamPublicKey = encryptionRsaKeyPair.publicKey.toString()
+        ..apkamSymmetricKey = onboardingService.generateAESKey();
+
+      var f = await onboardingService.createAtKeysFile(atEnrollmentResponse);
+      expect(f.path.endsWith('$atsign-me.atKeys'), true);
+
+      File file = File(f.path);
+      expect(file.existsSync(), true);
+      // Delete the file at the end of the test.
+      file.deleteSync(recursive: true);
+    });
+
+    test(
+        'A test to verify createAtKeys does not append .atKeys when filename has .atKeys extension',
+        () async {
+      String atsign = '@alice_test';
+      AtOnboardingPreference atOnboardingPreference = getOnboardingPreference()
+        ..atKeysFilePath = '${Directory.current.path}/test/$atsign-me.atKeys';
+      AtOnboardingServiceImpl onboardingService =
+          AtOnboardingServiceImpl(atsign, atOnboardingPreference);
+
+      AtEnrollmentResponse atEnrollmentResponse =
+          AtEnrollmentResponse('123', EnrollmentStatus.approved);
+
+      RSAKeypair encryptionRsaKeyPair = onboardingService.generateRsaKeypair();
+      atEnrollmentResponse.atAuthKeys = AtAuthKeys()
+        ..enrollmentId = '123'
+        ..defaultSelfEncryptionKey = onboardingService.generateAESKey()
+        ..defaultEncryptionPublicKey = encryptionRsaKeyPair.publicKey.toString()
+        ..defaultEncryptionPrivateKey =
+            encryptionRsaKeyPair.privateKey.toString()
+        ..apkamPrivateKey = encryptionRsaKeyPair.privateKey.toString()
+        ..apkamPublicKey = encryptionRsaKeyPair.publicKey.toString()
+        ..apkamSymmetricKey = onboardingService.generateAESKey();
+
+      var f = await onboardingService.createAtKeysFile(atEnrollmentResponse);
+      expect(f.path.endsWith('$atsign-me.atKeys'), true);
+
+      File file = File(f.path);
+      expect(file.existsSync(), true);
+      // Delete the file at the end of the test.
+      file.deleteSync(recursive: true);
     });
   });
 }
