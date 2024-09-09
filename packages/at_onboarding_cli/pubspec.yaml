@@ -13,23 +13,35 @@ executables:
   at_activate: activate_cli
 
 dependencies:
-   args: ^2.5.0
-   crypton: ^2.2.1
-   encrypt: ^5.0.3
-   http: ^1.2.1
-   image: ^4.1.7
-   meta: ^1.14.0
-   path: ^1.9.0
-   zxing2: ^0.2.0
-   at_auth: ^2.0.5
-   at_chops: ^2.0.0
-   at_client: ^3.0.76
-   at_commons: ^4.0.11
-   at_lookup: ^3.0.47
-   at_server_status: ^1.0.4
-   at_utils: ^3.0.16
-   at_cli_commons: ^1.1.0
-   at_persistence_secondary_server: ^3.0.62
+  args: ^2.5.0
+  crypton: ^2.2.1
+  encrypt: ^5.0.3
+  http: ^1.2.1
+  image: ^4.1.7
+  meta: ^1.14.0
+  path: ^1.9.0
+  zxing2: ^0.2.0
+  at_auth: ^2.0.5
+  at_chops: ^2.0.0
+  at_client: ^3.0.76
+  at_commons: ^4.0.11
+  at_lookup: ^3.0.47
+  at_server_status: ^1.0.4
+  at_utils: ^3.0.16
+  at_cli_commons: ^1.1.0
+  at_persistence_secondary_server: ^3.0.62
+
+dependency_overrides:
+  at_commons:
+    git:
+      url: https://github.com/atsign-foundation/at_libraries.git
+      path: packages/at_onboarding_cli
+      ref: 2074-introducing-auto-expiry-and-time-to-birth-features-for-apkam-keys
+  at_auth:
+    git:
+      url: https://github.com/atsign-foundation/at_libraries.git
+      path: packages/at_onboarding_cli
+      ref: 2074-introducing-auto-expiry-and-time-to-birth-features-for-apkam-keys
 
 dev_dependencies:
   lints: ^2.1.0
