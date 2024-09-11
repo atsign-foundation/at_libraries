@@ -95,7 +95,7 @@ class AuthCliArgs {
   static const argNameAppNameRegex = 'arx';
   static const argNameDeviceNameRegex = 'drx';
   static const argNameMaxConnectAttempts = 'mca';
-  static const argNameApkamKeysExpiryInMins = 'apkamKeysExpiryInMins';
+  static const argNameExpiry = 'expiry';
 
   ArgParser get parser {
     return _aap;
@@ -277,6 +277,11 @@ class AuthCliArgs {
       help: 'The semi-permanent enrollment passcode to set for this atSign',
       mandatory: true,
     );
+    p.addOption(argNameExpiry,
+        abbr: 'e',
+        help:
+            'The duration for which the SPP remains active. The time duration can be passed as "2d,1h,10m,20s,999ms" for 2 days 1 hour 10 minutes 20 seconds 999 milliseconds',
+        mandatory: false);
     return p;
   }
 
@@ -290,6 +295,11 @@ class AuthCliArgs {
   @visibleForTesting
   ArgParser createOtpCommandParser() {
     ArgParser p = createSharedArgParser(hide: true);
+    p.addOption(argNameExpiry,
+        abbr: 'e',
+        help:
+            'The duration for which the OTP remains active. The time duration can be passed as "2d,1h,10m,20s,999ms" for 2 days 1 hour 10 minutes 20 seconds 999 milliseconds',
+        mandatory: false);
     return p;
   }
 
@@ -326,9 +336,10 @@ class AuthCliArgs {
           ' e.g. "buzz:rw,contacts:rw,__manage:rw"',
       mandatory: true,
     );
-    p.addOption(argNameApkamKeysExpiryInMins,
+    p.addOption(argNameExpiry,
         abbr: 'e',
-        help: 'The duration of time in minutes the APKAM keys remain active',
+        help:
+            'The duration for which the APKAM keys remains active. The time duration can be passed as "2d,1h,10m,20s,999ms" for 2 days 1 hour 10 minutes 20 seconds 999 milliseconds',
         mandatory: false);
     return p;
   }
