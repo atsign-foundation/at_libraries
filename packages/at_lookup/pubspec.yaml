@@ -18,6 +18,13 @@ dependencies:
   meta: ^1.8.0
   at_chops: ^2.0.0
 
+dependency_overrides:
+  at_commons:
+    git:
+      url: https://github.com/atsign-foundation/at_libraries.git
+      path: packages/at_commons
+      ref: notify_isencrypted
+
 dev_dependencies:
   mocktail: ^1.0.1
   lints: ^1.0.1
