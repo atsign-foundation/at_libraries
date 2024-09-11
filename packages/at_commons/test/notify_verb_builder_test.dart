@@ -16,9 +16,9 @@ void main() {
         ..ttln = 100;
       var command = notifyVerbBuilder.buildCommand();
       expect(command,
-          'notify:id:123:notifier:SYSTEM:ttln:100:public:email@alice:alice@gmail.com\n');
+          'notify:id:123:notifier:SYSTEM:ttln:100:isEncrypted:false:public:email@alice:alice@gmail.com\n');
       var params = VerbUtil.getVerbParam(VerbSyntax.notify, command.trim())!;
-      expect(params.length, 7);
+      expect(params.length, 8);
       expect(params[AtConstants.id], '123');
       expect(params[AtConstants.value], 'alice@gmail.com');
       expect(params[AtConstants.publicScopeParam], 'public');
@@ -38,9 +38,9 @@ void main() {
         ..atKey.metadata.ttl = 1000;
       var command = notifyVerbBuilder.buildCommand();
       expect(command,
-          'notify:id:123:notifier:SYSTEM:ttl:1000:public:email@alice:alice@gmail.com\n');
+          'notify:id:123:notifier:SYSTEM:ttl:1000:isEncrypted:false:public:email@alice:alice@gmail.com\n');
       var params = VerbUtil.getVerbParam(VerbSyntax.notify, command.trim())!;
-      expect(params.length, 7);
+      expect(params.length, 8);
       expect(params[AtConstants.id], '123');
       expect(params[AtConstants.value], 'alice@gmail.com');
       expect(params[AtConstants.publicScopeParam], 'public');
@@ -60,12 +60,13 @@ void main() {
         // ignore: deprecated_member_use_from_same_package
         ..atKey.metadata.pubKeyCS = '123'
         ..atKey.metadata.sharedKeyEnc = 'abc'
+        ..atKey.metadata.isEncrypted = true
         ..ttln = 100;
       var command = notifyVerbBuilder.buildCommand();
       expect(command,
-          'notify:id:123:notifier:SYSTEM:ttln:100:sharedKeyEnc:abc:pubKeyCS:123:@bob:email@alice:alice@atsign.com\n');
+          'notify:id:123:notifier:SYSTEM:ttln:100:isEncrypted:true:sharedKeyEnc:abc:pubKeyCS:123:@bob:email@alice:alice@atsign.com\n');
       var params = VerbUtil.getVerbParam(VerbSyntax.notify, command.trim())!;
-      expect(params.length, 9);
+      expect(params.length, 10);
       expect(params[AtConstants.id], '123');
       expect(params[AtConstants.value], 'alice@atsign.com');
       expect(params[AtConstants.atKey], 'email');
@@ -118,17 +119,18 @@ void main() {
         ..atKey.metadata.encAlgo = 'ea'
         ..atKey.metadata.ivNonce = 'ivn'
         ..atKey.metadata.skeEncKeyName = 'ske_ekn'
-        ..atKey.metadata.skeEncAlgo = 'ske_ea';
+        ..atKey.metadata.skeEncAlgo = 'ske_ea'
+        ..atKey.metadata.isEncrypted = true;
       var command = notifyVerbBuilder.buildCommand();
       expect(
           command,
-          'notify:id:123:notifier:SYSTEM'
+          'notify:id:123:notifier:SYSTEM:isEncrypted:true'
           ':sharedKeyEnc:abc:pubKeyCS:123'
           ':encKeyName:ekn:encAlgo:ea:ivNonce:ivn'
           ':skeEncKeyName:ske_ekn:skeEncAlgo:ske_ea'
           ':@bob:email@alice:alice@atsign.com\n');
       var params = VerbUtil.getVerbParam(VerbSyntax.notify, command.trim())!;
-      expect(params.length, 13);
+      expect(params.length, 14);
       expect(params[AtConstants.publicScopeParam], null);
       expect(params[AtConstants.id], '123');
       expect(params[AtConstants.value], 'alice@atsign.com');
@@ -178,7 +180,7 @@ void main() {
         var notifyCommand = verbHandler.buildCommand();
         var verbParams = getVerbParams(VerbSyntax.notify, notifyCommand.trim());
         expect(verbParams[AtConstants.id] != null, true);
-        expect(verbParams[AtConstants.isEncrypted], null);
+        expect(verbParams[AtConstants.isEncrypted], 'false');
       });
       test('Test to verify custom set notification id to verb builder', () {
         var verbHandler = NotifyVerbBuilder()

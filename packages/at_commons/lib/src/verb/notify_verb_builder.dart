@@ -1,4 +1,6 @@
+import 'package:at_commons/src/keystore/at_key.dart';
 import 'package:at_commons/src/verb/abstract_verb_builder.dart';
+import 'package:at_commons/src/utils/string_utils.dart';
 import 'package:uuid/uuid.dart';
 
 import '../at_constants.dart';
@@ -60,7 +62,7 @@ class NotifyVerbBuilder extends AbstractVerbBuilder {
     }
 
     // Add in all of the metadata parameters in atProtocol command format
-    sb.write(atKey.metadata.toAtProtocolFragment());
+    sb.write(_toAtProtocolFragment(atKey.metadata));
 
     if (atKey.sharedWith != null) {
       sb.write(':${VerbUtil.formatAtSign(atKey.sharedWith)}');
@@ -80,6 +82,75 @@ class NotifyVerbBuilder extends AbstractVerbBuilder {
 
     sb.write('\n');
 
+    return sb.toString();
+  }
+
+  // temporary method till isEncrypted flag changes are done for update verb.
+  // TODO Remove this and use at_key.metadata.toProtocolFragment
+  String _toAtProtocolFragment(Metadata metadata) {
+    StringBuffer sb = StringBuffer();
+
+    // NB The order of the verb parameters is important - it MUST match the order
+    // in the regular expressions [VerbSyntax.update] and [VerbSyntax.update_meta]
+    if (metadata.ttl != null) {
+      sb.write(':ttl:${metadata.ttl}');
+    }
+    if (metadata.ttb != null) {
+      sb.write(':ttb:${metadata.ttb}');
+    }
+    if (metadata.ttr != null) {
+      sb.write(':ttr:${metadata.ttr}');
+    }
+    if (metadata.ccd != null) {
+      sb.write(':ccd:${metadata.ccd}');
+    }
+    if (metadata.dataSignature.isNotNullOrEmpty) {
+      sb.write(':${AtConstants.publicDataSignature}:${metadata.dataSignature}');
+    }
+    if (metadata.sharedKeyStatus.isNotNullOrEmpty) {
+      sb.write(':${AtConstants.sharedKeyStatus}:${metadata.sharedKeyStatus}');
+    }
+    if (metadata.isBinary) {
+      sb.write(':isBinary:${metadata.isBinary}');
+    }
+
+    sb.write(':isEncrypted:${metadata.isEncrypted}');
+
+    if (metadata.sharedKeyEnc.isNotNullOrEmpty) {
+      sb.write(':${AtConstants.sharedKeyEncrypted}:${metadata.sharedKeyEnc}');
+    }
+    // ignore: deprecated_member_use_from_same_package
+    if (metadata.pubKeyCS.isNotNullOrEmpty) {
+      // ignore: deprecated_member_use_from_same_package
+      sb.write(
+          ':${AtConstants.sharedWithPublicKeyCheckSum}:${metadata.pubKeyCS}');
+    }
+    if (metadata.pubKeyHash != null) {
+      sb.write(
+          ':${AtConstants.sharedWithPublicKeyHashValue}:${metadata.pubKeyHash!.hash}');
+      sb.write(
+          ':${AtConstants.sharedWithPublicKeyHashAlgo}:${metadata.pubKeyHash!.publicKeyHashingAlgo.name}');
+    }
+    if (metadata.encoding.isNotNullOrEmpty) {
+      sb.write(':${AtConstants.encoding}:${metadata.encoding}');
+    }
+    if (metadata.encKeyName.isNotNullOrEmpty) {
+      sb.write(':${AtConstants.encryptingKeyName}:${metadata.encKeyName}');
+    }
+    if (metadata.encAlgo.isNotNullOrEmpty) {
+      sb.write(':${AtConstants.encryptingAlgo}:${metadata.encAlgo}');
+    }
+    if (metadata.ivNonce.isNotNullOrEmpty) {
+      sb.write(':${AtConstants.ivOrNonce}:${metadata.ivNonce}');
+    }
+    if (metadata.skeEncKeyName.isNotNullOrEmpty) {
+      sb.write(
+          ':${AtConstants.sharedKeyEncryptedEncryptingKeyName}:${metadata.skeEncKeyName}');
+    }
+    if (metadata.skeEncAlgo.isNotNullOrEmpty) {
+      sb.write(
+          ':${AtConstants.sharedKeyEncryptedEncryptingAlgo}:${metadata.skeEncAlgo}');
+    }
     return sb.toString();
   }
 
