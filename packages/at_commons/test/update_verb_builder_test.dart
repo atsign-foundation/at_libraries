@@ -523,4 +523,79 @@ void main() {
       });
     });
   });
+  group('A group of tests to validate isEncrypted flag in update verb builder',
+      () {
+    test('for public key isEncrypted is false', () {
+      var updateBuilder = UpdateVerbBuilder()
+        ..value = 'alice@gmail.com'
+        ..atKey.metadata.isPublic = true
+        ..atKey.metadata.ttl = 5000
+        ..atKey.key = 'email'
+        ..atKey.sharedBy = '@alice';
+      var updateCommand = updateBuilder.buildCommand();
+      expect(updateCommand,
+          'update:ttl:5000:public:email@alice alice@gmail.com\n');
+      var updateVerbParams =
+          getVerbParams(VerbSyntax.update, updateCommand.trim());
+      print(updateVerbParams);
+      // existing behaviour. TODO change to false after changes for update verb isEncrypted flag
+      expect(updateVerbParams['isEncrypted'], null);
+    });
+    test('for shared key - isEncrypted is true if set in metadata', () {
+      var updateBuilder = UpdateVerbBuilder()
+        ..value = 'sampleEncryptedValue'
+        ..atKey.metadata.ttl = 5000
+        ..atKey.metadata.isEncrypted = true
+        ..atKey.key = 'email'
+        ..atKey.sharedBy = '@alice'
+        ..atKey.sharedWith = '@bob';
+      var updateCommand = updateBuilder.buildCommand();
+      print(updateCommand);
+      expect(updateCommand,
+          'update:ttl:5000:isEncrypted:true:@bob:email@alice sampleEncryptedValue\n');
+      var updateVerbParams =
+          getVerbParams(VerbSyntax.update, updateCommand.trim());
+      print(updateVerbParams);
+      expect(updateVerbParams['isEncrypted'], 'true');
+    });
+    test('for shared key - isEncrypted is false if NOT set in metadata', () {
+      var updateBuilder = UpdateVerbBuilder()
+        ..value = 'sampleEncryptedValue'
+        ..atKey.metadata.ttl = 5000
+        ..atKey.key = 'email'
+        ..atKey.sharedBy = '@alice'
+        ..atKey.sharedWith = '@bob';
+      var updateCommand = updateBuilder.buildCommand();
+      print(updateCommand);
+      // existing behaviour. TODO Should contain isEncrypted:false after changes for update verb isEncrypted flag
+      expect(updateCommand,
+          'update:ttl:5000:@bob:email@alice sampleEncryptedValue\n');
+      var updateVerbParams =
+          getVerbParams(VerbSyntax.update, updateCommand.trim());
+      print(updateVerbParams);
+      // existing behaviour. TODO Should be false after changes for update verb isEncrypted flag
+      expect(updateVerbParams['isEncrypted'], null);
+    });
+
+    test('for shared key - isEncrypted is false if set to false in metadata',
+        () {
+      var updateBuilder = UpdateVerbBuilder()
+        ..value = 'sampleEncryptedValue'
+        ..atKey.metadata.ttl = 5000
+        ..atKey.metadata.isEncrypted = false
+        ..atKey.key = 'email'
+        ..atKey.sharedBy = '@alice'
+        ..atKey.sharedWith = '@bob';
+      var updateCommand = updateBuilder.buildCommand();
+      print(updateCommand);
+      // existing behaviour. TODO Should contain isEncrypted:false after changes for update verb isEncrypted flag
+      expect(updateCommand,
+          'update:ttl:5000:@bob:email@alice sampleEncryptedValue\n');
+      var updateVerbParams =
+          getVerbParams(VerbSyntax.update, updateCommand.trim());
+      print(updateVerbParams);
+      // existing behaviour. TODO Should be false after changes for update verb isEncrypted flag
+      expect(updateVerbParams['isEncrypted'], null);
+    });
+  });
 }
