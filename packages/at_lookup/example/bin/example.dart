@@ -18,7 +18,8 @@ void main() async {
   /// To update a key into secondary server
   //Build update verb builder
   var updateVerbBuilder = UpdateVerbBuilder()
-    ..atKey = (AtKey.shared('phone', sharedBy: '@alice')..sharedWith('@bob')).build()
+    ..atKey =
+        (AtKey.shared('phone', sharedBy: '@alice')..sharedWith('@bob')).build()
     ..value = '+1 889 886 7879';
 
   // Sends update command to secondary server
@@ -38,12 +39,14 @@ void main() async {
 
   /// To retrieve the value of key created by self.
   var lLookupVerbBuilder = LLookupVerbBuilder()
-    ..atKey = (AtKey.shared('phone', sharedBy: '@alice')..sharedWith('@bob')).build();
+    ..atKey =
+        (AtKey.shared('phone', sharedBy: '@alice')..sharedWith('@bob')).build();
   await atLookupImpl.executeVerb(lLookupVerbBuilder);
 
   ///To remove a key from secondary server
   var deleteVerbBuilder = DeleteVerbBuilder()
-    ..atKey = (AtKey.shared('phone', sharedBy: '@alice')..sharedWith('@bob')).build();
+    ..atKey =
+        (AtKey.shared('phone', sharedBy: '@alice')..sharedWith('@bob')).build();
   await atLookupImpl.executeVerb(deleteVerbBuilder, sync: true);
 
   /// To retrieve keys from the secondary server
@@ -52,7 +55,8 @@ void main() async {
 
   ///To notify key to another atSign
   var notifyVerbBuilder = NotifyVerbBuilder()
-    ..atKey = (AtKey.shared('phone', sharedBy: '@alice')..sharedWith('@bob')).build();
+    ..atKey =
+        (AtKey.shared('phone', sharedBy: '@alice')..sharedWith('@bob')).build();
   await atLookupImpl.executeVerb(notifyVerbBuilder);
 
   ///To retrieve the notifications received

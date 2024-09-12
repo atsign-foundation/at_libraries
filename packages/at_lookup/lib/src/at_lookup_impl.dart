@@ -297,7 +297,7 @@ class AtLookupImpl implements AtLookUp {
         verbResult = await _notifyRemove(builder);
       } else if (builder is NotifyFetchVerbBuilder) {
         verbResult = await _notifyFetch(builder);
-      } else if (builder is EnrollVerbBuilder){
+      } else if (builder is EnrollVerbBuilder) {
         verbResult = await _enroll(builder);
       }
     } on Exception catch (e) {
@@ -412,7 +412,7 @@ class AtLookupImpl implements AtLookUp {
 
   Future<String> _enroll(EnrollVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
-    if(builder.operation == EnrollOperationEnum.request){
+    if (builder.operation == EnrollOperationEnum.request) {
       return _process(atCommand, auth: false);
     }
     return await _process(atCommand, auth: true);

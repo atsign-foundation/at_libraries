@@ -320,7 +320,6 @@ void main() {
           secureSocketFactory: mockSocketFactory,
           socketListenerFactory: mockSecureSocketListenerFactory,
           outboundConnectionFactory: mockOutboundConnectionFactory);
-      atLookup.atChops = mockAtChops;
 
       String appName = 'unit_test_1';
       String deviceName = 'test_device';
@@ -403,8 +402,7 @@ void main() {
       EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
         ..operation = EnrollOperationEnum.revoke
         ..enrollmentId = enrollmentId;
-      String enrollCommand =
-          'enroll:revoke:{"enrollmentId":"$enrollmentId"}\n';
+      String enrollCommand = 'enroll:revoke:{"enrollmentId":"$enrollmentId"}\n';
       String enrollResponse =
           'data:{"enrollmentId":"$enrollmentId","status":"revoked"}';
 
@@ -436,8 +434,7 @@ void main() {
       EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
         ..operation = EnrollOperationEnum.deny
         ..enrollmentId = enrollmentId;
-      String enrollCommand =
-          'enroll:deny:{"enrollmentId":"$enrollmentId"}\n';
+      String enrollCommand = 'enroll:deny:{"enrollmentId":"$enrollmentId"}\n';
       String enrollResponse =
           'data:{"enrollmentId":"$enrollmentId","status":"denied"}';
 
