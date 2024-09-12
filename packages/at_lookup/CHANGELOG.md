@@ -1,3 +1,7 @@
+## 3.0.48
+- build[deps]: Upgraded the following packages:
+  - at_commons to v4.1.0
+  - at_utils to v3.0.17
 ## 3.0.47
 - fix: Fixed legacy error handling so error message isn't truncated if it 
   contains a hyphen
