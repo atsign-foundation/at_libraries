@@ -36,7 +36,7 @@ dependency_overrides:
     git:
       url: https://github.com/atsign-foundation/at_libraries.git
       path: packages/at_commons
-      ref: notify_isencrypted
+      ref: trunk
   at_lookup:
     git:
       url: https://github.com/atsign-foundation/at_libraries.git
@@ -46,7 +46,7 @@ dependency_overrides:
     git:
       url: https://github.com/atsign-foundation/at_client_sdk.git
       path: packages/at_client
-      ref: test_atclient
+      ref: notification_service_encryptvalue
 
 dev_dependencies:
   lints: ^2.1.0
