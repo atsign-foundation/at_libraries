@@ -312,6 +312,15 @@ void main() {
               e is InvalidSyntaxException &&
               e.message == 'command does not match the regex')));
     });
+
+    test('A test to validate enroll delete command', () {
+      String command = 'enroll:delete:{"enrollmentId":"4567"}\n';
+      var enrollVerbParams =
+          VerbUtil.getVerbParam(VerbSyntax.enroll, command.trim());
+      expect(enrollVerbParams!['operation'], 'delete');
+      var enrollmentInfo = jsonDecode(enrollVerbParams['enrollParams']!);
+      expect(enrollmentInfo['enrollmentId'], '4567');
+    });
   });
 
   group('A group of tests related to otp verb', () {
