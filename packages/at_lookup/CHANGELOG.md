@@ -1,3 +1,6 @@
+## 3.0.48
+- feat: consume EnrollVerbBuilder in AtLookup.executeVerb()
+- chore: upgrade at_commons to v4.1.1 and at_Utils to v3.0.18
 ## 3.0.47
 - fix: Fixed legacy error handling so error message isn't truncated if it 
   contains a hyphen
