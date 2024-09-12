@@ -29,7 +29,8 @@ enum EnrollOperationEnum {
   list,
   update,
   fetch,
-  unrevoke
+  unrevoke,
+  delete
 }
 
 String getEnrollOperation(EnrollOperationEnum? enrollOperationEnum) =>
