@@ -179,7 +179,8 @@ class AtLookupImpl implements AtLookUp {
       logger.finer('value: $value dataSignature:$dataSignature');
       var isDataValid = publicKey.verifySHA256Signature(
           // ignore: unnecessary_cast
-          utf8.encode(value) as Uint8List, base64Decode(dataSignature));
+          utf8.encode(value) as Uint8List,
+          base64Decode(dataSignature));
       logger.finer('data verify result: $isDataValid');
       return 'data:$value';
     } on Exception catch (e) {
@@ -296,6 +297,8 @@ class AtLookupImpl implements AtLookUp {
         verbResult = await _notifyRemove(builder);
       } else if (builder is NotifyFetchVerbBuilder) {
         verbResult = await _notifyFetch(builder);
+      } else if (builder is EnrollVerbBuilder){
+        verbResult = await _enroll(builder);
       }
     } on Exception catch (e) {
       logger.severe('Error in remote verb execution ${e.toString()}');
@@ -336,7 +339,7 @@ class AtLookupImpl implements AtLookUp {
       // TODO: Can we remove the below catch block in next release once all the servers are migrated to new version.
       if (verbResult.contains('-')) {
         errorCode = verbResult.substring(0, verbResult.indexOf('-'));
-        errorDescription = verbResult.substring(verbResult.indexOf('-')+1);
+        errorDescription = verbResult.substring(verbResult.indexOf('-') + 1);
       } else {
         errorDescription += ": $verbResult";
       }
@@ -403,6 +406,11 @@ class AtLookupImpl implements AtLookUp {
   }
 
   Future<String> _sync(SyncVerbBuilder builder) async {
+    var atCommand = builder.buildCommand();
+    return await _process(atCommand, auth: true);
+  }
+
+  Future<String> _enroll(EnrollVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
     return await _process(atCommand, auth: true);
   }
