@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:ffi';
 import 'dart:io';
 
 import 'package:at_chops/at_chops.dart';
@@ -365,7 +363,6 @@ void main() {
 
       String appName = 'unit_test_2';
       String deviceName = 'test_device';
-      String otp = 'GHIJKL';
       String enrollmentId = '1357913579';
 
       EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
