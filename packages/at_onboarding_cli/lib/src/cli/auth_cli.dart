@@ -736,22 +736,12 @@ Future<void> revoke(ArgResults ar, AtClient atClient) async {
 Future<void> deleteDeniedEnrollment(ArgResults ar, AtClient atClient) async {
   AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
   String eId = ar[AuthCliArgs.argNameEnrollmentId];
-  String atsign = AtUtils.fixAtSign(ar[AuthCliArgs.argNameAtSign]);
-
-  Map? er = await _fetch(eId, atLookup);
-  if (er == null) {
-    stderr.writeln('Could not fetch enrollment: $eId');
-    return;
-  }
-  if (er['status'] != null && er['status'] != EnrollmentStatus.denied) {
-    stderr.writeln('Cannot delete a ${er['status']} enrollment');
-    // exit(1);
-  }
-  AtKey enrollmentKey = AtKey.fromString('$eId.new.__manage$atsign');
-  DeleteVerbBuilder deleteVerbBuilder = DeleteVerbBuilder()
-    ..atKey = enrollmentKey;
+  EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
+    ..enrollmentId = eId
+    ..operation = EnrollOperationEnum.delete;
   stdout.writeln('Sending delete request');
-  var response = await atLookup.executeVerb(deleteVerbBuilder);
+  String? response = await atLookup.executeVerb(enrollVerbBuilder);
+  response = response?.replaceFirst('data:', '');
   stdout.writeln('Server response: $response');
 }
 
