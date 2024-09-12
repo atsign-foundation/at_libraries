@@ -98,5 +98,13 @@ void main() {
       expect(enrollVerbBuilder.buildCommand(),
           'enroll:unrevoke:{"enrollmentId":"123"}\n');
     });
+
+    test('A test to validate enroll delete command', () {
+      EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
+        ..operation = EnrollOperationEnum.delete
+        ..enrollmentId = '4785';
+      expect(enrollVerbBuilder.buildCommand(),
+          'enroll:delete:{"enrollmentId":"4785"}\n');
+    });
   });
 }
