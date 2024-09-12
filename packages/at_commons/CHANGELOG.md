@@ -1,3 +1,5 @@
+## 4.1.1
+- feat: Add "delete" operation to the enroll verb to allow deletion of denied enrollments
 ## 4.1.0
 - feat: Add "unrevoke" operation to the enroll verb to restore revoked APKAM keys
 ## 4.0.11
