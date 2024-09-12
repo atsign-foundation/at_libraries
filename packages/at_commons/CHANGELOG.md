@@ -1,3 +1,5 @@
+## 4.1.1
+- fix: Add isEncrypted flag to notify command for both true and false
 ## 4.1.0
 - feat: Add "unrevoke" operation to the enroll verb to restore revoked APKAM keys
 ## 4.0.11
