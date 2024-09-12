@@ -27,7 +27,6 @@ enum EnrollOperationEnum {
   deny,
   revoke,
   list,
-  update,
   fetch,
   unrevoke,
   delete
