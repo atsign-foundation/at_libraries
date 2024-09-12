@@ -335,11 +335,9 @@ Future<void> enroll(ArgResults argResults, {AtOnboardingService? svc}) async {
   }
   try {
     stderr.writeln('Submitting enrollment request');
-    String apkamKeysExpiry = (argResults[AuthCliArgs.argNameExpiry] == null)
-        // If apkam Keys expiry is not set, then APKAM keys should lives forever.
-        // Therefore set to 0ms (0 milliseconds) and TTL will not be set.
-        ? '0ms'
-        : argResults[AuthCliArgs.argNameExpiry];
+    // If apkam Keys expiry is not set, then APKAM keys should lives forever.
+    // Therefore set to 0ms (0 milliseconds) and TTL will not be set.
+    String apkamKeysExpiry = argResults[AuthCliArgs.argNameExpiry] ?? '0ms';
     AtEnrollmentResponse er = await svc.sendEnrollRequest(
         argResults[AuthCliArgs.argNameAppName],
         argResults[AuthCliArgs.argNameDeviceName],
