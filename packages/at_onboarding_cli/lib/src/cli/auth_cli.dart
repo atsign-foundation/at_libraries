@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:at_auth/at_auth.dart';
 import 'package:at_cli_commons/at_cli_commons.dart';
 import 'package:at_client/at_client.dart';
+import 'package:at_commons/at_builders.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:args/args.dart';
@@ -170,6 +171,10 @@ Future<int> _main(List<String> arguments) async {
         // Write keys to @atSign_keys.atKeys IFF it doesn't already exist; if
         // it does exist, then write to @atSign_appName_deviceName_keys.atKeys
         await enroll(commandArgResults);
+
+      case AuthCliCommand.delete:
+        await deleteDeniedEnrollment(
+            commandArgResults, await createAtClient(commandArgResults));
     }
   } on ArgumentError catch (e) {
     stderr
@@ -482,6 +487,9 @@ Future<void> interactive(ArgResults argResults, AtClient atClient) async {
 
         case AuthCliCommand.revoke:
           await revoke(commandArgResults, atClient);
+
+        case AuthCliCommand.delete:
+          await deleteDeniedEnrollment(commandArgResults, atClient);
       }
     } on ArgumentError catch (e) {
       stderr.writeln(
@@ -570,12 +578,17 @@ Future<void> list(ArgResults ar, AtClient atClient) async {
 }
 
 Future<Map?> _fetch(String eId, AtLookUp atLookup) async {
-  String rawResponse = (await atLookup.executeCommand(
-      'enroll:fetch:'
-      '{"enrollmentId":"$eId"}'
-      '\n',
-      auth: true))!;
-
+  String? rawResponse;
+  try {
+    rawResponse = (await atLookup.executeCommand(
+        'enroll:fetch:'
+        '{"enrollmentId":"$eId"}'
+        '\n',
+        auth: true))!;
+  } on Exception catch (e) {
+    stderr.writeln('Exiting: Caught: $e');
+    exit(1);
+  }
   if (rawResponse.startsWith('data:')) {
     rawResponse = rawResponse.substring(rawResponse.indexOf('data:') + 5);
     // response is a Map
@@ -718,6 +731,28 @@ Future<void> revoke(ArgResults ar, AtClient atClient) async {
         .executeCommand('enroll:revoke:{"enrollmentId":"$eId"}\n', auth: true);
     stdout.writeln('Server response: $response');
   }
+}
+
+Future<void> deleteDeniedEnrollment(ArgResults ar, AtClient atClient) async {
+  AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
+  String eId = ar[AuthCliArgs.argNameEnrollmentId];
+  String atsign = AtUtils.fixAtSign(ar[AuthCliArgs.argNameAtSign]);
+
+  Map? er = await _fetch(eId, atLookup);
+  if (er == null) {
+    stderr.writeln('Could not fetch enrollment: $eId');
+    return;
+  }
+  if (er['status'] != null && er['status'] != EnrollmentStatus.denied) {
+    stderr.writeln('Cannot delete a ${er['status']} enrollment');
+    // exit(1);
+  }
+  AtKey enrollmentKey = AtKey.fromString('$eId.new.__manage$atsign');
+  DeleteVerbBuilder deleteVerbBuilder = DeleteVerbBuilder()
+    ..atKey = enrollmentKey;
+  stdout.writeln('Sending delete request');
+  var response = await atLookup.executeVerb(deleteVerbBuilder);
+  stdout.writeln('Server response: $response');
 }
 
 @visibleForTesting
