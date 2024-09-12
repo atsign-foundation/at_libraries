@@ -412,6 +412,9 @@ class AtLookupImpl implements AtLookUp {
 
   Future<String> _enroll(EnrollVerbBuilder builder) async {
     var atCommand = builder.buildCommand();
+    if(builder.operation == EnrollOperationEnum.request){
+      return _process(atCommand, auth: false);
+    }
     return await _process(atCommand, auth: true);
   }
 
