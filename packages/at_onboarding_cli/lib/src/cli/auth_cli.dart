@@ -309,6 +309,15 @@ Future<void> onboard(ArgResults argResults, {AtOnboardingService? svc}) async {
   }
 }
 
+String parseServerResponse(String? response) {
+  if (response != null && response.startsWith('data:')) {
+    return response.replaceFirst('data:', '');
+  } else {
+    stderr.writeln('Exiting: Unexpected server response: $response');
+    exit(1);
+  }
+}
+
 /// auth enroll : require atSign, app name, device name, otp [, atKeys path]
 ///     If atKeys file doesn't exist, then this is a new enrollment
 ///     If it does exist, then the enrollment request has been made and we need
@@ -578,25 +587,14 @@ Future<void> list(ArgResults ar, AtClient atClient) async {
 }
 
 Future<Map?> _fetch(String eId, AtLookUp atLookup) async {
-  String? rawResponse;
-  try {
-    rawResponse = (await atLookup.executeCommand(
-        'enroll:fetch:'
-        '{"enrollmentId":"$eId"}'
-        '\n',
-        auth: true))!;
-  } on Exception catch (e) {
-    stderr.writeln('Exiting: Caught: $e');
-    exit(1);
-  }
-  if (rawResponse.startsWith('data:')) {
-    rawResponse = rawResponse.substring(rawResponse.indexOf('data:') + 5);
-    // response is a Map
-    return jsonDecode(rawResponse);
-  } else {
-    stderr.writeln('Exiting: Unexpected server response: $rawResponse');
-    exit(1);
-  }
+  EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
+    ..operation = EnrollOperationEnum.fetch
+    ..enrollmentId = eId;
+  String? response = await atLookup.executeVerb(enrollVerbBuilder);
+
+  response = parseServerResponse(response);
+  // response is a Map
+  return jsonDecode(response);
 }
 
 Future<void> fetch(ArgResults argResults, AtClient atClient) async {
@@ -700,9 +698,10 @@ Future<void> deny(ArgResults ar, AtClient atClient) async {
   // Iterate through the requests, deny each one
   for (String eId in toDeny.keys) {
     stdout.writeln('Denying enrollmentId $eId');
-    // 'enroll:deny:{"enrollmentId":"$enrollmentId"}'
-    String? response = await atLookup
-        .executeCommand('enroll:deny:{"enrollmentId":"$eId"}\n', auth: true);
+    EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
+      ..operation = EnrollOperationEnum.deny
+      ..enrollmentId = eId;
+    String? response = await atLookup.executeVerb(enrollVerbBuilder);
     stdout.writeln('Server response: $response');
   }
 }
@@ -741,7 +740,7 @@ Future<void> deleteDeniedEnrollment(ArgResults ar, AtClient atClient) async {
     ..operation = EnrollOperationEnum.delete;
   stdout.writeln('Sending delete request');
   String? response = await atLookup.executeVerb(enrollVerbBuilder);
-  response = response?.replaceFirst('data:', '');
+  response = parseServerResponse(response);
   stdout.writeln('Server response: $response');
 }
 
