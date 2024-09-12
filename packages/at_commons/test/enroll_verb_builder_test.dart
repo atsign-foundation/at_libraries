@@ -90,5 +90,13 @@ void main() {
 
       expect(command, 'enroll:fetch:{"enrollmentId":"123"}\n');
     });
+
+    test('A test to validate the enroll unrevoke command', () {
+      EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
+        ..operation = EnrollOperationEnum.unrevoke
+        ..enrollmentId = '123';
+      expect(enrollVerbBuilder.buildCommand(),
+          'enroll:unrevoke:{"enrollmentId":"123"}\n');
+    });
   });
 }
