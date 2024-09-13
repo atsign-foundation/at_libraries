@@ -44,6 +44,8 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
   /// Accepts a list of enrollment statuses. Defaults to all EnrollmentStatuses
   List<EnrollmentStatus>? enrollmentStatusFilter;
 
+  Duration? apkamKeysExpiryDuration;
+
   @override
   String buildCommand() {
     var sb = StringBuffer();
@@ -64,7 +66,8 @@ class EnrollVerbBuilder extends AbstractVerbBuilder {
           encryptedDefaultEncryptionPrivateKey
       ..encryptedDefaultSelfEncryptionKey = encryptedDefaultSelfEncryptionKey
       ..encryptedAPKAMSymmetricKey = encryptedAPKAMSymmetricKey
-      ..enrollmentStatusFilter = enrollmentStatusFilter;
+      ..enrollmentStatusFilter = enrollmentStatusFilter
+      ..apkamKeysExpiryDuration = apkamKeysExpiryDuration;
 
     Map<String, dynamic> enrollParamsJson = enrollParams.toJson();
     enrollParamsJson.removeWhere(_removeElements);
