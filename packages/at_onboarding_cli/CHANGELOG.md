@@ -1,3 +1,7 @@
+## 1.6.4
+- build[deps]: upgrade: \
+  at_client to 3.2.1 | at_commons to 4.1.1 | at_lookup to 3.0.48 | at_utils to 3.0.18 \
+  at_persistence_secondary_server to 3.0.63
 ## 1.6.3
 - fix: `.atKeys` filename was trimmed when filename has period('.') in it
 ## 1.6.2
