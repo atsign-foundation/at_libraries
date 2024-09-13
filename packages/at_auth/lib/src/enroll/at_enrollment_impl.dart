@@ -77,6 +77,8 @@ class AtEnrollmentImpl implements AtEnrollmentBase {
             .encrypt(apkamSymmetricKey.key);
     enrollVerbBuilder.otp = enrollmentRequest.otp;
     enrollVerbBuilder.namespaces = enrollmentRequest.namespaces;
+    enrollVerbBuilder.apkamKeysExpiryDuration =
+        enrollmentRequest.apkamKeysExpiryDuration;
 
     String? serverResponse =
         await _executeEnrollCommand(enrollVerbBuilder, atLookUp);
