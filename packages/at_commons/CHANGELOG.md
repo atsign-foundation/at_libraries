@@ -1,6 +1,11 @@
+## 4.1.2
+- fix: update pkam regex to accept sha512 as hashing algo
+## 4.1.1
+- feat: Add "delete" operation to the enroll verb to allow deletion of denied enrollments
 ## 4.1.0
 - feat: Add "unrevoke" operation to the enroll verb to restore revoked APKAM keys
-- fix: update pkam regex to accept sha512 as hashing algo
+- fix: Add isEncrypted flag to notify command for both true and false
+
 ## 4.0.11
 - chore: deprecate MessageTypeEnum.text
 - fix: remove deprecated annotation from Metadata.pubKeyCS
