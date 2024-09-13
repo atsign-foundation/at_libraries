@@ -13,6 +13,7 @@ class EnrollmentRequest extends BaseEnrollmentRequest {
   Map<String, String> namespaces;
   String? encryptedAPKAMSymmetricKey;
   String otp;
+  Duration? apkamKeysExpiryDuration;
 
   EnrollmentRequest(
       {required super.appName,
@@ -20,5 +21,6 @@ class EnrollmentRequest extends BaseEnrollmentRequest {
       super.apkamPublicKey,
       required this.otp,
       required this.namespaces,
-      this.encryptedAPKAMSymmetricKey});
+      this.encryptedAPKAMSymmetricKey,
+      this.apkamKeysExpiryDuration});
 }

@@ -1,3 +1,5 @@
+## 2.0.6
+- fix: Add "apkamKeysExpiryDuration" to "EnrollmentRequest" to support auto expiry of APKAM keys
 ## 2.0.5
 - fix: set atChops in atLookup before pkam auth in AtAuthImpl
 - build[deps]: Upgraded the following packages:
