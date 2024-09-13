@@ -1,10 +1,9 @@
 import 'package:at_commons/src/keystore/at_key.dart';
-import 'package:at_commons/src/verb/abstract_verb_builder.dart';
 import 'package:at_commons/src/utils/string_utils.dart';
+import 'package:at_commons/src/verb/abstract_verb_builder.dart';
 import 'package:uuid/uuid.dart';
 
 import '../at_constants.dart';
-
 import 'operation_enum.dart';
 import 'verb_util.dart';
 
