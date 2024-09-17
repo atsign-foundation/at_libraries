@@ -240,6 +240,14 @@ void main() {
       expect(matches['atKey'], 'signing_publickey');
     });
 
+    test('Validate reserved publickey', () {
+      String key = 'public:publickey@alice';
+      var type = RegexUtil.keyType(key, false);
+      expect(type, KeyType.reservedKey);
+      var match = RegexUtil.matchAll(Regexes(false).reservedKey, key);
+      expect(match, true);
+    });
+
     test(
         'Validate appropriate parts of enc_shared_key are identified correctly',
         () {
