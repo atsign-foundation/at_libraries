@@ -1,5 +1,6 @@
-## 4.1.2
+## 4.1.3
 - fix: update pkam regex to accept sha512 as hashing algo
+## 4.1.2
 - feat: Add "expiry" enroll params to support apkam keys to auto expiry after specified time duration
 ## 4.1.1
 - feat: Add "delete" operation to the enroll verb to allow deletion of denied enrollments
