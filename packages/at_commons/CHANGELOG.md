@@ -1,3 +1,5 @@
+## 4.1.3
+- feat: Add isEncrypted flag to update verb metadata for both true and false
 ## 4.1.2
 - feat: Add "expiry" enroll params to support apkam keys to auto expiry after specified time duration
 ## 4.1.1
