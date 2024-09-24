@@ -1,23 +1,35 @@
 import 'dart:io';
-
+/// Abstract class for a general connection
 abstract class AtConnection {
-  /// Write a data to the underlying socket of the connection
-  /// @param - data - Data to write to the socket
-  /// @throws [AtIOException] for any exception during the operation
+  /// Write data to the underlying connection
   void write(String data);
 
-  /// Retrieves the socket of underlying connection
-  Socket getSocket();
+  /// Retrieves the underlying connection (Socket or WebSocket)
+  dynamic getSocket();
 
-  /// closes the underlying connection
+  /// Closes the connection
   Future<void> close();
 
   /// Returns true if the connection is invalid
   bool isInValid();
 
-  /// Gets the connection metadata
+  /// Retrieves connection metadata
   AtConnectionMetaData? getMetaData();
 }
+
+/// Abstract class for Socket-based connections
+abstract class SocketConnection extends AtConnection {
+  /// Get the underlying Socket
+  @override
+  Socket getSocket();
+}
+
+/// Abstract class for WebSocket-based connections
+abstract class WebSocketConnection extends AtConnection {
+  /// Get the underlying WebSocket
+  WebSocket getWebSocket();
+}
+
 
 abstract class AtConnectionMetaData {
   bool isAuthenticated = false;

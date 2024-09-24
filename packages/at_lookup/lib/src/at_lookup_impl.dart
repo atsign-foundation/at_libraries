@@ -238,7 +238,30 @@ class AtLookupImpl implements AtLookUp {
     return putResult.isNotEmpty;
   }
 
-  Future<void> createConnection() async {
+  // Future<void> createConnection() async {
+  //   if (!isConnectionAvailable()) {
+  //     if (_connection != null) {
+  //       // Clean up the connection before creating a new one
+  //       logger.finer('Closing old connection');
+  //       await _connection!.close();
+  //     }
+  //     logger.info('Creating new connection');
+  //     //1. find secondary url for atsign from lookup library
+  //     SecondaryAddress secondaryAddress =
+  //         await secondaryAddressFinder.findSecondary(_currentAtSign);
+  //     var host = secondaryAddress.host;
+  //     var port = secondaryAddress.port;
+  //     //2. create a connection to secondary server
+  //     await createOutBoundConnection(
+  //         host, port.toString(), _currentAtSign, _secureSocketConfig);
+  //     //3. listen to server response
+  //     messageListener = socketListenerFactory.createListener(_connection!);
+  //     messageListener.listen();
+  //     logger.info('New connection created OK');
+  //   }
+  // }
+
+  Future<void> createConnection({bool useWebSocket = false}) async {
     if (!isConnectionAvailable()) {
       if (_connection != null) {
         // Clean up the connection before creating a new one
@@ -246,20 +269,23 @@ class AtLookupImpl implements AtLookUp {
         await _connection!.close();
       }
       logger.info('Creating new connection');
-      //1. find secondary url for atsign from lookup library
+      // 1. Find secondary URL for atSign from lookup library
       SecondaryAddress secondaryAddress =
           await secondaryAddressFinder.findSecondary(_currentAtSign);
       var host = secondaryAddress.host;
       var port = secondaryAddress.port;
-      //2. create a connection to secondary server
-      await createOutBoundConnection(
-          host, port.toString(), _currentAtSign, _secureSocketConfig);
-      //3. listen to server response
+
+      // 2. Create a connection to the secondary server
+      await createOutBoundConnection(host, port.toString(), _currentAtSign,
+          _secureSocketConfig, useWebSocket);
+
+      // 3. Listen to server response
       messageListener = socketListenerFactory.createListener(_connection!);
       messageListener.listen();
       logger.info('New connection created OK');
     }
   }
+
 
   /// Executes the command returned by [VerbBuilder] build command on a remote secondary server.
   /// Catches any exception and throws [AtLookUpException]
@@ -628,13 +654,43 @@ class AtLookupImpl implements AtLookUp {
         !(_connection!.getMetaData()!.isAuthenticated);
   }
 
-  Future<bool> createOutBoundConnection(String host, String port,
-      String toAtSign, SecureSocketConfig secureSocketConfig) async {
+  // Future<bool> createOutBoundConnection(String host, String port,
+  //     String toAtSign, SecureSocketConfig secureSocketConfig) async {
+  //   try {
+  //     SecureSocket secureSocket =
+  //         await socketFactory.createSocket(host, port, secureSocketConfig);
+  //     _connection =
+  //         outboundConnectionFactory.createOutboundConnection(secureSocket);
+  //     if (outboundConnectionTimeout != null) {
+  //       _connection!.setIdleTime(outboundConnectionTimeout);
+  //     }
+  //   } on SocketException {
+  //     throw SecondaryConnectException(
+  //         'unable to connect to secondary $toAtSign on $host:$port');
+  //   }
+  //   return true;
+  // }
+
+  Future<bool> createOutBoundConnection(
+      String host,
+      String port,
+      String toAtSign,
+      SecureSocketConfig secureSocketConfig,
+      bool useWebSocket) async {
     try {
-      SecureSocket secureSocket =
-          await socketFactory.createSocket(host, port, secureSocketConfig);
-      _connection =
-          outboundConnectionFactory.createOutboundConnection(secureSocket);
+      if (useWebSocket) {
+        logger.info('Creating WebSocket connection');
+        WebSocket webSocket = await socketFactory.createWebSocket(host, port, secureSocketConfig);
+        _connection = outboundConnectionFactory
+            .createOutboundConnectionForWebSocket(webSocket);
+      } else {
+        logger.info('Creating SecureSocket connection');
+        SecureSocket secureSocket =
+            await socketFactory.createSocket(host, port, secureSocketConfig);
+        _connection =
+            outboundConnectionFactory.createOutboundConnection(secureSocket);
+      }
+
       if (outboundConnectionTimeout != null) {
         _connection!.setIdleTime(outboundConnectionTimeout);
       }
@@ -686,7 +742,14 @@ class AtLookupImpl implements AtLookUp {
 class AtLookupSecureSocketFactory {
   Future<SecureSocket> createSocket(
       String host, String port, SecureSocketConfig socketConfig) async {
-    return await SecureSocketUtil.createSecureSocket(host, port, socketConfig);
+    return await SecureSocketUtil.createSecureSocket(
+        host, port, socketConfig);
+  }
+
+  Future<WebSocket> createWebSocket(
+      String host, String port, SecureSocketConfig socketConfig) async {
+    return await SecureSocketUtil.createSecureWebSocket(
+        host, port, socketConfig);
   }
 }
 
@@ -700,5 +763,10 @@ class AtLookupSecureSocketListenerFactory {
 class AtLookupOutboundConnectionFactory {
   OutboundConnection createOutboundConnection(SecureSocket secureSocket) {
     return OutboundConnectionImpl(secureSocket);
+  }
+
+   /// Creates and returns an [OutboundConnection] for a [WebSocket]
+  OutboundConnection createOutboundConnectionForWebSocket(WebSocket webSocket) {
+    return OutboundConnectionImpl(webSocket);
   }
 }
