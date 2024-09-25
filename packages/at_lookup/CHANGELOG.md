@@ -1,3 +1,6 @@
+## 3.0.49
+- build[deps]: Upgraded the following packages:
+  - at_commons to v4.1.3
 ## 3.0.48
 - feat: consume EnrollVerbBuilder in AtLookup.executeVerb()
 - chore: upgrade at_commons to v4.1.1 and at_utils to v3.0.18
