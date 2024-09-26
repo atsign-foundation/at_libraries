@@ -30,7 +30,7 @@ class OutboundMessageListener {
 
     runZonedGuarded(() {
       _connection
-          .getSocket()
+          .underlying
           .listen(messageHandler, onDone: onSocketDone, onError: onSocketError);
     }, (Object error, StackTrace st) {
       logger.warning(
