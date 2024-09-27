@@ -1,5 +1,5 @@
 ## 5.0.0
-- [Breaking Change]feat: Add isEncrypted flag to update verb metadata for both true and false
+- [Breaking Change]feat: Emit the isEncrypted value in the metadata if it is false
 - fix: update pkam regex to accept sha512 as hashing algo
 ## 4.1.2
 - feat: Add "expiry" enroll params to support apkam keys to auto expiry after specified time duration
