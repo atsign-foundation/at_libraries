@@ -559,9 +559,9 @@ class Metadata {
     if (isBinary) {
       sb.write(':isBinary:$isBinary');
     }
-    if (isEncrypted) {
-      sb.write(':isEncrypted:$isEncrypted');
-    }
+
+    sb.write(':isEncrypted:$isEncrypted');
+
     if (sharedKeyEnc.isNotNullOrEmpty) {
       sb.write(':${AtConstants.sharedKeyEncrypted}:$sharedKeyEnc');
     }
