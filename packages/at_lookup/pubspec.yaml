@@ -12,19 +12,12 @@ dependencies:
   path: ^1.8.0
   crypton: ^2.0.1
   crypto: ^3.0.1
-  at_utils: ^3.0.18
-  at_commons: ^4.1.1
+  at_utils: ^3.0.19
+  at_commons: ^5.0.0
   mutex: ^3.0.0
   meta: ^1.8.0
-  at_chops: ^2.0.0
+  at_chops: ^2.0.1
 
-#TODO Remove this after publishing at_commons
-dependency_overrides:
-  at_commons:
-    git:
-      url: https://github.com/atsign-foundation/at_libraries
-      path: packages/at_commons
-      ref: update_isencrypted_changes
 dev_dependencies:
   mocktail: ^1.0.1
   lints: ^1.0.1
