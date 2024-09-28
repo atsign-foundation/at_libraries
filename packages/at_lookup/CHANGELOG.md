@@ -1,3 +1,7 @@
+## 3.0.49
+- build[deps]: Upgraded the following packages:
+  - at_commons to v5.0.0
+  - at_utils to v3.0.19
 ## 3.0.48
 - build[deps]: Upgraded the following packages:
   - at_commons to v4.1.0
