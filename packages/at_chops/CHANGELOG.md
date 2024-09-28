@@ -1,9 +1,8 @@
-## 2.0.2
-- build[deps]: Upgraded the following packages:
-  - at_commons to v5.0.0
-  - at_utils to v3.0.18
 ## 2.0.1
 - fix: throw Exception when input IV is null for decryption(with Symmetric Encryption)
+- build[deps]: Upgraded the following packages:
+    - at_commons to v5.0.0
+    - at_utils to v3.0.19
 ## 2.0.0
 - [Breaking Change] fix: removed deprecated methods and members
 - [Breaking Change] feat: Introduced interface for ASymmetricEncryptionAlgorithm and modified DefaultEncryptionAlgorithm
