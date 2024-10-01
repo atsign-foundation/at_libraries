@@ -1,3 +1,8 @@
+## 3.0.9
+- build[deps]: Upgraded dependencies for the following packages:
+    - at_client: 3.2.2
+    - at_commons: 5.0.0
+    - at_util: 3.0.19
 ## 3.0.8
 - **chore**: Upgrade to at_commons new major version 4
 - **Build**: Fix lint warnings from Dart 3
