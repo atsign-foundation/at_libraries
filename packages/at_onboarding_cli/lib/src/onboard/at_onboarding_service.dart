@@ -1,9 +1,9 @@
 import 'dart:io';
 
+import 'package:at_auth/at_auth.dart';
 import 'package:at_chops/at_chops.dart';
 import 'package:at_client/at_client.dart';
 import 'package:at_lookup/at_lookup.dart';
-import 'package:at_auth/at_auth.dart';
 
 abstract class AtOnboardingService {
   static const Duration defaultApkamRetryInterval = Duration(seconds: 10);
@@ -44,12 +44,9 @@ abstract class AtOnboardingService {
 
   /// Sends enrollment request. Application code may subsequently call
   /// [awaitApproval].
-  Future<AtEnrollmentResponse> sendEnrollRequest(
-    String appName,
-    String deviceName,
-    String otp,
-    Map<String, String> namespaces,
-  );
+  Future<AtEnrollmentResponse> sendEnrollRequest(String appName,
+      String deviceName, String otp, Map<String, String> namespaces,
+      {Duration? apkamKeysExpiryDuration});
 
   /// Attempts PKAM auth until successful (i.e. request was approved).
   /// If the request was denied, or times out, then an exception is thrown.

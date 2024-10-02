@@ -194,12 +194,9 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   }
 
   @override
-  Future<at_auth.AtEnrollmentResponse> sendEnrollRequest(
-    String appName,
-    String deviceName,
-    String otp,
-    Map<String, String> namespaces,
-  ) async {
+  Future<at_auth.AtEnrollmentResponse> sendEnrollRequest(String appName,
+      String deviceName, String otp, Map<String, String> namespaces,
+      {Duration? apkamKeysExpiryDuration}) async {
     if (appName == null || deviceName == null) {
       throw AtEnrollmentException(
           'appName and deviceName are mandatory for enrollment');
@@ -207,11 +204,13 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
 
     at_auth.EnrollmentRequest newClientEnrollmentRequest =
         at_auth.EnrollmentRequest(
-      appName: appName,
-      deviceName: deviceName,
-      namespaces: namespaces,
-      otp: otp,
-    );
+            appName: appName,
+            deviceName: deviceName,
+            namespaces: namespaces,
+            otp: otp);
+    newClientEnrollmentRequest.apkamKeysExpiryDuration =
+        apkamKeysExpiryDuration;
+
     AtLookupImpl atLookUpImpl = AtLookupImpl(_atSign,
         atOnboardingPreference.rootDomain, atOnboardingPreference.rootPort);
     logger.finer('sendEnrollRequest: submitting enrollment request');
