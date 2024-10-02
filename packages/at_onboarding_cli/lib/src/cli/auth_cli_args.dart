@@ -46,6 +46,7 @@ enum AuthCliCommand {
   approve(usage: 'Approve a pending enrollment request'),
   deny(usage: 'Deny a pending enrollment request'),
   revoke(usage: 'Revoke approval of a previously-approved enrollment'),
+  unrevoke(usage: 'Restores access to the previously revoked enrollment'),
   enroll(
       usage: 'Enroll is used when a program needs to authenticate and'
           ' "atKeys" are not available, and "onboard" has already been run'
@@ -170,6 +171,9 @@ class AuthCliArgs {
 
       case AuthCliCommand.revoke:
         return createRevokeCommandParser();
+
+      case AuthCliCommand.unrevoke:
+        return createUnRevokeCommandParser();
     }
   }
 
@@ -417,6 +421,16 @@ class AuthCliArgs {
   /// auth revoke
   @visibleForTesting
   ArgParser createRevokeCommandParser() {
+    ArgParser p = createSharedArgParser(hide: true);
+    _addEnrollmentIdOption(p);
+    _addAppNameRegexOption(p);
+    _addDeviceNameRegexOption(p);
+    return p;
+  }
+
+  /// Restore the revoked enrollment Id.
+  @visibleForTesting
+  ArgParser createUnRevokeCommandParser() {
     ArgParser p = createSharedArgParser(hide: true);
     _addEnrollmentIdOption(p);
     _addAppNameRegexOption(p);

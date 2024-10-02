@@ -171,6 +171,9 @@ Future<int> _main(List<String> arguments) async {
         // Write keys to @atSign_keys.atKeys IFF it doesn't already exist; if
         // it does exist, then write to @atSign_appName_deviceName_keys.atKeys
         await enroll(commandArgResults);
+      case AuthCliCommand.unrevoke:
+        await unrevoke(
+            commandArgResults, await createAtClient(commandArgResults));
     }
   } on ArgumentError catch (e) {
     stderr
@@ -499,6 +502,9 @@ Future<void> interactive(ArgResults argResults, AtClient atClient) async {
 
         case AuthCliCommand.revoke:
           await revoke(commandArgResults, atClient);
+
+        case AuthCliCommand.unrevoke:
+          await unrevoke(commandArgResults, atClient);
       }
     } on ArgumentError catch (e) {
       stderr.writeln(
@@ -733,6 +739,31 @@ Future<void> revoke(ArgResults ar, AtClient atClient) async {
     // 'enroll:revoke:{"enrollmentid":"$enrollmentId"}'
     String? response = await atLookup
         .executeCommand('enroll:revoke:{"enrollmentId":"$eId"}\n', auth: true);
+    stdout.writeln('Server response: $response');
+  }
+}
+
+Future<void> unrevoke(ArgResults ar, AtClient atClient) async {
+  AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
+
+  Map toUnRevoke = await _fetchOrListAndFilter(
+    atLookup,
+    EnrollmentStatus.approved.name, // must be status approved
+    eId: ar[AuthCliArgs.argNameEnrollmentId],
+    arx: ar[AuthCliArgs.argNameAppNameRegex],
+    drx: ar[AuthCliArgs.argNameDeviceNameRegex],
+  );
+
+  if (toUnRevoke.isEmpty) {
+    stderr.writeln('No matching enrollment(s) found');
+    return;
+  }
+
+  for (String eId in toUnRevoke.keys) {
+    stdout.writeln('Un-Revoking enrollmentId $eId');
+    String? response = await atLookup.executeCommand(
+        'enroll:unrevoke:{"enrollmentId":"$eId"}\n',
+        auth: true);
     stdout.writeln('Server response: $response');
   }
 }
