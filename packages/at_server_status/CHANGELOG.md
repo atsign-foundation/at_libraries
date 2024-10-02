@@ -1,3 +1,8 @@
+## 1.0.5
+- build[deps]: Upgraded dependencies for the following packages:
+  - at_commons to v5.0.0
+  - at_utils to v3.0.19
+  - at_lookup to v3.0.49
 ## 1.0.4
 - build[deps]: Upgraded dependencies for the following packages:
     - at_commons to v4.0.0

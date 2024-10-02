@@ -1,5 +1,14 @@
+## 5.0.0
+- [Breaking Change]feat: Emit the isEncrypted value in the metadata if it is false
+- fix: update pkam regex to accept sha512 as hashing algo
+## 4.1.2
+- feat: Add "expiry" enroll params to support apkam keys to auto expiry after specified time duration
+## 4.1.1
+- feat: Add "delete" operation to the enroll verb to allow deletion of denied enrollments
 ## 4.1.0
 - feat: Add "unrevoke" operation to the enroll verb to restore revoked APKAM keys
+- fix: Add isEncrypted flag to notify command for both true and false
+
 ## 4.0.11
 - chore: deprecate MessageTypeEnum.text
 - fix: remove deprecated annotation from Metadata.pubKeyCS

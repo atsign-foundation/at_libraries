@@ -13,7 +13,7 @@ void main() {
         ..atKey.key = 'email'
         ..atKey.sharedBy = '@alice';
       expect(updateBuilder.buildCommand(),
-          'update:public:email@alice alice@gmail.com\n');
+          'update:isEncrypted:false:public:email@alice alice@gmail.com\n');
     });
 
     test('verify private at key command', () {
@@ -22,7 +22,7 @@ void main() {
         ..atKey.key = 'email'
         ..atKey.sharedBy = '@alice';
       expect(updateBuilder.buildCommand(),
-          'update:email@alice alice@atsign.com\n');
+          'update:isEncrypted:false:email@alice alice@atsign.com\n');
     });
 
     test(
@@ -47,7 +47,7 @@ void main() {
       var updateCommand = updateBuilder.buildCommand();
       expect(
           updateCommand,
-          'update'
+          'update:isEncrypted:false'
           ':sharedKeyEnc:$ske'
           ':pubKeyCS:$pubKeyCS'
           ':skeEncKeyName:$skeEncKeyName'
@@ -75,7 +75,7 @@ void main() {
         ..atKey.sharedBy = '@alice'
         ..atKey.isLocal = true;
       expect(updateBuilder.buildCommand(),
-          'update:local:email@alice alice@atsign.com\n');
+          'update:isEncrypted:false:local:email@alice alice@atsign.com\n');
     });
   });
 
@@ -87,7 +87,7 @@ void main() {
         ..atKey.key = 'phone'
         ..atKey.sharedBy = '@alice';
       expect(updateBuilder.buildCommandForMeta(),
-          'update:meta:phone@alice:isBinary:true\n');
+          'update:meta:phone@alice:isBinary:true:isEncrypted:false\n');
     });
 
     test('verify ttl metadata', () {
@@ -96,7 +96,7 @@ void main() {
         ..atKey.key = 'phone'
         ..atKey.sharedBy = '@alice';
       expect(updateBuilder.buildCommandForMeta(),
-          'update:meta:phone@alice:ttl:60000\n');
+          'update:meta:phone@alice:ttl:60000:isEncrypted:false\n');
     });
 
     test('verify ttr metadata', () {
@@ -105,7 +105,7 @@ void main() {
         ..atKey.key = 'phone'
         ..atKey.sharedBy = '@alice';
       expect(updateBuilder.buildCommandForMeta(),
-          'update:meta:phone@alice:ttr:50000\n');
+          'update:meta:phone@alice:ttr:50000:isEncrypted:false\n');
     });
 
     test('verify ttb metadata', () {
@@ -114,7 +114,7 @@ void main() {
         ..atKey.key = 'phone'
         ..atKey.sharedBy = '@alice';
       expect(updateBuilder.buildCommandForMeta(),
-          'update:meta:phone@alice:ttb:80000\n');
+          'update:meta:phone@alice:ttb:80000:isEncrypted:false\n');
     });
 
     test(
@@ -351,7 +351,8 @@ void main() {
         ..atKey.sharedBy = '@bob'
         ..value = '+445 334 3423';
       var command = updateVerbBuilder.buildCommand();
-      expect(command, 'update:local:phone@bob +445 334 3423\n');
+      expect(
+          command, 'update:isEncrypted:false:local:phone@bob +445 334 3423\n');
       expect(() => updateVerbBuilder.atKey.sharedWith = '@alice',
           throwsA(predicate((dynamic e) => e is InvalidAtKeyException)));
     });
@@ -521,6 +522,76 @@ void main() {
         var roundTrippedBuilder = roundTripUpdateMetaTest(sharedWith: '@bob');
         expect(roundTrippedBuilder.atKey.metadata.isPublic, false);
       });
+    });
+  });
+  group('A group of tests to validate isEncrypted flag in update verb builder',
+      () {
+    test('for public key isEncrypted is false', () {
+      var updateBuilder = UpdateVerbBuilder()
+        ..value = 'alice@gmail.com'
+        ..atKey.metadata.isPublic = true
+        ..atKey.metadata.ttl = 5000
+        ..atKey.key = 'email'
+        ..atKey.sharedBy = '@alice';
+      var updateCommand = updateBuilder.buildCommand();
+      expect(updateCommand,
+          'update:ttl:5000:isEncrypted:false:public:email@alice alice@gmail.com\n');
+      var updateVerbParams =
+          getVerbParams(VerbSyntax.update, updateCommand.trim());
+      print(updateVerbParams);
+      expect(updateVerbParams['isEncrypted'], 'false');
+    });
+    test('for shared key - isEncrypted is true if set in metadata', () {
+      var updateBuilder = UpdateVerbBuilder()
+        ..value = 'sampleEncryptedValue'
+        ..atKey.metadata.ttl = 5000
+        ..atKey.metadata.isEncrypted = true
+        ..atKey.key = 'email'
+        ..atKey.sharedBy = '@alice'
+        ..atKey.sharedWith = '@bob';
+      var updateCommand = updateBuilder.buildCommand();
+      print(updateCommand);
+      expect(updateCommand,
+          'update:ttl:5000:isEncrypted:true:@bob:email@alice sampleEncryptedValue\n');
+      var updateVerbParams =
+          getVerbParams(VerbSyntax.update, updateCommand.trim());
+      print(updateVerbParams);
+      expect(updateVerbParams['isEncrypted'], 'true');
+    });
+    test('for shared key - isEncrypted is false if NOT set in metadata', () {
+      var updateBuilder = UpdateVerbBuilder()
+        ..value = 'sampleEncryptedValue'
+        ..atKey.metadata.ttl = 5000
+        ..atKey.key = 'email'
+        ..atKey.sharedBy = '@alice'
+        ..atKey.sharedWith = '@bob';
+      var updateCommand = updateBuilder.buildCommand();
+      print(updateCommand);
+      expect(updateCommand,
+          'update:ttl:5000:isEncrypted:false:@bob:email@alice sampleEncryptedValue\n');
+      var updateVerbParams =
+          getVerbParams(VerbSyntax.update, updateCommand.trim());
+      print(updateVerbParams);
+      expect(updateVerbParams['isEncrypted'], 'false');
+    });
+
+    test('for shared key - isEncrypted is false if set to false in metadata',
+        () {
+      var updateBuilder = UpdateVerbBuilder()
+        ..value = 'sampleEncryptedValue'
+        ..atKey.metadata.ttl = 5000
+        ..atKey.metadata.isEncrypted = false
+        ..atKey.key = 'email'
+        ..atKey.sharedBy = '@alice'
+        ..atKey.sharedWith = '@bob';
+      var updateCommand = updateBuilder.buildCommand();
+      print(updateCommand);
+      expect(updateCommand,
+          'update:ttl:5000:isEncrypted:false:@bob:email@alice sampleEncryptedValue\n');
+      var updateVerbParams =
+          getVerbParams(VerbSyntax.update, updateCommand.trim());
+      print(updateVerbParams);
+      expect(updateVerbParams['isEncrypted'], 'false');
     });
   });
 }

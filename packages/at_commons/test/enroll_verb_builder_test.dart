@@ -15,10 +15,11 @@ void main() {
         ..enrollmentId = '1234'
         ..encryptedAPKAMSymmetricKey = 'dummy_pkam_sym_key'
         ..encryptedDefaultEncryptionPrivateKey = 'dummy_encrypted_private_key'
-        ..encryptedDefaultSelfEncryptionKey = 'dummy_self_encryption_key';
+        ..encryptedDefaultSelfEncryptionKey = 'dummy_self_encryption_key'
+        ..apkamKeysExpiryDuration = Duration(minutes: 1);
       var command = enrollVerbBuilder.buildCommand();
       expect(command,
-          'enroll:request:{"enrollmentId":"1234","appName":"wavi","deviceName":"pixel","namespaces":{"wavi":"rw","__manage":"r"},"encryptedDefaultEncryptionPrivateKey":"dummy_encrypted_private_key","encryptedDefaultSelfEncryptionKey":"dummy_self_encryption_key","encryptedAPKAMSymmetricKey":"dummy_pkam_sym_key","apkamPublicKey":"abcd1234"}\n');
+          'enroll:request:{"enrollmentId":"1234","appName":"wavi","deviceName":"pixel","namespaces":{"wavi":"rw","__manage":"r"},"encryptedDefaultEncryptionPrivateKey":"dummy_encrypted_private_key","encryptedDefaultSelfEncryptionKey":"dummy_self_encryption_key","encryptedAPKAMSymmetricKey":"dummy_pkam_sym_key","apkamPublicKey":"abcd1234","apkamKeysExpiryInMillis":60000}\n');
     });
 
     test('A test to verify enroll approve operation', () {
@@ -97,6 +98,14 @@ void main() {
         ..enrollmentId = '123';
       expect(enrollVerbBuilder.buildCommand(),
           'enroll:unrevoke:{"enrollmentId":"123"}\n');
+    });
+
+    test('A test to validate enroll delete command', () {
+      EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
+        ..operation = EnrollOperationEnum.delete
+        ..enrollmentId = '4785';
+      expect(enrollVerbBuilder.buildCommand(),
+          'enroll:delete:{"enrollmentId":"4785"}\n');
     });
   });
 }

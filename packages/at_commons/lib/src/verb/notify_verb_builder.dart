@@ -2,7 +2,6 @@ import 'package:at_commons/src/verb/abstract_verb_builder.dart';
 import 'package:uuid/uuid.dart';
 
 import '../at_constants.dart';
-
 import 'operation_enum.dart';
 import 'verb_util.dart';
 
