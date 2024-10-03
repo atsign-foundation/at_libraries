@@ -10,6 +10,7 @@ import 'package:test/test.dart';
 void main() {
   String atSign = '@sitaram🛠';
   String apkamKeysFilePath = 'storage/keys/@sitaram-apkam.atKeys';
+  final logger = AtSignLogger('E2E Test');
 
   group('A group of tests to validate enrollment commands', () {
     /// The test verifies the following scenario's
@@ -53,6 +54,8 @@ void main() {
       AtEnrollmentResponse atEnrollmentResponse = await atOnboardingService
           .sendEnrollRequest(
               'wavi', 'local-device', 'ABC123', {'e2etest': 'rw'});
+      logger.info(
+          'Submitted enrollment successfully with enrollmentId: ${atEnrollmentResponse.enrollmentId}');
       expect(atEnrollmentResponse.enrollStatus, EnrollmentStatus.pending);
       expect(atEnrollmentResponse.enrollmentId.isNotEmpty, true);
 
@@ -68,6 +71,8 @@ void main() {
       ];
       res = await auth_cli.main(args);
       expect(res, 0);
+      logger.info(
+          'Approved enrollment with enrollmentId: ${atEnrollmentResponse.enrollmentId}');
 
       // Generate Atkeys file for the enrollment request.
       await atOnboardingService.awaitApproval(atEnrollmentResponse);
@@ -92,6 +97,9 @@ void main() {
         atEnrollmentResponse.enrollmentId
       ];
       res = await auth_cli.main(args);
+      expect(res, 0);
+      logger.info(
+          'Revoked enrollment with enrollmentId: ${atEnrollmentResponse.enrollmentId}');
 
       // Perform authentication with revoked enrollmentId
       expect(
@@ -110,6 +118,8 @@ void main() {
         atEnrollmentResponse.enrollmentId
       ];
       res = await auth_cli.main(args);
+      logger.info(
+          'Un-Revoked enrollment with enrollmentId: ${atEnrollmentResponse.enrollmentId}');
       // Perform authentication with the unrevoked enrollment-id.
       authResponse = await atOnboardingService.authenticate(
           enrollmentId: atEnrollmentResponse.enrollmentId);
