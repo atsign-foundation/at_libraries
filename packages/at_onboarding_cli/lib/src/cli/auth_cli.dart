@@ -23,7 +23,7 @@ final aca = AuthCliArgs();
 Future<int> main(List<String> arguments) async {
   AtSignLogger.defaultLoggingHandler = AtSignLogger.stdErrLoggingHandler;
   try {
-    return await _main(arguments);
+    return await wrappedMain(arguments);
   } on ArgumentError catch (e) {
     stderr.writeln('Invalid argument: ${e.message}');
     aca.parser.printAllCommandsUsage();
@@ -35,7 +35,7 @@ Future<int> main(List<String> arguments) async {
   }
 }
 
-Future<int> _main(List<String> arguments) async {
+Future<int> wrappedMain(List<String> arguments) async {
   if (arguments.isEmpty) {
     stderr.writeln('You must supply a command.');
     aca.parser.printAllCommandsUsage(showSubCommandParams: false);

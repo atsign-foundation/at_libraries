@@ -3,8 +3,7 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:at_client/at_client.dart';
-import 'package:at_onboarding_cli/src/activate_cli/activate_cli.dart'
-    as activate_cli;
+import 'package:at_onboarding_cli/src/cli/auth_cli.dart' as auth_cli;
 import 'package:at_onboarding_cli/src/util/api_call_status.dart';
 import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 import 'package:at_onboarding_cli/src/util/register_api_result.dart';
@@ -64,8 +63,14 @@ class Register {
         .add(ValidateOtp())
         .start();
 
-    await activate_cli
-        .wrappedMain(['-a', params['atsign']!, '-c', params['cramkey']!]);
+    await auth_cli.wrappedMain(
+      [
+        '-a',
+        params['atsign']!,
+        '-c',
+        params['cramkey']!,
+      ],
+    );
   }
 }
 
