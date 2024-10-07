@@ -285,7 +285,7 @@ class AtLookupImpl implements AtLookUp {
         await createOutBoundWebSocketConnection(host, port.toString(), _currentAtSign, _secureSocketConfig);
 
         messageListener = socketListenerFactory
-            .createWebSocketListener(_connection as OutboundWebSocketConnection);
+            .createWebSocketListener(_webSocketConnection!);
       messageListener.listen();
       logger.info('New connection created OK');
     }

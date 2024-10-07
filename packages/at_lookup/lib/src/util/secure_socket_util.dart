@@ -1,4 +1,7 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'package:at_commons/at_commons.dart';
 
 class SecureSocketUtil {
@@ -14,12 +17,36 @@ class SecureSocketUtil {
     }
   }
 
-  /// Creates a secure WebSocket connection.
-  static Future<WebSocket> createSecureWebSocket(
+
+static Future<WebSocket> createSecureWebSocket(
       String host, String port, SecureSocketConfig secureSocketConfig) async {
     try {
-      final uri = Uri.parse('wss://$host:$port');
-      WebSocket webSocket = await WebSocket.connect(uri.toString());
+      SecureSocket socket = await SecureSocket.connect(
+        host,
+        int.parse(port),
+        supportedProtocols: ['http/1.1'], // Request 'http/1.1' during ALPN
+      );
+
+      if (socket.selectedProtocol != 'http/1.1') {
+        throw AtException('Failed to negotiate http/1.1 via ALPN');
+      }
+
+      String webSocketKey =
+          base64.encode(List<int>.generate(16, (_) => Random().nextInt(256)));
+      socket.write('GET /ws HTTP/1.1\r\n');
+      socket.write('Host: $host:$port\r\n');
+      socket.write('Connection: Upgrade\r\n');
+      socket.write('Upgrade: websocket\r\n');
+      socket.write('Sec-WebSocket-Version: 13\r\n');
+      socket.write('Sec-WebSocket-Key: $webSocketKey\r\n');
+      socket.write('\r\n');
+
+      WebSocket webSocket = WebSocket.fromUpgradedSocket(
+        socket,
+        serverSide: false,
+      );
+
+      print('WebSocket connection established');
       return webSocket;
     } catch (e) {
       throw AtException('Error creating WebSocket connection: ${e.toString()}');
