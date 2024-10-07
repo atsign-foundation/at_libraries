@@ -31,6 +31,7 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
   AtSignLogger logger = AtSignLogger('OnboardingCli');
   AtOnboardingPreference atOnboardingPreference;
   AtLookUp? _atLookUp;
+  final _maxActivationRetries = 5;
 
   /// The object which controls what types of AtClients, NotificationServices
   /// and SyncServices get created when we call [AtClientManager.setCurrentAtSign].
@@ -321,15 +322,28 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     Duration retryInterval, {
     bool logProgress = true,
   }) async {
+    int retryAttempt = 1;
     while (true) {
       logger.info('Attempting pkam auth');
       if (logProgress) {
         stderr.write('Checking ... ');
       }
-      bool pkamAuthSucceeded = await _attemptPkamAuth(
-        atLookUp,
-        enrollmentIdFromServer,
-      );
+      bool pkamAuthSucceeded = false;
+      try {
+        pkamAuthSucceeded =
+            await _attemptPkamAuth(atLookUp, enrollmentIdFromServer);
+      } catch (e) {
+        String message =
+            'Exception occurred when authenticating the atSign: $_atSign caused by ${e.toString()}';
+        if (retryAttempt > _maxActivationRetries) {
+          message += ' Activation failed after $_maxActivationRetries attempts';
+          logger.severe(message);
+          rethrow;
+        }
+        logger
+            .severe('$message. Attempting to retry for $retryAttempt attempt');
+        retryAttempt++;
+      }
       if (pkamAuthSucceeded) {
         if (logProgress) {
           stderr.writeln(' approved.');
@@ -366,9 +380,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       } else if (e.message.contains('error:AT0025')) {
         throw AtEnrollmentException('enrollment denied');
       }
-    } catch (e) {
-      logger.shout('Unexpected exception: $e');
-      rethrow;
     } finally {
       logger.finer('_attemptPkamAuth: complete');
     }
