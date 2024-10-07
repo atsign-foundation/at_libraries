@@ -1,3 +1,9 @@
+## 2.0.7
+- build[deps]: Upgraded the following packages:
+  - at_commons to v5.0.0
+  - at_lookup to v3.0.49
+  - at_utils to v3.0.19
+  - at_chops to v2.0.1
 ## 2.0.6
 - fix: Add "apkamKeysExpiryDuration" to "EnrollmentRequest" to support auto expiry of APKAM keys
 ## 2.0.5

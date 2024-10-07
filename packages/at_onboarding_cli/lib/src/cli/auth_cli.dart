@@ -1,19 +1,20 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:args/args.dart';
 import 'package:at_auth/at_auth.dart';
 import 'package:at_cli_commons/at_cli_commons.dart';
 import 'package:at_client/at_client.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
-import 'package:args/args.dart';
 import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 import 'package:at_onboarding_cli/src/util/print_full_parser_usage.dart';
-import 'dart:io';
 import 'package:at_utils/at_utils.dart';
+import 'package:duration/duration.dart';
 import 'package:meta/meta.dart';
 
-import 'auth_cli_args.dart';
 import 'auth_cli_arg_validation.dart';
+import 'auth_cli_args.dart';
 
 final AtSignLogger logger = AtSignLogger(' CLI ');
 
@@ -334,12 +335,15 @@ Future<void> enroll(ArgResults argResults, {AtOnboardingService? svc}) async {
   }
   try {
     stderr.writeln('Submitting enrollment request');
+    // If apkam Keys expiry is not set, then APKAM keys should lives forever.
+    // Therefore set to 0ms (0 milliseconds) and TTL will not be set.
+    String apkamKeysExpiry = argResults[AuthCliArgs.argNameExpiry] ?? '0ms';
     AtEnrollmentResponse er = await svc.sendEnrollRequest(
-      argResults[AuthCliArgs.argNameAppName],
-      argResults[AuthCliArgs.argNameDeviceName],
-      argResults[AuthCliArgs.argNamePasscode],
-      namespaces,
-    );
+        argResults[AuthCliArgs.argNameAppName],
+        argResults[AuthCliArgs.argNameDeviceName],
+        argResults[AuthCliArgs.argNamePasscode],
+        namespaces,
+        apkamKeysExpiryDuration: parseDuration(apkamKeysExpiry));
     stdout.writeln('Enrollment ID: ${er.enrollmentId}');
 
     stderr.writeln('Waiting for approval; will check every 10 seconds');
@@ -374,25 +378,38 @@ Future<void> enroll(ArgResults argResults, {AtOnboardingService? svc}) async {
 @visibleForTesting
 Future<void> setSpp(ArgResults argResults, AtClient atClient) async {
   String spp = argResults[AuthCliArgs.argNameSpp];
+  String? sppExpiry = argResults[AuthCliArgs.argNameExpiry];
   if (invalidSpp(spp)) {
     throw ArgumentError(invalidSppMsg);
   }
 
-  AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
+  StringBuffer sppCommandBuffer = StringBuffer()..append('otp:put:$spp');
+  if (sppExpiry != null && sppExpiry.isNotEmpty) {
+    sppCommandBuffer.append(':ttl:${parseDuration(sppExpiry).inMilliseconds}');
+  }
+  sppCommandBuffer.append('\n');
 
+  AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
   // send command 'otp:put:$spp'
   String? response =
-      await atLookup.executeCommand('otp:put:$spp\n', auth: true);
+      await atLookup.executeCommand(sppCommandBuffer.getData()!, auth: true);
 
   stdout.writeln('Server response: $response');
 }
 
 @visibleForTesting
 Future<void> generateOtp(ArgResults argResults, AtClient atClient) async {
-  AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
+  String? otpExpiry = argResults[AuthCliArgs.argNameExpiry];
+  StringBuffer otpCommandBuffer = StringBuffer()..append('otp:get');
+  if (otpExpiry != null && otpExpiry.isNotEmpty) {
+    otpCommandBuffer.append(':ttl:${parseDuration(otpExpiry).inMilliseconds}');
+  }
+  otpCommandBuffer.append('\n');
 
+  AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
   // send command 'otp:get[:ttl:$ttl]'
-  String? response = await atLookup.executeCommand('otp:get\n', auth: true);
+  String? response =
+      await atLookup.executeCommand(otpCommandBuffer.getData()!, auth: true);
   if (response != null && response.startsWith('data:')) {
     stdout.writeln(response.substring('data:'.length));
   } else {
