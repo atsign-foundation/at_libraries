@@ -91,9 +91,6 @@ void main() {
     test(
         'validate that signing algo and hashing algo set in AtOnboardingPreference is passed forward to AtAuth instance',
         () async {
-          /// test is being skipped as sha512 is not being recognized by at_server
-          /// as a valid hashing algo although at_chops supports sha512. This
-          /// test can be un-skipped once this bug has been resolved
       String atSign = '@eve🛠';
       await _createKeys(atSign);
       AtOnboardingPreference preference = getPreferences(atSign);
@@ -112,7 +109,7 @@ void main() {
           (onboardingService.atAuth as AtAuthImpl).atLookUp as AtLookupImpl?;
       expect(atLookupImpl!.signingAlgoType, signingAlgo);
       expect(atLookupImpl.hashingAlgoType, hashingAlgo);
-    }, skip: true);
+    });
 
     test('A test to verify atKeysFilePath is set when null is provided',
         () async {
