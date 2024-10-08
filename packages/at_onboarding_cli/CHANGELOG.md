@@ -1,3 +1,5 @@
+## 1.7.0
+- feat: add `auto` command to the activate CLI 
 ## 1.6.4
 - build[deps]: upgrade: \
   at_client to 3.2.2 | at_commons to 5.0.0 | at_lookup to 3.0.49 | at_utils to 3.0.19 \

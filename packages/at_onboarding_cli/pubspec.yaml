@@ -1,6 +1,6 @@
 name: at_onboarding_cli
 description: Dart tools for initial client onboarding, subsequent client enrollment, and enrollment management.
-version: 1.6.4
+version: 1.7.0
 repository: https://github.com/atsign-foundation/at_libraries
 homepage: https://atsign.com
 documentation: https://docs.atsign.com/
@@ -31,6 +31,13 @@ dependencies:
    at_cli_commons: ^1.1.0
    at_persistence_secondary_server: ^3.0.64
    duration: ^4.0.3
+
+dependency_overrides:
+  at_cli_commons:
+    git:
+      url: https://github.com/atsign-foundation/at_libraries.git
+      path: packages/at_cli_commons
+      ref: feat-add-to-cli-commons-utils
 
 dev_dependencies:
   lints: ^2.1.0
