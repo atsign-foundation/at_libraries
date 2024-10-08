@@ -330,8 +330,24 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       }
       bool pkamAuthSucceeded = false;
       try {
+        // _attemptPkamAuth returns boolean value true when authentication is successful.
+        // Returns UnAuthenticatedException when authentication fails.
         pkamAuthSucceeded =
             await _attemptPkamAuth(atLookUp, enrollmentIdFromServer);
+      } on UnAuthenticatedException catch (e) {
+        // Error codes AT0401 and AT0026 indicate authentication failure due to unapproved enrollment. Retry until the enrollment is approved.
+        // The variable _pkamAuthSucceeded is false, allowing for PKAM authentication retries.
+        // Avoid checking "retryAttempt > _maxActivationRetries" here, as we want to continue retrying until enrollment is approved.
+        // The check for "retryAttempt > _maxActivationRetries" should only occur when the secondary server is unreachable due to network issues.
+        if (e.message.contains('error:AT0401') ||
+            e.message.contains('error:AT0026')) {
+          logger.info('Pkam auth failed: ${e.message}');
+        }
+        // Error code AT0025 represents Enrollment denied. Therefore, no need to retry; throw exception.
+        else if (e.message.contains('error:AT0025')) {
+          throw AtEnrollmentException(
+              'The enrollment: $enrollmentIdFromServer is denied');
+        }
       } catch (e) {
         String message =
             'Exception occurred when authenticating the atSign: $_atSign caused by ${e.toString()}';
@@ -361,29 +377,21 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
     }
   }
 
-  /// Try a single PKAM auth
+  /// Executes PKAM authentication on the secondary server.
+  ///
+  /// Returns `true` if the authentication is successful.
+  ///
+  /// Returns UnAuthenticated Exception when authentication fails.
   Future<bool> _attemptPkamAuth(AtLookUp atLookUp, String enrollmentId) async {
-    try {
-      logger.finer('_attemptPkamAuth: Calling atLookUp.pkamAuthenticate');
-      var pkamResult =
-          await atLookUp.pkamAuthenticate(enrollmentId: enrollmentId);
-      logger.finer(
-          '_attemptPkamAuth: atLookUp.pkamAuthenticate returned $pkamResult');
-      if (pkamResult) {
-        return true;
-      }
-    } on UnAuthenticatedException catch (e) {
-      if (e.message.contains('error:AT0401') ||
-          e.message.contains('error:AT0026')) {
-        logger.info('Pkam auth failed: ${e.message}');
-        return false;
-      } else if (e.message.contains('error:AT0025')) {
-        throw AtEnrollmentException('enrollment denied');
-      }
-    } finally {
-      logger.finer('_attemptPkamAuth: complete');
-    }
-    return false;
+    logger.finer('_attemptPkamAuth: Calling atLookUp.pkamAuthenticate');
+    // atLookUp.pkamAuthenticate returns true when authentication is successful.
+    // when authentication fails, returns UnAuthenticatedException.
+    var pkamResult =
+        await atLookUp.pkamAuthenticate(enrollmentId: enrollmentId);
+    logger.finer(
+        '_attemptPkamAuth: atLookUp.pkamAuthenticate returned $pkamResult');
+
+    return pkamResult;
   }
 
   ///write newly created encryption keypairs into atKeys file
