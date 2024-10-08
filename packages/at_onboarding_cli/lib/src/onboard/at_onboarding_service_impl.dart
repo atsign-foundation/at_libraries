@@ -332,8 +332,8 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
       try {
         // _attemptPkamAuth returns boolean value true when authentication is successful.
         // Returns UnAuthenticatedException when authentication fails.
-        pkamAuthSucceeded =
-            await _attemptPkamAuth(atLookUp, enrollmentIdFromServer);
+        pkamAuthSucceeded = await atLookUp.pkamAuthenticate(
+            enrollmentId: enrollmentIdFromServer);
       } on UnAuthenticatedException catch (e) {
         // Error codes AT0401 and AT0026 indicate authentication failure due to unapproved enrollment. Retry until the enrollment is approved.
         // The variable _pkamAuthSucceeded is false, allowing for PKAM authentication retries.
@@ -375,23 +375,6 @@ class AtOnboardingServiceImpl implements AtOnboardingService {
         await Future.delayed(retryInterval); // Delay and retry
       }
     }
-  }
-
-  /// Executes PKAM authentication on the secondary server.
-  ///
-  /// Returns `true` if the authentication is successful.
-  ///
-  /// Returns UnAuthenticated Exception when authentication fails.
-  Future<bool> _attemptPkamAuth(AtLookUp atLookUp, String enrollmentId) async {
-    logger.finer('_attemptPkamAuth: Calling atLookUp.pkamAuthenticate');
-    // atLookUp.pkamAuthenticate returns true when authentication is successful.
-    // when authentication fails, returns UnAuthenticatedException.
-    var pkamResult =
-        await atLookUp.pkamAuthenticate(enrollmentId: enrollmentId);
-    logger.finer(
-        '_attemptPkamAuth: atLookUp.pkamAuthenticate returned $pkamResult');
-
-    return pkamResult;
   }
 
   ///write newly created encryption keypairs into atKeys file
