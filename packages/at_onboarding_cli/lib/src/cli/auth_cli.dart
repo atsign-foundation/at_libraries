@@ -174,7 +174,7 @@ Future<int> _main(List<String> arguments) async {
         await enroll(commandArgResults);
 
       case AuthCliCommand.delete:
-        await deleteDeniedEnrollment(
+        await deleteEnrollment(
             commandArgResults, await createAtClient(commandArgResults));
     }
   } on ArgumentError catch (e) {
@@ -515,7 +515,7 @@ Future<void> interactive(ArgResults argResults, AtClient atClient) async {
           await revoke(commandArgResults, atClient);
 
         case AuthCliCommand.delete:
-          await deleteDeniedEnrollment(commandArgResults, atClient);
+          await deleteEnrollment(commandArgResults, atClient);
       }
     } on ArgumentError catch (e) {
       stderr.writeln(
@@ -749,7 +749,7 @@ Future<void> revoke(ArgResults ar, AtClient atClient) async {
   }
 }
 
-Future<void> deleteDeniedEnrollment(ArgResults ar, AtClient atClient) async {
+Future<void> deleteEnrollment(ArgResults ar, AtClient atClient) async {
   AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
   String eId = ar[AuthCliArgs.argNameEnrollmentId];
   EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()

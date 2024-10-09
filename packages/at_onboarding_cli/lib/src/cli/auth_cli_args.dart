@@ -47,9 +47,8 @@ enum AuthCliCommand {
   deny(usage: 'Deny a pending enrollment request'),
   revoke(usage: 'Revoke approval of a previously-approved enrollment'),
   delete(
-      usage:
-          'Delete a denied enrollment. Requires an enrollmentId to be provided'
-          '\nNOTE: Can ONLY delete denied enrollments'),
+      usage: 'Deletes an enrollment. Requires an enrollmentId to be provided'
+          '\nNOTE: Can ONLY delete denied and revoked enrollments'),
   enroll(
       usage: 'Enroll is used when a program needs to authenticate and'
           ' "atKeys" are not available, and "onboard" has already been run'
