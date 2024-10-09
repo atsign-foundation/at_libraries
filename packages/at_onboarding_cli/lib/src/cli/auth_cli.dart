@@ -342,7 +342,7 @@ String parseServerResponse(String? response) {
   if (response != null && response.startsWith('data:')) {
     return response.replaceFirst('data:', '');
   } else {
-    throw('Unexpected server response: $response');
+    throw ('Unexpected server response: $response');
   }
 }
 
