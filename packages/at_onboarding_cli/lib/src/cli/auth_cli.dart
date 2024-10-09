@@ -507,7 +507,6 @@ Future<void> interactive(ArgResults argResults, AtClient atClient) async {
 
         case AuthCliCommand.onboard:
         case AuthCliCommand.interactive:
-        case AuthCliCommand.auto:
         case AuthCliCommand.status:
         case AuthCliCommand.enroll:
           stderr.writeln('The "${cliCommand.name}" command'
@@ -527,6 +526,9 @@ Future<void> interactive(ArgResults argResults, AtClient atClient) async {
 
         case AuthCliCommand.approve:
           await approve(commandArgResults, atClient);
+
+        case AuthCliCommand.auto:
+          await autoApprove(commandArgResults, atClient);
 
         case AuthCliCommand.deny:
           await deny(commandArgResults, atClient);
