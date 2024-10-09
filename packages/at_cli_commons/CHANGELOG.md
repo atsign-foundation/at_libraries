@@ -1,3 +1,7 @@
+## 1.2.0
+- feat: Add `standardAtClientStoragePath` and `standardAtClientStorageDir` 
+  to utils.dart
+
 ## 1.1.0
 
 - feat: Add `maxConnectAttempts` parameter to CLIBase. The default is 20,
