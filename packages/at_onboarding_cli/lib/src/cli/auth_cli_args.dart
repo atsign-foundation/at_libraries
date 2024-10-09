@@ -478,8 +478,8 @@ class AuthCliArgs {
   ArgParser createUnRevokeCommandParser() {
     ArgParser p = createSharedArgParser(hide: true);
     _addEnrollmentIdOption(p);
-    _addAppNameRegexOption(p);
-    _addDeviceNameRegexOption(p);
+    _addAppNameRegexOption(p, mandatory: false);
+    _addDeviceNameRegexOption(p, mandatory: false);
     return p;
   }
 }
