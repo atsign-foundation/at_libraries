@@ -1,5 +1,6 @@
-## #NEXT
+## 1.8.0
 - feat: add `unrevoke` command to the activate CLI
+- feat: add `delete` command to the activate CLI
 ## 1.7.0
 - feat: add `auto` command to the activate CLI 
 ## 1.6.4

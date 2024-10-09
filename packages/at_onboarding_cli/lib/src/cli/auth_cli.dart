@@ -6,6 +6,7 @@ import 'package:args/args.dart';
 import 'package:at_auth/at_auth.dart';
 import 'package:at_cli_commons/at_cli_commons.dart';
 import 'package:at_client/at_client.dart';
+import 'package:at_commons/at_builders.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
@@ -199,6 +200,10 @@ Future<int> wrappedMain(List<String> arguments) async {
       case AuthCliCommand.unrevoke:
         await unrevoke(
             commandArgResults, await createAtClient(commandArgResults));
+
+      case AuthCliCommand.delete:
+        await deleteEnrollment(
+            commandArgResults, await createAtClient(commandArgResults));
     }
   } on ArgumentError catch (e) {
     stderr
@@ -330,6 +335,14 @@ Future<void> onboard(ArgResults argResults, {AtOnboardingService? svc}) async {
     throw ('Onboarding failed.'
         ' It looks like something went wrong on our side.'
         ' Please try again or contact support@atsign.com\nCause: $e');
+  }
+}
+
+String parseServerResponse(String? response) {
+  if (response != null && response.startsWith('data:')) {
+    return response.replaceFirst('data:', '');
+  } else {
+    throw('Unexpected server response: $response');
   }
 }
 
@@ -533,6 +546,9 @@ Future<void> interactive(ArgResults argResults, AtClient atClient) async {
 
         case AuthCliCommand.unrevoke:
           await unrevoke(commandArgResults, atClient);
+
+        case AuthCliCommand.delete:
+          await deleteEnrollment(commandArgResults, atClient);
       }
     } on ArgumentError catch (e) {
       stderr.writeln(
@@ -620,19 +636,14 @@ Future<void> list(ArgResults ar, AtClient atClient) async {
 }
 
 Future<Map?> _fetch(String eId, AtLookUp atLookup) async {
-  String rawResponse = (await atLookup.executeCommand(
-      'enroll:fetch:'
-      '{"enrollmentId":"$eId"}'
-      '\n',
-      auth: true))!;
+  EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
+    ..operation = EnrollOperationEnum.fetch
+    ..enrollmentId = eId;
+  String? response = await atLookup.executeVerb(enrollVerbBuilder);
 
-  if (rawResponse.startsWith('data:')) {
-    rawResponse = rawResponse.substring(rawResponse.indexOf('data:') + 5);
-    // response is a Map
-    return jsonDecode(rawResponse);
-  } else {
-    throw Exception('Unexpected server response: $rawResponse');
-  }
+  response = parseServerResponse(response);
+  // response is a Map
+  return jsonDecode(response);
 }
 
 Future<void> fetch(ArgResults argResults, AtClient atClient) async {
@@ -849,9 +860,10 @@ Future<void> deny(ArgResults ar, AtClient atClient) async {
   // Iterate through the requests, deny each one
   for (String eId in toDeny.keys) {
     stdout.writeln('Denying enrollmentId $eId');
-    // 'enroll:deny:{"enrollmentId":"$enrollmentId"}'
-    String? response = await atLookup
-        .executeCommand('enroll:deny:{"enrollmentId":"$eId"}\n', auth: true);
+    EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
+      ..operation = EnrollOperationEnum.deny
+      ..enrollmentId = eId;
+    String? response = await atLookup.executeVerb(enrollVerbBuilder);
     stdout.writeln('Server response: $response');
   }
 }
@@ -905,6 +917,18 @@ Future<void> unrevoke(ArgResults ar, AtClient atClient) async {
         auth: true);
     stdout.writeln('Server response: $response');
   }
+}
+
+Future<void> deleteEnrollment(ArgResults ar, AtClient atClient) async {
+  AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
+  String eId = ar[AuthCliArgs.argNameEnrollmentId];
+  EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
+    ..enrollmentId = eId
+    ..operation = EnrollOperationEnum.delete;
+  stdout.writeln('Sending delete request');
+  String? response = await atLookup.executeVerb(enrollVerbBuilder);
+  response = parseServerResponse(response);
+  stdout.writeln('Server response: $response');
 }
 
 @visibleForTesting

@@ -44,13 +44,15 @@ enum AuthCliCommand {
   list(usage: 'List enrollment requests'),
   fetch(usage: 'Fetch a specific enrollment request'),
   approve(usage: 'Approve a pending enrollment request'),
-  auto(
-      usage: 'Listen for new enrollment requests which match the parameters'
-          ' supplied, and auto-approve them. Will exit after N (defaults to 1)'
-          ' enrollment requests have been approved.'),
+  auto(usage: 'Listen for new enrollment requests which match the parameters'
+      ' supplied, and auto-approve them. Will exit after N (defaults to 1)'
+      ' enrollment requests have been approved.'),
   deny(usage: 'Deny a pending enrollment request'),
   revoke(usage: 'Revoke approval of a previously-approved enrollment'),
   unrevoke(usage: 'Restores access to the previously revoked enrollment'),
+  delete(
+      usage: 'Deletes an enrollment. Requires an enrollmentId to be provided'
+          '\nNOTE: Can ONLY delete denied and revoked enrollments'),
   enroll(
       usage: 'Enroll is used when a program needs to authenticate and'
           ' "atKeys" are not available, and "onboard" has already been run'
@@ -187,6 +189,9 @@ class AuthCliArgs {
 
       case AuthCliCommand.unrevoke:
         return createUnRevokeCommandParser();
+
+      case AuthCliCommand.delete:
+        return createDeleteCommandParser();
     }
   }
 
@@ -480,6 +485,15 @@ class AuthCliArgs {
     _addEnrollmentIdOption(p);
     _addAppNameRegexOption(p, mandatory: false);
     _addDeviceNameRegexOption(p, mandatory: false);
+    return p;
+  }
+
+  /// auth delete denied enrollment: requires enrollmentId and atKeysFile path
+  /// requires the enrollment to be denied
+  @visibleForTesting
+  ArgParser createDeleteCommandParser() {
+    ArgParser p = createSharedArgParser(hide: true);
+    _addEnrollmentIdOption(p, mandatory: true);
     return p;
   }
 }
