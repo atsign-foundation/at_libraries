@@ -116,7 +116,7 @@ class OnboardingUtil {
             'To register a new atSign to this email address, please log into the dashboard \'my.atsign.com/login\'.\n'
             'Remove at least 1 atSign from your account and then try again.\n'
             'Alternatively, you can retry this process with a different email address.');
-        exit(1);
+        throw at_client.AtClientException.message(jsonDecoded['message']);
       } else {
         throw at_client.AtClientException.message(
             '${response.statusCode} ${jsonDecoded['message']}');
