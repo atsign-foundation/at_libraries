@@ -276,10 +276,6 @@ Future<int> status(ArgResults ar) async {
 }
 
 Future<AtClient> createAtClient(ArgResults ar) async {
-  if (storageDir != null) {
-    throw StateError('AtClient has already been created');
-  }
-
   String nameSpace = 'at_activate';
   String atSign = AtUtils.fixAtSign(ar[AuthCliArgs.argNameAtSign]);
   storageDir = standardAtClientStorageDir(
@@ -321,24 +317,19 @@ Future<void> onboard(ArgResults argResults, {AtOnboardingService? svc}) async {
       '[Information] Onboarding your atSign. This may take up to 2 minutes.');
   try {
     await svc.onboard();
-    logger.finest('svc.onboard() has returned - will exit(0)');
-    exit(0);
+    return;
   } on InvalidDataException catch (e) {
-    stderr.writeln(
-        '[Error] Onboarding failed. Invalid data provided by user. Please try again\nCause: ${e.message}');
-    exit(1);
+    throw AtEnrollmentException(
+        'Onboarding failed. Please try again. Cause: ${e.message}');
   } on InvalidRequestException catch (e) {
-    stderr.writeln(
-        '[Error] Onboarding failed. Invalid data provided by user. Please try again\nCause: ${e.message}');
-    exit(1);
-  } on AtActivateException catch (e) {
-    stderr.writeln('[Error] ${e.message}');
-    exit(1);
-  } on Exception catch (e) {
-    stderr.writeln(
-        '[Error] Onboarding failed. It looks like something went wrong on our side.\n'
-        'Please try again or contact support@atsign.com\nCause: $e');
-    exit(1);
+    throw AtEnrollmentException(
+        'Onboarding failed. Please try again. Cause: ${e.message}');
+  } on AtActivateException {
+    rethrow;
+  } catch (e) {
+    throw ('Onboarding failed.'
+        ' It looks like something went wrong on our side.'
+        ' Please try again or contact support@atsign.com\nCause: $e');
   }
 }
 
@@ -597,8 +588,7 @@ Future<Map> _list(
     stdout.writeln("Found ${filtered.length} matching enrollment records");
     return filtered;
   } else {
-    stderr.writeln('Exiting: Unexpected server response: $rawResponse');
-    exit(1);
+    throw Exception('Unexpected server response: $rawResponse');
   }
 }
 
@@ -641,8 +631,7 @@ Future<Map?> _fetch(String eId, AtLookUp atLookup) async {
     // response is a Map
     return jsonDecode(rawResponse);
   } else {
-    stderr.writeln('Exiting: Unexpected server response: $rawResponse');
-    exit(1);
+    throw Exception('Unexpected server response: $rawResponse');
   }
 }
 
