@@ -44,9 +44,10 @@ enum AuthCliCommand {
   list(usage: 'List enrollment requests'),
   fetch(usage: 'Fetch a specific enrollment request'),
   approve(usage: 'Approve a pending enrollment request'),
-  auto(usage: 'Listen for new enrollment requests which match the parameters'
-      ' supplied, and auto-approve them. Will exit after N (defaults to 1)'
-      ' enrollment requests have been approved.'),
+  auto(
+      usage: 'Listen for new enrollment requests which match the parameters'
+          ' supplied, and auto-approve them. Will exit after N (defaults to 1)'
+          ' enrollment requests have been approved.'),
   deny(usage: 'Deny a pending enrollment request'),
   revoke(usage: 'Revoke approval of a previously-approved enrollment'),
   unrevoke(usage: 'Restores access to the previously revoked enrollment'),
@@ -431,7 +432,7 @@ class AuthCliArgs {
   @visibleForTesting
   ArgParser createAutoApproveCommandParser() {
     ArgParser p = createSharedArgParser(hide: true);
-    _addEnrollmentIdOption(p, hide:true);
+    _addEnrollmentIdOption(p, hide: true);
     _addAppNameRegexOption(p, mandatory: true);
     _addDeviceNameRegexOption(p, mandatory: true);
     p.addOption(

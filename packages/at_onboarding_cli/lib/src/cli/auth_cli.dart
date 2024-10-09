@@ -195,6 +195,7 @@ Future<int> wrappedMain(List<String> arguments) async {
         // Write keys to @atSign_keys.atKeys IFF it doesn't already exist; if
         // it does exist, then write to @atSign_appName_deviceName_keys.atKeys
         await enroll(commandArgResults);
+
       case AuthCliCommand.unrevoke:
         await unrevoke(
             commandArgResults, await createAtClient(commandArgResults));
