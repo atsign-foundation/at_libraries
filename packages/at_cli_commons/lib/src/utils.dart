@@ -1,5 +1,43 @@
 import 'dart:io';
 import 'package:at_client/at_client.dart';
+import 'package:path/path.dart' as path;
+
+String standardAtClientStoragePath({
+  required String baseDir,
+  required String atSign,
+  required String progName, // e.g. npt, sshnp, sshnpd, srvd etc
+  String uniqueID = 'single',
+}) {
+  return path.normalize('$baseDir'
+          '/.atsign'
+          '/storage'
+          '/$atSign'
+          '/.$progName'
+          '/$uniqueID'
+      .replaceAll('/', Platform.pathSeparator));
+}
+
+Directory standardAtClientStorageDir({
+  required String atSign,
+  required String progName, // e.g. npt, sshnp, sshnpd, srvd etc
+  required String uniqueID,
+}) {
+  if (Platform.isWindows) {
+    return Directory(standardAtClientStoragePath(
+      baseDir: Platform.environment['TEMP']!,
+      atSign: atSign,
+      progName: progName,
+      uniqueID: uniqueID,
+    ));
+  } else {
+    return Directory(standardAtClientStoragePath(
+      baseDir: getHomeDirectory()!,
+      atSign: atSign,
+      progName: progName,
+      uniqueID: uniqueID,
+    ));
+  }
+}
 
 /// Get the home directory or null if unknown.
 String? getHomeDirectory({bool throwIfNull = false}) {

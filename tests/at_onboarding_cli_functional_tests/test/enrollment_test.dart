@@ -237,10 +237,14 @@ void main() {
       var completer = Completer<void>(); // Create a Completer
 
       //4. Subscribe to enrollment notifications; we will deny it when it arrives
+      String enrollmentId = '';
       onboardingService_1.atClient!.notificationService
           .subscribe(regex: '.__manage')
           .listen(expectAsync1((notification) async {
             logger.finer('got enroll notification');
+            final notificationKey = notification.key;
+            enrollmentId = notificationKey.substring(
+                0, notificationKey.indexOf('.new.enrollments'));
             expect(notification.value, isNotNull);
             var notificationValueJson = jsonDecode(notification.value!);
             expect(notificationValueJson['encryptedApkamSymmetricKey'],
@@ -258,7 +262,7 @@ void main() {
       AtOnboardingServiceImpl? onboardingService_2 =
           AtOnboardingServiceImpl(atSign, preference_1);
 
-      Future<dynamic> expectLaterFuture = expectLater(
+      expectLater(
           onboardingService_2.enroll(
             'buzz',
             'iphone',
@@ -267,8 +271,8 @@ void main() {
             retryInterval: Duration(seconds: 5),
           ),
           throwsA(predicate((dynamic e) =>
-              e is AtEnrollmentException && e.message == 'enrollment denied')));
-      print(await expectLaterFuture);
+              e is AtEnrollmentException &&
+              e.message == 'The enrollment: $enrollmentId is denied')));
       await completer.future;
 
       await onboardingService_1.close();
