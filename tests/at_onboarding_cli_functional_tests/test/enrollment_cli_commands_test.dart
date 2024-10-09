@@ -46,7 +46,7 @@ void main() {
         '-r',
         'vip.ve.atsign.zone'
       ];
-      var res = await auth_cli.main(args);
+      var res = await auth_cli.wrappedMain(args);
       // Zero indicates successful completion.
       expect(res, 0);
 
@@ -69,7 +69,7 @@ void main() {
         '-i',
         atEnrollmentResponse.enrollmentId
       ];
-      res = await auth_cli.main(args);
+      res = await auth_cli.wrappedMain(args);
       expect(res, 0);
       logger.info(
           'Approved enrollment with enrollmentId: ${atEnrollmentResponse.enrollmentId}');
@@ -96,7 +96,7 @@ void main() {
         '-i',
         atEnrollmentResponse.enrollmentId
       ];
-      res = await auth_cli.main(args);
+      res = await auth_cli.wrappedMain(args);
       expect(res, 0);
       logger.info(
           'Revoked enrollment with enrollmentId: ${atEnrollmentResponse.enrollmentId}');
@@ -117,7 +117,7 @@ void main() {
         '-i',
         atEnrollmentResponse.enrollmentId
       ];
-      res = await auth_cli.main(args);
+      res = await auth_cli.wrappedMain(args);
       logger.info(
           'Un-Revoked enrollment with enrollmentId: ${atEnrollmentResponse.enrollmentId}');
       // Perform authentication with the unrevoked enrollment-id.
