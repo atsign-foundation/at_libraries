@@ -350,8 +350,16 @@ Future<void> enroll(ArgResults argResults, {AtOnboardingService? svc}) async {
   }
 
   File f = File(argResults[AuthCliArgs.argNameAtKeys]);
-  if (f.existsSync()) {
-    stderr.writeln('Error: atKeys file ${f.path} already exists');
+
+  // "_isWritable" attempts to create the directories for the given [file] if they do not exist,
+  // and then tries to open the file in write mode to verify write permissions.
+  //
+  // If the file can be opened for writing, it is immediately closed and deleted.
+  // In [AtOnboardingServiceImpl._generateAtKeysFile] method, there is a check which returns error
+  // if the file already exists. Therefore, delete the file here after checking for write permissions.
+  //
+  // Incase of any exceptions, the error is logged and returned.
+  if (isWritable(f) == false) {
     return;
   }
 
@@ -405,6 +413,52 @@ Future<void> enroll(ArgResults argResults, {AtOnboardingService? svc}) async {
     stderr.writeln('[Error] Enrollment failed.\n'
         '  Cause: $e\n'
         '  Please try again or contact support@atsign.com');
+  }
+}
+
+/// Checks if the specified [file] is writable.
+///
+/// This function attempts to create the directories for the given [file] if they do not exist,
+/// and then tries to open the file in write mode to verify write permissions.
+/// If the file can be opened for writing, it is immediately closed and deleted.
+///
+/// Returns:
+/// - `true` if the file is writable, or
+/// - `false` if the file is not writable due to existing files, lack of permissions,
+///   or any other exceptions encountered during the process.
+///
+/// [file]: The [File] instance to check for write access.
+///
+/// Exceptions:
+/// - If the file already exists, a [PathExistsException] is caught, and an error message is printed to stderr.
+/// - If the file does not have write permissions, a [PathAccessException] is caught, and an error message is printed to stderr.
+/// - Any other exceptions are caught and logged, indicating a failure to determine write access.
+@visibleForTesting
+bool isWritable(File file) {
+  try {
+    // If the directories do not exist, create them.
+    // "recursive" is set to true to ensure that any missing parent directories are created.
+    // "exclusive" is set to true to check if the file already exists; if it does,
+    // an error will be logged and returned.
+    file.createSync(recursive: true, exclusive: true);
+    // Try opening the file in write mode, which requires write permissions
+    RandomAccessFile raf = file.openSync(mode: FileMode.write);
+    raf.closeSync();
+    // In [AtOnboardingServiceImpl._generateAtKeysFile] method, there is a check which returns error
+    // if the file already exists. Therefore, delete the file here after checking for write permissions.
+    file.deleteSync();
+    return true;
+  } on PathExistsException {
+    stderr.writeln('Error: atKeys file ${file.path} already exists');
+    return false;
+  } on PathAccessException {
+    stderr.writeln(
+        'Error : atKeys file ${file.path} does not have write permissions');
+    return false;
+  } catch (e) {
+    // If any exception occurs, we assume the file is not writable
+    stderr.writeln('Error in writing to atKeys file: ${e.toString()}');
+    return false;
   }
 }
 
