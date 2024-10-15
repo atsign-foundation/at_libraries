@@ -17,37 +17,35 @@ class SecureSocketUtil {
     }
   }
 
-
-static Future<WebSocket> createSecureWebSocket(
+  static Future<WebSocket> createSecureWebSocket(
       String host, String port, SecureSocketConfig secureSocketConfig) async {
     try {
-      SecureSocket socket = await SecureSocket.connect(
-        host,
-        int.parse(port),
-        supportedProtocols: ['http/1.1'], // Request 'http/1.1' during ALPN
-      );
+      Random r = Random();
+      String key = base64.encode(List<int>.generate(8, (_) => r.nextInt(256)));
 
-      if (socket.selectedProtocol != 'http/1.1') {
-        throw AtException('Failed to negotiate http/1.1 via ALPN');
-      }
+      SecurityContext context = SecurityContext.defaultContext;
+      context.setAlpnProtocols(['http/1.1'], false);
+      HttpClient client = HttpClient(context: context);
 
-      String webSocketKey =
-          base64.encode(List<int>.generate(16, (_) => Random().nextInt(256)));
-      socket.write('GET /ws HTTP/1.1\r\n');
-      socket.write('Host: $host:$port\r\n');
-      socket.write('Connection: Upgrade\r\n');
-      socket.write('Upgrade: websocket\r\n');
-      socket.write('Sec-WebSocket-Version: 13\r\n');
-      socket.write('Sec-WebSocket-Key: $webSocketKey\r\n');
-      socket.write('\r\n');
+      Uri uri = Uri.parse("https://$host:$port/ws");
+      HttpClientRequest request = await client.getUrl(uri);
+      request.headers.add('Connection', 'upgrade');
+      request.headers.add('Upgrade', 'websocket');
+      request.headers.add(
+          'sec-websocket-version', '13'); // insert the correct version here
+      request.headers.add('sec-websocket-key', key);
 
-      WebSocket webSocket = WebSocket.fromUpgradedSocket(
+      HttpClientResponse response = await request.close();
+      Socket socket = await response.detachSocket();
+
+      WebSocket ws = WebSocket.fromUpgradedSocket(
         socket,
         serverSide: false,
       );
 
       print('WebSocket connection established');
-      return webSocket;
+
+      return ws;
     } catch (e) {
       throw AtException('Error creating WebSocket connection: ${e.toString()}');
     }
