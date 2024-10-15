@@ -351,6 +351,11 @@ Future<void> enroll(ArgResults argResults, {AtOnboardingService? svc}) async {
 
   File f = File(argResults[AuthCliArgs.argNameAtKeys]);
 
+  if (f.existsSync()) {
+    stderr.writeln('Error: atKeys file ${f.path} already exists');
+    return;
+  }
+
   // "_isWritable" attempts to create the directories for the given [file] if they do not exist,
   // and then tries to open the file in write mode to verify write permissions.
   //
@@ -430,7 +435,6 @@ Future<void> enroll(ArgResults argResults, {AtOnboardingService? svc}) async {
 /// [file]: The [File] instance to check for write access.
 ///
 /// Exceptions:
-/// - If the file already exists, a [PathExistsException] is caught, and an error message is printed to stderr.
 /// - If the file does not have write permissions, a [PathAccessException] is caught, and an error message is printed to stderr.
 /// - Any other exceptions are caught and logged, indicating a failure to determine write access.
 @visibleForTesting
@@ -438,9 +442,7 @@ bool isWritable(File file) {
   try {
     // If the directories do not exist, create them.
     // "recursive" is set to true to ensure that any missing parent directories are created.
-    // "exclusive" is set to true to check if the file already exists; if it does,
-    // an error will be logged and returned.
-    file.createSync(recursive: true, exclusive: true);
+    file.createSync(recursive: true);
     // Try opening the file in write mode, which requires write permissions
     RandomAccessFile raf = file.openSync(mode: FileMode.write);
     raf.closeSync();
@@ -448,9 +450,6 @@ bool isWritable(File file) {
     // if the file already exists. Therefore, delete the file here after checking for write permissions.
     file.deleteSync();
     return true;
-  } on PathExistsException {
-    stderr.writeln('Error: atKeys file ${file.path} already exists');
-    return false;
   } on PathAccessException {
     stderr.writeln(
         'Error : atKeys file ${file.path} does not have write permissions');

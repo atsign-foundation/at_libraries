@@ -20,15 +20,6 @@ void main() {
     });
 
     test(
-        'A test to verify isWritable returns false if file already exists in the directory',
-        () async {
-      final directory = Directory(dirPath);
-      // Create the directory first to ensure it exists before calling isWritable.
-      await directory.create(recursive: true);
-      expect(isWritable(File(dirPath)), false);
-    });
-
-    test(
         'A test verify isWritable returns true if directory does not have a file already',
         () {
       expect(isWritable(File(dirPath)), true);

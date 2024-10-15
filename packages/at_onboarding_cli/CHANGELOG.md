@@ -1,5 +1,6 @@
 ## 1.7.1
-- When submitting an enrollment request, check for write permissions of AtKeys file path.
+
+- fix: When submitting an enrollment request, check for write permissions of AtKeys file path.
 ## 1.7.0
 - feat: add `auto` command to the activate CLI 
 ## 1.6.4
