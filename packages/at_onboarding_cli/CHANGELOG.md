@@ -1,5 +1,6 @@
-## 1.7.1
-
+## 1.8.0
+- feat: add `unrevoke` command to the activate CLI
+- feat: add `delete` command to the activate CLI
 - fix: When submitting an enrollment request, check for write permissions of AtKeys file path.
 ## 1.7.0
 - feat: add `auto` command to the activate CLI 
