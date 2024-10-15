@@ -29,6 +29,7 @@ export 'package:at_commons/src/verb/verb_util.dart';
 export 'package:at_commons/src/auth/auth_mode.dart';
 export 'package:at_commons/src/verb/enroll_params.dart';
 export 'package:at_commons/src/enroll/enrollment.dart';
+export 'package:at_commons/src/utils/at_key_regex_utils.dart';
 @experimental
 export 'package:at_commons/src/telemetry/at_telemetry.dart';
 export 'package:at_commons/src/utils/string_utils.dart';
