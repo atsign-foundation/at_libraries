@@ -29,7 +29,7 @@ class AtChopsSecureElementMock extends AtChopsImpl {
       ..result = base64Signature
       ..atSigningMetaData = atSigningMetadata
       ..atSigningResultType = AtSigningResultType.string;
-    print('at signing result: $atSigningResult');
+    print('[AtChopsSecureElementMock] AtSigningResult: $atSigningResult');
     return atSigningResult;
   }
 
@@ -46,7 +46,7 @@ class AtChopsSecureElementMock extends AtChopsImpl {
 
   @override
   String readPublicKey(String publicKeyId) {
-    print('public key in read public key: ${eccPublicKey.toString()}');
+    print('[AtChopsSecureElementMock] Reading public key from SIM: ${eccPublicKey.toString()}');
     return eccPublicKey.toString();
   }
 }
