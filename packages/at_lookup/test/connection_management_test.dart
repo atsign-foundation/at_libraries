@@ -61,7 +61,7 @@ void main() {
       // let's get a handle to the first socket & connection
       OutboundConnection firstConnection = atLookup.connection!;
       MockSecureSocket firstSocket =
-          firstConnection.getSocket() as MockSecureSocket;
+          firstConnection.underlying as MockSecureSocket;
 
       expect(firstSocket.mockNumber, 1);
       expect(firstSocket.destroyed, false);
@@ -85,7 +85,7 @@ void main() {
       // has a new connection been created, with a new socket?
       OutboundConnection secondConnection = atLookup.connection!;
       MockSecureSocket secondSocket =
-          secondConnection.getSocket() as MockSecureSocket;
+          secondConnection.underlying as MockSecureSocket;
       expect(firstConnection.hashCode == secondConnection.hashCode, false);
       expect(secondSocket.mockNumber, 2);
       expect(secondSocket.destroyed, false);
@@ -99,10 +99,10 @@ void main() {
       OutboundConnection oc = OutboundConnectionImpl(
           createMockAtServerSocket('test.test.test', 12345));
       OutboundMessageListener oml = OutboundMessageListener(oc);
-      expect((oc.getSocket() as MockSecureSocket).destroyed, false);
+      expect((oc.underlying as MockSecureSocket).destroyed, false);
       expect(oc.metaData?.isClosed, false);
       oml.onSocketDone();
-      expect((oc.getSocket() as MockSecureSocket).destroyed, true);
+      expect((oc.underlying as MockSecureSocket).destroyed, true);
       expect(oc.metaData?.isClosed, true);
     });
 
@@ -112,10 +112,10 @@ void main() {
       OutboundConnection oc = OutboundConnectionImpl(
           createMockAtServerSocket('test.test.test', 12345));
       OutboundMessageListener oml = OutboundMessageListener(oc);
-      expect((oc.getSocket() as MockSecureSocket).destroyed, false);
+      expect((oc.underlying as MockSecureSocket).destroyed, false);
       expect(oc.metaData?.isClosed, false);
       oml.onSocketError('test');
-      expect((oc.getSocket() as MockSecureSocket).destroyed, true);
+      expect((oc.underlying as MockSecureSocket).destroyed, true);
       expect(oc.metaData?.isClosed, true);
     });
 
@@ -123,17 +123,17 @@ void main() {
       OutboundConnection oc = OutboundConnectionImpl(
           createMockAtServerSocket('test.test.test', 12345));
       OutboundMessageListener oml = OutboundMessageListener(oc);
-      expect((oc.getSocket() as MockSecureSocket).destroyed, false);
+      expect((oc.underlying as MockSecureSocket).destroyed, false);
       expect(oc.metaData?.isClosed, false);
       await oml.closeConnection();
-      expect((oc.getSocket() as MockSecureSocket).destroyed, true);
+      expect((oc.underlying as MockSecureSocket).destroyed, true);
       expect(oc.metaData?.isClosed, true);
 
-      (oc.getSocket() as MockSecureSocket).destroyed = false;
+      (oc.underlying as MockSecureSocket).destroyed = false;
       await oml.closeConnection();
       // Since the connection was already closed above,
       // we don't expect destroy to be called on the socket again
-      expect((oc.getSocket() as MockSecureSocket).destroyed, false);
+      expect((oc.underlying as MockSecureSocket).destroyed, false);
       expect(oc.metaData?.isClosed, true);
     });
 
@@ -143,7 +143,7 @@ void main() {
       OutboundConnection oc = OutboundConnectionImpl(
           createMockAtServerSocket('test.test.test', 12345));
       OutboundMessageListener oml = OutboundMessageListener(oc);
-      expect((oc.getSocket() as MockSecureSocket).destroyed, false);
+      expect((oc.underlying as MockSecureSocket).destroyed, false);
       expect(oc.metaData?.isClosed, false);
 
       expect(oc.isInValid(), false);
@@ -154,7 +154,7 @@ void main() {
 
       await oml.closeConnection();
 
-      expect((oc.getSocket() as MockSecureSocket).destroyed, true);
+      expect((oc.underlying as MockSecureSocket).destroyed, true);
       expect(oc.metaData?.isClosed, true);
     });
 
@@ -164,13 +164,13 @@ void main() {
       OutboundConnection oc = OutboundConnectionImpl(
           createMockAtServerSocket('test.test.test', 12345));
       OutboundMessageListener oml = OutboundMessageListener(oc);
-      expect((oc.getSocket() as MockSecureSocket).destroyed, false);
+      expect((oc.underlying as MockSecureSocket).destroyed, false);
       oc.metaData!.isClosed = true;
 
       await oml.closeConnection();
 
       // socketDestroyed will be set in these tests only if socket.destroy() is called
-      expect((oc.getSocket() as MockSecureSocket).destroyed, false);
+      expect((oc.underlying as MockSecureSocket).destroyed, false);
     });
 
     test(
@@ -179,13 +179,13 @@ void main() {
       OutboundConnection oc = OutboundConnectionImpl(
           createMockAtServerSocket('test.test.test', 12345));
       OutboundMessageListener oml = OutboundMessageListener(oc);
-      expect((oc.getSocket() as MockSecureSocket).destroyed, false);
+      expect((oc.underlying as MockSecureSocket).destroyed, false);
       expect(oc.metaData?.isClosed, false);
       oc.metaData!.isStale = true;
 
       await oml.closeConnection();
 
-      expect((oc.getSocket() as MockSecureSocket).destroyed, true);
+      expect((oc.underlying as MockSecureSocket).destroyed, true);
       expect(oc.metaData?.isClosed, true);
     });
   });

@@ -28,7 +28,7 @@ class MonitorClient {
     var _monitorConnection =
         await _createNewConnection(_atSign, _rootDomain, _rootPort);
     //2. Listener on _monitorConnection.
-    _monitorConnection.getSocket().listen((event) {
+    _monitorConnection.underlying.listen((event) {
       response = utf8.decode(event);
       // If response contains data to be notified, invoke callback function.
       if (response.toString().startsWith('notification')) {
