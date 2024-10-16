@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -5,6 +6,7 @@ import 'package:args/args.dart';
 import 'package:at_auth/at_auth.dart';
 import 'package:at_cli_commons/at_cli_commons.dart';
 import 'package:at_client/at_client.dart';
+import 'package:at_commons/at_builders.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
@@ -20,10 +22,25 @@ final AtSignLogger logger = AtSignLogger(' CLI ');
 
 final aca = AuthCliArgs();
 
+Directory? storageDir;
+
+void deleteStorage() {
+  // Windows will not let us delete files that are open
+  // so will will ignore this step and leave them in %localappdata%\Temp
+  if (!Platform.isWindows) {
+    if (storageDir != null) {
+      if (storageDir!.existsSync()) {
+        // stderr.writeln('${DateTime.now()} : Cleaning up temporary files');
+        storageDir!.deleteSync(recursive: true);
+      }
+    }
+  }
+}
+
 Future<int> main(List<String> arguments) async {
   AtSignLogger.defaultLoggingHandler = AtSignLogger.stdErrLoggingHandler;
   try {
-    return await _main(arguments);
+    return await wrappedMain(arguments);
   } on ArgumentError catch (e) {
     stderr.writeln('Invalid argument: ${e.message}');
     aca.parser.printAllCommandsUsage();
@@ -32,10 +49,14 @@ Future<int> main(List<String> arguments) async {
     stderr.writeln('Error: $e');
     aca.parser.printAllCommandsUsage();
     return 1;
+  } finally {
+    try {
+      deleteStorage();
+    } catch (_) {}
   }
 }
 
-Future<int> _main(List<String> arguments) async {
+Future<int> wrappedMain(List<String> arguments) async {
   if (arguments.isEmpty) {
     stderr.writeln('You must supply a command.');
     aca.parser.printAllCommandsUsage(showSubCommandParams: false);
@@ -157,6 +178,10 @@ Future<int> _main(List<String> arguments) async {
         await approve(
             commandArgResults, await createAtClient(commandArgResults));
 
+      case AuthCliCommand.auto:
+        await autoApprove(
+            commandArgResults, await createAtClient(commandArgResults));
+
       case AuthCliCommand.deny:
         await deny(commandArgResults, await createAtClient(commandArgResults));
 
@@ -171,6 +196,14 @@ Future<int> _main(List<String> arguments) async {
         // Write keys to @atSign_keys.atKeys IFF it doesn't already exist; if
         // it does exist, then write to @atSign_appName_deviceName_keys.atKeys
         await enroll(commandArgResults);
+
+      case AuthCliCommand.unrevoke:
+        await unrevoke(
+            commandArgResults, await createAtClient(commandArgResults));
+
+      case AuthCliCommand.delete:
+        await deleteEnrollment(
+            commandArgResults, await createAtClient(commandArgResults));
     }
   } on ArgumentError catch (e) {
     stderr
@@ -248,16 +281,21 @@ Future<int> status(ArgResults ar) async {
 }
 
 Future<AtClient> createAtClient(ArgResults ar) async {
-  String nameSpace = 'at_auth_cli';
+  String nameSpace = 'at_activate';
   String atSign = AtUtils.fixAtSign(ar[AuthCliArgs.argNameAtSign]);
+  storageDir = standardAtClientStorageDir(
+    atSign: atSign,
+    progName: nameSpace,
+    uniqueID: '${DateTime.now().millisecondsSinceEpoch}',
+  );
+
   CLIBase cliBase = CLIBase(
     atSign: atSign,
     atKeysFilePath: ar[AuthCliArgs.argNameAtKeys],
     nameSpace: nameSpace,
     rootDomain: ar[AuthCliArgs.argNameAtDirectoryFqdn],
     homeDir: getHomeDirectory(),
-    storageDir: '${getHomeDirectory()}/.atsign/$nameSpace/$atSign/storage'
-        .replaceAll('/', Platform.pathSeparator),
+    storageDir: storageDir!.path,
     verbose: ar[AuthCliArgs.argNameVerbose] || ar[AuthCliArgs.argNameDebug],
     syncDisabled: true,
     maxConnectAttempts: int.parse(
@@ -284,24 +322,27 @@ Future<void> onboard(ArgResults argResults, {AtOnboardingService? svc}) async {
       '[Information] Onboarding your atSign. This may take up to 2 minutes.');
   try {
     await svc.onboard();
-    logger.finest('svc.onboard() has returned - will exit(0)');
-    exit(0);
+    return;
   } on InvalidDataException catch (e) {
-    stderr.writeln(
-        '[Error] Onboarding failed. Invalid data provided by user. Please try again\nCause: ${e.message}');
-    exit(1);
+    throw AtEnrollmentException(
+        'Onboarding failed. Please try again. Cause: ${e.message}');
   } on InvalidRequestException catch (e) {
-    stderr.writeln(
-        '[Error] Onboarding failed. Invalid data provided by user. Please try again\nCause: ${e.message}');
-    exit(1);
-  } on AtActivateException catch (e) {
-    stderr.writeln('[Error] ${e.message}');
-    exit(1);
-  } on Exception catch (e) {
-    stderr.writeln(
-        '[Error] Onboarding failed. It looks like something went wrong on our side.\n'
-        'Please try again or contact support@atsign.com\nCause: $e');
-    exit(1);
+    throw AtEnrollmentException(
+        'Onboarding failed. Please try again. Cause: ${e.message}');
+  } on AtActivateException {
+    rethrow;
+  } catch (e) {
+    throw ('Onboarding failed.'
+        ' It looks like something went wrong on our side.'
+        ' Please try again or contact support@atsign.com\nCause: $e');
+  }
+}
+
+String parseServerResponse(String? response) {
+  if (response != null && response.startsWith('data:')) {
+    return response.replaceFirst('data:', '');
+  } else {
+    throw ('Unexpected server response: $response');
   }
 }
 
@@ -494,11 +535,20 @@ Future<void> interactive(ArgResults argResults, AtClient atClient) async {
         case AuthCliCommand.approve:
           await approve(commandArgResults, atClient);
 
+        case AuthCliCommand.auto:
+          await autoApprove(commandArgResults, atClient);
+
         case AuthCliCommand.deny:
           await deny(commandArgResults, atClient);
 
         case AuthCliCommand.revoke:
           await revoke(commandArgResults, atClient);
+
+        case AuthCliCommand.unrevoke:
+          await unrevoke(commandArgResults, atClient);
+
+        case AuthCliCommand.delete:
+          await deleteEnrollment(commandArgResults, atClient);
       }
     } on ArgumentError catch (e) {
       stderr.writeln(
@@ -554,8 +604,7 @@ Future<Map> _list(
     stdout.writeln("Found ${filtered.length} matching enrollment records");
     return filtered;
   } else {
-    stderr.writeln('Exiting: Unexpected server response: $rawResponse');
-    exit(1);
+    throw Exception('Unexpected server response: $rawResponse');
   }
 }
 
@@ -587,20 +636,14 @@ Future<void> list(ArgResults ar, AtClient atClient) async {
 }
 
 Future<Map?> _fetch(String eId, AtLookUp atLookup) async {
-  String rawResponse = (await atLookup.executeCommand(
-      'enroll:fetch:'
-      '{"enrollmentId":"$eId"}'
-      '\n',
-      auth: true))!;
+  EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
+    ..operation = EnrollOperationEnum.fetch
+    ..enrollmentId = eId;
+  String? response = await atLookup.executeVerb(enrollVerbBuilder);
 
-  if (rawResponse.startsWith('data:')) {
-    rawResponse = rawResponse.substring(rawResponse.indexOf('data:') + 5);
-    // response is a Map
-    return jsonDecode(rawResponse);
-  } else {
-    stderr.writeln('Exiting: Unexpected server response: $rawResponse');
-    exit(1);
-  }
+  response = parseServerResponse(response);
+  // response is a Map
+  return jsonDecode(response);
 }
 
 Future<void> fetch(ArgResults argResults, AtClient atClient) async {
@@ -650,7 +693,8 @@ Future<Map> _fetchOrListAndFilter(
   return enrollmentMap;
 }
 
-Future<void> approve(ArgResults ar, AtClient atClient) async {
+Future<int> approve(ArgResults ar, AtClient atClient, {int? limit}) async {
+  int approved = 0;
   AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
 
   Map toApprove = await _fetchOrListAndFilter(
@@ -663,13 +707,15 @@ Future<void> approve(ArgResults ar, AtClient atClient) async {
 
   if (toApprove.isEmpty) {
     stderr.writeln('No matching enrollment(s) found');
-    return;
+    return approved;
   }
 
   // Iterate through the requests, approve each one
   for (String eId in toApprove.keys) {
     Map er = toApprove[eId];
-    stdout.writeln('Approving enrollmentId $eId');
+    stdout.writeln('Approving enrollmentId $eId'
+        ' with appName "${er['appName']}"'
+        ' and deviceName "${er['deviceName']}"');
     // Then make a 'decision' object using data from the enrollment request
     EnrollmentRequestDecision decision = EnrollmentRequestDecision.approved(
         ApprovedRequestDecisionBuilder(
@@ -680,9 +726,119 @@ Future<void> approve(ArgResults ar, AtClient atClient) async {
     final response = await atAuthBase
         .atEnrollment(atClient.getCurrentAtSign()!)
         .approve(decision, atLookup);
-    // 'enroll:approve:{"enrollmentId":"$enrollmentId"}'
+
     stdout.writeln('Server response: $response');
+
+    approved++;
+
+    if (limit != null && approved >= limit) {
+      return approved;
+    }
   }
+  return approved;
+}
+
+Future<int> autoApprove(ArgResults ar, AtClient atClient) async {
+  int approved = 0;
+  int limit = int.parse(ar[AuthCliArgs.argNameLimit]);
+  String? arx = ar[AuthCliArgs.argNameAppNameRegex];
+  String? drx = ar[AuthCliArgs.argNameDeviceNameRegex];
+  bool approveExisting = ar[AuthCliArgs.argNameAutoApproveExisting];
+
+  if (arx == null && drx == null) {
+    throw IllegalArgumentException(
+        'You must supply ${AuthCliArgs.argNameAppNameRegex}'
+        ' and/or ${AuthCliArgs.argNameDeviceNameRegex}');
+  }
+
+  if (approveExisting) {
+    // Start by approving any which match and are already there
+    stdout.writeln('Approving any requests already there which are a match');
+    approved = await approve(ar, atClient, limit: limit);
+    stdout.writeln();
+  }
+
+  // If we've already approved our limit then we're done
+  if (approved >= limit) {
+    return approved;
+  }
+
+  Completer completer = Completer();
+
+  RegExp? appRegex;
+  RegExp? deviceRegex;
+  if (arx != null) {
+    appRegex = RegExp(arx);
+  }
+  if (drx != null) {
+    deviceRegex = RegExp(drx);
+  }
+
+  AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
+
+  // listen for enrollment requests
+  stdout.writeln('Listening for new enrollment requests');
+
+  final stream = atClient.notificationService.subscribe(
+      regex: r'.*\.new\.enrollments\.__manage', shouldDecrypt: false);
+
+  final subscription = stream.listen((AtNotification n) async {
+    if (completer.isCompleted) {
+      return; // Don't handle any more if we're already done
+    }
+
+    String eId = n.key.substring(0, n.key.indexOf('.'));
+
+    final er = jsonDecode(n.value!);
+    stdout.writeln('Got enrollment request ID $eId'
+        ' with appName "${er['appName']}"'
+        ' and deviceName "${er['deviceName']}"');
+
+    // check the request matches our params
+    String appName = er['appName'];
+    String deviceName = er['deviceName'];
+    if ((appRegex?.hasMatch(appName) ?? true) &&
+        (deviceRegex?.hasMatch(deviceName) ?? true)) {
+      // request matched, let's approve it
+      stdout.writeln('Approving enrollment request'
+          ' which matched the regex filters'
+          ' (app: "$arx" and device: "$drx" respectively)');
+
+      EnrollmentRequestDecision decision = EnrollmentRequestDecision.approved(
+          ApprovedRequestDecisionBuilder(
+              enrollmentId: eId,
+              encryptedAPKAMSymmetricKey: er['encryptedAPKAMSymmetricKey']));
+
+      // Finally call approve method via an AtEnrollment object
+      final response = await atAuthBase
+          .atEnrollment(atClient.getCurrentAtSign()!)
+          .approve(decision, atLookup);
+      stdout.writeln('Approval successful.\n'
+          '\tResponse: $response');
+
+      // increment approved count
+      approved++;
+
+      // check approved vs limit
+      if (approved >= limit) {
+        // if reached limit, complete the future
+        stdout
+            .writeln('Approved $approved requests - limit was $limit - done.');
+        completer.complete();
+      }
+    } else {
+      stdout.writeln('Ignoring enrollment request'
+          ' which does not match the regex filters'
+          ' (app: "$arx" and device: "$drx" respectively)');
+    }
+    stdout.writeln();
+  });
+
+  // await future then cancel the subscription
+  await completer.future;
+  await subscription.cancel();
+
+  return approved;
 }
 
 Future<void> deny(ArgResults ar, AtClient atClient) async {
@@ -704,9 +860,10 @@ Future<void> deny(ArgResults ar, AtClient atClient) async {
   // Iterate through the requests, deny each one
   for (String eId in toDeny.keys) {
     stdout.writeln('Denying enrollmentId $eId');
-    // 'enroll:deny:{"enrollmentId":"$enrollmentId"}'
-    String? response = await atLookup
-        .executeCommand('enroll:deny:{"enrollmentId":"$eId"}\n', auth: true);
+    EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
+      ..operation = EnrollOperationEnum.deny
+      ..enrollmentId = eId;
+    String? response = await atLookup.executeVerb(enrollVerbBuilder);
     stdout.writeln('Server response: $response');
   }
 }
@@ -735,6 +892,43 @@ Future<void> revoke(ArgResults ar, AtClient atClient) async {
         .executeCommand('enroll:revoke:{"enrollmentId":"$eId"}\n', auth: true);
     stdout.writeln('Server response: $response');
   }
+}
+
+Future<void> unrevoke(ArgResults ar, AtClient atClient) async {
+  AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
+
+  Map toUnRevoke = await _fetchOrListAndFilter(
+    atLookup,
+    EnrollmentStatus.approved.name, // must be status approved
+    eId: ar[AuthCliArgs.argNameEnrollmentId],
+    arx: ar[AuthCliArgs.argNameAppNameRegex],
+    drx: ar[AuthCliArgs.argNameDeviceNameRegex],
+  );
+
+  if (toUnRevoke.isEmpty) {
+    stderr.writeln('No matching enrollment(s) found');
+    return;
+  }
+
+  for (String eId in toUnRevoke.keys) {
+    stdout.writeln('Un-Revoking enrollmentId $eId');
+    String? response = await atLookup.executeCommand(
+        'enroll:unrevoke:{"enrollmentId":"$eId"}\n',
+        auth: true);
+    stdout.writeln('Server response: $response');
+  }
+}
+
+Future<void> deleteEnrollment(ArgResults ar, AtClient atClient) async {
+  AtLookUp atLookup = atClient.getRemoteSecondary()!.atLookUp;
+  String eId = ar[AuthCliArgs.argNameEnrollmentId];
+  EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
+    ..enrollmentId = eId
+    ..operation = EnrollOperationEnum.delete;
+  stdout.writeln('Sending delete request');
+  String? response = await atLookup.executeVerb(enrollVerbBuilder);
+  response = parseServerResponse(response);
+  stdout.writeln('Server response: $response');
 }
 
 @visibleForTesting

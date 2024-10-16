@@ -6,11 +6,13 @@ import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_onboarding_cli/src/util/at_onboarding_exceptions.dart';
 import 'package:at_utils/at_logger.dart';
 
+@Deprecated('Use auth_cli')
 Future<void> main(List<String> arguments) async {
   int exitCode = await wrappedMain(arguments);
   exit(exitCode);
 }
 
+@Deprecated('Use auth_cli')
 Future<int> wrappedMain(List<String> arguments) async {
   //defaults
   String rootServer = 'root.atsign.org';
@@ -57,6 +59,7 @@ Future<int> wrappedMain(List<String> arguments) async {
   return await activate(argResults);
 }
 
+@Deprecated('Use auth_cli')
 Future<int> activate(ArgResults argResults,
     {AtOnboardingService? atOnboardingService}) async {
   stdout.writeln('[Information] Root server is ${argResults['rootServer']}');
