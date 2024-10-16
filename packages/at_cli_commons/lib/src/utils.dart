@@ -2,6 +2,9 @@ import 'dart:io';
 import 'package:at_client/at_client.dart';
 import 'package:path/path.dart' as path;
 
+/// Generate a path like this:
+/// $baseDir/.atsign/storage/$atSign/$progName/$uniqueID
+/// (normalized to use platform-specific path separator)
 String standardAtClientStoragePath({
   required String baseDir,
   required String atSign,
@@ -12,7 +15,7 @@ String standardAtClientStoragePath({
           '/.atsign'
           '/storage'
           '/$atSign'
-          '/.$progName'
+          '/$progName'
           '/$uniqueID'
       .replaceAll('/', Platform.pathSeparator));
 }
