@@ -4,13 +4,13 @@ import 'package:at_lookup/src/connection/at_connection.dart';
 import 'package:at_utils/at_logger.dart';
 
 /// WebSocket-specific connection class
-abstract class BaseSocketConnection extends AtConnection {
+abstract class BaseWebSocketConnection extends AtConnection {
   final WebSocket _webSocket;
   late final AtSignLogger logger;
   StringBuffer? buffer;
   AtConnectionMetaData? metaData;
 
-  BaseSocketConnection(this._webSocket) {
+  BaseWebSocketConnection(this._webSocket) {
     logger = AtSignLogger(runtimeType.toString());
     buffer = StringBuffer();
   }
