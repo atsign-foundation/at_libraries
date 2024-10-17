@@ -16,13 +16,13 @@ void main() {
       await directory.create(recursive: true);
       // Set permission to read only.
       await Process.run('chmod', ['444', baseDirPath]);
-      expect(isWritable(File(dirPath)), false);
+      expect(canCreateFile(File(dirPath)), false);
     });
 
     test(
         'A test verify isWritable returns true if directory does not have a file already',
         () {
-      expect(isWritable(File(dirPath)), true);
+      expect(canCreateFile(File(dirPath)), true);
     });
   });
 

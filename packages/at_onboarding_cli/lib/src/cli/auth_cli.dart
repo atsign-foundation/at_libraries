@@ -364,7 +364,7 @@ Future<void> enroll(ArgResults argResults, {AtOnboardingService? svc}) async {
     return;
   }
 
-  // "_isWritable" attempts to create the directories for the given [file] if they do not exist,
+  // "canCreateFile" attempts to create the directories for the given [file] if they do not exist,
   // and then tries to open the file in write mode to verify write permissions.
   //
   // If the file can be opened for writing, it is immediately closed and deleted.
@@ -372,7 +372,7 @@ Future<void> enroll(ArgResults argResults, {AtOnboardingService? svc}) async {
   // if the file already exists. Therefore, delete the file here after checking for write permissions.
   //
   // Incase of any exceptions, the error is logged and returned.
-  if (isWritable(f) == false) {
+  if (canCreateFile(f) == false) {
     return;
   }
 
@@ -446,16 +446,18 @@ Future<void> enroll(ArgResults argResults, {AtOnboardingService? svc}) async {
 /// - If the file does not have write permissions, a [PathAccessException] is caught, and an error message is printed to stderr.
 /// - Any other exceptions are caught and logged, indicating a failure to determine write access.
 @visibleForTesting
-bool isWritable(File file) {
+bool canCreateFile(File file) {
   try {
     // If the directories do not exist, create them.
     // "recursive" is set to true to ensure that any missing parent directories are created.
-    file.createSync(recursive: true);
+    // "exclusive" is set to true to prevent creation of file if it already exists.
+    file.createSync(recursive: true, exclusive: true);
     // Try opening the file in write mode, which requires write permissions
     RandomAccessFile raf = file.openSync(mode: FileMode.write);
     raf.closeSync();
     // In [AtOnboardingServiceImpl._generateAtKeysFile] method, there is a check which returns error
     // if the file already exists. Therefore, delete the file here after checking for write permissions.
+    // This does not delete the existing file. Deletes only if the new file is created to verify write permissions.
     file.deleteSync();
     return true;
   } on PathAccessException {
