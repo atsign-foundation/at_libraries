@@ -460,6 +460,9 @@ bool canCreateFile(File file) {
     // This does not delete the existing file. Deletes only if the new file is created to verify write permissions.
     file.deleteSync();
     return true;
+  } on PathExistsException {
+    stderr.writeln('Error : atKeys file ${file.path} already exists');
+    rethrow;
   } on PathAccessException {
     stderr.writeln(
         'Error : atKeys file ${file.path} does not have write permissions');
