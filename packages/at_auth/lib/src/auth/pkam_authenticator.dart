@@ -10,9 +10,8 @@ class PkamAuthenticator {
   Future<AtAuthResponse> authenticate({String? enrollmentId}) async {
     var authResult = AtAuthResponse(_atSign);
     try {
-      bool pkamResult =
+      authResult.isSuccessful =
           await _atLookup.pkamAuthenticate(enrollmentId: enrollmentId);
-      authResult.isSuccessful = pkamResult;
     } on UnAuthenticatedException catch (e) {
       throw UnAuthenticatedException(
           'pkam auth failed for $_atSign - ${e.toString()}');

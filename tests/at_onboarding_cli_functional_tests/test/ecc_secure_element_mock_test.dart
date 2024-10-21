@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:at_chops/at_chops.dart';
 import 'package:at_client/at_client.dart';
-import 'package:at_lookup/at_lookup.dart';
 import 'package:at_onboarding_cli/at_onboarding_cli.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:test/test.dart';
@@ -16,23 +15,20 @@ import 'utils/onboarding_service_impl_override.dart';
 void main() {
   AtSignLogger.root_level = 'WARNING';
   var logger = AtSignLogger('OnboardSecureElementTest');
-
   final atSign = '@egcreditbureau🛠'.trim();
-  test('Test auth functionality using secure element mock', () async {
+
+  test('Validate auth functionality using secure element mock', () async {
     AtOnboardingPreference preference = getPreferences(atSign);
     AtOnboardingService onboardingService =
         OnboardingServiceImplOverride(atSign, preference);
     // create empty keys in AtChops. Encryption key pair will be set later on after generation
     final atChopsImpl =
         AtChopsSecureElementMock(AtChopsKeys.create(null, null));
-    AtLookUp atLookupInstance =
-        AtLookupImpl(atSign, preference.rootDomain, preference.rootPort);
-    atLookupInstance.signingAlgoType = preference.signingAlgoType;
-    atLookupInstance.hashingAlgoType = preference.hashingAlgoType;
-    at_auth.AtAuth atAuthInstance = at_auth.atAuthBase
-        .atAuth(atLookUp: atLookupInstance, atChops: atChopsImpl);
+    at_auth.AtAuth atAuthInstance =
+        at_auth.atAuthBase.atAuth(atChops: atChopsImpl);
     onboardingService.atAuth = atAuthInstance;
     atChopsImpl.init();
+
     logger.info('Onboarding the atSign: $atSign');
     bool isOnboarded = await onboardingService.onboard();
     expect(isOnboarded, true);
@@ -44,7 +40,7 @@ void main() {
     logger.info('Authentication completed successfully for atSign: $atSign');
 
     // update a key
-    AtClient? atClient = await onboardingService.atClient;
+    AtClient? atClient = onboardingService.atClient;
     await insertSelfEncKey(atClient, atSign,
         selfEncryptionKey:
             await getSelfEncryptionKey(preference.atKeysFilePath!));
@@ -79,7 +75,7 @@ AtOnboardingPreference getPreferences(String atSign) {
     ..commitLogPath = 'storage/commitLog'
     ..rootDomain = 'vip.ve.atsign.zone'
     ..fetchOfflineNotifications = true
-    ..atKeysFilePath = 'test/storage/files/$atSign' + '_key.atKeys'
+    ..atKeysFilePath = 'test/storage/files/${atSign}_key.atKeys'
     ..signingAlgoType = SigningAlgoType.ecc_secp256r1
     ..hashingAlgoType = HashingAlgoType.sha256
     ..authMode = PkamAuthMode.sim
