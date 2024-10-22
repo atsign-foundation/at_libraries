@@ -1,3 +1,5 @@
+## 5.0.2
+- feat: Introduce skipDeletes for sync:from verb
 ## 5.0.1
 - fix: export regex utils class
 ## 5.0.0
