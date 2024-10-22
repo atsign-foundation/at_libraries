@@ -44,8 +44,16 @@ enum AuthCliCommand {
   list(usage: 'List enrollment requests'),
   fetch(usage: 'Fetch a specific enrollment request'),
   approve(usage: 'Approve a pending enrollment request'),
+  auto(
+      usage: 'Listen for new enrollment requests which match the parameters'
+          ' supplied, and auto-approve them. Will exit after N (defaults to 1)'
+          ' enrollment requests have been approved.'),
   deny(usage: 'Deny a pending enrollment request'),
   revoke(usage: 'Revoke approval of a previously-approved enrollment'),
+  unrevoke(usage: 'Restores access to the previously revoked enrollment'),
+  delete(
+      usage: 'Deletes an enrollment. Requires an enrollmentId to be provided'
+          '\nNOTE: Can ONLY delete denied and revoked enrollments'),
   enroll(
       usage: 'Enroll is used when a program needs to authenticate and'
           ' "atKeys" are not available, and "onboard" has already been run'
@@ -93,9 +101,15 @@ class AuthCliArgs {
   static const argNameEnrollmentId = 'enrollmentId';
   static const argNameEnrollmentStatus = 'enrollmentStatus';
   static const argNameAppNameRegex = 'arx';
+  static const argAbbrAppNameRegex = 'A';
   static const argNameDeviceNameRegex = 'drx';
+  static const argAbbrDeviceNameRegex = 'D';
+  static const argNameLimit = 'limit';
+  static const argAbbrLimit = 'L';
   static const argNameMaxConnectAttempts = 'mca';
   static const argNameExpiry = 'expiry';
+  static const argAbbrExpiry = 'e';
+  static const argNameAutoApproveExisting = 'approve-existing';
 
   ArgParser get parser {
     return _aap;
@@ -165,11 +179,20 @@ class AuthCliArgs {
       case AuthCliCommand.approve:
         return createApproveCommandParser();
 
+      case AuthCliCommand.auto:
+        return createAutoApproveCommandParser();
+
       case AuthCliCommand.deny:
         return createDenyCommandParser();
 
       case AuthCliCommand.revoke:
         return createRevokeCommandParser();
+
+      case AuthCliCommand.unrevoke:
+        return createUnRevokeCommandParser();
+
+      case AuthCliCommand.delete:
+        return createDeleteCommandParser();
     }
   }
 
@@ -278,7 +301,7 @@ class AuthCliArgs {
       mandatory: true,
     );
     p.addOption(argNameExpiry,
-        abbr: 'e',
+        abbr: argAbbrExpiry,
         help:
             'The duration for which the SPP remains active. The time duration can be passed as "2d,1h,10m,20s,999ms" for 2 days 1 hour 10 minutes 20 seconds 999 milliseconds',
         mandatory: false);
@@ -296,7 +319,7 @@ class AuthCliArgs {
   ArgParser createOtpCommandParser() {
     ArgParser p = createSharedArgParser(hide: true);
     p.addOption(argNameExpiry,
-        abbr: 'e',
+        abbr: argAbbrExpiry,
         help:
             'The duration for which the OTP remains active. The time duration can be passed as "2d,1h,10m,20s,999ms" for 2 days 1 hour 10 minutes 20 seconds 999 milliseconds',
         mandatory: false);
@@ -337,7 +360,7 @@ class AuthCliArgs {
       mandatory: true,
     );
     p.addOption(argNameExpiry,
-        abbr: 'e',
+        abbr: argAbbrExpiry,
         help:
             'The duration for which the APKAM keys remains active. The time duration can be passed as "2d,1h,10m,20s,999ms" for 2 days 1 hour 10 minutes 20 seconds 999 milliseconds',
         mandatory: false);
@@ -356,8 +379,8 @@ class AuthCliArgs {
       allowed: EnrollmentStatus.values.map((c) => c.name).toList(),
       mandatory: false,
     );
-    _addAppNameRegexOption(p);
-    _addDeviceNameRegexOption(p);
+    _addAppNameRegexOption(p, mandatory: false);
+    _addDeviceNameRegexOption(p, mandatory: false);
     return p;
   }
 
@@ -369,28 +392,35 @@ class AuthCliArgs {
     return p;
   }
 
-  void _addAppNameRegexOption(ArgParser p) {
+  void _addAppNameRegexOption(ArgParser p, {required bool mandatory}) {
     p.addOption(
       argNameAppNameRegex,
-      help: 'Filter responses via regular expression on app name',
-      mandatory: false,
+      abbr: argAbbrAppNameRegex,
+      help: 'Filter requests via regular expression on app name',
+      mandatory: mandatory,
     );
   }
 
-  void _addDeviceNameRegexOption(ArgParser p) {
+  void _addDeviceNameRegexOption(ArgParser p, {required bool mandatory}) {
     p.addOption(
       argNameDeviceNameRegex,
-      help: 'Filter responses via regular expression on device name',
-      mandatory: false,
+      abbr: argAbbrDeviceNameRegex,
+      help: 'Filter requests via regular expression on device name',
+      mandatory: mandatory,
     );
   }
 
-  void _addEnrollmentIdOption(ArgParser p, {bool mandatory = false}) {
+  void _addEnrollmentIdOption(
+    ArgParser p, {
+    bool mandatory = false,
+    bool hide = false,
+  }) {
     p.addOption(
       argNameEnrollmentId,
       abbr: 'i',
       help: 'The ID of the enrollment request',
       mandatory: mandatory,
+      hide: hide,
     );
   }
 
@@ -399,8 +429,33 @@ class AuthCliArgs {
   ArgParser createApproveCommandParser() {
     ArgParser p = createSharedArgParser(hide: true);
     _addEnrollmentIdOption(p);
-    _addAppNameRegexOption(p);
-    _addDeviceNameRegexOption(p);
+    _addAppNameRegexOption(p, mandatory: false);
+    _addDeviceNameRegexOption(p, mandatory: false);
+    return p;
+  }
+
+  /// auth approve
+  @visibleForTesting
+  ArgParser createAutoApproveCommandParser() {
+    ArgParser p = createSharedArgParser(hide: true);
+    _addEnrollmentIdOption(p, hide: true);
+    _addAppNameRegexOption(p, mandatory: true);
+    _addDeviceNameRegexOption(p, mandatory: true);
+    p.addOption(
+      argNameLimit,
+      abbr: argAbbrLimit,
+      help: 'Listen until this many requests have been approved',
+      mandatory: false,
+      defaultsTo: "1",
+    );
+    p.addFlag(
+      argNameAutoApproveExisting,
+      help: 'Before starting to listen, approve any matching enrollment'
+          ' requests which already exist. Note: any approvals will count'
+          ' towards the limit.',
+      negatable: false,
+      defaultsTo: false,
+    );
     return p;
   }
 
@@ -409,8 +464,8 @@ class AuthCliArgs {
   ArgParser createDenyCommandParser() {
     ArgParser p = createSharedArgParser(hide: true);
     _addEnrollmentIdOption(p);
-    _addAppNameRegexOption(p);
-    _addDeviceNameRegexOption(p);
+    _addAppNameRegexOption(p, mandatory: false);
+    _addDeviceNameRegexOption(p, mandatory: false);
     return p;
   }
 
@@ -419,8 +474,27 @@ class AuthCliArgs {
   ArgParser createRevokeCommandParser() {
     ArgParser p = createSharedArgParser(hide: true);
     _addEnrollmentIdOption(p);
-    _addAppNameRegexOption(p);
-    _addDeviceNameRegexOption(p);
+    _addAppNameRegexOption(p, mandatory: false);
+    _addDeviceNameRegexOption(p, mandatory: false);
+    return p;
+  }
+
+  /// Restore the revoked enrollment Id.
+  @visibleForTesting
+  ArgParser createUnRevokeCommandParser() {
+    ArgParser p = createSharedArgParser(hide: true);
+    _addEnrollmentIdOption(p);
+    _addAppNameRegexOption(p, mandatory: false);
+    _addDeviceNameRegexOption(p, mandatory: false);
+    return p;
+  }
+
+  /// auth delete denied enrollment: requires enrollmentId and atKeysFile path
+  /// requires the enrollment to be denied
+  @visibleForTesting
+  ArgParser createDeleteCommandParser() {
+    ArgParser p = createSharedArgParser(hide: true);
+    _addEnrollmentIdOption(p, mandatory: true);
     return p;
   }
 }

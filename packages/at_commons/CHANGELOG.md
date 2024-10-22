@@ -1,3 +1,5 @@
+## 5.0.1
+- fix: export regex utils class
 ## 5.0.0
 - [Breaking Change]feat: Emit the isEncrypted value in the metadata if it is false
 - fix: update pkam regex to accept sha512 as hashing algo

@@ -19,27 +19,31 @@ class CLIBase {
     ..addOption('atsign',
         abbr: 'a', mandatory: true, help: 'This client\'s atSign')
     ..addOption('namespace', abbr: 'n', mandatory: true, help: 'Namespace')
-    ..addOption('key-file',
-        abbr: 'k',
-        mandatory: false,
+    ..addOption(
+      'key-file',
+      abbr: 'k',
+      mandatory: false,
         help: 'Your atSign\'s atKeys file if not in ~/.atsign/keys/')
     ..addOption('cram-secret',
         abbr: 'c', mandatory: false, help: 'atSign\'s cram secret')
     ..addOption('home-dir', abbr: 'h', mandatory: false, help: 'home directory')
-    ..addOption('storage-dir',
-        abbr: 's',
-        mandatory: false,
+    ..addOption(
+      'storage-dir',
+      abbr: 's',
+      mandatory: false,
         help: 'directory for this client\'s local storage files')
-    ..addOption('root-domain',
-        abbr: 'd',
-        mandatory: false,
-        help: 'Root Domain',
+    ..addOption(
+      'root-domain',
+      abbr: 'd',
+      mandatory: false,
+      help: 'Root Domain',
         defaultsTo: 'root.atsign.org')
     ..addFlag('verbose', abbr: 'v', negatable: false, help: 'More logging')
     ..addFlag('never-sync', negatable: false, help: 'Do not run sync')
-    ..addOption('max-connect-attempts',
-        help: 'Number of times to attempt to initially connect to atServer.'
-            ' Note: there is a 3-second delay between connection attempts.',
+    ..addOption(
+      'max-connect-attempts',
+      help: 'Number of times to attempt to initially connect to atServer.'
+          ' Note: there is a 3-second delay between connection attempts.',
         defaultsTo: defaultMaxConnectAttempts.toString());
 
   /// Constructs a CLIBase from a list of command-line arguments
@@ -149,11 +153,19 @@ class CLIBase {
     }
 
     atKeysFilePathToUse =
-        atKeysFilePath ?? '$homeDir/.atsign/keys/${this.atSign}_key.atKeys';
-    localStoragePathToUse =
-        storageDir ?? '$homeDir/.$nameSpace/${this.atSign}/storage';
+        (atKeysFilePath ?? '$homeDir/.atsign/keys/${this.atSign}_key.atKeys')
+            .replaceAll('/', Platform.pathSeparator);
+    localStoragePathToUse = (storageDir ??
+            standardAtClientStoragePath(
+              baseDir: homeDir!,
+              atSign: this.atSign,
+              progName: nameSpace,
+              uniqueID: 'single',
+            ))
+        .replaceAll('/', Platform.pathSeparator);
     downloadPathToUse =
-        downloadDir ?? '$homeDir/.$nameSpace/${this.atSign}/files';
+        (downloadDir ?? '$homeDir!/.atsign/downloads/${this.atSign}/$nameSpace')
+            .replaceAll('/', Platform.pathSeparator);
 
     AtSignLogger.defaultLoggingHandler = AtSignLogger.stdErrLoggingHandler;
 
@@ -181,7 +193,7 @@ class CLIBase {
       ..namespace = nameSpace
       ..downloadPath = downloadPathToUse
       ..isLocalStoreRequired = true
-      ..commitLogPath = '$localStoragePathToUse/commitLog'
+      ..commitLogPath = '$localStoragePathToUse/commitLog'.replaceAll('/', Platform.pathSeparator)
       ..rootDomain = rootDomain
       ..fetchOfflineNotifications = true
       ..atKeysFilePath = atKeysFilePathToUse
