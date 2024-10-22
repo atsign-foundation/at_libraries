@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
@@ -8,7 +9,7 @@ import 'package:at_lookup/src/connection/at_connection.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:meta/meta.dart';
 
-///Listener class for messages received by [RemoteSecondary]
+/// Listener class for messages received by [RemoteSecondary]
 class OutboundMessageListener {
   final logger = AtSignLogger('OutboundMessageListener');
   late ByteBuffer _buffer;
@@ -23,16 +24,31 @@ class OutboundMessageListener {
     _buffer = ByteBuffer(capacity: bufferCapacity);
   }
 
-  /// Listens to the underlying connection's socket if the connection is created.
+  /// Listens to the underlying connection's socket (either WebSocket or raw socket)
+  /// if the connection is created.
   /// @throws [AtConnectException] if the connection is not yet created
   void listen() {
     logger.finest('Calling socket.listen within runZonedGuarded block');
 
     runZonedGuarded(() {
-      _connection
-          .underlying
-          .listen(messageHandler, onDone: onSocketDone, onError: onSocketError);
+      // Check if the underlying connection is a WebSocket or a raw socket
+      if (_connection.underlying is WebSocket) {
+        (_connection.underlying as WebSocket).listen(
+          (dynamic message) => messageHandler(message),
+          onDone: onSocketDone,
+          onError: onSocketError,
+        );
+      } else if (_connection.underlying is Socket) {
+        (_connection.underlying as Socket).listen(
+          (data) => messageHandler(data),
+          onDone: onSocketDone,
+          onError: onSocketError,
+        );
+      } else {
+        throw UnsupportedError('Unsupported connection type');
+      }
     }, (Object error, StackTrace st) {
+      logger.finer('stack trace $st');
       logger.warning(
           'runZonedGuarded received socket error $error - calling onSocketError() to close connection');
       onSocketError(error);
@@ -62,13 +78,23 @@ class OutboundMessageListener {
 
   /// Handles messages on the inbound client's connection and calls the verb executor
   /// Closes the inbound connection in case of any error.
-  /// Throw a [BufferOverFlowException] if buffer is unable to hold incoming data
-  Future<void> messageHandler(List data) async {
+  void messageHandler(dynamic data) {
     String result;
     int offset;
     _lastReceivedTime = DateTime.now();
-    // check buffer overflow
+
+    // If data is a String (from WebSocket), process it directly as UTF-8 encoded text.
+    if (data is String) {
+      logger.finer('WebSocket received string data: $data');
+      data = utf8.encode(data); // Convert the WebSocket message to byte array
+    } else if (data is! List<int>) {
+      logger.warning('Received unexpected data type: ${data.runtimeType}');
+      return; // Exit if the data is neither String nor List<int>
+    }
+
+    // At this point, data is guaranteed to be List<int> for both WebSocket and raw socket
     _checkBufferOverFlow(data);
+
     // If the data contains a new line character, add until the new line char to buffer
     if (data.contains(newLineCodeUnit)) {
       offset = data.lastIndexOf(newLineCodeUnit);
@@ -93,7 +119,7 @@ class OutboundMessageListener {
         result = _stripPrompt(result);
         logger.finer('RECEIVED $result');
         _queue.add(result);
-        //clear the buffer after adding result to queue
+        // Clear the buffer after adding result to queue
         _buffer.clear();
         _buffer.addByte(data[element]);
       } else {
@@ -105,9 +131,9 @@ class OutboundMessageListener {
   /// The methods verifies if buffer has the capacity to accept the data.
   ///
   /// Throw BufferOverFlowException if data length exceeds the buffer capacity
-  _checkBufferOverFlow(data) {
+  void _checkBufferOverFlow(List<int> data) {
     if (_buffer.isOverFlow(data)) {
-      int bufferLength = (_buffer.length() + data.length) as int;
+      int bufferLength = (_buffer.length() + data.length);
       _buffer.clear();
       throw BufferOverFlowException(
           'data length exceeded the buffer limit. Data length : $bufferLength and Buffer capacity ${_buffer.capacity}');
@@ -166,7 +192,7 @@ class OutboundMessageListener {
         _buffer.clear();
         await closeConnection();
         throw AtTimeoutException(
-            'Waited for $transientWaitTimeMillis millis. No response after $_lastReceivedTime ');
+            'Waited for $transientWaitTimeMillis millis. No response after $_lastReceivedTime');
       }
       // wait for 10 ms before attempting to read from queue again
       await Future.delayed(Duration(milliseconds: 10));
