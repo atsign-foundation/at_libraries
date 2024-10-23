@@ -9,6 +9,8 @@ class SyncVerbBuilder implements VerbBuilder {
 
   bool isPaginated = false;
 
+  bool skipDeletes = false;
+
   @override
   String buildCommand() {
     StringBuffer serverCommandBuffer = StringBuffer('sync:');
@@ -18,6 +20,9 @@ class SyncVerbBuilder implements VerbBuilder {
     serverCommandBuffer.write('$commitId');
     if (isPaginated) {
       serverCommandBuffer.write(':limit:$limit');
+    }
+    if (skipDeletes) {
+      serverCommandBuffer.write(':skipDeletes:true');
     }
     if (regex != null && regex!.isNotEmpty) {
       serverCommandBuffer.write(':$regex');
