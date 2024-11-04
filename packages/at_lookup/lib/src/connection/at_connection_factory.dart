@@ -62,18 +62,3 @@ class WebSocketFactory extends AtConnectionFactory<WebSocket, OutboundWebSocketC
   @override
   String get connectionType => 'WebSocket';
 }
-
-
-
-// abstract class AtConnectionFactory {
-//   Future<SecureSocket> createSocket(
-//       String host, String port, SecureSocketConfig socketConfig);
-//   Future<WebSocket> createWebSocket(
-//       String host, String port, SecureSocketConfig socketConfig);
-//   OutboundMessageListener createListener(OutboundConnection outboundConnection);
-//   OutboundMessageListener createWebSocketListener(
-//       OutboundWebSocketConnection outboundWebSocketConnection);
-//   OutboundConnection createOutboundConnection(SecureSocket secureSocket);
-//   OutboundWebSocketConnection createWebSocketOutboundConnection(
-//       WebSocket webSocket);
-// }
