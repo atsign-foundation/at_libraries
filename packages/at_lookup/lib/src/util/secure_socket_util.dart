@@ -11,13 +11,13 @@ class SecureSocketUtil {
       String host, String port, SecureSocketConfig secureSocketConfig,
       {bool isWebSocket = false}) async {
     if (isWebSocket) {
-      return createSecureWebSocket(host, port, secureSocketConfig);
+      return _createSecureWebSocket(host, port, secureSocketConfig);
     } else {
       return _createSecureSocket(host, port, secureSocketConfig);
     }
   }
 
-  static Future<WebSocket> createSecureWebSocket(
+  static Future<WebSocket> _createSecureWebSocket(
       String host, String port, SecureSocketConfig secureSocketConfig) async {
     try {
       Random r = Random();

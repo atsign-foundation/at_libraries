@@ -16,14 +16,13 @@ import 'package:crypto/crypto.dart';
 import 'package:crypton/crypton.dart';
 import 'package:mutex/mutex.dart';
 
+import 'connection/at_connection_factory.dart';
+
 class AtLookupImpl implements AtLookUp {
   final logger = AtSignLogger('AtLookup');
 
   /// Listener for reading verb responses from the remote server
   late OutboundMessageListener messageListener;
-
-  /// Stores whether WebSocket should be used for the connection
-  final bool useWebSocket;
 
   OutboundConnection? _connection;
 
@@ -32,6 +31,8 @@ class AtLookupImpl implements AtLookUp {
   OutboundWebSocketConnection? _webSocketConnection;
 
   OutboundWebSocketConnection? get webSocketConnection => _webSocketConnection;
+
+  late AtConnectionFactory atConnectionFactory;
 
   @override
   late SecondaryAddressFinder secondaryAddressFinder;
@@ -52,19 +53,6 @@ class AtLookupImpl implements AtLookUp {
 
   late SecureSocketConfig _secureSocketConfig;
 
-  late final AtLookupSecureSocketFactory socketFactory;
-
-  late AtLookupWebSocketFactory webSocketFactory;
-
-  late final AtLookupSecureSocketListenerFactory socketListenerFactory;
-
-  late final AtLookupWebSocketListenerFactory webSocketListenerFactory;
-
-  late AtLookupOutboundConnectionFactory outboundConnectionFactory;
-
-  late AtLookupWebsocketOutBoundConnectionFactory
-      outboundWebsocketConnectionFactory;
-
   /// Represents the client configurations.
   late Map<String, dynamic> _clientConfig;
 
@@ -76,15 +64,12 @@ class AtLookupImpl implements AtLookUp {
       SecondaryAddressFinder? secondaryAddressFinder,
       SecureSocketConfig? secureSocketConfig,
       Map<String, dynamic>? clientConfig,
-      AtLookupSecureSocketFactory? secureSocketFactory,
-      AtLookupSecureSocketListenerFactory? socketListenerFactory,
-      AtLookupOutboundConnectionFactory? outboundConnectionFactory,
-      AtLookupWebSocketFactory? webSocketFactory,
-      AtLookupWebSocketListenerFactory? webSocketListenerFactory,
-      AtLookupWebsocketOutBoundConnectionFactory?
-          outboundWebSocketConnectionFactory,
-      this.useWebSocket = false // Set default to false
-      }) {
+      bool useWebSocket = false}) // Add a flag for WebSocket or SecureSocket
+  {
+    // Determine the factory type based on the useWebSocket flag
+    atConnectionFactory = useWebSocket
+        ? WebSocketFactory()
+        : SecureSocketFactory() as AtConnectionFactory;
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
@@ -94,17 +79,6 @@ class AtLookupImpl implements AtLookUp {
     // Stores the client configurations.
     // If client configurations are not available, defaults to empty map
     _clientConfig = clientConfig ?? {};
-    socketFactory = secureSocketFactory ?? AtLookupSecureSocketFactory();
-    // Set defaults if no factories are provided
-    this.webSocketFactory = webSocketFactory ?? AtLookupWebSocketFactory();
-    this.socketListenerFactory =
-        socketListenerFactory ?? AtLookupSecureSocketListenerFactory();
-    this.outboundConnectionFactory =
-        outboundConnectionFactory ?? AtLookupOutboundConnectionFactory();
-    this.webSocketListenerFactory =
-        webSocketListenerFactory ?? AtLookupWebSocketListenerFactory();
-    outboundWebsocketConnectionFactory = outboundWebSocketConnectionFactory ??
-        AtLookupWebsocketOutBoundConnectionFactory();
   }
 
   @Deprecated('use CacheableSecondaryAddressFinder')
@@ -674,29 +648,26 @@ class AtLookupImpl implements AtLookUp {
   Future<bool> createOutboundConnection(
       String host, String port, SecureSocketConfig secureSocketConfig) async {
     try {
-      if (useWebSocket) {
-        // Create WebSocket connection
-        WebSocket webSocket = await webSocketFactory.createWebSocket(
-            host, port, secureSocketConfig);
-        _webSocketConnection = outboundWebsocketConnectionFactory
-            .createWebSocketOutboundConnection(webSocket);
-        if (outboundConnectionTimeout != null) {
-          _webSocketConnection!.setIdleTime(outboundConnectionTimeout);
-        }
-        // Initialize the WebSocket listener
-        messageListener = webSocketListenerFactory
-            .createWebSocketListener(_webSocketConnection!);
-      } else {
-        // Create SecureSocket connection
-        SecureSocket secureSocket =
-            await socketFactory.createSocket(host, port, secureSocketConfig);
-        _connection =
-            outboundConnectionFactory.createOutboundConnection(secureSocket);
-        if (outboundConnectionTimeout != null) {
-          _connection!.setIdleTime(outboundConnectionTimeout);
-        }
-        // Initialize the SecureSocket listener
-        messageListener = socketListenerFactory.createListener(_connection!);
+      // Create the socket connection using the factory
+      final connection =
+          await atConnectionFactory.create(host, port, secureSocketConfig);
+
+      // Create the outbound connection and listener using the factory's methods
+      final outboundConnection =
+          atConnectionFactory.outBoundConnectionFactory(connection);
+      messageListener = atConnectionFactory.listenerFactory(outboundConnection);
+
+      // Set the connection type in `_webSocketConnection` or `_connection`
+      if (connection is WebSocket) {
+        _webSocketConnection =
+            outboundConnection as OutboundWebSocketConnection;
+      } else if (connection is SecureSocket) {
+        _connection = outboundConnection as OutboundConnection;
+      }
+
+      // Set idle time if applicable
+      if (outboundConnectionTimeout != null) {
+        outboundConnection.setIdleTime(outboundConnectionTimeout);
       }
     } on SocketException {
       throw SecondaryConnectException(
@@ -707,7 +678,7 @@ class AtLookupImpl implements AtLookUp {
 
   /// Helper method to get the current active connection (either WebSocket or regular).
   AtConnection? _getCurrentConnection() {
-    return useWebSocket ? _webSocketConnection : _connection;
+    return _webSocketConnection ?? _connection;
   }
 
   bool isConnectionAvailable() {
@@ -745,7 +716,7 @@ class AtLookupImpl implements AtLookUp {
   Future<void> _sendCommand(String command) async {
     await createConnection();
     logger.finer('SENDING: $command');
-   final connection = _getCurrentConnection();
+    final connection = _getCurrentConnection();
     connection!.write(command);
   }
 
@@ -766,47 +737,4 @@ class AtLookupImpl implements AtLookUp {
 
   @override
   String? enrollmentId;
-}
-
-class AtLookupSecureSocketFactory {
-  Future<SecureSocket> createSocket(
-      String host, String port, SecureSocketConfig socketConfig) async {
-    return await SecureSocketUtil.createSecureSocket(host, port, socketConfig);
-  }
-}
-
-class AtLookupWebSocketFactory {
-  Future<WebSocket> createWebSocket(
-      String host, String port, SecureSocketConfig socketConfig) async {
-    return await SecureSocketUtil.createSecureSocket(host, port, socketConfig,
-        isWebSocket: true);
-  }
-}
-
-class AtLookupSecureSocketListenerFactory {
-  OutboundMessageListener createListener(
-      OutboundConnection outboundConnection) {
-    return OutboundMessageListener(outboundConnection);
-  }
-}
-
-class AtLookupWebSocketListenerFactory {
-  OutboundMessageListener createWebSocketListener(
-      OutboundWebSocketConnection outboundWebSocketConnection) {
-    return OutboundMessageListener(outboundWebSocketConnection);
-  }
-}
-
-class AtLookupOutboundConnectionFactory {
-  OutboundConnection createOutboundConnection(SecureSocket secureSocket) {
-    return OutboundConnectionImpl(secureSocket);
-  }
-}
-
-class AtLookupWebsocketOutBoundConnectionFactory {
-// introduce new createWebSocketCOnnection
-  OutboundWebSocketConnection createWebSocketOutboundConnection(
-      WebSocket webSocket) {
-    return OutboundWebsocketConnectionImpl(webSocket);
-  }
 }
