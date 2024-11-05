@@ -65,7 +65,11 @@ enum AuthCliCommand {
           ' be delivered to some other program(s) which have'
           ' permission to approve or deny the requests. Typically that will be'
           ' the program which first onboarded; however it can also be an enrolled'
-          ' program which has "rw" access to the "__manage" namespace.');
+          ' program which has "rw" access to the "__manage" namespace.'),
+  encrypt(
+      usage:
+          'Password protect (encrypt) the existing atKeys with the pass-phrase'),
+  decrypt(usage: 'Decrypt the password protected atKeys with the pass-phrase');
 
   const AuthCliCommand({this.usage = ''});
 
@@ -113,6 +117,7 @@ class AuthCliArgs {
   static const argNameAutoApproveExisting = 'approve-existing';
   static const argNamePassPhrase = 'passPhrase';
   static const argNameHashingAlgoType = 'hashingAlgoType';
+  static const argNamePasswordProtectedKeys = 'passwordProtectedKeys';
 
   ArgParser get parser {
     return _aap;
@@ -196,6 +201,12 @@ class AuthCliArgs {
 
       case AuthCliCommand.delete:
         return createDeleteCommandParser();
+
+      case AuthCliCommand.encrypt:
+        return createEncryptCommandParser();
+
+      case AuthCliCommand.decrypt:
+        return createDecryptCommandParser();
     }
   }
 
@@ -508,6 +519,24 @@ class AuthCliArgs {
   ArgParser createDeleteCommandParser() {
     ArgParser p = createSharedArgParser(hide: true);
     _addEnrollmentIdOption(p, mandatory: true);
+    return p;
+  }
+
+  ArgParser createEncryptCommandParser() {
+    ArgParser p = createSharedArgParser(hide: true, forOnboard: false);
+
+    p.addOption(argNamePasswordProtectedKeys,
+        abbr: 'E',
+        help:
+            'The file path to write the password protected atKeys from the existing atKeys file',
+        mandatory: false,
+        hide: false);
+
+    return p;
+  }
+
+  ArgParser createDecryptCommandParser() {
+    ArgParser p = createSharedArgParser(hide: true, forOnboard: false);
     return p;
   }
 }

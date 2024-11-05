@@ -205,6 +205,11 @@ Future<int> wrappedMain(List<String> arguments) async {
       case AuthCliCommand.delete:
         await deleteEnrollment(
             commandArgResults, await createAtClient(commandArgResults));
+      case AuthCliCommand.encrypt:
+        await encryptAtKeys(commandArgResults);
+      case AuthCliCommand.decrypt:
+        String decryptedKeys = await decryptAtKeys(commandArgResults);
+        stdout.writeln('Decrypted atKeys: $decryptedKeys\n');
     }
   } on ArgumentError catch (e) {
     stderr
@@ -608,6 +613,11 @@ Future<void> interactive(ArgResults argResults, AtClient atClient) async {
 
         case AuthCliCommand.delete:
           await deleteEnrollment(commandArgResults, atClient);
+        case AuthCliCommand.encrypt:
+          await encryptAtKeys(commandArgResults);
+        case AuthCliCommand.decrypt:
+          String decryptedKeys = await decryptAtKeys(commandArgResults);
+          stdout.writeln('Decrypted atKeys: $decryptedKeys\n');
       }
     } on ArgumentError catch (e) {
       stderr.writeln(
@@ -1003,4 +1013,87 @@ AtOnboardingService createOnboardingService(ArgResults ar) {
         HashingAlgoType.fromString(ar[AuthCliArgs.argNameHashingAlgoType]);
 
   return AtOnboardingServiceImpl(atSign, atOnboardingPreference);
+}
+
+@visibleForTesting
+Future<void> encryptAtKeys(ArgResults commandArgResults) async {
+  if (commandArgResults[AuthCliArgs.argNamePassPhrase] == null) {
+    throw AtException(
+        'pass-phrase is mandatory to password protect the atKeys file');
+  }
+
+  // If existing atKeys file path is not set, fetch from default location in the
+  // user home directory.
+  String existingFilePath = (commandArgResults[AuthCliArgs.argNameAtKeys] ??
+      '${getHomeDirectory()}/.atsign/keys/${commandArgResults[AuthCliArgs.argNameAtSign]}_key.atKeys');
+
+  String existingAtKeys = '';
+  try {
+    File file = File(existingFilePath);
+    existingAtKeys = file.readAsStringSync();
+  } on PathNotFoundException {
+    throw AtException(
+        'Unable to find the atKeys file in the path: $existingFilePath');
+  } on PathAccessException {
+    throw AtException(
+        'Unable to access the atKeys file in the path: $existingFilePath');
+  }
+
+  // If target folder is not set, default it location in user home directory.
+  String encryptedKeysFilePath = (commandArgResults[
+              AuthCliArgs.argNamePasswordProtectedKeys] ??
+          '${getHomeDirectory()}/.atsign/keys/${commandArgResults[AuthCliArgs.argNameAtSign]}_encrypted_key.atKeys')
+      .replaceAll('/', Platform.pathSeparator);
+
+  AtEncrypted atEncrypted = await AtKeysCrypto.fromHashingAlgorithm(
+          HashingAlgoType.fromString(
+              commandArgResults[AuthCliArgs.argNameHashingAlgoType]))
+      .encrypt(
+          existingAtKeys, commandArgResults[AuthCliArgs.argNamePassPhrase]);
+
+  try {
+    File encryptedAtKeysFile = File(encryptedKeysFilePath);
+    encryptedAtKeysFile.writeAsStringSync(atEncrypted.toString());
+    stdout.writeln(
+        'The password protected atKeys are saved into : $encryptedKeysFilePath');
+  } on PathAccessException {
+    throw AtException('Unable to access the file path: $encryptedKeysFilePath');
+  }
+}
+
+@visibleForTesting
+Future<String> decryptAtKeys(ArgResults commandArgResults) async {
+  if (commandArgResults[AuthCliArgs.argNamePassPhrase] == null) {
+    throw AtException(
+        'pass-phrase is mandatory to decrypt the password protect the atKeys file');
+  }
+
+  String encryptedAtKeysStr = '';
+  try {
+    File file = File(commandArgResults[AuthCliArgs.argNameAtKeys]);
+    encryptedAtKeysStr = file.readAsStringSync();
+  } on PathNotFoundException {
+    throw AtException(
+        'Unable to find the atKeys file in the path: ${commandArgResults[AuthCliArgs.argNameAtKeys]}');
+  } on PathAccessException {
+    throw AtException(
+        'Unable to access the atKeys file in the path: ${commandArgResults[AuthCliArgs.argNameAtKeys]}');
+  }
+  // The password protected atKeys file starts with '''{"content":''' string. Therefore,
+  // if encryptedAtKeysStr does not start with '''{"content":''', then it is not a valid
+  // password protected atKeys file. Throw exception.
+  if (!encryptedAtKeysStr.startsWith('{"content":')) {
+    throw AtException(
+        'The file provided is not a valid password protected atKeys file');
+  }
+
+  AtEncrypted atEncrypted =
+      AtEncrypted.fromJson(jsonDecode(encryptedAtKeysStr));
+
+  String decryptedKeys = await AtKeysCrypto.fromHashingAlgorithm(
+          HashingAlgoType.fromString(
+              commandArgResults[AuthCliArgs.argNameHashingAlgoType]))
+      .decrypt(atEncrypted, commandArgResults[AuthCliArgs.argNamePassPhrase]);
+
+  return decryptedKeys;
 }
