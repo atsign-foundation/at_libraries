@@ -16,7 +16,6 @@ import 'package:crypto/crypto.dart';
 import 'package:crypton/crypton.dart';
 import 'package:mutex/mutex.dart';
 
-import 'connection/at_connection_factory.dart';
 
 class AtLookupImpl implements AtLookUp {
   final logger = AtSignLogger('AtLookup');
@@ -32,7 +31,7 @@ class AtLookupImpl implements AtLookUp {
 
   OutboundWebSocketConnection? get webSocketConnection => _webSocketConnection;
 
-  late AtConnectionFactory atConnectionFactory;
+  late AtLookupOutboundConnectionFactory atSocketFactory;
 
   @override
   late SecondaryAddressFinder secondaryAddressFinder;
@@ -67,9 +66,9 @@ class AtLookupImpl implements AtLookUp {
       bool useWebSocket = false}) // Add a flag for WebSocket or SecureSocket
   {
     // Determine the factory type based on the useWebSocket flag
-    atConnectionFactory = useWebSocket
-        ? WebSocketFactory()
-        : SecureSocketFactory() as AtConnectionFactory;
+    atSocketFactory = useWebSocket
+        ? AtLookupWebSocketFactory()
+        : AtLookupSecureSocketFactory() as AtLookupOutboundConnectionFactory;
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
@@ -649,13 +648,14 @@ class AtLookupImpl implements AtLookUp {
       String host, String port, SecureSocketConfig secureSocketConfig) async {
     try {
       // Create the socket connection using the factory
-      final connection =
-          await atConnectionFactory.create(host, port, secureSocketConfig);
+      final connection = await atSocketFactory.createUnderlying(
+          host, port, secureSocketConfig);
 
       // Create the outbound connection and listener using the factory's methods
       final outboundConnection =
-          atConnectionFactory.outBoundConnectionFactory(connection);
-      messageListener = atConnectionFactory.listenerFactory(outboundConnection);
+          atSocketFactory.outBoundConnectionFactory(connection);
+      messageListener =
+          atSocketFactory.atLookupSocketListenerFactory(outboundConnection);
 
       // Set the connection type in `_webSocketConnection` or `_connection`
       if (connection is WebSocket) {

@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
-import 'package:at_lookup/src/connection/at_connection_factory.dart';
 import 'package:at_lookup/src/util/lookup_util.dart';
 import 'package:at_utils/at_logger.dart';
 
@@ -129,11 +128,11 @@ class SecondaryAddressCacheEntry {
 class SecondaryUrlFinder {
   final String _rootDomain;
   final int _rootPort;
-  late final AtConnectionFactory _socketFactory;
+  late final AtLookupOutboundConnectionFactory _socketFactory;
 
   SecondaryUrlFinder(this._rootDomain, this._rootPort,
-      {AtConnectionFactory? socketFactory}) {
-    _socketFactory = socketFactory ?? SecureSocketFactory();
+      {AtLookupOutboundConnectionFactory? socketFactory}) {
+    _socketFactory = socketFactory ?? AtLookupSecureSocketFactory();
   }
 
   final _logger = AtSignLogger('SecondaryUrlFinder');
@@ -189,7 +188,7 @@ class SecondaryUrlFinder {
       var prompt = false;
       var once = true;
 
-      socket = await _socketFactory.create(
+      socket = await _socketFactory.createUnderlying(
           _rootDomain, '$_rootPort', SecureSocketConfig());
       _logger.finer('findSecondaryUrl: connection to root server established');
       // listen to the received data event stream
