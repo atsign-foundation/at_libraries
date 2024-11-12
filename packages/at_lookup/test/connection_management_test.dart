@@ -17,54 +17,29 @@ void main() {
   AtSignLogger.root_level = 'finest';
   group('test connection close and socket cleanup', () {
     late SecondaryAddressFinder finder;
-    late AtLookupOutboundConnectionFactory mockAtConnectionFactory;
+    late MockAtLookupOutboundConnectionFactory mockSecureSocketFactory;
+    late SecureSocket mockSecureSocket;
     late OutboundMessageListener mockOutboundListener;
-    late OutboundConnection mockOutBoundConnection;
-    
-
-    // setUp(() {
-    //   mockSocketNumber = 1;
-
-    //   finder = MockSecondaryAddressFinder();
-    //   when(() => finder.findSecondary(any())).thenAnswer((invocation) =>
-    //       Future<SecondaryAddress>.value(
-    //           SecondaryAddress('test.test.test', 12345)));
-
-    //   mockAtConnectionFactory = MockAtLookupOutboundConnectionFactory();
-    //   registerFallbackValue(SecureSocketConfig());
-    //   when(() =>
-    //           mockAtConnectionFactory.createUnderlying('test.test.test', '12345', any()))
-    //       .thenAnswer((invocation) {
-    //     return Future<SecureSocket>.value(
-    //         createMockAtServerSocket('test.test.test', 12345));
-    //   });
-    // });
+    late MockOutboundConnectionImpl mockOutboundConnection;
 
     setUp(() {
-      mockSocketNumber = 1;
-
       finder = MockSecondaryAddressFinder();
-      when(() => finder.findSecondary(any())).thenAnswer((invocation) =>
-          Future<SecondaryAddress>.value(
-              SecondaryAddress('test.test.test', 12345)));
-
-      mockAtConnectionFactory = MockAtLookupOutboundConnectionFactory();
-      mockOutBoundConnection = MockOutboundConnectionImpl();
       mockOutboundListener = MockOutboundMessageListener();
+      // Mock outbound connection creation for the first socket
+      mockOutboundConnection = MockOutboundConnectionImpl();
+      mockSecureSocket = createMockAtServerSocket('test.test.test', 12345);
+      when(() => finder.findSecondary(any()))
+          .thenAnswer((_) async => SecondaryAddress('test.test.test', 12345));
+
+      mockSecureSocketFactory = MockAtLookupOutboundConnectionFactory();
       registerFallbackValue(SecureSocketConfig());
-      when(() => mockAtConnectionFactory.createUnderlying(
+
+      mockSocketNumber = 1;
+      when(() => mockSecureSocketFactory.createUnderlying(
           'test.test.test', '12345', any())).thenAnswer((invocation) {
         return Future<SecureSocket>.value(
             createMockAtServerSocket('test.test.test', 12345));
       });
-      when(() => mockAtConnectionFactory.outBoundConnectionFactory(any()))
-          .thenAnswer((_) => mockOutBoundConnection);
-
-      when(() => mockOutBoundConnection.write(any()))
-          .thenAnswer((_) => Future.value());
-
-      when(() => mockAtConnectionFactory.atLookupSocketListenerFactory(
-          mockOutBoundConnection)).thenAnswer((_) => mockOutboundListener);
     });
 
     test(
@@ -87,8 +62,14 @@ void main() {
       expect(atLookup.atSocketFactory.runtimeType.toString(),
           "AtLookupSecureSocketFactory");
 
-       // Override atConnectionFactory with mock in AtLookupImpl
-      atLookup.atSocketFactory = mockAtConnectionFactory;
+      // Override atConnectionFactory with mock in AtLookupImpl
+      atLookup.atSocketFactory = mockSecureSocketFactory;
+
+      when(() => mockSecureSocketFactory.outBoundConnectionFactory(
+          mockSecureSocket)).thenReturn(mockOutboundConnection);
+
+      when(() => mockSecureSocketFactory.atLookupSocketListenerFactory(
+          mockOutboundConnection)).thenAnswer((_) => mockOutboundListener);
 
       await atLookup.createConnection();
 
