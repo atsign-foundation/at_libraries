@@ -141,7 +141,7 @@ void main() async {
     late Function socketOnDataFn;
 
     late SecureSocket mockSocket;
-    late MockSecureSocketFactory mockSocketFactory;
+    late MockAtLookupOutboundConnectionFactory mockSocketFactory;
 
     late CacheableSecondaryAddressFinder cachingAtServerFinder;
 
@@ -162,7 +162,7 @@ void main() async {
 
     setUp(() {
       mockSocket = createMockAtDirectorySocket(mockAtDirectoryHost, 64);
-      mockSocketFactory = MockSecureSocketFactory();
+      mockSocketFactory = MockAtLookupOutboundConnectionFactory();
 
       cachingAtServerFinder = CacheableSecondaryAddressFinder(
           mockAtDirectoryHost, 64,
@@ -171,7 +171,7 @@ void main() async {
 
       numSocketCreateCalls = 0;
       when(() =>
-              mockSocketFactory.createSocket(mockAtDirectoryHost, '64', any()))
+              mockSocketFactory.createUnderlying(mockAtDirectoryHost, '64', any()))
           .thenAnswer((invocation) {
         print(
             'mock create socket: numFailures $numSocketCreateCalls requiredFailures $requiredFailures');

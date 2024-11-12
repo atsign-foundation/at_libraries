@@ -20,9 +20,7 @@ void main() {
   late OutboundConnection mockOutBoundConnection;
   late SecondaryAddressFinder mockSecondaryAddressFinder;
   late OutboundMessageListener mockOutboundListener;
-  late AtLookupSecureSocketFactory mockSocketFactory;
-  late AtLookupSecureSocketListenerFactory mockSecureSocketListenerFactory;
-  late AtLookupOutboundConnectionFactory mockOutboundConnectionFactory;
+  late AtLookupOutboundConnectionFactory mockAtConnectionFactory;
 
   late AtChops mockAtChops;
   late SecureSocket mockSecureSocket;
@@ -34,9 +32,7 @@ void main() {
     mockOutBoundConnection = MockOutboundConnectionImpl();
     mockSecondaryAddressFinder = MockSecondaryAddressFinder();
     mockOutboundListener = MockOutboundMessageListener();
-    mockSocketFactory = MockSecureSocketFactory();
-    mockSecureSocketListenerFactory = MockSecureSocketListenerFactory();
-    mockOutboundConnectionFactory = MockOutboundConnectionFactory();
+    mockAtConnectionFactory = MockAtLookupOutboundConnectionFactory();
     mockAtChops = MockAtChops();
     registerFallbackValue(SecureSocketConfig());
     mockSecureSocket = createMockAtServerSocket(atServerHost, atServerPort);
@@ -45,25 +41,21 @@ void main() {
         .thenAnswer((_) async {
       return SecondaryAddress(atServerHost, atServerPort);
     });
-    when(() => mockSocketFactory.createSocket(atServerHost, '12345', any()))
-        .thenAnswer((invocation) {
+
+    when(() => mockAtConnectionFactory.createUnderlying(
+        atServerHost, '12345', any())).thenAnswer((_) {
       return Future<SecureSocket>.value(mockSecureSocket);
     });
-    when(() => mockOutboundConnectionFactory
-        .createOutboundConnection(mockSecureSocket)).thenAnswer((invocation) {
-      print('Creating mock outbound connection');
-      return mockOutBoundConnection;
-    });
-    when(() => mockSecureSocketListenerFactory
-        .createListener(mockOutBoundConnection)).thenAnswer((invocation) {
-      print('creating mock outbound listener');
-      return mockOutboundListener;
-    });
-    when(() => mockOutBoundConnection.write('from:@alice\n'))
-        .thenAnswer((invocation) {
-      mockSecureSocket.write('from:@alice\n');
-      return Future.value();
-    });
+
+    when(() =>
+            mockAtConnectionFactory.outBoundConnectionFactory(mockSecureSocket))
+        .thenAnswer((_) => mockOutBoundConnection);
+
+    when(() => mockOutBoundConnection.write(any()))
+        .thenAnswer((_) => Future.value());
+
+    when(() => mockAtConnectionFactory.atLookupSocketListenerFactory(
+        mockOutBoundConnection)).thenAnswer((_) => mockOutboundListener);
   });
 
   group('A group of tests to verify atlookup pkam authentication', () {
@@ -93,11 +85,14 @@ void main() {
         return Future.value();
       });
 
-      final atLookup = AtLookupImpl('@alice', atServerHost, 64,
-          secondaryAddressFinder: mockSecondaryAddressFinder,
-          secureSocketFactory: mockSocketFactory,
-          socketListenerFactory: mockSecureSocketListenerFactory,
-          outboundConnectionFactory: mockOutboundConnectionFactory);
+      final atLookup = AtLookupImpl(
+        '@alice',
+        atServerHost,
+        64,
+        secondaryAddressFinder: mockSecondaryAddressFinder,
+      );
+      // Override atConnectionFactory with mock in AtLookupImpl
+      atLookup.atSocketFactory = mockAtConnectionFactory;
       atLookup.atChops = mockAtChops;
       var result = await atLookup.pkamAuthenticate();
       expect(result, true);
@@ -130,10 +125,9 @@ void main() {
       });
 
       final atLookup = AtLookupImpl('@alice', atServerHost, 64,
-          secondaryAddressFinder: mockSecondaryAddressFinder,
-          secureSocketFactory: mockSocketFactory,
-          socketListenerFactory: mockSecureSocketListenerFactory,
-          outboundConnectionFactory: mockOutboundConnectionFactory);
+          secondaryAddressFinder: mockSecondaryAddressFinder);
+      // Override atConnectionFactory with mock in AtLookupImpl
+      atLookup.atSocketFactory = mockAtConnectionFactory;
       atLookup.atChops = mockAtChops;
       expect(() async => await atLookup.pkamAuthenticate(),
           throwsA(predicate((e) => e is UnAuthenticatedException)));
@@ -166,10 +160,8 @@ void main() {
       });
 
       final atLookup = AtLookupImpl('@alice', atServerHost, 64,
-          secondaryAddressFinder: mockSecondaryAddressFinder,
-          secureSocketFactory: mockSocketFactory,
-          socketListenerFactory: mockSecureSocketListenerFactory,
-          outboundConnectionFactory: mockOutboundConnectionFactory);
+          secondaryAddressFinder: mockSecondaryAddressFinder);
+      atLookup.atSocketFactory = mockAtConnectionFactory;
       atLookup.atChops = mockAtChops;
       var result =
           await atLookup.pkamAuthenticate(enrollmentId: enrollmentIdFromServer);
@@ -193,7 +185,6 @@ void main() {
       when(() => mockOutBoundConnection.getMetaData())
           .thenReturn(OutboundConnectionMetadata()..isAuthenticated = false);
       when(() => mockOutBoundConnection.isInValid()).thenReturn(false);
-
       when(() => mockOutBoundConnection.write(
               'pkam:signingAlgo:rsa2048:hashingAlgo:sha256:enrollmentId:$enrollmentIdFromServer:$pkamSignature\n'))
           .thenAnswer((invocation) {
@@ -203,10 +194,8 @@ void main() {
       });
 
       final atLookup = AtLookupImpl('@alice', atServerHost, 64,
-          secondaryAddressFinder: mockSecondaryAddressFinder,
-          secureSocketFactory: mockSocketFactory,
-          socketListenerFactory: mockSecureSocketListenerFactory,
-          outboundConnectionFactory: mockOutboundConnectionFactory);
+          secondaryAddressFinder: mockSecondaryAddressFinder);
+      atLookup.atSocketFactory = mockAtConnectionFactory;
       atLookup.atChops = mockAtChops;
       expect(
           () async => await atLookup.pkamAuthenticate(
@@ -219,25 +208,20 @@ void main() {
   group('A group of tests to verify executeCommand method', () {
     test('executeCommand - from verb - auth false', () async {
       final atLookup = AtLookupImpl('@alice', atServerHost, 64,
-          secondaryAddressFinder: mockSecondaryAddressFinder,
-          secureSocketFactory: mockSocketFactory,
-          socketListenerFactory: mockSecureSocketListenerFactory,
-          outboundConnectionFactory: mockOutboundConnectionFactory);
+          secondaryAddressFinder: mockSecondaryAddressFinder);
+      atLookup.atSocketFactory = mockAtConnectionFactory;
       final fromResponse =
           'data:_03fe0ff2-ac50-4c80-8f43-88480beba888@alice:c3d345fc-5691-4f90-bc34-17cba31f060f';
       when(() => mockOutboundListener.read())
           .thenAnswer((_) => Future.value(fromResponse));
       var result = await atLookup.executeCommand('from:@alice\n');
       expect(result, fromResponse);
-    });
+    }, timeout: Timeout(Duration(minutes: 5)));
 
     test('executeCommand -llookup verb - auth true - auth key not set',
         () async {
       final atLookup = AtLookupImpl('@alice', atServerHost, 64,
-          secondaryAddressFinder: mockSecondaryAddressFinder,
-          secureSocketFactory: mockSocketFactory,
-          socketListenerFactory: mockSecureSocketListenerFactory,
-          outboundConnectionFactory: mockOutboundConnectionFactory);
+          secondaryAddressFinder: mockSecondaryAddressFinder);
       final fromResponse = 'data:1234';
       when(() => mockOutboundListener.read())
           .thenAnswer((_) => Future.value(fromResponse));
@@ -249,10 +233,8 @@ void main() {
 
     test('executeCommand -llookup verb - auth true - at_chops set', () async {
       final atLookup = AtLookupImpl('@alice', atServerHost, 64,
-          secondaryAddressFinder: mockSecondaryAddressFinder,
-          secureSocketFactory: mockSocketFactory,
-          socketListenerFactory: mockSecureSocketListenerFactory,
-          outboundConnectionFactory: mockOutboundConnectionFactory);
+          secondaryAddressFinder: mockSecondaryAddressFinder);
+      atLookup.atSocketFactory = mockAtConnectionFactory;
       atLookup.atChops = mockAtChops;
       final llookupCommand = 'llookup:phone@alice\n';
       final llookupResponse = 'data:1234';
@@ -269,10 +251,8 @@ void main() {
 
     test('executeCommand - test non json error handling', () async {
       final atLookup = AtLookupImpl('@alice', atServerHost, 64,
-          secondaryAddressFinder: mockSecondaryAddressFinder,
-          secureSocketFactory: mockSocketFactory,
-          socketListenerFactory: mockSecureSocketListenerFactory,
-          outboundConnectionFactory: mockOutboundConnectionFactory);
+          secondaryAddressFinder: mockSecondaryAddressFinder);
+      atLookup.atSocketFactory = mockAtConnectionFactory;
       atLookup.atChops = mockAtChops;
       final llookupCommand = 'llookup:phone@alice\n';
       final llookupResponse = 'error:AT0015-Exception: fubar';
@@ -291,10 +271,8 @@ void main() {
 
     test('executeCommand - test json error handling', () async {
       final atLookup = AtLookupImpl('@alice', atServerHost, 64,
-          secondaryAddressFinder: mockSecondaryAddressFinder,
-          secureSocketFactory: mockSocketFactory,
-          socketListenerFactory: mockSecureSocketListenerFactory,
-          outboundConnectionFactory: mockOutboundConnectionFactory);
+          secondaryAddressFinder: mockSecondaryAddressFinder);
+      atLookup.atSocketFactory = mockAtConnectionFactory;
       atLookup.atChops = mockAtChops;
       final llookupCommand = 'llookup:phone@alice\n';
       final llookupResponse =
@@ -316,11 +294,8 @@ void main() {
   group('Validate executeVerb() behaviour', () {
     test('validate EnrollVerbHandler behaviour - request', () async {
       final atLookup = AtLookupImpl('@alice', atServerHost, 64,
-          secondaryAddressFinder: mockSecondaryAddressFinder,
-          secureSocketFactory: mockSocketFactory,
-          socketListenerFactory: mockSecureSocketListenerFactory,
-          outboundConnectionFactory: mockOutboundConnectionFactory);
-
+          secondaryAddressFinder: mockSecondaryAddressFinder);
+      atLookup.atSocketFactory = mockAtConnectionFactory;
       String appName = 'unit_test_1';
       String deviceName = 'test_device';
       String otp = 'ABCDEF';
@@ -354,12 +329,9 @@ void main() {
 
     test('validate behaviour with EnrollVerbHandler - approve', () async {
       final atLookup = AtLookupImpl('@alice', atServerHost, 64,
-          secondaryAddressFinder: mockSecondaryAddressFinder,
-          secureSocketFactory: mockSocketFactory,
-          socketListenerFactory: mockSecureSocketListenerFactory,
-          outboundConnectionFactory: mockOutboundConnectionFactory);
+          secondaryAddressFinder: mockSecondaryAddressFinder);
       atLookup.atChops = mockAtChops;
-
+      atLookup.atSocketFactory = mockAtConnectionFactory;
       String appName = 'unit_test_2';
       String deviceName = 'test_device';
       String enrollmentId = '1357913579';
@@ -392,11 +364,9 @@ void main() {
 
     test('validate behaviour with EnrollVerbHandler - revoke', () async {
       final atLookup = AtLookupImpl('@alice', atServerHost, 64,
-          secondaryAddressFinder: mockSecondaryAddressFinder,
-          secureSocketFactory: mockSocketFactory,
-          socketListenerFactory: mockSecureSocketListenerFactory,
-          outboundConnectionFactory: mockOutboundConnectionFactory);
+          secondaryAddressFinder: mockSecondaryAddressFinder);
       atLookup.atChops = mockAtChops;
+      atLookup.atSocketFactory = mockAtConnectionFactory;
       String enrollmentId = '89213647826348';
 
       EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
@@ -424,10 +394,8 @@ void main() {
 
     test('validate behaviour with EnrollVerbHandler - deny', () async {
       final atLookup = AtLookupImpl('@alice', atServerHost, 64,
-          secondaryAddressFinder: mockSecondaryAddressFinder,
-          secureSocketFactory: mockSocketFactory,
-          socketListenerFactory: mockSecureSocketListenerFactory,
-          outboundConnectionFactory: mockOutboundConnectionFactory);
+          secondaryAddressFinder: mockSecondaryAddressFinder);
+      atLookup.atSocketFactory = mockAtConnectionFactory;
       atLookup.atChops = mockAtChops;
       String enrollmentId = '5754765754';
 

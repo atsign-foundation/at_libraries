@@ -13,8 +13,8 @@ class MockSecondaryAddressFinder extends Mock
 
 class MockSecondaryUrlFinder extends Mock implements SecondaryUrlFinder {}
 
-class MockSecureSocketFactory extends Mock
-    implements AtLookupSecureSocketFactory {}
+class MockAtLookupOutboundConnectionFactory extends Mock
+    implements AtLookupOutboundConnectionFactory {}
 
 class MockStreamSubscription<T> extends Mock implements StreamSubscription<T> {}
 
@@ -22,12 +22,6 @@ class MockSecureSocket extends Mock implements SecureSocket {
   bool destroyed = false;
   int mockNumber = mockSocketNumber++;
 }
-
-class MockSecureSocketListenerFactory extends Mock
-    implements AtLookupSecureSocketListenerFactory {}
-
-class MockOutboundConnectionFactory extends Mock
-    implements AtLookupOutboundConnectionFactory {}
 
 class MockOutboundMessageListener extends Mock
     implements OutboundMessageListener {}
