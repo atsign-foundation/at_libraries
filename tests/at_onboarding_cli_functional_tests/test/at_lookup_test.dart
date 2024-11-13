@@ -7,7 +7,7 @@ import 'package:at_chops/at_chops.dart';
 import 'package:test/test.dart';
 
 void main() {
-  String atSign = '@bob';
+  String atSign = '@bob🛠';
   AtChops atChopsKeys = createAtChopsFromDemoKeys(atSign);
 
   group('A group of tests to assert on authenticate functionality', () {

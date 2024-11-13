@@ -8,7 +8,6 @@ import 'package:at_utils/at_logger.dart';
 abstract class BaseConnection<T extends Socket> extends AtConnection {
   final T _socket;
   late final AtSignLogger logger;
-  // late final Socket _socket;
   StringBuffer? buffer;
   AtConnectionMetaData? metaData;
 
