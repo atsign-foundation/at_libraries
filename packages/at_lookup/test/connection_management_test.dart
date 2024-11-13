@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
+import 'package:at_lookup/src/connection/at_connection.dart';
 import 'package:at_lookup/src/connection/outbound_message_listener.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:mocktail/mocktail.dart';
@@ -17,7 +18,7 @@ void main() {
   AtSignLogger.root_level = 'finest';
   group('test connection close and socket cleanup', () {
     late SecondaryAddressFinder finder;
-    late MockAtLookupOutboundConnectionFactory mockSecureSocketFactory;
+    late MockAtLookupOutboundConnectionFactory mockOutboundConnectionFactory;
     late SecureSocket mockSecureSocket;
     late OutboundMessageListener mockOutboundListener;
     late MockOutboundConnectionImpl mockOutboundConnection;
@@ -31,14 +32,13 @@ void main() {
       when(() => finder.findSecondary(any()))
           .thenAnswer((_) async => SecondaryAddress('test.test.test', 12345));
 
-      mockSecureSocketFactory = MockAtLookupOutboundConnectionFactory();
+      mockOutboundConnectionFactory = MockAtLookupOutboundConnectionFactory();
       registerFallbackValue(SecureSocketConfig());
 
       mockSocketNumber = 1;
-      when(() => mockSecureSocketFactory.createUnderlying(
+      when(() => mockOutboundConnectionFactory.createUnderlying(
           'test.test.test', '12345', any())).thenAnswer((invocation) {
-        return Future<SecureSocket>.value(
-            createMockAtServerSocket('test.test.test', 12345));
+        return Future<SecureSocket>.value(mockSecureSocket);
       });
     });
 
@@ -63,13 +63,24 @@ void main() {
           "AtLookupSecureSocketFactory");
 
       // Override atConnectionFactory with mock in AtLookupImpl
-      atLookup.atSocketFactory = mockSecureSocketFactory;
+      atLookup.atSocketFactory = mockOutboundConnectionFactory;
 
-      when(() => mockSecureSocketFactory.outBoundConnectionFactory(
+      when(() => mockOutboundConnection.underlying)
+          .thenAnswer((_) => mockSecureSocket);
+
+      when(() => mockOutboundConnectionFactory.outBoundConnectionFactory(
           mockSecureSocket)).thenReturn(mockOutboundConnection);
 
-      when(() => mockSecureSocketFactory.atLookupSocketListenerFactory(
+      when(() => mockOutboundConnectionFactory.atLookupSocketListenerFactory(
           mockOutboundConnection)).thenAnswer((_) => mockOutboundListener);
+
+      AtConnectionMetaData outboundConnectionMetadata =
+          OutboundConnectionMetadata();
+
+      when(() => mockOutboundConnection.metaData)
+          .thenAnswer((_) => outboundConnectionMetadata);
+      when(() => mockOutboundConnection.isInValid())
+          .thenAnswer((_) => (mockSecureSocket as MockSecureSocket).destroyed);
 
       await atLookup.createConnection();
 
