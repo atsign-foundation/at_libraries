@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_lookup/src/connection/outbound_message_listener.dart';
-import 'package:at_utils/at_logger.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
@@ -17,30 +16,37 @@ class MockAtLookupSecureSocketFactory extends Mock
     implements AtLookupSecureSocketFactory {}
 
 void main() {
-  AtSignLogger.root_level = 'finest';
   group('test connection close and socket cleanup', () {
     late SecondaryAddressFinder finder;
     late MockAtLookupOutboundConnectionFactory mockOutboundConnectionFactory;
-    late SecureSocket mockSecureSocket;
     late OutboundMessageListener mockOutboundListener;
-    late MockOutboundConnectionImpl mockOutboundConnection;
 
     setUp(() {
+      mockSocketNumber = 1; // Reset counter for each test
       finder = MockSecondaryAddressFinder();
-      mockOutboundListener = MockOutboundMessageListener();
-      // Mock outbound connection creation for the first socket
-      mockOutboundConnection = MockOutboundConnectionImpl();
-      mockSecureSocket = createMockAtServerSocket('test.test.test', 12345);
       when(() => finder.findSecondary(any()))
           .thenAnswer((_) async => SecondaryAddress('test.test.test', 12345));
 
       mockOutboundConnectionFactory = MockAtLookupOutboundConnectionFactory();
       registerFallbackValue(SecureSocketConfig());
 
-      mockSocketNumber = 1;
+      mockOutboundListener = MockOutboundMessageListener();
+
       when(() => mockOutboundConnectionFactory.createUnderlying(
-          'test.test.test', '12345', any())).thenAnswer((invocation) {
-        return Future<SecureSocket>.value(mockSecureSocket);
+          'test.test.test', '12345', any())).thenAnswer((_) {
+        // Each call provides a new instance of MockSecureSocket
+        SecureSocket newMockSocket =
+            createMockAtServerSocket('test.test.test', 12345);
+        OutboundConnectionImpl newOutboundConnectionImpl =
+            OutboundConnectionImpl(newMockSocket);
+
+        // Update factory to return this new connection and listener
+        when(() => mockOutboundConnectionFactory.outBoundConnectionFactory(
+            newMockSocket)).thenReturn(newOutboundConnectionImpl);
+
+        when(() => mockOutboundConnectionFactory.atLookupSocketListenerFactory(
+            newOutboundConnectionImpl)).thenAnswer((_) => mockOutboundListener);
+        return Future<SecureSocket>.value(newMockSocket);
       });
     });
 
@@ -63,9 +69,9 @@ void main() {
       int port = 64;
 
       SecureSocket mockSecureSocket = MockSecureSocket();
-          MockAtLookupSecureSocketFactory mockAtLookupSecureSocketFactory =
+      MockAtLookupSecureSocketFactory mockAtLookupSecureSocketFactory =
           MockAtLookupSecureSocketFactory();
-          SecondaryAddressFinder mockSecondaryAddressFinder =
+      SecondaryAddressFinder mockSecondaryAddressFinder =
           MockSecondaryAddressFinder();
 
       AtLookupImpl atLookup = AtLookupImpl('@alice', host, port,
@@ -73,7 +79,7 @@ void main() {
       SecureSocketConfig secureSocketConfig = SecureSocketConfig();
 
       // Setting mock instances
-          atLookup.atSocketFactory = mockAtLookupSecureSocketFactory;
+      atLookup.atSocketFactory = mockAtLookupSecureSocketFactory;
 
       // Set mock responses.
       when(() => mockAtLookupSecureSocketFactory.createUnderlying(
@@ -81,7 +87,7 @@ void main() {
           .thenAnswer((_) => Future.value(mockSecureSocket));
 
       when(() => mockSecureSocket.setOption(SocketOption.tcpNoDelay, true))
-              .thenReturn(true);
+          .thenReturn(true);
 
       // In the constructor of [BaseConnection] which is super class of [OutboundConnectionImpl]
       // socket.setOption is invoked. Therefore, the initialization of outboundConnectionImpl
@@ -90,91 +96,74 @@ void main() {
       OutboundConnectionImpl outboundConnectionImpl =
           OutboundConnectionImpl(mockSecureSocket);
 
-      when(() =>
-              mockAtLookupSecureSocketFactory.outBoundConnectionFactory(
-                  mockSecureSocket)).thenReturn(outboundConnectionImpl);
+      when(() => mockAtLookupSecureSocketFactory.outBoundConnectionFactory(
+          mockSecureSocket)).thenReturn(outboundConnectionImpl);
 
       when(() => mockAtLookupSecureSocketFactory
               .atLookupSocketListenerFactory(outboundConnectionImpl))
           .thenReturn(OutboundMessageListener(outboundConnectionImpl));
 
       // Setting connection timeout to 2 seconds.
-          atLookup.outboundConnectionTimeout =
-              Duration(seconds: 2).inMilliseconds;
-          // Create outbound connection.
-          bool isConnCreated = await atLookup.createOutboundConnection(
-              host, '$port', secureSocketConfig);
-          expect(isConnCreated, true);
-          expect(atLookup.connection?.isInValid(), false);
-          // Wait for the connection to timeout.
-          await Future.delayed(Duration(seconds: 2));
-          expect(atLookup.connection?.isInValid(), true);
-        });
+      atLookup.outboundConnectionTimeout = Duration(seconds: 2).inMilliseconds;
+      // Create outbound connection.
+      bool isConnCreated = await atLookup.createOutboundConnection(
+          host, '$port', secureSocketConfig);
+      expect(isConnCreated, true);
+      expect(atLookup.connection?.isInValid(), false);
+      // Wait for the connection to timeout.
+      await Future.delayed(Duration(seconds: 2));
+      expect(atLookup.connection?.isInValid(), true);
+    });
 
-    // test(
-    //     'test AtLookupImpl closes invalid connections before creating new ones',
-    //     () async {
-    //   AtLookupImpl atLookup = AtLookupImpl('@alice', 'test.test.test', 64,
-    //       secondaryAddressFinder: finder);
-    //   expect(atLookup.atSocketFactory.runtimeType.toString(),
-    //       "AtLookupSecureSocketFactory");
-    //
-    //   // Override atConnectionFactory with mock in AtLookupImpl
-    //   atLookup.atSocketFactory = mockOutboundConnectionFactory;
-    //
-    //   when(() => mockOutboundConnection.underlying)
-    //       .thenAnswer((_) => mockSecureSocket);
-    //
-    //   when(() => mockOutboundConnectionFactory.outBoundConnectionFactory(
-    //       mockSecureSocket)).thenReturn(mockOutboundConnection);
-    //
-    //   when(() => mockOutboundConnectionFactory.atLookupSocketListenerFactory(
-    //       mockOutboundConnection)).thenAnswer((_) => mockOutboundListener);
-    //
-    //   AtConnectionMetaData outboundConnectionMetadata =
-    //       OutboundConnectionMetadata();
-    //
-    //   when(() => mockOutboundConnection.metaData)
-    //       .thenAnswer((_) => outboundConnectionMetadata);
-    //   when(() => mockOutboundConnection.isInValid())
-    //       .thenAnswer((_) => (mockSecureSocket as MockSecureSocket).destroyed);
-    //
-    //   await atLookup.createConnection();
-    //
-    //   // let's get a handle to the first socket & connection
-    //   OutboundConnection firstConnection = atLookup.connection!;
-    //   MockSecureSocket firstSocket =
-    //       firstConnection.underlying as MockSecureSocket;
-    //
-    //   expect(firstSocket.mockNumber, 1);
-    //   expect(firstSocket.destroyed, false);
-    //   expect(firstConnection.metaData!.isClosed, false);
-    //   expect(firstConnection.isInValid(), false);
-    //
-    //   // Make the connection appear 'idle'
-    //   firstConnection.setIdleTime(1);
-    //   await Future.delayed(Duration(milliseconds: 2));
-    //   expect(firstConnection.isInValid(), true);
-    //
-    //   // When we now call AtLookupImpl's createConnection again, it should:
-    //   // - notice that its current connection is 'idle', and close it
-    //   // - create a new connection
-    //   await atLookup.createConnection();
-    //
-    //   // has the first connection been closed, and its socket destroyed?
-    //   expect(firstSocket.destroyed, true);
-    //   expect(firstConnection.metaData!.isClosed, true);
-    //
-    //   // has a new connection been created, with a new socket?
-    //   OutboundConnection secondConnection = atLookup.connection!;
-    //   MockSecureSocket secondSocket =
-    //       secondConnection.underlying as MockSecureSocket;
-    //   expect(firstConnection.hashCode == secondConnection.hashCode, false);
-    //   expect(secondSocket.mockNumber, 2);
-    //   expect(secondSocket.destroyed, false);
-    //   expect(secondConnection.metaData!.isClosed, false);
-    //   expect(secondConnection.isInValid(), false);
-    // }, timeout: Timeout(Duration(minutes: 5)));
+    test(
+        'test AtLookupImpl closes invalid connections before creating new ones',
+        () async {
+      AtLookupImpl atLookup = AtLookupImpl('@alice', 'test.test.test', 64,
+          secondaryAddressFinder: finder);
+      expect(atLookup.atSocketFactory.runtimeType.toString(),
+          "AtLookupSecureSocketFactory");
+
+      // Override atConnectionFactory with mock in AtLookupImpl
+      atLookup.atSocketFactory = mockOutboundConnectionFactory;
+
+      await atLookup.createConnection();
+
+      // let's get a handle to the first socket & connection
+      OutboundConnection firstConnection = atLookup.connection!;
+      MockSecureSocket firstSocket =
+          firstConnection.underlying as MockSecureSocket;
+
+      expect(firstSocket.mockNumber, 1);
+      expect(firstSocket.destroyed, false);
+      expect(firstConnection.metaData!.isClosed, false);
+      expect(firstConnection.isInValid(), false);
+
+      // Make the connection appear 'idle'
+      firstConnection.setIdleTime(1);
+      await Future.delayed(Duration(milliseconds: 2));
+      expect(firstConnection.isInValid(), true);
+
+      atLookup.atSocketFactory = mockOutboundConnectionFactory;
+
+      // When we now call AtLookupImpl's createConnection again, it should:
+      // - notice that its current connection is 'idle', and close it
+      // - create a new connection
+      await atLookup.createConnection();
+
+      // has the first connection been closed, and its socket destroyed?
+      expect(firstSocket.destroyed, true);
+      expect(firstConnection.metaData!.isClosed, true);
+
+      // has a new connection been created, with a new socket?
+      OutboundConnection secondConnection = atLookup.connection!;
+      MockSecureSocket secondSocket =
+          secondConnection.underlying as MockSecureSocket;
+      expect(firstConnection.hashCode == secondConnection.hashCode, false);
+      expect(secondSocket.mockNumber, 2);
+      expect(secondSocket.destroyed, false);
+      expect(secondConnection.metaData!.isClosed, false);
+      expect(secondConnection.isInValid(), false);
+    });
 
     test(
         'test message listener closes connection'

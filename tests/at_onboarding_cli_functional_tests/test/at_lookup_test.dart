@@ -22,6 +22,17 @@ void main() {
       expect(response, contains('public:signing_publickey$atSign'));
     });
 
+     test(
+        'A test to verify a socket connection by passing useWebSocket to false and do a cram authenticate and scan',
+        () async {
+      var atLookup =
+          AtLookupImpl(atSign, 'vip.ve.atsign.zone', 64, useWebSocket: true);
+      await atLookup.cramAuthenticate(at_demos.cramKeyMap[atSign]!);
+      var command = 'scan\n';
+      var response = await atLookup.executeCommand(command, auth: true);
+      expect(response, contains('public:signing_publickey$atSign'));
+    });
+
     test(
         'A test to verify a websocket connection and do a cram authenticate and update',
         () async {

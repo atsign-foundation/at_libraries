@@ -648,20 +648,20 @@ class AtLookupImpl implements AtLookUp {
       String host, String port, SecureSocketConfig secureSocketConfig) async {
     try {
       // Create the socket connection using the factory
-      final connection = await atSocketFactory.createUnderlying(
+      final socket = await atSocketFactory.createUnderlying(
           host, port, secureSocketConfig);
 
       // Create the outbound connection and listener using the factory's methods
       final outboundConnection =
-          atSocketFactory.outBoundConnectionFactory(connection);
+          atSocketFactory.outBoundConnectionFactory(socket);
       messageListener =
           atSocketFactory.atLookupSocketListenerFactory(outboundConnection);
 
       // Set the connection type in `_webSocketConnection` or `_connection`
-      if (connection is WebSocket) {
+      if (socket is WebSocket) {
         _webSocketConnection =
             outboundConnection as OutboundWebSocketConnection;
-      } else if (connection is SecureSocket) {
+      } else if (socket is SecureSocket) {
         _connection = outboundConnection as OutboundConnection;
       }
 
