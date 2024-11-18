@@ -16,7 +16,6 @@ import 'package:crypto/crypto.dart';
 import 'package:crypton/crypton.dart';
 import 'package:mutex/mutex.dart';
 
-
 class AtLookupImpl implements AtLookUp {
   final logger = AtSignLogger('AtLookup');
 
@@ -63,12 +62,10 @@ class AtLookupImpl implements AtLookUp {
       SecondaryAddressFinder? secondaryAddressFinder,
       SecureSocketConfig? secureSocketConfig,
       Map<String, dynamic>? clientConfig,
-      bool useWebSocket = false}) // Add a flag for WebSocket or SecureSocket
+      AtLookupOutboundConnectionFactory? atSocketFactory})
   {
-    // Determine the factory type based on the useWebSocket flag
-    atSocketFactory = useWebSocket
-        ? AtLookupWebSocketFactory()
-        : AtLookupSecureSocketFactory() as AtLookupOutboundConnectionFactory;
+    // Default to secure socket factory
+    this.atSocketFactory = atSocketFactory ?? AtLookupSecureSocketFactory();
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;

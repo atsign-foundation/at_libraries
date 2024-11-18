@@ -23,6 +23,11 @@ class MockSecureSocket extends Mock implements SecureSocket {
   int mockNumber = mockSocketNumber++;
 }
 
+class MockWebSocket extends Mock implements WebSocket {
+  bool destroyed = false;
+  int mockNumber = mockSocketNumber++;
+}
+
 class MockOutboundMessageListener extends Mock
     implements OutboundMessageListener {}
 
@@ -30,6 +35,9 @@ class MockAtChops extends Mock implements AtChopsImpl {}
 
 class MockOutboundConnectionImpl extends Mock
     implements OutboundConnectionImpl {}
+
+class MockOutboundWebsocketConnectionImpl extends Mock
+    implements OutboundWebsocketConnectionImpl {}
 
 SecureSocket createMockAtServerSocket(String address, int port) {
   SecureSocket mss = MockSecureSocket();
@@ -43,4 +51,18 @@ SecureSocket createMockAtServerSocket(String address, int port) {
       onError: any(named: "onError"),
       onDone: any(named: "onDone"))).thenReturn(MockStreamSubscription());
   return mss;
+}
+
+WebSocket createMockWebSocket(String address, int port) {
+  var mockWebSocket = MockWebSocket();
+  when(() => mockWebSocket.close(any(), any())).thenAnswer((_) async {
+    (mockWebSocket).destroyed = true;
+  });
+  when(() => mockWebSocket.add(any())).thenReturn(null);
+  when(() => mockWebSocket.listen(any(),
+          onError: any(named: "onError"),
+          onDone: any(named: "onDone"),
+          cancelOnError: any(named: "cancelOnError")))
+      .thenReturn(MockStreamSubscription());
+  return mockWebSocket;
 }
