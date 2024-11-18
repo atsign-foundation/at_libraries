@@ -56,7 +56,7 @@ void main() {
       AtLookupImpl atLookup = AtLookupImpl('@alice', 'test.test.test', 64,
           secondaryAddressFinder: finder);
 
-      expect(atLookup.atSocketFactory.runtimeType.toString(),
+      expect(atLookup.atOutboundConnectionFactory.runtimeType.toString(),
           "AtLookupSecureSocketFactory");
       expect(() async => await atLookup.createConnection(),
           throwsA(predicate((dynamic e) => e is SecondaryConnectException)));
@@ -79,7 +79,7 @@ void main() {
       SecureSocketConfig secureSocketConfig = SecureSocketConfig();
 
       // Setting mock instances
-      atLookup.atSocketFactory = mockAtLookupSecureSocketFactory;
+      atLookup.atOutboundConnectionFactory = mockAtLookupSecureSocketFactory;
 
       // Set mock responses.
       when(() => mockAtLookupSecureSocketFactory.createUnderlying(
@@ -120,11 +120,11 @@ void main() {
         () async {
       AtLookupImpl atLookup = AtLookupImpl('@alice', 'test.test.test', 64,
           secondaryAddressFinder: finder);
-      expect(atLookup.atSocketFactory.runtimeType.toString(),
+      expect(atLookup.atOutboundConnectionFactory.runtimeType.toString(),
           "AtLookupSecureSocketFactory");
 
       // Override atConnectionFactory with mock in AtLookupImpl
-      atLookup.atSocketFactory = mockOutboundConnectionFactory;
+      atLookup.atOutboundConnectionFactory = mockOutboundConnectionFactory;
 
       await atLookup.createConnection();
 
@@ -143,7 +143,7 @@ void main() {
       await Future.delayed(Duration(milliseconds: 2));
       expect(firstConnection.isInValid(), true);
 
-      atLookup.atSocketFactory = mockOutboundConnectionFactory;
+      atLookup.atOutboundConnectionFactory = mockOutboundConnectionFactory;
 
       // When we now call AtLookupImpl's createConnection again, it should:
       // - notice that its current connection is 'idle', and close it

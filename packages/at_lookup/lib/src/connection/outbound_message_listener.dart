@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
@@ -31,22 +30,12 @@ class OutboundMessageListener {
     logger.finest('Calling socket.listen within runZonedGuarded block');
 
     runZonedGuarded(() {
-      // Check if the underlying connection is a WebSocket or a raw socket
-      if (_connection.underlying is WebSocket) {
-        (_connection.underlying as WebSocket).listen(
-          (dynamic message) => messageHandler(message),
-          onDone: onSocketDone,
-          onError: onSocketError,
-        );
-      } else if (_connection.underlying is Socket) {
-        (_connection.underlying as Socket).listen(
-          (data) => messageHandler(data),
-          onDone: onSocketDone,
-          onError: onSocketError,
-        );
-      } else {
-        throw UnsupportedError('Unsupported connection type');
-      }
+      final stream = _connection.underlying as Stream<dynamic>;
+      stream.listen(
+        messageHandler,
+        onDone: onSocketDone,
+        onError: onSocketError,
+      );
     }, (Object error, StackTrace st) {
       logger.finer('stack trace $st');
       logger.warning(

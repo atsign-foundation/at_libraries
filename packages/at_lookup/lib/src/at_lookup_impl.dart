@@ -22,15 +22,15 @@ class AtLookupImpl implements AtLookUp {
   /// Listener for reading verb responses from the remote server
   late OutboundMessageListener messageListener;
 
-  OutboundConnection? _connection;
+  OutboundConnection? _socketConnection;
 
-  OutboundConnection? get connection => _connection;
+  OutboundConnection? get connection => _socketConnection;
 
   OutboundWebSocketConnection? _webSocketConnection;
 
   OutboundWebSocketConnection? get webSocketConnection => _webSocketConnection;
 
-  late AtLookupOutboundConnectionFactory atSocketFactory;
+  late AtLookupOutboundConnectionFactory atOutboundConnectionFactory;
 
   @override
   late SecondaryAddressFinder secondaryAddressFinder;
@@ -62,10 +62,10 @@ class AtLookupImpl implements AtLookUp {
       SecondaryAddressFinder? secondaryAddressFinder,
       SecureSocketConfig? secureSocketConfig,
       Map<String, dynamic>? clientConfig,
-      AtLookupOutboundConnectionFactory? atSocketFactory})
+      AtLookupOutboundConnectionFactory? atOutboundConnectionFactory})
   {
     // Default to secure socket factory
-    this.atSocketFactory = atSocketFactory ?? AtLookupSecureSocketFactory();
+    this.atOutboundConnectionFactory = atOutboundConnectionFactory ?? AtLookupSecureSocketFactory();
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
@@ -237,10 +237,10 @@ class AtLookupImpl implements AtLookUp {
 
   Future<void> createConnection() async {
     if (!isConnectionAvailable()) {
-      if (_connection != null) {
+      if (connection != null) {
         // Clean up the connection before creating a new one
         logger.finer('Closing old connection');
-        await _connection!.close();
+        await connection!.close();
       }
       logger.info('Creating new connection');
 
@@ -435,7 +435,7 @@ class AtLookupImpl implements AtLookUp {
     await createConnection();
     try {
       await _pkamAuthenticationMutex.acquire();
-      if (!_connection!.getMetaData()!.isAuthenticated) {
+      if (!connection!.getMetaData()!.isAuthenticated) {
         await _sendCommand((FromVerbBuilder()
               ..atSign = _currentAtSign
               ..clientConfig = _clientConfig)
@@ -457,13 +457,13 @@ class AtLookupImpl implements AtLookUp {
         var pkamResponse = await messageListener.read();
         if (pkamResponse == 'data:success') {
           logger.info('auth success');
-          _connection!.getMetaData()!.isAuthenticated = true;
+          connection!.getMetaData()!.isAuthenticated = true;
         } else {
           throw UnAuthenticatedException(
               'Failed connecting to $_currentAtSign. $pkamResponse');
         }
       }
-      return _connection!.getMetaData()!.isAuthenticated;
+      return connection!.getMetaData()!.isAuthenticated;
     } finally {
       _pkamAuthenticationMutex.release();
     }
@@ -645,21 +645,21 @@ class AtLookupImpl implements AtLookUp {
       String host, String port, SecureSocketConfig secureSocketConfig) async {
     try {
       // Create the socket connection using the factory
-      final socket = await atSocketFactory.createUnderlying(
+      final underlying = await atOutboundConnectionFactory.createUnderlying(
           host, port, secureSocketConfig);
 
       // Create the outbound connection and listener using the factory's methods
       final outboundConnection =
-          atSocketFactory.outBoundConnectionFactory(socket);
+          atOutboundConnectionFactory.outBoundConnectionFactory(underlying);
       messageListener =
-          atSocketFactory.atLookupSocketListenerFactory(outboundConnection);
+          atOutboundConnectionFactory.atLookupSocketListenerFactory(outboundConnection);
 
       // Set the connection type in `_webSocketConnection` or `_connection`
-      if (socket is WebSocket) {
+      if (underlying is WebSocket) {
         _webSocketConnection =
             outboundConnection as OutboundWebSocketConnection;
-      } else if (socket is SecureSocket) {
-        _connection = outboundConnection as OutboundConnection;
+      } else if (underlying is SecureSocket) {
+        _socketConnection = outboundConnection as OutboundConnection;
       }
 
       // Set idle time if applicable
@@ -674,41 +674,23 @@ class AtLookupImpl implements AtLookUp {
   }
 
   /// Helper method to get the current active connection (either WebSocket or regular).
-  AtConnection? _getCurrentConnection() {
-    return _webSocketConnection ?? _connection;
-  }
+  AtConnection? _getCurrentConnection() =>
+      _webSocketConnection ?? _socketConnection;
 
+  /// Checks if the current connection is available and valid.
   bool isConnectionAvailable() {
-    // Get the current active connection (WebSocket or regular).
     final connection = _getCurrentConnection();
-
-    // Check if the connection is not null and valid.
     return connection != null && !connection.isInValid();
   }
 
-  bool isInValid() {
-    // Get the current active connection (WebSocket or regular).
-    final connection = _getCurrentConnection();
-
-    // If no connection is available, consider it invalid.
-    if (connection == null) {
-      return true;
-    }
-
-    // Check if the connection is invalid based on its state.
-    return connection.isInValid();
-  }
+  /// Checks if the current connection is invalid.
+  bool isInValid() => _getCurrentConnection()?.isInValid() ?? true;
 
   @override
   Future<void> close() async {
-    // Get the current active connection (WebSocket or regular).
-    final connection = _getCurrentConnection();
-
-    // If there's an active connection, close it.
-    if (connection != null) {
-      await connection.close();
-    }
+    await _getCurrentConnection()?.close();
   }
+
 
   Future<void> _sendCommand(String command) async {
     await createConnection();
