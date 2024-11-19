@@ -30,7 +30,7 @@ void main() {
   String atServerHost = '127.0.0.1';
   int atServerPort = 12345;
 
-  group('A group of websocket tests', () {
+  group('A group of secure socket tests', () {
     setUp(() {
       mockOutBoundConnection = MockOutboundConnectionImpl();
       mockSecondaryAddressFinder = MockSecondaryAddressFinder();

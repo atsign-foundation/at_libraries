@@ -22,13 +22,19 @@ class AtLookupImpl implements AtLookUp {
   /// Listener for reading verb responses from the remote server
   late OutboundMessageListener messageListener;
 
-  OutboundConnection? _socketConnection;
+  AtConnection?
+      _connection; // Single variable for both socket and WebSocket connections
 
-  OutboundConnection? get connection => _socketConnection;
+  AtConnection? get connection => _connection;
 
-  OutboundWebSocketConnection? _webSocketConnection;
+  /// Setters or methods to initialize the connection
+  void setSocketConnection(OutboundConnection socketConnection) {
+    _connection = socketConnection;
+  }
 
-  OutboundWebSocketConnection? get webSocketConnection => _webSocketConnection;
+  void setWebSocketConnection(OutboundWebSocketConnection webSocketConnection) {
+    _connection = webSocketConnection;
+  }
 
   late AtLookupOutboundConnectionFactory atOutboundConnectionFactory;
 
@@ -62,10 +68,10 @@ class AtLookupImpl implements AtLookUp {
       SecondaryAddressFinder? secondaryAddressFinder,
       SecureSocketConfig? secureSocketConfig,
       Map<String, dynamic>? clientConfig,
-      AtLookupOutboundConnectionFactory? atOutboundConnectionFactory})
-  {
+      AtLookupOutboundConnectionFactory? atOutboundConnectionFactory}) {
     // Default to secure socket factory
-    this.atOutboundConnectionFactory = atOutboundConnectionFactory ?? AtLookupSecureSocketFactory();
+    this.atOutboundConnectionFactory =
+        atOutboundConnectionFactory ?? AtLookupSecureSocketFactory();
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
@@ -472,7 +478,6 @@ class AtLookupImpl implements AtLookUp {
   @override
   Future<bool> pkamAuthenticate({String? enrollmentId}) async {
     await createConnection();
-    final _connection = _getCurrentConnection();
     try {
       await _pkamAuthenticationMutex.acquire();
       if (!_connection!.getMetaData()!.isAuthenticated) {
@@ -505,13 +510,13 @@ class AtLookupImpl implements AtLookUp {
         var pkamResponse = await messageListener.read();
         if (pkamResponse == 'data:success') {
           logger.info('auth success');
-          _connection.getMetaData()!.isAuthenticated = true;
+          _connection!.getMetaData()!.isAuthenticated = true;
         } else {
           throw UnAuthenticatedException(
               'Failed connecting to $_currentAtSign. $pkamResponse');
         }
       }
-      return _connection.getMetaData()!.isAuthenticated;
+      return _connection!.getMetaData()!.isAuthenticated;
     } finally {
       _pkamAuthenticationMutex.release();
     }
@@ -522,7 +527,6 @@ class AtLookupImpl implements AtLookUp {
   @override
   Future<bool> cramAuthenticate(String secret) async {
     await createConnection();
-    final _connection = _getCurrentConnection();
     try {
       await _cramAuthenticationMutex.acquire();
 
@@ -553,13 +557,13 @@ class AtLookupImpl implements AtLookUp {
 
         if (cramResponse == 'data:success') {
           logger.info('auth success');
-          _connection.getMetaData()!.isAuthenticated = true;
+          _connection!.getMetaData()!.isAuthenticated = true;
         } else {
           throw UnAuthenticatedException('Auth failed');
         }
       }
 
-      return _connection.getMetaData()!.isAuthenticated;
+      return _connection!.getMetaData()!.isAuthenticated;
     } finally {
       _cramAuthenticationMutex.release();
     }
@@ -634,11 +638,8 @@ class AtLookupImpl implements AtLookUp {
   }
 
   bool _isAuthRequired() {
-    // Get the current active connection (WebSocket or regular).
-    final connection = _getCurrentConnection();
-
-    // If there is no connection or the connection is not authenticated, auth is required.
-    return connection == null || !connection.getMetaData()!.isAuthenticated;
+    return !isConnectionAvailable() ||
+        !(_connection!.getMetaData()!.isAuthenticated);
   }
 
   Future<bool> createOutboundConnection(
@@ -651,15 +652,14 @@ class AtLookupImpl implements AtLookUp {
       // Create the outbound connection and listener using the factory's methods
       final outboundConnection =
           atOutboundConnectionFactory.outBoundConnectionFactory(underlying);
-      messageListener =
-          atOutboundConnectionFactory.atLookupSocketListenerFactory(outboundConnection);
+      messageListener = atOutboundConnectionFactory
+          .atLookupSocketListenerFactory(outboundConnection);
 
       // Set the connection type in `_webSocketConnection` or `_connection`
       if (underlying is WebSocket) {
-        _webSocketConnection =
-            outboundConnection as OutboundWebSocketConnection;
+        _connection = outboundConnection as OutboundWebSocketConnection;
       } else if (underlying is SecureSocket) {
-        _socketConnection = outboundConnection as OutboundConnection;
+        _connection = outboundConnection as OutboundConnection;
       }
 
       // Set idle time if applicable
@@ -673,30 +673,23 @@ class AtLookupImpl implements AtLookUp {
     return true;
   }
 
-  /// Helper method to get the current active connection (either WebSocket or regular).
-  AtConnection? _getCurrentConnection() =>
-      _webSocketConnection ?? _socketConnection;
-
-  /// Checks if the current connection is available and valid.
   bool isConnectionAvailable() {
-    final connection = _getCurrentConnection();
-    return connection != null && !connection.isInValid();
+    return _connection != null && !_connection!.isInValid();
   }
 
-  /// Checks if the current connection is invalid.
-  bool isInValid() => _getCurrentConnection()?.isInValid() ?? true;
+  bool isInValid() {
+    return _connection!.isInValid();
+  }
 
   @override
   Future<void> close() async {
-    await _getCurrentConnection()?.close();
+    await _connection!.close();
   }
-
 
   Future<void> _sendCommand(String command) async {
     await createConnection();
     logger.finer('SENDING: $command');
-    final connection = _getCurrentConnection();
-    connection!.write(command);
+    _connection!.write(command);
   }
 
   @override

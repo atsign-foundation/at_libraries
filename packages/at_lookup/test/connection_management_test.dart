@@ -129,7 +129,9 @@ void main() {
       await atLookup.createConnection();
 
       // let's get a handle to the first socket & connection
-      OutboundConnection firstConnection = atLookup.connection!;
+     // Let's get a handle to the first socket & connection
+      OutboundConnection<Socket> firstConnection =
+          atLookup.connection as OutboundConnection<Socket>; // Explicit cast
       MockSecureSocket firstSocket =
           firstConnection.underlying as MockSecureSocket;
 
@@ -155,7 +157,8 @@ void main() {
       expect(firstConnection.metaData!.isClosed, true);
 
       // has a new connection been created, with a new socket?
-      OutboundConnection secondConnection = atLookup.connection!;
+  OutboundConnection<Socket> secondConnection =
+      atLookup.connection as OutboundConnection<Socket>; // Explicit cast
       MockSecureSocket secondSocket =
           secondConnection.underlying as MockSecureSocket;
       expect(firstConnection.hashCode == secondConnection.hashCode, false);
