@@ -243,7 +243,7 @@ class AtLookupImpl implements AtLookUp {
 
   Future<void> createConnection() async {
     if (!isConnectionAvailable()) {
-      if (connection != null) {
+      if (_connection != null) {
         // Clean up the connection before creating a new one
         logger.finer('Closing old connection');
         await connection!.close();
@@ -655,12 +655,13 @@ class AtLookupImpl implements AtLookUp {
       messageListener = atOutboundConnectionFactory
           .atLookupSocketListenerFactory(outboundConnection);
 
+      _connection = outboundConnection;
       // Set the connection type in `_webSocketConnection` or `_connection`
-      if (underlying is WebSocket) {
-        _connection = outboundConnection as OutboundWebSocketConnection;
-      } else if (underlying is SecureSocket) {
-        _connection = outboundConnection as OutboundConnection;
-      }
+      // if (underlying is WebSocket) {
+      //   _connection = outboundConnection as OutboundWebSocketConnection;
+      // } else if (underlying is SecureSocket) {
+      //   _connection = outboundConnection as OutboundConnection;
+      // }
 
       // Set idle time if applicable
       if (outboundConnectionTimeout != null) {

@@ -1,3 +1,5 @@
+## 4.0.0
+- feat: Introduce websocket support in at_lookup_impl
 ## 3.0.49
 - build[deps]: Upgraded the following packages:
   - at_commons to v5.0.0
