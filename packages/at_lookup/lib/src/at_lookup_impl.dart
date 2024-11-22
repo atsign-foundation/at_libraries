@@ -246,7 +246,7 @@ class AtLookupImpl implements AtLookUp {
       if (_connection != null) {
         // Clean up the connection before creating a new one
         logger.finer('Closing old connection');
-        await connection!.close();
+        await _connection!.close();
       }
       logger.info('Creating new connection');
 
@@ -441,7 +441,7 @@ class AtLookupImpl implements AtLookUp {
     await createConnection();
     try {
       await _pkamAuthenticationMutex.acquire();
-      if (!connection!.getMetaData()!.isAuthenticated) {
+      if (!_connection!.getMetaData()!.isAuthenticated) {
         await _sendCommand((FromVerbBuilder()
               ..atSign = _currentAtSign
               ..clientConfig = _clientConfig)
@@ -463,13 +463,13 @@ class AtLookupImpl implements AtLookUp {
         var pkamResponse = await messageListener.read();
         if (pkamResponse == 'data:success') {
           logger.info('auth success');
-          connection!.getMetaData()!.isAuthenticated = true;
+          _connection!.getMetaData()!.isAuthenticated = true;
         } else {
           throw UnAuthenticatedException(
               'Failed connecting to $_currentAtSign. $pkamResponse');
         }
       }
-      return connection!.getMetaData()!.isAuthenticated;
+      return _connection!.getMetaData()!.isAuthenticated;
     } finally {
       _pkamAuthenticationMutex.release();
     }
@@ -656,12 +656,6 @@ class AtLookupImpl implements AtLookUp {
           .atLookupSocketListenerFactory(outboundConnection);
 
       _connection = outboundConnection;
-      // Set the connection type in `_webSocketConnection` or `_connection`
-      // if (underlying is WebSocket) {
-      //   _connection = outboundConnection as OutboundWebSocketConnection;
-      // } else if (underlying is SecureSocket) {
-      //   _connection = outboundConnection as OutboundConnection;
-      // }
 
       // Set idle time if applicable
       if (outboundConnectionTimeout != null) {
