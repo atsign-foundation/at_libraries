@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
-
+import 'package:at_lookup/src/connection/outbound_websocket_connection_impl.dart';
 import 'outbound_message_listener.dart';
 
 /// This factory is responsible for creating the underlying connection,
