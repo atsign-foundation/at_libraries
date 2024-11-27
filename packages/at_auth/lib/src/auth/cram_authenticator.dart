@@ -12,9 +12,8 @@ class CramAuthenticator {
   Future<AtAuthResponse> authenticate() async {
     var authResult = AtAuthResponse(_atSign);
     try {
-      bool cramResult =
+      authResult.isSuccessful =
           await (atLookup as AtLookupImpl).cramAuthenticate(_cramSecret);
-      authResult.isSuccessful = cramResult;
     } on UnAuthenticatedException catch (e) {
       throw UnAuthenticatedException(
           'cram auth failed for $_atSign - ${e.toString()}');
