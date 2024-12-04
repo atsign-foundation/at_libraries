@@ -27,15 +27,6 @@ class AtLookupImpl implements AtLookUp {
 
   AtConnection? get connection => _connection;
 
-  /// Setters or methods to initialize the connection
-  void setSocketConnection(OutboundConnection socketConnection) {
-    _connection = socketConnection;
-  }
-
-  void setWebSocketConnection(OutboundWebSocketConnection webSocketConnection) {
-    _connection = webSocketConnection;
-  }
-
   late AtLookupOutboundConnectionFactory atOutboundConnectionFactory;
 
   @override
@@ -651,9 +642,9 @@ class AtLookupImpl implements AtLookUp {
 
       // Create the outbound connection and listener using the factory's methods
       final outboundConnection =
-          atOutboundConnectionFactory.outBoundConnectionFactory(underlying);
-      messageListener = atOutboundConnectionFactory
-          .atLookupSocketListenerFactory(outboundConnection);
+          atOutboundConnectionFactory.createConnection(underlying);
+      messageListener =
+          atOutboundConnectionFactory.createListener(outboundConnection);
 
       _connection = outboundConnection;
 
@@ -684,7 +675,7 @@ class AtLookupImpl implements AtLookUp {
   Future<void> _sendCommand(String command) async {
     await createConnection();
     logger.finer('SENDING: $command');
-    _connection!.write(command);
+    await _connection!.write(command);
   }
 
   @override

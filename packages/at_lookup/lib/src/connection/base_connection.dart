@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:at_commons/at_commons.dart';
@@ -49,7 +50,7 @@ abstract class BaseConnection<T extends Socket> extends AtConnection {
   T get underlying => _socket;
 
   @override
-  Future<void> write(String data) async {
+  FutureOr<void> write(String data) async {
     if (isInValid()) {
       //# Replace with specific exception
       throw ConnectionInvalidException('write(): Connection is invalid');

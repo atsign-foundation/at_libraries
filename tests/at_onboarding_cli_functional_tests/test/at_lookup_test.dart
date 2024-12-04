@@ -12,21 +12,32 @@ void main() {
 
   group('A group of tests to assert on authenticate functionality', () {
     test(
+        'A test to verify a secure socket connection and do a cram authenticate and scan',
+        () async {
+      var atLookup = AtLookupImpl(atSign, 'vip.ve.atsign.zone', 64,
+          atOutboundConnectionFactory: AtLookupSecureSocketFactory());
+      await atLookup.cramAuthenticate(at_demos.cramKeyMap[atSign]!);
+      var command = 'scan\n';
+      var response = await atLookup.executeCommand(command, auth: true);
+      expect(response, contains('public:signing_publickey$atSign'));
+    }, timeout: Timeout(Duration(minutes: 5)));
+
+    test(
         'A test to verify a websocket connection and do a cram authenticate and scan',
         () async {
-      var atLookup =
-          AtLookupImpl(atSign, 'vip.ve.atsign.zone', 64, atOutboundConnectionFactory: AtLookupWebSocketFactory());
+      var atLookup = AtLookupImpl(atSign, 'vip.ve.atsign.zone', 64,
+          atOutboundConnectionFactory: AtLookupWebSocketFactory());
       await atLookup.cramAuthenticate(at_demos.cramKeyMap[atSign]!);
       var command = 'scan\n';
       var response = await atLookup.executeCommand(command, auth: true);
       expect(response, contains('public:signing_publickey$atSign'));
     });
 
-     test(
+    test(
         'A test to verify a socket connection by passing useWebSocket to false and do a cram authenticate and scan',
         () async {
-      var atLookup =
-          AtLookupImpl(atSign, 'vip.ve.atsign.zone', 64, atOutboundConnectionFactory: AtLookupWebSocketFactory());
+      var atLookup = AtLookupImpl(atSign, 'vip.ve.atsign.zone', 64,
+          atOutboundConnectionFactory: AtLookupWebSocketFactory());
       await atLookup.cramAuthenticate(at_demos.cramKeyMap[atSign]!);
       var command = 'scan\n';
       var response = await atLookup.executeCommand(command, auth: true);
@@ -36,8 +47,8 @@ void main() {
     test(
         'A test to verify a websocket connection and do a cram authenticate and update',
         () async {
-      var atLookup =
-          AtLookupImpl(atSign, 'vip.ve.atsign.zone', 64, atOutboundConnectionFactory: AtLookupWebSocketFactory());
+      var atLookup = AtLookupImpl(atSign, 'vip.ve.atsign.zone', 64,
+          atOutboundConnectionFactory: AtLookupWebSocketFactory());
       await atLookup.cramAuthenticate(at_demos.cramKeyMap[atSign]!);
       // update public and private keys manually
       var command =
@@ -55,8 +66,8 @@ void main() {
     test(
         'A test to verify a websocket connection and do a pkam authenticate and executeCommand',
         () async {
-      var atLookup =
-          AtLookupImpl(atSign, 'vip.ve.atsign.zone', 64, atOutboundConnectionFactory: AtLookupWebSocketFactory());
+      var atLookup = AtLookupImpl(atSign, 'vip.ve.atsign.zone', 64,
+          atOutboundConnectionFactory: AtLookupWebSocketFactory());
       atLookup.atChops = atChopsKeys;
       await atLookup.pkamAuthenticate();
       var command = 'update:public:username$atSign bob123\n';
@@ -68,8 +79,8 @@ void main() {
     test(
         'A test to verify a websocket connection and do a pkam authenticate and execute verb',
         () async {
-      var atLookup =
-          AtLookupImpl(atSign, 'vip.ve.atsign.zone', 64, atOutboundConnectionFactory: AtLookupWebSocketFactory());
+      var atLookup = AtLookupImpl(atSign, 'vip.ve.atsign.zone', 64,
+          atOutboundConnectionFactory: AtLookupWebSocketFactory());
       atLookup.atChops = atChopsKeys;
       await atLookup.pkamAuthenticate();
       var atKey = 'key1';

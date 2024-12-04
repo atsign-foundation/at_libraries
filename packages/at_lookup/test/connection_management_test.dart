@@ -41,10 +41,11 @@ void main() {
             OutboundConnectionImpl(newMockSocket);
 
         // Update factory to return this new connection and listener
-        when(() => mockOutboundConnectionFactory.outBoundConnectionFactory(
-            newMockSocket)).thenReturn(newOutboundConnectionImpl);
+        when(() =>
+                mockOutboundConnectionFactory.createConnection(newMockSocket))
+            .thenReturn(newOutboundConnectionImpl);
 
-        when(() => mockOutboundConnectionFactory.atLookupSocketListenerFactory(
+        when(() => mockOutboundConnectionFactory.createListener(
             newOutboundConnectionImpl)).thenAnswer((_) => mockOutboundListener);
         return Future<SecureSocket>.value(newMockSocket);
       });
@@ -96,11 +97,11 @@ void main() {
       OutboundConnectionImpl outboundConnectionImpl =
           OutboundConnectionImpl(mockSecureSocket);
 
-      when(() => mockAtLookupSecureSocketFactory.outBoundConnectionFactory(
+      when(() => mockAtLookupSecureSocketFactory.createConnection(
           mockSecureSocket)).thenReturn(outboundConnectionImpl);
 
       when(() => mockAtLookupSecureSocketFactory
-              .atLookupSocketListenerFactory(outboundConnectionImpl))
+              .createListener(outboundConnectionImpl))
           .thenReturn(OutboundMessageListener(outboundConnectionImpl));
 
       // Setting connection timeout to 2 seconds.
@@ -129,7 +130,6 @@ void main() {
       await atLookup.createConnection();
 
       // let's get a handle to the first socket & connection
-     // Let's get a handle to the first socket & connection
       OutboundConnection<Socket> firstConnection =
           atLookup.connection as OutboundConnection<Socket>; // Explicit cast
       MockSecureSocket firstSocket =
@@ -157,8 +157,8 @@ void main() {
       expect(firstConnection.metaData!.isClosed, true);
 
       // has a new connection been created, with a new socket?
-  OutboundConnection<Socket> secondConnection =
-      atLookup.connection as OutboundConnection<Socket>; // Explicit cast
+      OutboundConnection<Socket> secondConnection =
+          atLookup.connection as OutboundConnection<Socket>; // Explicit cast
       MockSecureSocket secondSocket =
           secondConnection.underlying as MockSecureSocket;
       expect(firstConnection.hashCode == secondConnection.hashCode, false);

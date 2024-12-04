@@ -3,8 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:at_commons/at_commons.dart';
+import 'package:at_utils/at_logger.dart';
 
 class SecureSocketUtil {
+  static final AtSignLogger logger = AtSignLogger('socketutil');
+
   /// Method that creates and returns either a [SecureSocket] or a [WebSocket].
   /// If [decryptPackets] is set to true, the TLS keys are logged into a file.
   static Future<dynamic> createSecureSocket(
@@ -43,7 +46,7 @@ class SecureSocketUtil {
         serverSide: false,
       );
 
-      print('WebSocket connection established');
+      logger.finer('WebSocket connection established');
 
       return ws;
     } catch (e) {

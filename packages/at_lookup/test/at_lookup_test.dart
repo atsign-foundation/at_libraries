@@ -50,14 +50,14 @@ void main() {
         return Future<SecureSocket>.value(mockSecureSocket);
       });
 
-      when(() => mockAtConnectionFactory.outBoundConnectionFactory(
-          mockSecureSocket)).thenAnswer((_) => mockOutBoundConnection);
+      when(() => mockAtConnectionFactory.createConnection(mockSecureSocket))
+          .thenAnswer((_) => mockOutBoundConnection);
 
       when(() => mockOutBoundConnection.write(any()))
           .thenAnswer((_) => Future.value());
 
-      when(() => mockAtConnectionFactory.atLookupSocketListenerFactory(
-          mockOutBoundConnection)).thenAnswer((_) => mockOutboundListener);
+      when(() => mockAtConnectionFactory.createListener(mockOutBoundConnection))
+          .thenAnswer((_) => mockOutboundListener);
     });
 
     group('A group of tests to verify atlookup pkam authentication', () {
@@ -88,11 +88,8 @@ void main() {
           return Future.value();
         });
 
-        final atLookup = AtLookupImpl(
-          '@alice',
-          atServerHost,
-          64,
-          secondaryAddressFinder: mockSecondaryAddressFinder);
+        final atLookup = AtLookupImpl('@alice', atServerHost, 64,
+            secondaryAddressFinder: mockSecondaryAddressFinder);
         // Override atConnectionFactory with mock in AtLookupImpl
         atLookup.atOutboundConnectionFactory = mockAtConnectionFactory;
         atLookup.atChops = mockAtChops;
@@ -453,15 +450,14 @@ void main() {
         return Future<WebSocket>.value(mockWebSocket);
       });
 
-      when(() =>
-              mockAtConnectionFactory.outBoundConnectionFactory(mockWebSocket))
+      when(() => mockAtConnectionFactory.createConnection(mockWebSocket))
           .thenAnswer((_) => mockOutboundWebsocketConnection);
 
       when(() => mockOutboundWebsocketConnection.write(any()))
           .thenAnswer((_) => Future.value());
 
       when(() => mockAtConnectionFactory
-              .atLookupSocketListenerFactory(mockOutboundWebsocketConnection))
+              .createListener(mockOutboundWebsocketConnection))
           .thenAnswer((_) => mockOutboundListener);
     });
 

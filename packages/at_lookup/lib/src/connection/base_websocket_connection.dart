@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/src/connection/at_connection.dart';
@@ -43,7 +44,7 @@ abstract class BaseWebSocketConnection extends AtConnection {
   WebSocket get underlying => _webSocket;
 
   @override
-  Future<void> write(String data) async {
+  FutureOr<void> write(String data) async {
     if (isInValid()) {
       throw ConnectionInvalidException(
           'write(): WebSocket connection is invalid');
