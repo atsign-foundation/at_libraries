@@ -128,10 +128,10 @@ class SecondaryAddressCacheEntry {
 class SecondaryUrlFinder {
   final String _rootDomain;
   final int _rootPort;
-  late final AtLookupOutboundConnectionFactory _socketFactory;
+  late final AtLookupConnectionFactory _socketFactory;
 
   SecondaryUrlFinder(this._rootDomain, this._rootPort,
-      {AtLookupOutboundConnectionFactory? socketFactory}) {
+      {AtLookupConnectionFactory? socketFactory}) {
     _socketFactory = socketFactory ?? AtLookupSecureSocketFactory();
   }
 

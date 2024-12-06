@@ -6,6 +6,8 @@ import 'dart:typed_data';
 
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
+import 'package:at_lookup/src/connection/at_connection.dart';
+import 'package:at_lookup/src/connection/at_socket_connection.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:crypton/crypton.dart';
 
@@ -21,7 +23,7 @@ class MonitorClient {
   }
 
   ///Monitor Verb
-  Future<OutboundConnection> executeMonitorVerb(String _command, String _atSign,
+  Future<AtConnection> executeMonitorVerb(String _command, String _atSign,
       String _rootDomain, int _rootPort, Function notificationCallBack,
       {bool auth = true, Function? restartCallBack}) async {
     //1. Get a new outbound connection dedicated to monitor verb.
@@ -49,7 +51,7 @@ class MonitorClient {
   }
 
   /// Create a new connection for monitor verb.
-  Future<OutboundConnection> _createNewConnection(
+  Future<AtConnection> _createNewConnection(
       String toAtSign, String rootDomain, int rootPort) async {
     //1. find secondary url for atsign from lookup library
     var secondaryUrl =
@@ -61,14 +63,14 @@ class MonitorClient {
 
     //2. create a connection to secondary server
     var secureSocket = await SecureSocket.connect(host, int.parse(port));
-    OutboundConnection _monitorConnection =
-        OutboundConnectionImpl(secureSocket);
+    AtConnection _monitorConnection =
+        AtSocketConnection(secureSocket);
     return _monitorConnection;
   }
 
   /// To authenticate connection via PKAM verb.
-  Future<OutboundConnection> _authenticateConnection(
-      String _atSign, OutboundConnection _monitorConnection) async {
+  Future<AtConnection> _authenticateConnection(
+      String _atSign, AtConnection _monitorConnection) async {
     await _monitorConnection.write('from:$_atSign\n');
     var fromResponse = await _getQueueResponse();
     logger.info('from result:$fromResponse');
@@ -123,16 +125,16 @@ class MonitorClient {
   }
 
   /// Logs the error and closes the [OutboundConnection]
-  Future<void> _errorHandler(error, OutboundConnection _connection) async {
+  Future<void> _errorHandler(error, AtConnection _connection) async {
     await _closeConnection(_connection);
   }
 
-  /// Closes the [OutboundConnection]
-  void _finishedHandler(OutboundConnection _connection) async {
+  /// Closes the [AtConnection]
+  void _finishedHandler(AtConnection _connection) async {
     await _closeConnection(_connection);
   }
 
-  Future<void> _closeConnection(OutboundConnection _connection) async {
+  Future<void> _closeConnection(AtConnection _connection) async {
     if (!_connection.isInValid()) {
       await _connection.close();
     }

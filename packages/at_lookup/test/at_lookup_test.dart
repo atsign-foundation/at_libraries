@@ -6,10 +6,10 @@ import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_lookup/src/connection/at_connection.dart';
-import 'package:at_lookup/src/connection/outbound_message_listener.dart';
-import 'package:test/test.dart';
-import 'package:mocktail/mocktail.dart';
+import 'package:at_lookup/src/connection/at_message_listener.dart';
 import 'package:at_utils/at_logger.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:test/test.dart';
 
 import 'at_lookup_test_utils.dart';
 
@@ -17,11 +17,11 @@ class FakeAtSigningInput extends Fake implements AtSigningInput {}
 
 void main() {
   AtSignLogger.root_level = 'finest';
-  late OutboundConnection mockOutBoundConnection;
-  late OutboundWebSocketConnection mockOutboundWebsocketConnection;
+  late AtConnection mockAtConnection;
+
   late SecondaryAddressFinder mockSecondaryAddressFinder;
-  late OutboundMessageListener mockOutboundListener;
-  late AtLookupOutboundConnectionFactory mockAtConnectionFactory;
+  late AtMessageListener mockAtMessageListener;
+  late AtLookupConnectionFactory mockAtConnectionFactory;
 
   late AtChops mockAtChops;
   late SecureSocket mockSecureSocket;
@@ -32,11 +32,12 @@ void main() {
 
   group('A group of secure socket tests', () {
     setUp(() {
-      mockOutBoundConnection = MockOutboundConnectionImpl();
+      mockAtConnection = MockAtSocketConnection();
       mockSecondaryAddressFinder = MockSecondaryAddressFinder();
-      mockOutboundListener = MockOutboundMessageListener();
-      mockAtConnectionFactory = MockAtLookupOutboundConnectionFactory();
+      mockAtMessageListener = MockAtMessageListener();
+      mockAtConnectionFactory = MockAtLookupConnectionFactory();
       mockAtChops = MockAtChops();
+
       registerFallbackValue(SecureSocketConfig());
       mockSecureSocket = createMockAtServerSocket(atServerHost, atServerPort);
 
@@ -51,13 +52,13 @@ void main() {
       });
 
       when(() => mockAtConnectionFactory.createConnection(mockSecureSocket))
-          .thenAnswer((_) => mockOutBoundConnection);
+          .thenAnswer((_) => mockAtConnection);
 
-      when(() => mockOutBoundConnection.write(any()))
+      when(() => mockAtConnection.write(any()))
           .thenAnswer((_) => Future.value());
 
-      when(() => mockAtConnectionFactory.createListener(mockOutBoundConnection))
-          .thenAnswer((_) => mockOutboundListener);
+      when(() => mockAtConnectionFactory.createListener(mockAtConnection))
+          .thenAnswer((_) => mockAtMessageListener);
     });
 
     group('A group of tests to verify atlookup pkam authentication', () {
@@ -73,14 +74,14 @@ void main() {
 
         when(() => mockAtChops.sign(any()))
             .thenReturn(AtSigningResult()..result = pkamSignature);
-        when(() => mockOutboundListener.read())
+        when(() => mockAtMessageListener.read())
             .thenAnswer((_) => Future.value('data:success'));
 
-        when(() => mockOutBoundConnection.getMetaData())
-            .thenReturn(OutboundConnectionMetadata()..isAuthenticated = false);
-        when(() => mockOutBoundConnection.isInValid()).thenReturn(false);
+        when(() => mockAtConnection.metaData)
+            .thenReturn(AtConnectionMetaData()..isAuthenticated = false);
+        when(() => mockAtConnection.isInValid()).thenReturn(false);
 
-        when(() => mockOutBoundConnection.write(
+        when(() => mockAtConnection.write(
                 'pkam:signingAlgo:rsa2048:hashingAlgo:sha256:$pkamSignature\n'))
             .thenAnswer((invocation) {
           mockSecureSocket.write(
@@ -91,7 +92,7 @@ void main() {
         final atLookup = AtLookupImpl('@alice', atServerHost, 64,
             secondaryAddressFinder: mockSecondaryAddressFinder);
         // Override atConnectionFactory with mock in AtLookupImpl
-        atLookup.atOutboundConnectionFactory = mockAtConnectionFactory;
+        atLookup.atConnectionFactory = mockAtConnectionFactory;
         atLookup.atChops = mockAtChops;
         var result = await atLookup.pkamAuthenticate();
         expect(result, true);
@@ -109,14 +110,14 @@ void main() {
 
         when(() => mockAtChops.sign(any()))
             .thenReturn(AtSigningResult()..result = pkamSignature);
-        when(() => mockOutboundListener.read()).thenAnswer((_) =>
+        when(() => mockAtMessageListener.read()).thenAnswer((_) =>
             Future.value('error:AT0401-Exception: pkam authentication failed'));
 
-        when(() => mockOutBoundConnection.getMetaData())
-            .thenReturn(OutboundConnectionMetadata()..isAuthenticated = false);
-        when(() => mockOutBoundConnection.isInValid()).thenReturn(false);
+        when(() => mockAtConnection.metaData)
+            .thenReturn(AtConnectionMetaData()..isAuthenticated = false);
+        when(() => mockAtConnection.isInValid()).thenReturn(false);
 
-        when(() => mockOutBoundConnection.write(
+        when(() => mockAtConnection.write(
                 'pkam:signingAlgo:rsa2048:hashingAlgo:sha256:$pkamSignature\n'))
             .thenAnswer((invocation) {
           mockSecureSocket.write(
@@ -127,7 +128,7 @@ void main() {
         final atLookup = AtLookupImpl('@alice', atServerHost, 64,
             secondaryAddressFinder: mockSecondaryAddressFinder);
         // Override atConnectionFactory with mock in AtLookupImpl
-        atLookup.atOutboundConnectionFactory = mockAtConnectionFactory;
+        atLookup.atConnectionFactory = mockAtConnectionFactory;
         atLookup.atChops = mockAtChops;
         expect(() async => await atLookup.pkamAuthenticate(),
             throwsA(predicate((e) => e is UnAuthenticatedException)));
@@ -145,14 +146,14 @@ void main() {
 
         when(() => mockAtChops.sign(any()))
             .thenReturn(AtSigningResult()..result = pkamSignature);
-        when(() => mockOutboundListener.read())
+        when(() => mockAtMessageListener.read())
             .thenAnswer((_) => Future.value('data:success'));
 
-        when(() => mockOutBoundConnection.getMetaData())
-            .thenReturn(OutboundConnectionMetadata()..isAuthenticated = false);
-        when(() => mockOutBoundConnection.isInValid()).thenReturn(false);
+        when(() => mockAtConnection.metaData)
+            .thenReturn(AtConnectionMetaData()..isAuthenticated = false);
+        when(() => mockAtConnection.isInValid()).thenReturn(false);
 
-        when(() => mockOutBoundConnection.write(
+        when(() => mockAtConnection.write(
                 'pkam:signingAlgo:rsa2048:hashingAlgo:sha256:enrollmentId:$enrollmentIdFromServer:$pkamSignature\n'))
             .thenAnswer((invocation) {
           mockSecureSocket.write(
@@ -162,7 +163,7 @@ void main() {
 
         final atLookup = AtLookupImpl('@alice', atServerHost, 64,
             secondaryAddressFinder: mockSecondaryAddressFinder);
-        atLookup.atOutboundConnectionFactory = mockAtConnectionFactory;
+        atLookup.atConnectionFactory = mockAtConnectionFactory;
         atLookup.atChops = mockAtChops;
         var result = await atLookup.pkamAuthenticate(
             enrollmentId: enrollmentIdFromServer);
@@ -181,13 +182,13 @@ void main() {
 
         when(() => mockAtChops.sign(any()))
             .thenReturn(AtSigningResult()..result = pkamSignature);
-        when(() => mockOutboundListener.read()).thenAnswer((_) =>
+        when(() => mockAtMessageListener.read()).thenAnswer((_) =>
             Future.value('error:AT0401-Exception: pkam authentication failed'));
 
-        when(() => mockOutBoundConnection.getMetaData())
-            .thenReturn(OutboundConnectionMetadata()..isAuthenticated = false);
-        when(() => mockOutBoundConnection.isInValid()).thenReturn(false);
-        when(() => mockOutBoundConnection.write(
+        when(() => mockAtConnection.metaData)
+            .thenReturn(AtConnectionMetaData()..isAuthenticated = false);
+        when(() => mockAtConnection.isInValid()).thenReturn(false);
+        when(() => mockAtConnection.write(
                 'pkam:signingAlgo:rsa2048:hashingAlgo:sha256:enrollmentId:$enrollmentIdFromServer:$pkamSignature\n'))
             .thenAnswer((invocation) {
           mockSecureSocket.write(
@@ -197,7 +198,7 @@ void main() {
 
         final atLookup = AtLookupImpl('@alice', atServerHost, 64,
             secondaryAddressFinder: mockSecondaryAddressFinder);
-        atLookup.atOutboundConnectionFactory = mockAtConnectionFactory;
+        atLookup.atConnectionFactory = mockAtConnectionFactory;
         atLookup.atChops = mockAtChops;
         expect(
             () async => await atLookup.pkamAuthenticate(
@@ -212,10 +213,10 @@ void main() {
       test('executeCommand - from verb - auth false', () async {
         final atLookup = AtLookupImpl('@alice', atServerHost, 64,
             secondaryAddressFinder: mockSecondaryAddressFinder);
-        atLookup.atOutboundConnectionFactory = mockAtConnectionFactory;
+        atLookup.atConnectionFactory = mockAtConnectionFactory;
         final fromResponse =
             'data:_03fe0ff2-ac50-4c80-8f43-88480beba888@alice:c3d345fc-5691-4f90-bc34-17cba31f060f';
-        when(() => mockOutboundListener.read())
+        when(() => mockAtMessageListener.read())
             .thenAnswer((_) => Future.value(fromResponse));
         var result = await atLookup.executeCommand('from:@alice\n');
         expect(result, fromResponse);
@@ -226,7 +227,7 @@ void main() {
         final atLookup = AtLookupImpl('@alice', atServerHost, 64,
             secondaryAddressFinder: mockSecondaryAddressFinder);
         final fromResponse = 'data:1234';
-        when(() => mockOutboundListener.read())
+        when(() => mockAtMessageListener.read())
             .thenAnswer((_) => Future.value(fromResponse));
         expect(
             () async => await atLookup.executeCommand('llookup:phone@alice\n',
@@ -237,16 +238,16 @@ void main() {
       test('executeCommand -llookup verb - auth true - at_chops set', () async {
         final atLookup = AtLookupImpl('@alice', atServerHost, 64,
             secondaryAddressFinder: mockSecondaryAddressFinder);
-        atLookup.atOutboundConnectionFactory = mockAtConnectionFactory;
+        atLookup.atConnectionFactory = mockAtConnectionFactory;
         atLookup.atChops = mockAtChops;
         final llookupCommand = 'llookup:phone@alice\n';
         final llookupResponse = 'data:1234';
-        when(() => mockOutBoundConnection.write(llookupCommand))
+        when(() => mockAtConnection.write(llookupCommand))
             .thenAnswer((invocation) {
           mockSecureSocket.write(llookupCommand);
           return Future.value();
         });
-        when(() => mockOutboundListener.read())
+        when(() => mockAtMessageListener.read())
             .thenAnswer((_) => Future.value(llookupResponse));
         var result = await atLookup.executeCommand(llookupCommand);
         expect(result, llookupResponse);
@@ -255,16 +256,16 @@ void main() {
       test('executeCommand - test non json error handling', () async {
         final atLookup = AtLookupImpl('@alice', atServerHost, 64,
             secondaryAddressFinder: mockSecondaryAddressFinder);
-        atLookup.atOutboundConnectionFactory = mockAtConnectionFactory;
+        atLookup.atConnectionFactory = mockAtConnectionFactory;
         atLookup.atChops = mockAtChops;
         final llookupCommand = 'llookup:phone@alice\n';
         final llookupResponse = 'error:AT0015-Exception: fubar';
-        when(() => mockOutBoundConnection.write(llookupCommand))
+        when(() => mockAtConnection.write(llookupCommand))
             .thenAnswer((invocation) {
           mockSecureSocket.write(llookupCommand);
           return Future.value();
         });
-        when(() => mockOutboundListener.read())
+        when(() => mockAtMessageListener.read())
             .thenAnswer((_) => Future.value(llookupResponse));
         await expectLater(
             atLookup.executeCommand(llookupCommand),
@@ -276,17 +277,17 @@ void main() {
       test('executeCommand - test json error handling', () async {
         final atLookup = AtLookupImpl('@alice', atServerHost, 64,
             secondaryAddressFinder: mockSecondaryAddressFinder);
-        atLookup.atOutboundConnectionFactory = mockAtConnectionFactory;
+        atLookup.atConnectionFactory = mockAtConnectionFactory;
         atLookup.atChops = mockAtChops;
         final llookupCommand = 'llookup:phone@alice\n';
         final llookupResponse =
             'error:{"errorCode":"AT0015","errorDescription":"Exception: fubar"}';
-        when(() => mockOutBoundConnection.write(llookupCommand))
+        when(() => mockAtConnection.write(llookupCommand))
             .thenAnswer((invocation) {
           mockSecureSocket.write(llookupCommand);
           return Future.value();
         });
-        when(() => mockOutboundListener.read())
+        when(() => mockAtMessageListener.read())
             .thenAnswer((_) => Future.value(llookupResponse));
         await expectLater(
             atLookup.executeCommand(llookupCommand),
@@ -300,7 +301,7 @@ void main() {
       test('validate EnrollVerbHandler behaviour - request', () async {
         final atLookup = AtLookupImpl('@alice', atServerHost, 64,
             secondaryAddressFinder: mockSecondaryAddressFinder);
-        atLookup.atOutboundConnectionFactory = mockAtConnectionFactory;
+        atLookup.atConnectionFactory = mockAtConnectionFactory;
         String appName = 'unit_test_1';
         String deviceName = 'test_device';
         String otp = 'ABCDEF';
@@ -315,18 +316,17 @@ void main() {
         final enrollResponse =
             'data:{"enrollmentId":"1234567890","status":"pending"}';
 
-        when(() => mockOutBoundConnection.write(enrollCommand))
+        when(() => mockAtConnection.write(enrollCommand))
             .thenAnswer((invocation) {
           mockSecureSocket.write(enrollCommand);
           return Future.value();
         });
-        when(() => mockOutboundListener.read())
+        when(() => mockAtMessageListener.read())
             .thenAnswer((_) => Future.value(enrollResponse));
-        AtConnectionMetaData? atConnectionMetaData =
-            OutboundConnectionMetadata()..isAuthenticated = false;
-        when(() => mockOutBoundConnection.getMetaData())
-            .thenReturn(atConnectionMetaData);
-        when(() => mockOutBoundConnection.isInValid()).thenReturn(false);
+        AtConnectionMetaData? atConnectionMetaData = AtConnectionMetaData()
+          ..isAuthenticated = false;
+        when(() => mockAtConnection.metaData).thenReturn(atConnectionMetaData);
+        when(() => mockAtConnection.isInValid()).thenReturn(false);
 
         var result = await atLookup.executeVerb(enrollVerbBuilder);
         expect(result, enrollResponse);
@@ -336,7 +336,7 @@ void main() {
         final atLookup = AtLookupImpl('@alice', atServerHost, 64,
             secondaryAddressFinder: mockSecondaryAddressFinder);
         atLookup.atChops = mockAtChops;
-        atLookup.atOutboundConnectionFactory = mockAtConnectionFactory;
+        atLookup.atConnectionFactory = mockAtConnectionFactory;
         String appName = 'unit_test_2';
         String deviceName = 'test_device';
         String enrollmentId = '1357913579';
@@ -351,18 +351,17 @@ void main() {
         final enrollResponse =
             'data:{"enrollmentId":"1357913579","status":"approved"}';
 
-        when(() => mockOutBoundConnection.write(enrollCommand))
+        when(() => mockAtConnection.write(enrollCommand))
             .thenAnswer((invocation) {
           mockSecureSocket.write(enrollCommand);
           return Future.value();
         });
-        when(() => mockOutboundListener.read())
+        when(() => mockAtMessageListener.read())
             .thenAnswer((_) => Future.value(enrollResponse));
-        AtConnectionMetaData? atConnectionMetaData =
-            OutboundConnectionMetadata()..isAuthenticated = true;
-        when(() => mockOutBoundConnection.getMetaData())
-            .thenReturn(atConnectionMetaData);
-        when(() => mockOutBoundConnection.isInValid()).thenReturn(false);
+        AtConnectionMetaData? atConnectionMetaData = AtConnectionMetaData()
+          ..isAuthenticated = true;
+        when(() => mockAtConnection.metaData).thenReturn(atConnectionMetaData);
+        when(() => mockAtConnection.isInValid()).thenReturn(false);
 
         expect(await atLookup.executeVerb(enrollVerbBuilder), enrollResponse);
       });
@@ -371,7 +370,7 @@ void main() {
         final atLookup = AtLookupImpl('@alice', atServerHost, 64,
             secondaryAddressFinder: mockSecondaryAddressFinder);
         atLookup.atChops = mockAtChops;
-        atLookup.atOutboundConnectionFactory = mockAtConnectionFactory;
+        atLookup.atConnectionFactory = mockAtConnectionFactory;
         String enrollmentId = '89213647826348';
 
         EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
@@ -382,18 +381,17 @@ void main() {
         String enrollResponse =
             'data:{"enrollmentId":"$enrollmentId","status":"revoked"}';
 
-        when(() => mockOutBoundConnection.write(enrollCommand))
+        when(() => mockAtConnection.write(enrollCommand))
             .thenAnswer((invocation) {
           mockSecureSocket.write(enrollCommand);
           return Future.value();
         });
-        when(() => mockOutboundListener.read())
+        when(() => mockAtMessageListener.read())
             .thenAnswer((_) => Future.value(enrollResponse));
-        AtConnectionMetaData? atConnectionMetaData =
-            OutboundConnectionMetadata()..isAuthenticated = true;
-        when(() => mockOutBoundConnection.getMetaData())
-            .thenReturn(atConnectionMetaData);
-        when(() => mockOutBoundConnection.isInValid()).thenReturn(false);
+        AtConnectionMetaData? atConnectionMetaData = AtConnectionMetaData()
+          ..isAuthenticated = true;
+        when(() => mockAtConnection.metaData).thenReturn(atConnectionMetaData);
+        when(() => mockAtConnection.isInValid()).thenReturn(false);
 
         expect(await atLookup.executeVerb(enrollVerbBuilder), enrollResponse);
       });
@@ -401,7 +399,7 @@ void main() {
       test('validate behaviour with EnrollVerbHandler - deny', () async {
         final atLookup = AtLookupImpl('@alice', atServerHost, 64,
             secondaryAddressFinder: mockSecondaryAddressFinder);
-        atLookup.atOutboundConnectionFactory = mockAtConnectionFactory;
+        atLookup.atConnectionFactory = mockAtConnectionFactory;
         atLookup.atChops = mockAtChops;
         String enrollmentId = '5754765754';
 
@@ -412,18 +410,17 @@ void main() {
         String enrollResponse =
             'data:{"enrollmentId":"$enrollmentId","status":"denied"}';
 
-        when(() => mockOutBoundConnection.write(enrollCommand))
+        when(() => mockAtConnection.write(enrollCommand))
             .thenAnswer((invocation) {
           mockSecureSocket.write(enrollCommand);
           return Future.value();
         });
-        when(() => mockOutboundListener.read())
+        when(() => mockAtMessageListener.read())
             .thenAnswer((_) => Future.value(enrollResponse));
-        AtConnectionMetaData? atConnectionMetaData =
-            OutboundConnectionMetadata()..isAuthenticated = true;
-        when(() => mockOutBoundConnection.getMetaData())
-            .thenReturn(atConnectionMetaData);
-        when(() => mockOutBoundConnection.isInValid()).thenReturn(false);
+        AtConnectionMetaData? atConnectionMetaData = AtConnectionMetaData()
+          ..isAuthenticated = true;
+        when(() => mockAtConnection.metaData).thenReturn(atConnectionMetaData);
+        when(() => mockAtConnection.isInValid()).thenReturn(false);
 
         expect(await atLookup.executeVerb(enrollVerbBuilder), enrollResponse);
       });
@@ -432,10 +429,10 @@ void main() {
 
   group('A group of web socket tests', () {
     setUp(() {
-      mockOutboundWebsocketConnection = MockOutboundWebsocketConnectionImpl();
+      mockAtConnection = MockAtSocketConnection();
       mockSecondaryAddressFinder = MockSecondaryAddressFinder();
-      mockOutboundListener = MockOutboundMessageListener();
-      mockAtConnectionFactory = MockAtLookupOutboundConnectionFactory();
+      mockAtMessageListener = MockAtMessageListener();
+      mockAtConnectionFactory = MockAtLookupConnectionFactory();
       mockAtChops = MockAtChops();
       registerFallbackValue(SecureSocketConfig());
       mockWebSocket = createMockWebSocket(atServerHost, atServerPort);
@@ -451,14 +448,13 @@ void main() {
       });
 
       when(() => mockAtConnectionFactory.createConnection(mockWebSocket))
-          .thenAnswer((_) => mockOutboundWebsocketConnection);
+          .thenAnswer((_) => mockAtConnection);
 
-      when(() => mockOutboundWebsocketConnection.write(any()))
+      when(() => mockAtConnection.write(any()))
           .thenAnswer((_) => Future.value());
 
-      when(() => mockAtConnectionFactory
-              .createListener(mockOutboundWebsocketConnection))
-          .thenAnswer((_) => mockOutboundListener);
+      when(() => mockAtConnectionFactory.createListener(mockAtConnection))
+          .thenAnswer((_) => mockAtMessageListener);
     });
 
     group('A group of tests to verify atlookup pkam authentication', () {
@@ -475,15 +471,14 @@ void main() {
 
         when(() => mockAtChops.sign(any()))
             .thenReturn(AtSigningResult()..result = pkamSignature);
-        when(() => mockOutboundListener.read())
+        when(() => mockAtMessageListener.read())
             .thenAnswer((_) => Future.value('data:success'));
 
-        when(() => mockOutboundWebsocketConnection.getMetaData())
-            .thenReturn(OutboundConnectionMetadata()..isAuthenticated = false);
-        when(() => mockOutboundWebsocketConnection.isInValid())
-            .thenReturn(false);
+        when(() => mockAtConnection.metaData)
+            .thenReturn(AtConnectionMetaData()..isAuthenticated = false);
+        when(() => mockAtConnection.isInValid()).thenReturn(false);
 
-        when(() => mockOutboundWebsocketConnection.write(
+        when(() => mockAtConnection.write(
                 'pkam:signingAlgo:rsa2048:hashingAlgo:sha256:$pkamSignature\n'))
             .thenAnswer((invocation) {
           mockWebSocket.add(
@@ -493,9 +488,9 @@ void main() {
 
         final atLookup = AtLookupImpl('@alice', atServerHost, 64,
             secondaryAddressFinder: mockSecondaryAddressFinder,
-            atOutboundConnectionFactory: AtLookupWebSocketFactory());
+            atConnectionFactory: AtLookupWebSocketFactory());
         // Override atConnectionFactory with mock in AtLookupImpl
-        atLookup.atOutboundConnectionFactory = mockAtConnectionFactory;
+        atLookup.atConnectionFactory = mockAtConnectionFactory;
         atLookup.atChops = mockAtChops;
         var result = await atLookup.pkamAuthenticate();
         expect(result, true);
@@ -514,15 +509,14 @@ void main() {
 
         when(() => mockAtChops.sign(any()))
             .thenReturn(AtSigningResult()..result = pkamSignature);
-        when(() => mockOutboundListener.read()).thenAnswer((_) =>
+        when(() => mockAtMessageListener.read()).thenAnswer((_) =>
             Future.value('error:AT0401-Exception: pkam authentication failed'));
 
-        when(() => mockOutboundWebsocketConnection.getMetaData())
-            .thenReturn(OutboundConnectionMetadata()..isAuthenticated = false);
-        when(() => mockOutboundWebsocketConnection.isInValid())
-            .thenReturn(false);
+        when(() => mockAtConnection.metaData)
+            .thenReturn(AtConnectionMetaData()..isAuthenticated = false);
+        when(() => mockAtConnection.isInValid()).thenReturn(false);
 
-        when(() => mockOutboundWebsocketConnection.write(
+        when(() => mockAtConnection.write(
                 'pkam:signingAlgo:rsa2048:hashingAlgo:sha256:$pkamSignature\n'))
             .thenAnswer((invocation) {
           mockWebSocket.add(
@@ -532,9 +526,9 @@ void main() {
 
         final atLookup = AtLookupImpl('@alice', atServerHost, 64,
             secondaryAddressFinder: mockSecondaryAddressFinder,
-            atOutboundConnectionFactory: AtLookupWebSocketFactory());
+            atConnectionFactory: AtLookupWebSocketFactory());
         // Override atConnectionFactory with mock in AtLookupImpl
-        atLookup.atOutboundConnectionFactory = mockAtConnectionFactory;
+        atLookup.atConnectionFactory = mockAtConnectionFactory;
         atLookup.atChops = mockAtChops;
         expect(() async => await atLookup.pkamAuthenticate(),
             throwsA(predicate((e) => e is UnAuthenticatedException)));
@@ -553,15 +547,14 @@ void main() {
 
         when(() => mockAtChops.sign(any()))
             .thenReturn(AtSigningResult()..result = pkamSignature);
-        when(() => mockOutboundListener.read())
+        when(() => mockAtMessageListener.read())
             .thenAnswer((_) => Future.value('data:success'));
 
-        when(() => mockOutboundWebsocketConnection.getMetaData())
-            .thenReturn(OutboundConnectionMetadata()..isAuthenticated = false);
-        when(() => mockOutboundWebsocketConnection.isInValid())
-            .thenReturn(false);
+        when(() => mockAtConnection.metaData)
+            .thenReturn(AtConnectionMetaData()..isAuthenticated = false);
+        when(() => mockAtConnection.isInValid()).thenReturn(false);
 
-        when(() => mockOutboundWebsocketConnection.write(
+        when(() => mockAtConnection.write(
                 'pkam:signingAlgo:rsa2048:hashingAlgo:sha256:enrollmentId:$enrollmentIdFromServer:$pkamSignature\n'))
             .thenAnswer((invocation) {
           mockWebSocket.add(
@@ -571,8 +564,8 @@ void main() {
 
         final atLookup = AtLookupImpl('@alice', atServerHost, 64,
             secondaryAddressFinder: mockSecondaryAddressFinder,
-            atOutboundConnectionFactory: AtLookupWebSocketFactory());
-        atLookup.atOutboundConnectionFactory = mockAtConnectionFactory;
+            atConnectionFactory: AtLookupWebSocketFactory());
+        atLookup.atConnectionFactory = mockAtConnectionFactory;
         atLookup.atChops = mockAtChops;
         var result = await atLookup.pkamAuthenticate(
             enrollmentId: enrollmentIdFromServer);
@@ -584,11 +577,11 @@ void main() {
       test('executeCommand  using websocket- from verb - auth false', () async {
         final atLookup = AtLookupImpl('@alice', atServerHost, 64,
             secondaryAddressFinder: mockSecondaryAddressFinder,
-            atOutboundConnectionFactory: AtLookupWebSocketFactory());
-        atLookup.atOutboundConnectionFactory = mockAtConnectionFactory;
+            atConnectionFactory: AtLookupWebSocketFactory());
+        atLookup.atConnectionFactory = mockAtConnectionFactory;
         final fromResponse =
             'data:_03fe0ff2-ac50-4c80-8f43-88480beba888@alice:c3d345fc-5691-4f90-bc34-17cba31f060f';
-        when(() => mockOutboundListener.read())
+        when(() => mockAtMessageListener.read())
             .thenAnswer((_) => Future.value(fromResponse));
         var result = await atLookup.executeCommand('from:@alice\n');
         expect(result, fromResponse);
@@ -599,9 +592,9 @@ void main() {
           () async {
         final atLookup = AtLookupImpl('@alice', atServerHost, 64,
             secondaryAddressFinder: mockSecondaryAddressFinder,
-            atOutboundConnectionFactory: AtLookupWebSocketFactory());
+            atConnectionFactory: AtLookupWebSocketFactory());
         final fromResponse = 'data:1234';
-        when(() => mockOutboundListener.read())
+        when(() => mockAtMessageListener.read())
             .thenAnswer((_) => Future.value(fromResponse));
         expect(
             () async => await atLookup.executeCommand('llookup:phone@alice\n',
@@ -616,8 +609,8 @@ void main() {
           () async {
         final atLookup = AtLookupImpl('@alice', atServerHost, 64,
             secondaryAddressFinder: mockSecondaryAddressFinder,
-            atOutboundConnectionFactory: AtLookupWebSocketFactory());
-        atLookup.atOutboundConnectionFactory = mockAtConnectionFactory;
+            atConnectionFactory: AtLookupWebSocketFactory());
+        atLookup.atConnectionFactory = mockAtConnectionFactory;
         String appName = 'unit_test_1';
         String deviceName = 'test_device';
         String otp = 'ABCDEF';
@@ -632,19 +625,17 @@ void main() {
         final enrollResponse =
             'data:{"enrollmentId":"1234567890","status":"pending"}';
 
-        when(() => mockOutboundWebsocketConnection.write(enrollCommand))
+        when(() => mockAtConnection.write(enrollCommand))
             .thenAnswer((invocation) {
           mockWebSocket.add(enrollCommand);
           return Future.value();
         });
-        when(() => mockOutboundListener.read())
+        when(() => mockAtMessageListener.read())
             .thenAnswer((_) => Future.value(enrollResponse));
-        AtConnectionMetaData? atConnectionMetaData =
-            OutboundConnectionMetadata()..isAuthenticated = false;
-        when(() => mockOutboundWebsocketConnection.getMetaData())
-            .thenReturn(atConnectionMetaData);
-        when(() => mockOutboundWebsocketConnection.isInValid())
-            .thenReturn(false);
+        AtConnectionMetaData? atConnectionMetaData = AtConnectionMetaData()
+          ..isAuthenticated = false;
+        when(() => mockAtConnection.metaData).thenReturn(atConnectionMetaData);
+        when(() => mockAtConnection.isInValid()).thenReturn(false);
 
         var result = await atLookup.executeVerb(enrollVerbBuilder);
         expect(result, enrollResponse);
@@ -655,9 +646,9 @@ void main() {
           () async {
         final atLookup = AtLookupImpl('@alice', atServerHost, 64,
             secondaryAddressFinder: mockSecondaryAddressFinder,
-            atOutboundConnectionFactory: AtLookupWebSocketFactory());
+            atConnectionFactory: AtLookupWebSocketFactory());
         atLookup.atChops = mockAtChops;
-        atLookup.atOutboundConnectionFactory = mockAtConnectionFactory;
+        atLookup.atConnectionFactory = mockAtConnectionFactory;
         String appName = 'unit_test_2';
         String deviceName = 'test_device';
         String enrollmentId = '1357913579';
@@ -672,19 +663,17 @@ void main() {
         final enrollResponse =
             'data:{"enrollmentId":"1357913579","status":"approved"}';
 
-        when(() => mockOutboundWebsocketConnection.write(enrollCommand))
+        when(() => mockAtConnection.write(enrollCommand))
             .thenAnswer((invocation) {
           mockWebSocket.add(enrollCommand);
           return Future.value();
         });
-        when(() => mockOutboundListener.read())
+        when(() => mockAtMessageListener.read())
             .thenAnswer((_) => Future.value(enrollResponse));
-        AtConnectionMetaData? atConnectionMetaData =
-            OutboundConnectionMetadata()..isAuthenticated = true;
-        when(() => mockOutboundWebsocketConnection.getMetaData())
-            .thenReturn(atConnectionMetaData);
-        when(() => mockOutboundWebsocketConnection.isInValid())
-            .thenReturn(false);
+        AtConnectionMetaData? atConnectionMetaData = AtConnectionMetaData()
+          ..isAuthenticated = true;
+        when(() => mockAtConnection.metaData).thenReturn(atConnectionMetaData);
+        when(() => mockAtConnection.isInValid()).thenReturn(false);
 
         expect(await atLookup.executeVerb(enrollVerbBuilder), enrollResponse);
       });
@@ -694,9 +683,9 @@ void main() {
           () async {
         final atLookup = AtLookupImpl('@alice', atServerHost, 64,
             secondaryAddressFinder: mockSecondaryAddressFinder,
-            atOutboundConnectionFactory: AtLookupWebSocketFactory());
+            atConnectionFactory: AtLookupWebSocketFactory());
         atLookup.atChops = mockAtChops;
-        atLookup.atOutboundConnectionFactory = mockAtConnectionFactory;
+        atLookup.atConnectionFactory = mockAtConnectionFactory;
         String enrollmentId = '89213647826348';
 
         EnrollVerbBuilder enrollVerbBuilder = EnrollVerbBuilder()
@@ -707,19 +696,17 @@ void main() {
         String enrollResponse =
             'data:{"enrollmentId":"$enrollmentId","status":"revoked"}';
 
-        when(() => mockOutboundWebsocketConnection.write(enrollCommand))
+        when(() => mockAtConnection.write(enrollCommand))
             .thenAnswer((invocation) {
           mockWebSocket.add(enrollCommand);
           return Future.value();
         });
-        when(() => mockOutboundListener.read())
+        when(() => mockAtMessageListener.read())
             .thenAnswer((_) => Future.value(enrollResponse));
-        AtConnectionMetaData? atConnectionMetaData =
-            OutboundConnectionMetadata()..isAuthenticated = true;
-        when(() => mockOutboundWebsocketConnection.getMetaData())
-            .thenReturn(atConnectionMetaData);
-        when(() => mockOutboundWebsocketConnection.isInValid())
-            .thenReturn(false);
+        AtConnectionMetaData? atConnectionMetaData = AtConnectionMetaData()
+          ..isAuthenticated = true;
+        when(() => mockAtConnection.metaData).thenReturn(atConnectionMetaData);
+        when(() => mockAtConnection.isInValid()).thenReturn(false);
 
         expect(await atLookup.executeVerb(enrollVerbBuilder), enrollResponse);
       });
@@ -729,8 +716,8 @@ void main() {
           () async {
         final atLookup = AtLookupImpl('@alice', atServerHost, 64,
             secondaryAddressFinder: mockSecondaryAddressFinder,
-            atOutboundConnectionFactory: AtLookupWebSocketFactory());
-        atLookup.atOutboundConnectionFactory = mockAtConnectionFactory;
+            atConnectionFactory: AtLookupWebSocketFactory());
+        atLookup.atConnectionFactory = mockAtConnectionFactory;
         atLookup.atChops = mockAtChops;
         String enrollmentId = '5754765754';
 
@@ -741,19 +728,17 @@ void main() {
         String enrollResponse =
             'data:{"enrollmentId":"$enrollmentId","status":"denied"}';
 
-        when(() => mockOutboundWebsocketConnection.write(enrollCommand))
+        when(() => mockAtConnection.write(enrollCommand))
             .thenAnswer((invocation) {
           mockWebSocket.add(enrollCommand);
           return Future.value();
         });
-        when(() => mockOutboundListener.read())
+        when(() => mockAtMessageListener.read())
             .thenAnswer((_) => Future.value(enrollResponse));
-        AtConnectionMetaData? atConnectionMetaData =
-            OutboundConnectionMetadata()..isAuthenticated = true;
-        when(() => mockOutboundWebsocketConnection.getMetaData())
-            .thenReturn(atConnectionMetaData);
-        when(() => mockOutboundWebsocketConnection.isInValid())
-            .thenReturn(false);
+        AtConnectionMetaData? atConnectionMetaData = AtConnectionMetaData()
+          ..isAuthenticated = true;
+        when(() => mockAtConnection.metaData).thenReturn(atConnectionMetaData);
+        when(() => mockAtConnection.isInValid()).thenReturn(false);
 
         expect(await atLookup.executeVerb(enrollVerbBuilder), enrollResponse);
       });

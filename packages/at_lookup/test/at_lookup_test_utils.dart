@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:at_chops/at_chops.dart';
 import 'package:at_lookup/at_lookup.dart';
-import 'package:at_lookup/src/connection/outbound_message_listener.dart';
+import 'package:at_lookup/src/connection/at_message_listener.dart';
+import 'package:at_lookup/src/connection/at_socket_connection.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:at_lookup/src/connection/outbound_websocket_connection_impl.dart';
 
 int mockSocketNumber = 1;
 
@@ -14,8 +14,8 @@ class MockSecondaryAddressFinder extends Mock
 
 class MockSecondaryUrlFinder extends Mock implements SecondaryUrlFinder {}
 
-class MockAtLookupOutboundConnectionFactory extends Mock
-    implements AtLookupOutboundConnectionFactory {}
+class MockAtLookupConnectionFactory extends Mock
+    implements AtLookupConnectionFactory {}
 
 class MockStreamSubscription<T> extends Mock implements StreamSubscription<T> {}
 
@@ -29,16 +29,11 @@ class MockWebSocket extends Mock implements WebSocket {
   int mockNumber = mockSocketNumber++;
 }
 
-class MockOutboundMessageListener extends Mock
-    implements OutboundMessageListener {}
+class MockAtMessageListener extends Mock implements AtMessageListener {}
 
 class MockAtChops extends Mock implements AtChopsImpl {}
 
-class MockOutboundConnectionImpl extends Mock
-    implements OutboundConnectionImpl {}
-
-class MockOutboundWebsocketConnectionImpl extends Mock
-    implements OutboundWebsocketConnectionImpl {}
+class MockAtSocketConnection extends Mock implements AtSocketConnection {}
 
 SecureSocket createMockAtServerSocket(String address, int port) {
   SecureSocket mss = MockSecureSocket();

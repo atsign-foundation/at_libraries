@@ -3,14 +3,13 @@ import 'dart:io';
 
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
-import 'package:at_lookup/src/connection/outbound_message_listener.dart';
+import 'package:at_lookup/src/connection/at_connection.dart';
+import 'package:at_lookup/src/connection/at_message_listener.dart';
+import 'package:at_lookup/src/connection/at_socket_connection.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
 import 'at_lookup_test_utils.dart';
-
-class MockOutboundConnectionImpl extends Mock
-    implements OutboundConnectionImpl {}
 
 class MockAtLookupSecureSocketFactory extends Mock
     implements AtLookupSecureSocketFactory {}
@@ -18,8 +17,8 @@ class MockAtLookupSecureSocketFactory extends Mock
 void main() {
   group('test connection close and socket cleanup', () {
     late SecondaryAddressFinder finder;
-    late MockAtLookupOutboundConnectionFactory mockOutboundConnectionFactory;
-    late OutboundMessageListener mockOutboundListener;
+    late MockAtLookupConnectionFactory mockAtConnectionFactory;
+    late AtMessageListener mockAtMessageListener;
 
     setUp(() {
       mockSocketNumber = 1; // Reset counter for each test
@@ -27,26 +26,25 @@ void main() {
       when(() => finder.findSecondary(any()))
           .thenAnswer((_) async => SecondaryAddress('test.test.test', 12345));
 
-      mockOutboundConnectionFactory = MockAtLookupOutboundConnectionFactory();
+      mockAtConnectionFactory = MockAtLookupConnectionFactory();
       registerFallbackValue(SecureSocketConfig());
 
-      mockOutboundListener = MockOutboundMessageListener();
+      mockAtMessageListener = MockAtMessageListener();
 
-      when(() => mockOutboundConnectionFactory.createUnderlying(
+      when(() => mockAtConnectionFactory.createUnderlying(
           'test.test.test', '12345', any())).thenAnswer((_) {
         // Each call provides a new instance of MockSecureSocket
         SecureSocket newMockSocket =
             createMockAtServerSocket('test.test.test', 12345);
-        OutboundConnectionImpl newOutboundConnectionImpl =
-            OutboundConnectionImpl(newMockSocket);
+        AtSocketConnection atConnection = AtSocketConnection(newMockSocket);
 
         // Update factory to return this new connection and listener
         when(() =>
-                mockOutboundConnectionFactory.createConnection(newMockSocket))
-            .thenReturn(newOutboundConnectionImpl);
+                mockAtConnectionFactory.createConnection(newMockSocket))
+            .thenReturn(atConnection);
 
-        when(() => mockOutboundConnectionFactory.createListener(
-            newOutboundConnectionImpl)).thenAnswer((_) => mockOutboundListener);
+        when(() => mockAtConnectionFactory.createListener(atConnection))
+            .thenAnswer((_) => mockAtMessageListener);
         return Future<SecureSocket>.value(newMockSocket);
       });
     });
@@ -57,7 +55,7 @@ void main() {
       AtLookupImpl atLookup = AtLookupImpl('@alice', 'test.test.test', 64,
           secondaryAddressFinder: finder);
 
-      expect(atLookup.atOutboundConnectionFactory.runtimeType.toString(),
+      expect(atLookup.atConnectionFactory.runtimeType.toString(),
           "AtLookupSecureSocketFactory");
       expect(() async => await atLookup.createConnection(),
           throwsA(predicate((dynamic e) => e is SecondaryConnectException)));
@@ -80,7 +78,7 @@ void main() {
       SecureSocketConfig secureSocketConfig = SecureSocketConfig();
 
       // Setting mock instances
-      atLookup.atOutboundConnectionFactory = mockAtLookupSecureSocketFactory;
+      atLookup.atConnectionFactory = mockAtLookupSecureSocketFactory;
 
       // Set mock responses.
       when(() => mockAtLookupSecureSocketFactory.createUnderlying(
@@ -90,25 +88,23 @@ void main() {
       when(() => mockSecureSocket.setOption(SocketOption.tcpNoDelay, true))
           .thenReturn(true);
 
-      // In the constructor of [BaseConnection] which is super class of [OutboundConnectionImpl]
-      // socket.setOption is invoked. Therefore, the initialization of outboundConnectionImpl
+      // In the constructor of [AtSocketConnection] which is super class of AtConnection
+      // socket.setOption is invoked. Therefore, the initialization of AtSocketConnection
       // should be executed after when(() => mockSecureSocket.setOption).
       // Otherwise a null exception arises.
-      OutboundConnectionImpl outboundConnectionImpl =
-          OutboundConnectionImpl(mockSecureSocket);
-
-      when(() => mockAtLookupSecureSocketFactory.createConnection(
-          mockSecureSocket)).thenReturn(outboundConnectionImpl);
+      AtSocketConnection atConnection = AtSocketConnection(mockSecureSocket);
 
       when(() => mockAtLookupSecureSocketFactory
-              .createListener(outboundConnectionImpl))
-          .thenReturn(OutboundMessageListener(outboundConnectionImpl));
+          .createConnection(mockSecureSocket)).thenReturn(atConnection);
+
+      when(() => mockAtLookupSecureSocketFactory.createListener(atConnection))
+          .thenReturn(AtMessageListener(atConnection));
 
       // Setting connection timeout to 2 seconds.
-      atLookup.outboundConnectionTimeout = Duration(seconds: 2).inMilliseconds;
-      // Create outbound connection.
-      bool isConnCreated = await atLookup.createOutboundConnection(
-          host, '$port', secureSocketConfig);
+      atLookup.atConnectionTimeout = Duration(seconds: 2).inMilliseconds;
+      // Create connection.
+      bool isConnCreated =
+          await atLookup.createAtConnection(host, '$port', secureSocketConfig);
       expect(isConnCreated, true);
       expect(atLookup.connection?.isInValid(), false);
       // Wait for the connection to timeout.
@@ -121,23 +117,23 @@ void main() {
         () async {
       AtLookupImpl atLookup = AtLookupImpl('@alice', 'test.test.test', 64,
           secondaryAddressFinder: finder);
-      expect(atLookup.atOutboundConnectionFactory.runtimeType.toString(),
+      expect(atLookup.atConnectionFactory.runtimeType.toString(),
           "AtLookupSecureSocketFactory");
 
       // Override atConnectionFactory with mock in AtLookupImpl
-      atLookup.atOutboundConnectionFactory = mockOutboundConnectionFactory;
+      atLookup.atConnectionFactory = mockAtConnectionFactory;
 
       await atLookup.createConnection();
 
       // let's get a handle to the first socket & connection
-      OutboundConnection<Socket> firstConnection =
-          atLookup.connection as OutboundConnection<Socket>; // Explicit cast
+      AtSocketConnection firstConnection =
+          atLookup.connection as AtSocketConnection; // Explicit cast
       MockSecureSocket firstSocket =
           firstConnection.underlying as MockSecureSocket;
 
       expect(firstSocket.mockNumber, 1);
       expect(firstSocket.destroyed, false);
-      expect(firstConnection.metaData!.isClosed, false);
+      expect(firstConnection.metaData.isClosed, false);
       expect(firstConnection.isInValid(), false);
 
       // Make the connection appear 'idle'
@@ -145,7 +141,7 @@ void main() {
       await Future.delayed(Duration(milliseconds: 2));
       expect(firstConnection.isInValid(), true);
 
-      atLookup.atOutboundConnectionFactory = mockOutboundConnectionFactory;
+      atLookup.atConnectionFactory = mockAtConnectionFactory;
 
       // When we now call AtLookupImpl's createConnection again, it should:
       // - notice that its current connection is 'idle', and close it
@@ -154,72 +150,72 @@ void main() {
 
       // has the first connection been closed, and its socket destroyed?
       expect(firstSocket.destroyed, true);
-      expect(firstConnection.metaData!.isClosed, true);
+      expect(firstConnection.metaData.isClosed, true);
 
       // has a new connection been created, with a new socket?
-      OutboundConnection<Socket> secondConnection =
-          atLookup.connection as OutboundConnection<Socket>; // Explicit cast
+      AtSocketConnection secondConnection =
+          atLookup.connection as AtSocketConnection; // Explicit cast
       MockSecureSocket secondSocket =
           secondConnection.underlying as MockSecureSocket;
       expect(firstConnection.hashCode == secondConnection.hashCode, false);
       expect(secondSocket.mockNumber, 2);
       expect(secondSocket.destroyed, false);
-      expect(secondConnection.metaData!.isClosed, false);
+      expect(secondConnection.metaData.isClosed, false);
       expect(secondConnection.isInValid(), false);
     });
 
     test(
         'test message listener closes connection'
         ' when socket listener onDone is called', () async {
-      OutboundConnection oc = OutboundConnectionImpl(
-          createMockAtServerSocket('test.test.test', 12345));
-      OutboundMessageListener oml = OutboundMessageListener(oc);
+      AtConnection oc =
+          AtSocketConnection(createMockAtServerSocket('test.test.test', 12345));
+      AtMessageListener oml = AtMessageListener(oc);
       expect((oc.underlying as MockSecureSocket).destroyed, false);
-      expect(oc.metaData?.isClosed, false);
+      expect(oc.metaData.isClosed, false);
       oml.onSocketDone();
       expect((oc.underlying as MockSecureSocket).destroyed, true);
-      expect(oc.metaData?.isClosed, true);
+      expect(oc.metaData.isClosed, true);
     });
 
     test(
         'test message listener closes connection'
         ' when socket listener onError is called', () async {
-      OutboundConnection oc = OutboundConnectionImpl(
-          createMockAtServerSocket('test.test.test', 12345));
-      OutboundMessageListener oml = OutboundMessageListener(oc);
+      AtConnection oc =
+          AtSocketConnection(createMockAtServerSocket('test.test.test', 12345));
+      AtMessageListener oml = AtMessageListener(oc);
       expect((oc.underlying as MockSecureSocket).destroyed, false);
-      expect(oc.metaData?.isClosed, false);
+      expect(oc.metaData.isClosed, false);
       oml.onSocketError('test');
       expect((oc.underlying as MockSecureSocket).destroyed, true);
-      expect(oc.metaData?.isClosed, true);
+      expect(oc.metaData.isClosed, true);
     });
 
     test('test can safely call connection.close() repeatedly', () async {
-      OutboundConnection oc = OutboundConnectionImpl(
-          createMockAtServerSocket('test.test.test', 12345));
-      OutboundMessageListener oml = OutboundMessageListener(oc);
+      AtConnection oc =
+          AtSocketConnection(createMockAtServerSocket('test.test.test', 12345));
+      AtMessageListener oml = AtMessageListener(oc);
       expect((oc.underlying as MockSecureSocket).destroyed, false);
-      expect(oc.metaData?.isClosed, false);
+      expect(oc.metaData.isClosed, false);
       await oml.closeConnection();
       expect((oc.underlying as MockSecureSocket).destroyed, true);
-      expect(oc.metaData?.isClosed, true);
+      expect(oc.metaData.isClosed, true);
 
       (oc.underlying as MockSecureSocket).destroyed = false;
       await oml.closeConnection();
       // Since the connection was already closed above,
       // we don't expect destroy to be called on the socket again
       expect((oc.underlying as MockSecureSocket).destroyed, false);
-      expect(oc.metaData?.isClosed, true);
+      expect(oc.metaData.isClosed, true);
     });
 
     test(
-        'test that OutboundMessageListener.closeConnection will call'
+        'test that AtMessageListener.closeConnection will call'
         ' connection.close if the connection is idle', () async {
-      OutboundConnection oc = OutboundConnectionImpl(
-          createMockAtServerSocket('test.test.test', 12345));
-      OutboundMessageListener oml = OutboundMessageListener(oc);
+      AtConnection oc =
+          AtSocketConnection(createMockAtServerSocket('test.test.test', 12345));
+      AtMessageListener oml = AtMessageListener(oc);
       expect((oc.underlying as MockSecureSocket).destroyed, false);
-      expect(oc.metaData?.isClosed, false);
+      expect(oc.metaData.isClosed, false);
 
       expect(oc.isInValid(), false);
       // Make the connection appear 'idle'
@@ -230,17 +226,17 @@ void main() {
       await oml.closeConnection();
 
       expect((oc.underlying as MockSecureSocket).destroyed, true);
-      expect(oc.metaData?.isClosed, true);
+      expect(oc.metaData.isClosed, true);
     });
 
     test(
-        'test that OutboundMessageListener.closeConnection will not call'
+        'test that AtMessageListener.closeConnection will not call'
         ' connection.close if already marked closed', () async {
-      OutboundConnection oc = OutboundConnectionImpl(
-          createMockAtServerSocket('test.test.test', 12345));
-      OutboundMessageListener oml = OutboundMessageListener(oc);
+      AtConnection oc =
+          AtSocketConnection(createMockAtServerSocket('test.test.test', 12345));
+      AtMessageListener oml = AtMessageListener(oc);
       expect((oc.underlying as MockSecureSocket).destroyed, false);
-      oc.metaData!.isClosed = true;
+      oc.metaData.isClosed = true;
 
       await oml.closeConnection();
 
@@ -249,19 +245,19 @@ void main() {
     });
 
     test(
-        'test that OutboundMessageListener.closeConnection will call'
+        'test that AtMessageListener.closeConnection will call'
         ' connection.close even if the connection is marked stale', () async {
-      OutboundConnection oc = OutboundConnectionImpl(
-          createMockAtServerSocket('test.test.test', 12345));
-      OutboundMessageListener oml = OutboundMessageListener(oc);
+      AtConnection oc =
+          AtSocketConnection(createMockAtServerSocket('test.test.test', 12345));
+      AtMessageListener oml = AtMessageListener(oc);
       expect((oc.underlying as MockSecureSocket).destroyed, false);
-      expect(oc.metaData?.isClosed, false);
-      oc.metaData!.isStale = true;
+      expect(oc.metaData.isClosed, false);
+      oc.metaData.isStale = true;
 
       await oml.closeConnection();
 
       expect((oc.underlying as MockSecureSocket).destroyed, true);
-      expect(oc.metaData?.isClosed, true);
+      expect(oc.metaData.isClosed, true);
     });
   });
 
@@ -270,9 +266,8 @@ void main() {
     Socket mockSocket = MockSecureSocket();
     when(() => mockSocket.setOption(SocketOption.tcpNoDelay, true))
         .thenAnswer((_) => true);
-    OutboundConnection connection = OutboundConnectionImpl(mockSocket);
-    OutboundMessageListener outboundMessageListener =
-        OutboundMessageListener(connection);
+    AtConnection connection = AtSocketConnection(mockSocket);
+    AtMessageListener atMessageListener = AtMessageListener(connection);
 
     // We want to set up a connection, then call read() and have it time out.
     // When read() times out, the connection should be closed BEFORE the exception is thrown
@@ -281,11 +276,11 @@ void main() {
     // This variable enables us to introduce a delay before closing the connection
     // The introduction of this delay enables the race condition (if it exists) to occur in this test
     if (delayBeforeClose != null) {
-      outboundMessageListener.delayBeforeClose = delayBeforeClose;
+      atMessageListener.delayBeforeClose = delayBeforeClose;
     }
     int transientWaitTimeMillis = 50;
     try {
-      await outboundMessageListener.read(
+      await atMessageListener.read(
           transientWaitTimeMillis: transientWaitTimeMillis);
     } on AtTimeoutException catch (expected) {
       expect(
@@ -300,9 +295,8 @@ void main() {
     Socket mockSocket = MockSecureSocket();
     when(() => mockSocket.setOption(SocketOption.tcpNoDelay, true))
         .thenAnswer((_) => true);
-    OutboundConnection connection = OutboundConnectionImpl(mockSocket);
-    OutboundMessageListener outboundMessageListener =
-        OutboundMessageListener(connection);
+    AtConnection connection = AtSocketConnection(mockSocket);
+    AtMessageListener atMessageListener = AtMessageListener(connection);
 
     // We want to set up a connection, then call read() and have it time out.
     // When read() times out, the connection should be closed BEFORE the exception is thrown
@@ -311,12 +305,11 @@ void main() {
     // This variable enables us to introduce a delay before closing the connection
     // The introduction of this delay enables the race condition (if it exists) to occur in this test
     if (delayBeforeClose != null) {
-      outboundMessageListener.delayBeforeClose = delayBeforeClose;
+      atMessageListener.delayBeforeClose = delayBeforeClose;
     }
     int maxWaitMilliSeconds = 50;
     try {
-      await outboundMessageListener.read(
-          maxWaitMilliSeconds: maxWaitMilliSeconds);
+      await atMessageListener.read(maxWaitMilliSeconds: maxWaitMilliSeconds);
       expect(false, true, reason: 'Test should not have reached this point');
     } on AtTimeoutException catch (expected) {
       expect(expected.message,
@@ -329,9 +322,8 @@ void main() {
     Socket mockSocket = MockSecureSocket();
     when(() => mockSocket.setOption(SocketOption.tcpNoDelay, true))
         .thenAnswer((_) => true);
-    OutboundConnection connection = OutboundConnectionImpl(mockSocket);
-    OutboundMessageListener outboundMessageListener =
-        OutboundMessageListener(connection);
+    AtConnection connection = AtSocketConnection(mockSocket);
+    AtMessageListener atMessageListener = AtMessageListener(connection);
 
     // We want to set up a connection, then call read() and have it time out.
     // When read() times out, the connection should be closed BEFORE the exception is thrown
@@ -340,12 +332,11 @@ void main() {
     // This variable enables us to introduce a delay before closing the connection
     // The introduction of this delay enables the race condition (if it exists) to occur in this test
     if (delayBeforeClose != null) {
-      outboundMessageListener.delayBeforeClose = delayBeforeClose;
+      atMessageListener.delayBeforeClose = delayBeforeClose;
     }
     int maxWaitMilliSeconds = 50;
     try {
-      await outboundMessageListener.read(
-          maxWaitMilliSeconds: maxWaitMilliSeconds);
+      await atMessageListener.read(maxWaitMilliSeconds: maxWaitMilliSeconds);
       expect(false, true, reason: 'Test should not have reached this point');
     } on AtTimeoutException catch (expected) {
       expect(expected.message,
@@ -358,19 +349,19 @@ void main() {
   group('A group of tests to detect race condition in connection management',
       () {
     test(
-        'Test that isInvalid is set on the OutboundConnection after transientWaitTime timeout BEFORE the OutboundMessageListener.read() returns',
+        'Test that isInvalid is set on the AtConnection after transientWaitTime timeout BEFORE the AtMessageListener.read() returns',
         () async {
       await testOne(Duration(milliseconds: 100));
     });
 
     test(
-        'Test that isInvalid is set on the OutboundConnection after maxWaitTime timeout BEFORE the OutboundMessageListener.read() returns',
+        'Test that isInvalid is set on the AtConnection after maxWaitTime timeout BEFORE the AtMessageListener.read() returns',
         () async {
       await testTwo(Duration(milliseconds: 100));
     });
 
     test(
-        'Test that an attempt to write to an outbound connection which has had a timeout will throw a ConnectionInvalidException',
+        'Test that an attempt to write to an AtConnection which has had a timeout will throw a ConnectionInvalidException',
         () async {
       await testThree(Duration(milliseconds: 100));
     });
@@ -378,22 +369,22 @@ void main() {
 
   /// These tests will pass even when the race condition exists because of complications in the event loop from testing
   /// The tests are here to verify that we haven't caused another problem from the introduction
-  /// of `@visibleForTesting Duration? delayBeforeClose` into OutboundMessageListener
+  /// of `@visibleForTesting Duration? delayBeforeClose` into AtMessageListener
   group('Same race condition tests without the artificial delay', () {
     test(
-        'Test that isInvalid is set on the OutboundConnection after transientWaitTime timeout BEFORE the OutboundMessageListener.read() returns',
+        'Test that isInvalid is set on the AtConnection after transientWaitTime timeout BEFORE the AtMessageListener.read() returns',
         () async {
       await testOne(null);
     });
 
     test(
-        'Test that isInvalid is set on the OutboundConnection after maxWaitTime timeout BEFORE the OutboundMessageListener.read() returns',
+        'Test that isInvalid is set on the AtConnection after maxWaitTime timeout BEFORE the AtMessageListener.read() returns',
         () async {
       await testTwo(null);
     });
 
     test(
-        'Test that an attempt to write to an outbound connection which has had a timeout will throw a ConnectionInvalidException',
+        'Test that an attempt to write to an AtConnection which has had a timeout will throw a ConnectionInvalidException',
         () async {
       await testThree(null);
     });

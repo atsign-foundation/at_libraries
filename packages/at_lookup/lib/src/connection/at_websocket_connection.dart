@@ -5,25 +5,20 @@ import 'package:at_lookup/src/connection/at_connection.dart';
 import 'package:at_utils/at_logger.dart';
 
 /// WebSocket-specific connection class
-abstract class BaseWebSocketConnection extends AtConnection {
-  final WebSocket _webSocket;
+class AtWebSocketConnection<T extends WebSocket> extends AtConnection {
+  final T _webSocket;
   late final AtSignLogger logger;
   StringBuffer? buffer;
-  AtConnectionMetaData? metaData;
 
-  BaseWebSocketConnection(this._webSocket) {
+  AtWebSocketConnection(this._webSocket) {
     logger = AtSignLogger(runtimeType.toString());
     buffer = StringBuffer();
-  }
-
-  @override
-  AtConnectionMetaData? getMetaData() {
-    return metaData;
+    metaData.created = DateTime.now().toUtc();
   }
 
   @override
   Future<void> close() async {
-    if (getMetaData()!.isClosed) {
+    if (metaData.isClosed) {
       logger.finer('close(): WebSocket connection is already closed');
       return;
     }
@@ -34,14 +29,14 @@ abstract class BaseWebSocketConnection extends AtConnection {
     } catch (e) {
       // Ignore errors or exceptions on connection close
       logger.finer('Exception "$e" while closing WebSocket - ignoring');
-      getMetaData()!.isStale = true;
+      metaData.isStale = true;
     } finally {
-      getMetaData()!.isClosed = true;
+      metaData.isClosed = true;
     }
   }
 
   @override
-  WebSocket get underlying => _webSocket;
+  T get underlying => _webSocket;
 
   @override
   FutureOr<void> write(String data) async {
@@ -52,10 +47,9 @@ abstract class BaseWebSocketConnection extends AtConnection {
 
     try {
       _webSocket.add(data); // WebSocket uses add() to send data
-      getMetaData()!.lastAccessed = DateTime.now().toUtc();
+      metaData.lastAccessed = DateTime.now().toUtc();
     } on Exception {
-      getMetaData()!.isStale = true;
+      metaData.isStale = true;
     }
   }
-  
 }

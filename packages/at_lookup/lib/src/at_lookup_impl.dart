@@ -10,7 +10,7 @@ import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_lookup/src/connection/at_connection.dart';
-import 'package:at_lookup/src/connection/outbound_message_listener.dart';
+import 'package:at_lookup/src/connection/at_message_listener.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:crypto/crypto.dart';
 import 'package:crypton/crypton.dart';
@@ -20,14 +20,13 @@ class AtLookupImpl implements AtLookUp {
   final logger = AtSignLogger('AtLookup');
 
   /// Listener for reading verb responses from the remote server
-  late OutboundMessageListener messageListener;
+  late AtMessageListener messageListener;
 
-  AtConnection?
-      _connection; // Single variable for both socket and WebSocket connections
+  AtConnection? _connection; // Represents Socket or WebSocket connection
 
   AtConnection? get connection => _connection;
 
-  late AtLookupOutboundConnectionFactory atOutboundConnectionFactory;
+  late AtLookupConnectionFactory atConnectionFactory;
 
   @override
   late SecondaryAddressFinder secondaryAddressFinder;
@@ -44,7 +43,7 @@ class AtLookupImpl implements AtLookUp {
   String? cramSecret;
 
   // ignore: prefer_typing_uninitialized_variables
-  var outboundConnectionTimeout;
+  var atConnectionTimeout;
 
   late SecureSocketConfig _secureSocketConfig;
 
@@ -59,10 +58,9 @@ class AtLookupImpl implements AtLookUp {
       SecondaryAddressFinder? secondaryAddressFinder,
       SecureSocketConfig? secureSocketConfig,
       Map<String, dynamic>? clientConfig,
-      AtLookupOutboundConnectionFactory? atOutboundConnectionFactory}) {
+      AtLookupConnectionFactory? atConnectionFactory}) {
     // Default to secure socket factory
-    this.atOutboundConnectionFactory =
-        atOutboundConnectionFactory ?? AtLookupSecureSocketFactory();
+    this.atConnectionFactory = atConnectionFactory ?? AtLookupSecureSocketFactory();
     _currentAtSign = atSign;
     _rootDomain = rootDomain;
     _rootPort = rootPort;
@@ -248,8 +246,7 @@ class AtLookupImpl implements AtLookUp {
       var port = secondaryAddress.port;
 
       // 2. Create a connection to the secondary server
-      await createOutboundConnection(
-          host, port.toString(), _secureSocketConfig);
+      await createAtConnection(host, port.toString(), _secureSocketConfig);
 
       // 3. Listen to server response
       messageListener.listen();
@@ -432,7 +429,7 @@ class AtLookupImpl implements AtLookUp {
     await createConnection();
     try {
       await _pkamAuthenticationMutex.acquire();
-      if (!_connection!.getMetaData()!.isAuthenticated) {
+      if (!_connection!.metaData.isAuthenticated) {
         await _sendCommand((FromVerbBuilder()
               ..atSign = _currentAtSign
               ..clientConfig = _clientConfig)
@@ -454,13 +451,13 @@ class AtLookupImpl implements AtLookUp {
         var pkamResponse = await messageListener.read();
         if (pkamResponse == 'data:success') {
           logger.info('auth success');
-          _connection!.getMetaData()!.isAuthenticated = true;
+          _connection!.metaData.isAuthenticated = true;
         } else {
           throw UnAuthenticatedException(
               'Failed connecting to $_currentAtSign. $pkamResponse');
         }
       }
-      return _connection!.getMetaData()!.isAuthenticated;
+      return _connection!.metaData.isAuthenticated;
     } finally {
       _pkamAuthenticationMutex.release();
     }
@@ -471,7 +468,7 @@ class AtLookupImpl implements AtLookUp {
     await createConnection();
     try {
       await _pkamAuthenticationMutex.acquire();
-      if (!_connection!.getMetaData()!.isAuthenticated) {
+      if (!_connection!.metaData.isAuthenticated) {
         await _sendCommand((FromVerbBuilder()
               ..atSign = _currentAtSign
               ..clientConfig = _clientConfig)
@@ -501,13 +498,13 @@ class AtLookupImpl implements AtLookUp {
         var pkamResponse = await messageListener.read();
         if (pkamResponse == 'data:success') {
           logger.info('auth success');
-          _connection!.getMetaData()!.isAuthenticated = true;
+          _connection!.metaData.isAuthenticated = true;
         } else {
           throw UnAuthenticatedException(
               'Failed connecting to $_currentAtSign. $pkamResponse');
         }
       }
-      return _connection!.getMetaData()!.isAuthenticated;
+      return _connection!.metaData.isAuthenticated;
     } finally {
       _pkamAuthenticationMutex.release();
     }
@@ -521,7 +518,7 @@ class AtLookupImpl implements AtLookUp {
     try {
       await _cramAuthenticationMutex.acquire();
 
-      if (!_connection!.getMetaData()!.isAuthenticated) {
+      if (!_connection!.metaData.isAuthenticated) {
         // Use the connection and message listener dynamically
         await _sendCommand((FromVerbBuilder()
               ..atSign = _currentAtSign
@@ -548,13 +545,13 @@ class AtLookupImpl implements AtLookUp {
 
         if (cramResponse == 'data:success') {
           logger.info('auth success');
-          _connection!.getMetaData()!.isAuthenticated = true;
+          _connection!.metaData.isAuthenticated = true;
         } else {
           throw UnAuthenticatedException('Auth failed');
         }
       }
 
-      return _connection!.getMetaData()!.isAuthenticated;
+      return _connection!.metaData.isAuthenticated;
     } finally {
       _cramAuthenticationMutex.release();
     }
@@ -629,28 +626,26 @@ class AtLookupImpl implements AtLookUp {
   }
 
   bool _isAuthRequired() {
-    return !isConnectionAvailable() ||
-        !(_connection!.getMetaData()!.isAuthenticated);
+    return !isConnectionAvailable() || !(_connection!.metaData.isAuthenticated);
   }
 
-  Future<bool> createOutboundConnection(
+  Future<bool> createAtConnection(
       String host, String port, SecureSocketConfig secureSocketConfig) async {
     try {
       // Create the socket connection using the factory
-      final underlying = await atOutboundConnectionFactory.createUnderlying(
+      final underlying = await atConnectionFactory.createUnderlying(
           host, port, secureSocketConfig);
 
-      // Create the outbound connection and listener using the factory's methods
-      final outboundConnection =
-          atOutboundConnectionFactory.createConnection(underlying);
-      messageListener =
-          atOutboundConnectionFactory.createListener(outboundConnection);
+      // Create at connection and listener using the factory's methods
+      AtConnection atConnection =
+          atConnectionFactory.createConnection(underlying);
+      messageListener = atConnectionFactory.createListener(atConnection);
 
-      _connection = outboundConnection;
+      _connection = atConnection;
 
       // Set idle time if applicable
-      if (outboundConnectionTimeout != null) {
-        outboundConnection.setIdleTime(outboundConnectionTimeout);
+      if (atConnectionTimeout != null) {
+        atConnection.setIdleTime(atConnectionTimeout);
       }
     } on SocketException {
       throw SecondaryConnectException(

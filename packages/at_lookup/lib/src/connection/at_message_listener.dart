@@ -9,7 +9,7 @@ import 'package:at_utils/at_logger.dart';
 import 'package:meta/meta.dart';
 
 /// Listener class for messages received by [RemoteSecondary]
-class OutboundMessageListener {
+class AtMessageListener {
   final logger = AtSignLogger('OutboundMessageListener');
   late ByteBuffer _buffer;
   final Queue _queue = Queue();
@@ -19,7 +19,7 @@ class OutboundMessageListener {
   final int atCharCodeUnit = 64;
   late DateTime _lastReceivedTime;
 
-  OutboundMessageListener(this._connection, {int bufferCapacity = 10240000}) {
+  AtMessageListener(this._connection, {int bufferCapacity = 10240000}) {
     _buffer = ByteBuffer(capacity: bufferCapacity);
   }
 

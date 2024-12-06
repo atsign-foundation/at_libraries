@@ -1,9 +1,8 @@
+import 'package:at_chops/at_chops.dart';
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_demo_data/at_demo_data.dart' as at_demos;
 import 'package:at_lookup/at_lookup.dart';
-import 'package:at_chops/at_chops.dart';
-
 import 'package:test/test.dart';
 
 void main() {
@@ -15,7 +14,7 @@ void main() {
         'A test to verify a secure socket connection and do a cram authenticate and scan',
         () async {
       var atLookup = AtLookupImpl(atSign, 'vip.ve.atsign.zone', 64,
-          atOutboundConnectionFactory: AtLookupSecureSocketFactory());
+          atConnectionFactory: AtLookupSecureSocketFactory());
       await atLookup.cramAuthenticate(at_demos.cramKeyMap[atSign]!);
       var command = 'scan\n';
       var response = await atLookup.executeCommand(command, auth: true);
@@ -26,7 +25,7 @@ void main() {
         'A test to verify a websocket connection and do a cram authenticate and scan',
         () async {
       var atLookup = AtLookupImpl(atSign, 'vip.ve.atsign.zone', 64,
-          atOutboundConnectionFactory: AtLookupWebSocketFactory());
+          atConnectionFactory: AtLookupWebSocketFactory());
       await atLookup.cramAuthenticate(at_demos.cramKeyMap[atSign]!);
       var command = 'scan\n';
       var response = await atLookup.executeCommand(command, auth: true);
@@ -37,7 +36,7 @@ void main() {
         'A test to verify a socket connection by passing useWebSocket to false and do a cram authenticate and scan',
         () async {
       var atLookup = AtLookupImpl(atSign, 'vip.ve.atsign.zone', 64,
-          atOutboundConnectionFactory: AtLookupWebSocketFactory());
+          atConnectionFactory: AtLookupWebSocketFactory());
       await atLookup.cramAuthenticate(at_demos.cramKeyMap[atSign]!);
       var command = 'scan\n';
       var response = await atLookup.executeCommand(command, auth: true);
@@ -48,7 +47,7 @@ void main() {
         'A test to verify a websocket connection and do a cram authenticate and update',
         () async {
       var atLookup = AtLookupImpl(atSign, 'vip.ve.atsign.zone', 64,
-          atOutboundConnectionFactory: AtLookupWebSocketFactory());
+          atConnectionFactory: AtLookupWebSocketFactory());
       await atLookup.cramAuthenticate(at_demos.cramKeyMap[atSign]!);
       // update public and private keys manually
       var command =
@@ -67,7 +66,7 @@ void main() {
         'A test to verify a websocket connection and do a pkam authenticate and executeCommand',
         () async {
       var atLookup = AtLookupImpl(atSign, 'vip.ve.atsign.zone', 64,
-          atOutboundConnectionFactory: AtLookupWebSocketFactory());
+          atConnectionFactory: AtLookupWebSocketFactory());
       atLookup.atChops = atChopsKeys;
       await atLookup.pkamAuthenticate();
       var command = 'update:public:username$atSign bob123\n';
@@ -80,7 +79,7 @@ void main() {
         'A test to verify a websocket connection and do a pkam authenticate and execute verb',
         () async {
       var atLookup = AtLookupImpl(atSign, 'vip.ve.atsign.zone', 64,
-          atOutboundConnectionFactory: AtLookupWebSocketFactory());
+          atConnectionFactory: AtLookupWebSocketFactory());
       atLookup.atChops = atChopsKeys;
       await atLookup.pkamAuthenticate();
       var atKey = 'key1';
