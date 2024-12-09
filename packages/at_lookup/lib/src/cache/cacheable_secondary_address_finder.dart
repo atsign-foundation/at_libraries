@@ -128,10 +128,10 @@ class SecondaryAddressCacheEntry {
 class SecondaryUrlFinder {
   final String _rootDomain;
   final int _rootPort;
-  late final AtLookupSecureSocketFactory _socketFactory;
+  late final AtConnectionFactory _socketFactory;
 
   SecondaryUrlFinder(this._rootDomain, this._rootPort,
-      {AtLookupSecureSocketFactory? socketFactory}) {
+      {AtConnectionFactory? socketFactory}) {
     _socketFactory = socketFactory ?? AtLookupSecureSocketFactory();
   }
 
@@ -188,11 +188,11 @@ class SecondaryUrlFinder {
       var prompt = false;
       var once = true;
 
-      socket = await _socketFactory.createSocket(
+      socket = await _socketFactory.createUnderlying(
           _rootDomain, '$_rootPort', SecureSocketConfig());
       _logger.finer('findSecondaryUrl: connection to root server established');
       // listen to the received data event stream
-      socket.listen((List<int> event) async {
+      socket!.listen((List<int> event) async {
         _logger.finest('root socket listener received: $event');
         answer = utf8.decode(event);
 
