@@ -11,3 +11,5 @@ export 'src/cache/secondary_address_finder.dart';
 export 'src/cache/cacheable_secondary_address_finder.dart';
 export 'src/util/secure_socket_util.dart';
 export 'src/connection/at_connection_factory.dart';
+export 'src/connection/at_connection.dart';
+export 'src/connection/at_socket_connection.dart';
