@@ -51,7 +51,7 @@ class AtAuthImpl implements AtAuth {
     if (atAuthRequest.atKeysFilePath != null) {
       atAuthKeys = await _prepareAtAuthKeysFromFilePath(atAuthRequest);
     } else if (atAuthRequest.encryptedKeysMap != null) {
-      atAuthKeys = _decryptAtKeysWithSelfEncKey(
+      atAuthKeys = await _decryptAtKeysWithSelfEncKey(
           atAuthRequest.encryptedKeysMap!, PkamAuthMode.keysFile);
     } else {
       atAuthKeys = atAuthRequest.atAuthKeys;
@@ -228,35 +228,37 @@ class AtAuthImpl implements AtAuth {
     return enrollmentIdFromServer!;
   }
 
-  AtAuthKeys _decryptAtKeysWithSelfEncKey(
-      Map<String, dynamic> jsonData, PkamAuthMode authMode) {
+  Future<AtAuthKeys> _decryptAtKeysWithSelfEncKey(
+      Map<String, dynamic> jsonData, PkamAuthMode authMode) async {
     var securityKeys = AtAuthKeys();
     String decryptionKey = jsonData[auth_constants.defaultSelfEncryptionKey]!;
     var atChops =
         AtChopsImpl(AtChopsKeys()..selfEncryptionKey = AESKey(decryptionKey));
-    securityKeys.defaultEncryptionPublicKey = atChops
-        .decryptString(jsonData[auth_constants.defaultEncryptionPublicKey]!,
+    securityKeys.defaultEncryptionPublicKey = (await atChops.decryptString(
+            jsonData[auth_constants.defaultEncryptionPublicKey]!,
             EncryptionKeyType.aes256,
-            keyName: 'selfEncryptionKey', iv: AtChopsUtil.generateIVLegacy())
+            keyName: 'selfEncryptionKey',
+            iv: AtChopsUtil.generateIVLegacy()))
         .result;
-    securityKeys.defaultEncryptionPrivateKey = atChops
-        .decryptString(jsonData[auth_constants.defaultEncryptionPrivateKey]!,
+    securityKeys.defaultEncryptionPrivateKey = (await atChops.decryptString(
+            jsonData[auth_constants.defaultEncryptionPrivateKey]!,
             EncryptionKeyType.aes256,
-            keyName: 'selfEncryptionKey', iv: AtChopsUtil.generateIVLegacy())
+            keyName: 'selfEncryptionKey',
+            iv: AtChopsUtil.generateIVLegacy()))
         .result;
     securityKeys.defaultSelfEncryptionKey = decryptionKey;
-    securityKeys.apkamPublicKey = atChops
-        .decryptString(
+    securityKeys.apkamPublicKey = (await atChops.decryptString(
             jsonData[auth_constants.apkamPublicKey]!, EncryptionKeyType.aes256,
-            keyName: 'selfEncryptionKey', iv: AtChopsUtil.generateIVLegacy())
+            keyName: 'selfEncryptionKey', iv: AtChopsUtil.generateIVLegacy()))
         .result;
     // pkam private key will not be saved in keyfile if auth mode is sim/any other secure element.
     // decrypt the private key only when auth mode is keysFile
     if (authMode == PkamAuthMode.keysFile) {
-      securityKeys.apkamPrivateKey = atChops
-          .decryptString(jsonData[auth_constants.apkamPrivateKey]!,
+      securityKeys.apkamPrivateKey = (await atChops.decryptString(
+              jsonData[auth_constants.apkamPrivateKey]!,
               EncryptionKeyType.aes256,
-              keyName: 'selfEncryptionKey', iv: AtChopsUtil.generateIVLegacy())
+              keyName: 'selfEncryptionKey',
+              iv: AtChopsUtil.generateIVLegacy()))
           .result;
     }
     securityKeys.apkamSymmetricKey = jsonData[auth_constants.apkamSymmetricKey];
