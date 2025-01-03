@@ -7,9 +7,8 @@ class SyncVerbBuilder implements VerbBuilder {
   /// if regex is set, then only keys matching the regex will be synced from server to client
   String? regex;
 
-  @Deprecated(
-      'This field is not used anymore even though it is set in client. Remove this in next major release')
-  int limit = 10;
+  /// Number of entries to be fetched from commit log on the server in one batch
+  int limit = 25;
 
   @Deprecated(
       'This field is not used anymore even though it is set in client. Remove this in next major release')
@@ -21,13 +20,9 @@ class SyncVerbBuilder implements VerbBuilder {
   @override
   String buildCommand() {
     StringBuffer serverCommandBuffer = StringBuffer('sync:');
-    if (isPaginated) {
-      serverCommandBuffer.write('from:');
-    }
+    serverCommandBuffer.write('from:');
     serverCommandBuffer.write('$commitId');
-    if (isPaginated) {
-      serverCommandBuffer.write(':limit:$limit');
-    }
+    serverCommandBuffer.write(':limit:$limit');
     if (skipDeletesUntil != null) {
       serverCommandBuffer.write(':skipDeletesUntil:$skipDeletesUntil');
     }
