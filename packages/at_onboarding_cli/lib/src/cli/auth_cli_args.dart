@@ -65,7 +65,10 @@ enum AuthCliCommand {
           ' be delivered to some other program(s) which have'
           ' permission to approve or deny the requests. Typically that will be'
           ' the program which first onboarded; however it can also be an enrolled'
-          ' program which has "rw" access to the "__manage" namespace.');
+          ' program which has "rw" access to the "__manage" namespace.'),
+  decrypt(
+      usage:
+          "Decrypts the pass-phrase protected atKeys and writes to the standard output terminal");
 
   const AuthCliCommand({this.usage = ''});
 
@@ -196,6 +199,9 @@ class AuthCliArgs {
 
       case AuthCliCommand.delete:
         return createDeleteCommandParser();
+
+      case AuthCliCommand.decrypt:
+        return createDecryptCommandParser();
     }
   }
 
@@ -508,6 +514,11 @@ class AuthCliArgs {
   ArgParser createDeleteCommandParser() {
     ArgParser p = createSharedArgParser(hide: true);
     _addEnrollmentIdOption(p, mandatory: true);
+    return p;
+  }
+
+  ArgParser createDecryptCommandParser() {
+    ArgParser p = createSharedArgParser(hide: true);
     return p;
   }
 }

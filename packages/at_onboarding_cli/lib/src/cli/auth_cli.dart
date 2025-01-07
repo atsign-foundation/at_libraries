@@ -274,6 +274,8 @@ Future<int> wrappedMain(List<String> arguments) async {
                 rootDomain:
                     commandArgResults[AuthCliArgs.argNameAtDirectoryFqdn],
                 passPhrase: commandArgResults[AuthCliArgs.argNamePassPhrase]));
+      case AuthCliCommand.decrypt:
+        await decryptAtKeys(commandArgResults);
     }
   } on ArgumentError catch (e) {
     stderr
@@ -650,6 +652,8 @@ Future<void> interactive(ArgResults argResults, AtClient atClient) async {
 
         case AuthCliCommand.delete:
           await deleteEnrollment(commandArgResults, atClient);
+        case AuthCliCommand.decrypt:
+          await decryptAtKeys(commandArgResults);
       }
     } on ArgumentError catch (e) {
       stderr.writeln(
@@ -1030,6 +1034,16 @@ Future<void> deleteEnrollment(ArgResults ar, AtClient atClient) async {
   String? response = await atLookup.executeVerb(enrollVerbBuilder);
   response = parseServerResponse(response);
   stdout.writeln('Server response: $response');
+}
+
+Future<void> decryptAtKeys(ArgResults ar) async {
+  AtAuthRequest atAuthRequest = AtAuthRequest(ar[AuthCliArgs.argNameAtSign])
+    ..rootDomain = ar[AuthCliArgs.argNameAtDirectoryFqdn]
+    ..atKeysFilePath = ar[AuthCliArgs.argNameAtKeys]
+    ..passPhrase = ar[AuthCliArgs.argNamePassPhrase];
+
+  AtAuthKeys atAuthKeys = await AtAuthUtils.decryptAtKeys(atAuthRequest);
+  stdout.write(atAuthKeys.toJson());
 }
 
 @visibleForTesting

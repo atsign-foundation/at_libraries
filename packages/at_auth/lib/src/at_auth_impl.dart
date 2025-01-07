@@ -49,7 +49,7 @@ class AtAuthImpl implements AtAuth {
     AtAuthKeys? atAuthKeys;
     var enrollmentIdFromRequest = atAuthRequest.enrollmentId;
     if (atAuthRequest.atKeysFilePath != null) {
-      atAuthKeys = await _prepareAtAuthKeysFromFilePath(atAuthRequest);
+      atAuthKeys = await AtAuthUtils.decryptAtKeys(atAuthRequest);
     } else if (atAuthRequest.encryptedKeysMap != null) {
       atAuthKeys = _decryptAtKeysWithSelfEncKey(
           atAuthRequest.encryptedKeysMap!, PkamAuthMode.keysFile);
@@ -262,50 +262,6 @@ class AtAuthImpl implements AtAuth {
     securityKeys.apkamSymmetricKey = jsonData[auth_constants.apkamSymmetricKey];
     securityKeys.enrollmentId = jsonData[AtConstants.enrollmentId];
     return securityKeys;
-  }
-
-  ///method to read and return data from .atKeysFile
-  ///returns map containing encryption keys
-  Future<AtAuthKeys> _prepareAtAuthKeysFromFilePath(
-      AtAuthRequest atAuthRequest) async {
-    if (atAuthRequest.atKeysFilePath == null ||
-        atAuthRequest.atKeysFilePath!.isEmpty) {
-      throw AtException(
-          'atKeys filePath is empty. atKeysFile is required to authenticate');
-    }
-    if (!File(atAuthRequest.atKeysFilePath!).existsSync()) {
-      throw AtException(
-          'provided keys file does not exist. Please check whether the file path ${atAuthRequest.atKeysFilePath} is valid');
-    }
-
-    String atAuthData =
-        await File(atAuthRequest.atKeysFilePath!).readAsString();
-    Map<String, dynamic> decodedAtKeysData = jsonDecode(atAuthData);
-    // If it contains "iv(InitializationVector)", it means the data is encrypted with a
-    // passphrase. Decrypt it.
-    if (decodedAtKeysData.containsKey('iv') &&
-        atAuthRequest.passPhrase.isNullOrEmpty) {
-      throw AtDecryptionException(
-          'Pass Phrase is required for password protected atKeys file');
-    }
-    if (decodedAtKeysData.containsKey('iv')) {
-      _logger.info(
-          'Found encrypted atKeys files. Decrypting with the given pass-phrase');
-      AtEncrypted atEncrypted = AtEncrypted.fromJson(decodedAtKeysData);
-
-      if (atEncrypted.hashingAlgoType == null) {
-        throw AtDecryptionException(
-            'Hashing algo type is required for decryption of password protected atKeys file');
-      }
-
-      String decryptedAtKeys =
-          await AtKeysCrypto.fromHashingAlgorithm(atEncrypted.hashingAlgoType!)
-              .decrypt(atEncrypted, atAuthRequest.passPhrase!);
-      decodedAtKeysData = jsonDecode(decryptedAtKeys);
-    }
-    // This is to decrypt the atKeys encrypted with self Encryption key.
-    return _decryptAtKeysWithSelfEncKey(
-        decodedAtKeysData, atAuthRequest.authMode);
   }
 
   AtAuthKeys _generateKeyPairs(PkamAuthMode authMode, {String? publicKeyId}) {

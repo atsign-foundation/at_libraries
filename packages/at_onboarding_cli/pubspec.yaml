@@ -33,6 +33,10 @@ dependencies:
    crypto: ^3.0.5
    chalkdart: ^2.0.9
 
+dependency_overrides:
+  at_auth:
+    path: ../at_auth
+
 dev_dependencies:
   lints: ^5.0.0
   test: ^1.25.8
