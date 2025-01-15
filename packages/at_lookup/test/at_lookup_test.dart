@@ -5,7 +5,6 @@ import 'package:at_chops/at_chops.dart';
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
-import 'package:at_lookup/src/connection/at_connection.dart';
 import 'package:at_lookup/src/connection/at_message_listener.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:mocktail/mocktail.dart';

@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:at_chops/at_chops.dart';
 import 'package:at_lookup/at_lookup.dart';
 import 'package:at_lookup/src/connection/at_message_listener.dart';
-import 'package:at_lookup/src/connection/at_socket_connection.dart';
 import 'package:mocktail/mocktail.dart';
 
 int mockSocketNumber = 1;
