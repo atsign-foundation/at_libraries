@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:at_chops/at_chops.dart';
+import 'package:at_chops/src/key/at_rsa_key_pair.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:test/test.dart';
 
@@ -38,7 +39,7 @@ void main() {
     test('Test encrypt throws exception when passed public key is null', () {
       var defaultEncryptionAlgo = RsaEncryptionAlgo();
       var dataToEncrypt = 'Hello World12!@';
-      AtPublicKey? publicKey;
+      AtRSAPublicKey? publicKey;
       defaultEncryptionAlgo.atPublicKey = publicKey;
       expect(
           () => defaultEncryptionAlgo.encrypt(utf8.encode(dataToEncrypt)),
@@ -49,7 +50,7 @@ void main() {
     test('Test decrypt throws exception when passed private key is null', () {
       var defaultEncryptionAlgo = RsaEncryptionAlgo();
       var encryptedData = 'random data';
-      AtPrivateKey? privateKey;
+      AtRSAPrivateKey? privateKey;
       defaultEncryptionAlgo.atPrivateKey = privateKey;
       expect(
           () => defaultEncryptionAlgo.decrypt(utf8.encode(encryptedData)),

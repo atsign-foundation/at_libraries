@@ -2,7 +2,7 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:at_chops/at_chops.dart';
-import 'package:at_chops/src/algorithm/ed25519_signing_algo.dart';
+import 'package:at_chops/src/signing/ed25519_signing_algo.dart';
 import 'package:test/test.dart';
 
 void main() {

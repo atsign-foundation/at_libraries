@@ -1,0 +1,71 @@
+import 'dart:typed_data';
+
+import 'package:at_chops/src/encryption/initalisation_vector.dart';
+import 'package:at_chops/src/key/at_rsa_key_pair.dart';
+import 'package:at_chops/src/key/key.dart';
+import 'package:better_cryptography/better_cryptography.dart';
+import 'package:crypton/crypton.dart';
+import 'package:encrypt/encrypt.dart';
+
+class AtChopsUtil {
+  /// Generates a random initialisation vector from a given length
+  /// Length must be 0 to 16
+  static InitialisationVector generateRandomIV(int length) {
+    final iv = IV.fromSecureRandom(length);
+    return InitialisationVector(iv.bytes);
+  }
+
+  /// DO NOT USE THIS IF YOU ARE IMPLEMENTING NEW FEATURES
+  @Deprecated("Preserved for backwards compatibility")
+  static InitialisationVector generateIVLegacy() {
+    return InitialisationVector(IV(Uint8List(16)).bytes);
+  }
+
+  static InitialisationVector ivFromBase64(String ivBase64) {
+    final iv = IV.fromBase64(ivBase64);
+    return InitialisationVector(iv.bytes);
+  }
+
+  /// Generates RSA keypair with default size 2048 bits
+  static RSAKeypair generateRSAKeyPair({int keySize = 2048}) {
+    return RSAKeypair.fromRandom(keySize: keySize);
+  }
+
+  /// Generates AtEncryption asymmetric keypair with default size 2048 bits
+  static AtRSAKeyPair generateAtEncryptionKeyPair({int keySize = 2048}) {
+    final rsaKeyPair = RSAKeypair.fromRandom(keySize: keySize);
+    return AtRSAKeyPair.create(
+        rsaKeyPair.publicKey.toString(), rsaKeyPair.privateKey.toString());
+  }
+
+  /// Generates AtEncryption asymmetric keypair with default size 2048 bits
+  static AtRSAKeyPair generateAtPkamKeyPair({int keySize = 2048}) {
+    final rsaKeyPair = RSAKeypair.fromRandom(keySize: keySize);
+    return AtRSAKeyPair.create(
+        rsaKeyPair.publicKey.toString(), rsaKeyPair.privateKey.toString());
+  }
+
+  /// Generates EC keypair
+  static ECKeypair generateECKeyPair() {
+    return ECKeypair.fromRandom();
+  }
+
+  /// Generates an symmetric keypair for ED25519 elliptic curve signing and verification
+  static Future<SimpleKeyPair> generateEd25519KeyPair() async {
+    return await Ed25519().newKeyPair();
+  }
+
+  /// Generates symmetric AES key based on [keyType]
+  static SymmetricKey generateSymmetricKey(EncryptionKeyType keyType) {
+    switch (keyType) {
+      case EncryptionKeyType.aes128:
+        return AtAESKey.generate(16);
+      case EncryptionKeyType.aes192:
+        return AtAESKey.generate(24);
+      case EncryptionKeyType.aes256:
+        return AtAESKey.generate(32);
+      default:
+        return AtAESKey.generate(32);
+    }
+  }
+}
