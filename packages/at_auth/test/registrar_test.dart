@@ -43,78 +43,103 @@ void main() {
     });
 
     test('getFreeAtSign throws exception on invalid response', () async {
-      when(() => mockHttpClient.get(any(), headers: any(named: 'headers'))).thenAnswer(
+      when(() => mockHttpClient.get(any(), headers: any(named: 'headers')))
+          .thenAnswer(
         (_) async => http.Response(
           jsonEncode({
-            "message": "Oops, this option is not available at the moment. Please try again later.",
+            "message":
+                "Oops, this option is not available at the moment. Please try again later.",
             "status": "error"
           }),
           200,
         ),
       );
 
-      expect(() async => await registrarService.getFreeAtSign(), throwsA(isA<RegistrarException>()));
+      expect(() async => await registrarService.getFreeAtSign(),
+          throwsA(isA<RegistrarException>()));
     });
 
     test('registerPerson succeeds on valid response', () async {
-      when(() => mockHttpClient.post(any(), headers: any(named: 'headers'), body: any(named: 'body')))
-          .thenAnswer((_) async => http.Response(jsonEncode({'message': 'Sent Successfully'}), 200));
+      when(() => mockHttpClient.post(any(),
+              headers: any(named: 'headers'), body: any(named: 'body')))
+          .thenAnswer((_) async =>
+              http.Response(jsonEncode({'message': 'Sent Successfully'}), 200));
 
-      await registrarService.registerPerson(atSign: '@testuser', email: 'test@example.com');
+      await registrarService.registerPerson(
+          atSign: '@testuser', email: 'test@example.com');
     });
 
     test('registerPerson throws exception on API failure', () async {
-      when(() => mockHttpClient.post(any(), headers: any(named: 'headers'), body: any(named: 'body')))
-          .thenAnswer((_) async => http.Response(jsonEncode({'message': 'Oops, atSign is required.'}), 400));
+      when(() => mockHttpClient.post(any(),
+              headers: any(named: 'headers'), body: any(named: 'body')))
+          .thenAnswer((_) async => http.Response(
+              jsonEncode({'message': 'Oops, atSign is required.'}), 400));
 
-      expect(() async => await registrarService.registerPerson(atSign: '@testuser', email: 'test@example.com'),
+      expect(
+          () async => await registrarService.registerPerson(
+              atSign: '@testuser', email: 'test@example.com'),
           throwsA(isA<RegistrarException>()));
     });
 
     test('authenticateAtSignAndActivate returns cramKey on success', () async {
       final testKey =
           '7ca5f65fga49c7c667251d6f0cb2b0416dbc580b9712d943203ae644ae1b158bcdc02c6bc6453c33b51859773f05c6h5dd9b8a3c017d92cb87cf2ba3371a9d1f';
-      final mockResponse = jsonEncode({'message': 'Verified', 'cramkey': '@ashish:$testKey'});
-      when(() => mockHttpClient.post(any(), headers: any(named: 'headers'), body: any(named: 'body')))
+      final mockResponse =
+          jsonEncode({'message': 'Verified', 'cramkey': '@ashish:$testKey'});
+      when(() => mockHttpClient.post(any(),
+              headers: any(named: 'headers'), body: any(named: 'body')))
           .thenAnswer((_) async => http.Response(mockResponse, 200));
 
-      final cramKey = await registrarService.authenticateAtSignAndActivate(atSign: '@testuser', otp: '123456');
+      final cramKey = await registrarService.authenticateAtSignAndActivate(
+          atSign: '@testuser', otp: '123456');
 
       expect(cramKey, testKey);
     });
 
-    test('authenticateAtSignAndActivate throws exception on API failure', () async {
-      when(() => mockHttpClient.post(any(), headers: any(named: 'headers'), body: any(named: 'body'))).thenAnswer(
+    test('authenticateAtSignAndActivate throws exception on API failure',
+        () async {
+      when(() => mockHttpClient.post(any(),
+          headers: any(named: 'headers'), body: any(named: 'body'))).thenAnswer(
         (_) async => http.Response(
-          jsonEncode({'message': 'Please enter the 4-character verification code that was sent to your email address'}),
+          jsonEncode({
+            'message':
+                'Please enter the 4-character verification code that was sent to your email address'
+          }),
           400,
         ),
       );
 
-      expect(() async => await registrarService.authenticateAtSignAndActivate(atSign: '@testuser', otp: '123456'),
+      expect(
+          () async => await registrarService.authenticateAtSignAndActivate(
+              atSign: '@testuser', otp: '123456'),
           throwsA(isA<RegistrarException>()));
     });
 
     test('_retryRequest retries failed requests up to maxRetries', () async {
       int attemptCount = 0;
 
-      when(() => mockHttpClient.post(any(), headers: any(named: 'headers'), body: any(named: 'body')))
-          .thenAnswer((_) async {
+      when(() => mockHttpClient.post(any(),
+          headers: any(named: 'headers'),
+          body: any(named: 'body'))).thenAnswer((_) async {
         attemptCount++;
         return http.Response('Server error', 500);
       });
 
       await expectLater(
-          () async => await registrarService.registerPerson(atSign: '@testuser', email: 'test@example.com'),
+          () async => await registrarService.registerPerson(
+              atSign: '@testuser', email: 'test@example.com'),
           throwsA(isA<RegistrarException>()));
 
       expect(attemptCount, equals(registrarService.maxRetries));
     });
 
-    test('returns ValidatePersonResponse with cramKey when successful', () async {
-      final mockResponse = jsonEncode({"success": true, "cramKey": "@newatsign:cramKey123"});
+    test('returns ValidatePersonResponse with cramKey when successful',
+        () async {
+      final mockResponse =
+          jsonEncode({"success": true, "cramKey": "@newatsign:cramKey123"});
 
-      when(() => mockHttpClient.post(any(), headers: any(named: 'headers'), body: any(named: 'body')))
+      when(() => mockHttpClient.post(any(),
+              headers: any(named: 'headers'), body: any(named: 'body')))
           .thenAnswer((_) async => http.Response(mockResponse, 200));
 
       final response = await registrarService.validatePerson(
@@ -136,7 +161,8 @@ void main() {
         }
       });
 
-      when(() => mockHttpClient.post(any(), headers: any(named: 'headers'), body: any(named: 'body')))
+      when(() => mockHttpClient.post(any(),
+              headers: any(named: 'headers'), body: any(named: 'body')))
           .thenAnswer((_) async => http.Response(mockResponse, 200));
 
       final response = await registrarService.validatePerson(
@@ -145,15 +171,19 @@ void main() {
         otp: '123456',
       );
 
-      expect(response.existingAtSigns, containsAll(["oldAtSign1", "oldAtSign2"]));
+      expect(
+          response.existingAtSigns, containsAll(["oldAtSign1", "oldAtSign2"]));
       expect(response.newAtSign, equals("newAtSign"));
       expect(response.success, isTrue);
     });
 
-    test('returns ValidatePersonResponse with error message on failure', () async {
-      final mockResponse = jsonEncode({"status": "error", "message": "Invalid OTP", "data": {}});
+    test('returns ValidatePersonResponse with error message on failure',
+        () async {
+      final mockResponse =
+          jsonEncode({"status": "error", "message": "Invalid OTP", "data": {}});
 
-      when(() => mockHttpClient.post(any(), headers: any(named: 'headers'), body: any(named: 'body')))
+      when(() => mockHttpClient.post(any(),
+              headers: any(named: 'headers'), body: any(named: 'body')))
           .thenAnswer((_) async => http.Response(mockResponse, 200));
 
       final response = await registrarService.validatePerson(
@@ -166,7 +196,9 @@ void main() {
       expect(response.success, isFalse);
     });
 
-    test('returns ValidatePersonResponse with error message on more than 10 atsigns registered', () async {
+    test(
+        'returns ValidatePersonResponse with error message on more than 10 atsigns registered',
+        () async {
       final mockResponse = jsonEncode({
         'data': {
           'atsigns': [
@@ -186,7 +218,8 @@ void main() {
             'Oops! You already have the maximum number of free atSigns. Please select one of your existing atSigns.',
       });
 
-      when(() => mockHttpClient.post(any(), headers: any(named: 'headers'), body: any(named: 'body')))
+      when(() => mockHttpClient.post(any(),
+              headers: any(named: 'headers'), body: any(named: 'body')))
           .thenAnswer((_) async => http.Response(mockResponse, 200));
 
       final response = await registrarService.validatePerson(
@@ -205,7 +238,8 @@ void main() {
     test('throws RegistrarException for invalid response format', () async {
       final mockResponse = jsonEncode({"unexpected": "data"});
 
-      when(() => mockHttpClient.post(any(), headers: any(named: 'headers'), body: any(named: 'body')))
+      when(() => mockHttpClient.post(any(),
+              headers: any(named: 'headers'), body: any(named: 'body')))
           .thenAnswer((_) async => http.Response(mockResponse, 200));
 
       expect(

@@ -31,9 +31,14 @@ class ValidatePersonResponse {
       );
     }
 
-    if (json.containsKey('data') && json['data'] != null && (json['data'] as Map<String, dynamic>).isNotEmpty) {
+    if (json.containsKey('data') &&
+        json['data'] != null &&
+        (json['data'] as Map<String, dynamic>).isNotEmpty) {
       final data = json['data'] as Map<String, dynamic>;
-      final atSigns = (data['atsigns'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [];
+      final atSigns = (data['atsigns'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [];
       final newAtSign = data['newAtsign'] as String?;
 
       return ValidatePersonResponse(

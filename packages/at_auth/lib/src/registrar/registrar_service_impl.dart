@@ -5,7 +5,7 @@ import 'package:at_auth/src/registrar/registrar_service_base.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/io_client.dart';
 
-import 'registar_validate_person_response.dart';
+import 'registrar_validate_person_response.dart';
 import 'registrar_exception.dart';
 
 class RegistrarServiceImpl implements RegistrarServiceBase {
@@ -15,7 +15,8 @@ class RegistrarServiceImpl implements RegistrarServiceBase {
     bool bypassCertificate = true,
     this.maxRetries = 3,
     this.retryDelayMs = 2000,
-  })  : _httpClient = IOClient(_createHttpClient(bypassCertificate: bypassCertificate)),
+  })  : _httpClient =
+            IOClient(_createHttpClient(bypassCertificate: bypassCertificate)),
         _apiPath = '/api/app/v$version',
         rootDomain = 'my.atsign.wtf',
         weblink = 'https://atsign.wtf',
@@ -45,7 +46,8 @@ class RegistrarServiceImpl implements RegistrarServiceBase {
     this.maxRetries = 3,
     this.retryDelayMs = 2000,
     IOClient? httpClient,
-  })  : _httpClient = httpClient ?? IOClient(_createHttpClient(bypassCertificate: bypassCertificate)),
+  })  : _httpClient = httpClient ??
+            IOClient(_createHttpClient(bypassCertificate: bypassCertificate)),
         _apiPath = '/api/app/v$version',
         assert(version >= 1 && version <= 3, 'Version must be between 1 and 3'),
         assert(maxRetries > 0, 'Max retries must be greater than 0'),
@@ -63,13 +65,15 @@ class RegistrarServiceImpl implements RegistrarServiceBase {
   static HttpClient _createHttpClient({required bool bypassCertificate}) {
     final client = HttpClient();
     if (bypassCertificate) {
-      client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+      client.badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
     }
     return client;
   }
 
   /// Sends a POST request to the registrar API with retry logic.
-  Future<http.Response> _postRequest(String path, Map<String, String?>? data) async {
+  Future<http.Response> _postRequest(
+      String path, Map<String, String?>? data) async {
     final url = Uri.https(rootDomain, '$_apiPath/$path');
     final body = data != null ? json.encode(data) : null;
 
@@ -155,7 +159,8 @@ class RegistrarServiceImpl implements RegistrarServiceBase {
   }
 
   @override
-  Future<void> registerPerson({required String atSign, required String email}) async {
+  Future<void> registerPerson(
+      {required String atSign, required String email}) async {
     final response = await _postRequest('register-person/', {
       'atsign': atSign,
       'email': email,
@@ -229,7 +234,8 @@ class RegistrarServiceImpl implements RegistrarServiceBase {
   }
 
   @override
-  Future<String> authenticateAtSignAndActivate({required String atSign, required String otp}) async {
+  Future<String> authenticateAtSignAndActivate(
+      {required String atSign, required String otp}) async {
     final response = await _postRequest('authenticate/atsign/activate', {
       'atsign': atSign,
       'otp': otp,
