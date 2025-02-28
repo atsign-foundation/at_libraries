@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:at_chops/at_chops.dart';
+import 'package:at_chops/src/hashing/hashing.dart';
 
 /// A class that represents encrypted content, along with metadata such as
 /// initialization vector (IV) and the hashing algorithm used.

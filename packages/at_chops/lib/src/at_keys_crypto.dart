@@ -3,8 +3,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:at_chops/at_chops.dart';
-import 'package:at_chops/src/factory/at_hashing_algo_factory.dart';
-import 'package:at_chops/src/model/hash_params.dart';
+import 'package:at_chops/src/encryption/encryption.dart';
+import 'package:at_chops/src/hashing/hashing.dart';
+import 'package:at_chops/src/at_chops_util.dart';
 import 'package:at_commons/at_commons.dart';
 
 /// An abstract class that provides cryptographic operations for AtKeys using
@@ -65,7 +66,7 @@ class _AtKeysCryptoImpl implements AtKeysCrypto {
     String hashKey =
         await _getHashKey(passPhrase, _hashingAlgoType, hashParams: hashParams);
 
-    AESKey aesKey = AESKey(hashKey);
+    AtAESKey aesKey = AtAESKey(hashKey);
     StringAESEncryptor atEncryptionAlgorithm = StringAESEncryptor(aesKey);
 
     InitialisationVector iv = AtChopsUtil.generateRandomIV(16);
@@ -92,7 +93,7 @@ class _AtKeysCryptoImpl implements AtKeysCrypto {
     // 1. Generate hash key based on the hashing algo type:
     String hashKey =
         await _getHashKey(passPhrase, _hashingAlgoType, hashParams: hashParams);
-    AESKey aesKey = AESKey(hashKey);
+    AtAESKey aesKey = AtAESKey(hashKey);
     StringAESEncryptor atEncryptionAlgorithm = StringAESEncryptor(aesKey);
 
     Uint8List iv = base64Decode(atEncrypted.iv!);

@@ -110,10 +110,8 @@ void main() {
       expect(
           () => pkamSigningAlgo.sign(dataInBytes),
           throwsA(predicate((e) =>
-              e is AtException &&
-              e
-                  .toString()
-                  .contains('pkam key pair is null. cannot sign data'))));
+              e is AtSigningException &&
+              e.toString().contains('Exception: Pkam key pair not set'))));
     });
     test('Test pkam verification - passing public key', () {
       var pkamKeyPair = AtChopsUtil.generateAtPkamKeyPair();

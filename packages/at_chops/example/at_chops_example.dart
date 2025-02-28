@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:at_chops/at_chops.dart';
-import 'package:at_chops/src/algorithm/at_algorithm.dart';
+import 'package:at_chops/src/key/at_rsa_key_pair.dart';
+import 'package:at_chops/types.dart';
 import 'package:encrypt/encrypt.dart';
 
 /// Usage:
@@ -11,7 +12,7 @@ import 'package:encrypt/encrypt.dart';
 /// dart run at_chops_example.dart
 /// or
 /// Using key pairs from atKeys file
-/// dart run at_chops_example.dart <path_to_atkeys_file>
+/// dart run at_chops_example.dart (path_to_atkeys_file)
 void main(List<String> args) async {
   AtChops atChops;
   if (args.isNotEmpty) {
@@ -36,7 +37,8 @@ void main(List<String> args) async {
     atChops = AtChopsImpl(atChopsKeys);
   }
 
-  var atEncryptionKeyPair = atChops.atChopsKeys.atEncryptionKeyPair;
+  var atEncryptionKeyPair =
+      atChops.atChopsKeys.atEncryptionKeyPair as AtRSAKeyPair?;
   // 1 - Encryption and decryption using asymmetric key pair
   final data = 'Hello World';
   //1.1 encrypt the data using [atEncryptionKeyPair.publicKey]
@@ -56,7 +58,7 @@ void main(List<String> args) async {
   signingInput.signingAlgoType = SigningAlgoType.rsa2048;
   signingInput.hashingAlgoType = HashingAlgoType.sha512;
   AtSigningAlgorithm signingAlgorithm =
-      DefaultSigningAlgo(atEncryptionKeyPair, signingInput.hashingAlgoType);
+      RSASigningAlgo(atEncryptionKeyPair, signingInput.hashingAlgoType);
   signingInput.signingAlgorithm = signingAlgorithm;
   // 2.2 sign the data
   final dataSigningResult = atChops.sign(signingInput);
@@ -68,8 +70,8 @@ void main(List<String> args) async {
       atEncryptionKeyPair!.atPublicKey.publicKey);
   verificationInput.signingAlgoType = SigningAlgoType.rsa2048;
   verificationInput.hashingAlgoType = HashingAlgoType.sha512;
-  AtSigningAlgorithm verifyAlgorithm = DefaultSigningAlgo(
-      atEncryptionKeyPair, verificationInput.hashingAlgoType);
+  AtSigningAlgorithm verifyAlgorithm =
+      RSASigningAlgo(atEncryptionKeyPair, verificationInput.hashingAlgoType);
   verificationInput.signingAlgorithm = verifyAlgorithm;
   // 2.4 verify the signature
   AtSigningResult dataVerificationResult = atChops.verify(verificationInput);
@@ -78,12 +80,12 @@ void main(List<String> args) async {
 }
 
 AtChops _createAtChops(Map<String, String> atKeysDataMap) {
-  final atEncryptionKeyPair = AtEncryptionKeyPair.create(
+  final atEncryptionKeyPair = AtRSAKeyPair.create(
       _decryptValue(atKeysDataMap[AuthKeyType.encryptionPublicKey]!,
           atKeysDataMap[AuthKeyType.selfEncryptionKey]!)!,
       _decryptValue(atKeysDataMap[AuthKeyType.encryptionPrivateKey]!,
           atKeysDataMap[AuthKeyType.selfEncryptionKey]!)!);
-  final atPkamKeyPair = AtPkamKeyPair.create(
+  final atPkamKeyPair = AtRSAKeyPair.create(
       _decryptValue(atKeysDataMap[AuthKeyType.pkamPublicKey]!,
           atKeysDataMap[AuthKeyType.selfEncryptionKey]!)!,
       _decryptValue(atKeysDataMap[AuthKeyType.pkamPrivateKey]!,

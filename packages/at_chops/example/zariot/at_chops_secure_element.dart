@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:at_chops/types.dart';
 import 'package:crypto/crypto.dart';
 import 'package:at_chops/at_chops.dart';
 

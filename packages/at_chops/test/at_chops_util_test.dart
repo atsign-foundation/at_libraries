@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
-import 'package:at_chops/src/util/at_chops_util.dart';
+import 'package:at_chops/src/at_chops_util.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:test/test.dart';
 
@@ -37,8 +37,7 @@ void main() {
       var random = Random();
       List<int> randomBytes =
           List<int>.generate(16, (i) => random.nextInt(256));
-      var iv =
-          AtChopsUtil.generateIVFromBase64String(base64.encode(randomBytes));
+      var iv = AtChopsUtil.ivFromBase64(base64.encode(randomBytes));
       expect(ListEquality().equals(iv.ivBytes, randomBytes), true);
     });
   });

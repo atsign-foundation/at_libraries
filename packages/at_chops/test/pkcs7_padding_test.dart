@@ -1,5 +1,4 @@
-import 'package:at_chops/src/algorithm/padding/padding_params.dart';
-import 'package:at_chops/src/algorithm/padding/pkcs7padding.dart';
+import 'package:at_chops/src/padding/pkcs7_padding.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:test/test.dart';
 
@@ -7,7 +6,7 @@ void main() {
   group('A group of tests to verify pkcs7 padding', () {
     test('A test to verify padding when data length is less than block size',
         () {
-      final paddingAlgo = PKCS7Padding(PaddingParams()..blockSize = 16);
+      final paddingAlgo = PKCS7Padding(PKCS7PaddingParams()..blockSize = 16);
       var dataString = 'Hello World';
       var unPaddedData = dataString.codeUnits;
       var paddedData = paddingAlgo.addPadding(dataString.codeUnits);
@@ -21,7 +20,7 @@ void main() {
     });
     test('A test to verify padding when data length is equal to block size',
         () {
-      final paddingAlgo = PKCS7Padding(PaddingParams()..blockSize = 16);
+      final paddingAlgo = PKCS7Padding(PKCS7PaddingParams()..blockSize = 16);
       var dataString = 'Hello World12345';
       var unPaddedData = dataString.codeUnits;
       var paddedData = paddingAlgo.addPadding(dataString.codeUnits);
@@ -36,7 +35,7 @@ void main() {
     test(
         'A test to verify padding when data length is one less than block size',
         () {
-      final paddingAlgo = PKCS7Padding(PaddingParams()..blockSize = 16);
+      final paddingAlgo = PKCS7Padding(PKCS7PaddingParams()..blockSize = 16);
       var dataString = 'Hello World1234';
       var unPaddedData = dataString.codeUnits;
       var paddedData = paddingAlgo.addPadding(dataString.codeUnits);
@@ -49,20 +48,20 @@ void main() {
       expect(dataAfterRemovingPadding, unPaddedData);
     });
     test('A test to verify invalid block size', () {
-      var paddingAlgo = PKCS7Padding(PaddingParams()..blockSize = -10);
+      var paddingAlgo = PKCS7Padding(PKCS7PaddingParams()..blockSize = -10);
       var dataString = 'Hello World1234';
       expect(
           () => paddingAlgo.addPadding(dataString.codeUnits),
           throwsA(predicate((e) =>
               e is AtEncryptionException &&
               e.toString().contains('Block size must be between 1 and 255.'))));
-      paddingAlgo = PKCS7Padding(PaddingParams()..blockSize = 0);
+      paddingAlgo = PKCS7Padding(PKCS7PaddingParams()..blockSize = 0);
       expect(
           () => paddingAlgo.addPadding(dataString.codeUnits),
           throwsA(predicate((e) =>
               e is AtEncryptionException &&
               e.toString().contains('Block size must be between 1 and 255.'))));
-      paddingAlgo = PKCS7Padding(PaddingParams()..blockSize = 300);
+      paddingAlgo = PKCS7Padding(PKCS7PaddingParams()..blockSize = 300);
       expect(
           () => paddingAlgo.addPadding(dataString.codeUnits),
           throwsA(predicate((e) =>
@@ -70,7 +69,7 @@ void main() {
               e.toString().contains('Block size must be between 1 and 255.'))));
     });
     test('A test to verify invalid input data to remove padding', () {
-      var paddingAlgo = PKCS7Padding(PaddingParams());
+      var paddingAlgo = PKCS7Padding(PKCS7PaddingParams());
       List<int> invalidInput = [];
       expect(
           () => paddingAlgo.removePadding(invalidInput),

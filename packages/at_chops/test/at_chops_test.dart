@@ -2,7 +2,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:at_chops/at_chops.dart';
-import 'package:at_chops/src/algorithm/at_algorithm.dart';
+import 'package:at_chops/src/key/at_rsa_key_pair.dart';
+import 'package:at_chops/types.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_utils/at_logger.dart';
 import 'package:crypton/crypton.dart';
@@ -253,7 +254,7 @@ void main() {
 
       AtSigningInput signingInput = AtSigningInput(data);
       signingInput.signingAlgorithm =
-          DefaultSigningAlgo(encryptionKeypair, signingInput.hashingAlgoType);
+          RSASigningAlgo(encryptionKeypair, signingInput.hashingAlgoType);
       final signingResult = atChops.sign(signingInput);
       expect(signingResult.atSigningMetaData, isNotNull);
       expect(
@@ -270,8 +271,8 @@ void main() {
       AtSigningVerificationInput? verificationInput =
           AtSigningVerificationInput(data, base64Decode(signingResult.result),
               encryptionKeypair.atPublicKey.publicKey);
-      verificationInput.signingAlgorithm = DefaultSigningAlgo(
-          encryptionKeypair, verificationInput.hashingAlgoType);
+      verificationInput.signingAlgorithm =
+          RSASigningAlgo(encryptionKeypair, verificationInput.hashingAlgoType);
       AtSigningResult verificationResult = atChops.verify(verificationInput);
       expect(verificationResult.atSigningMetaData, isNotNull);
       expect(verificationResult.atSigningResultType, AtSigningResultType.bool);
@@ -296,7 +297,7 @@ void main() {
       signingInput.signingAlgoType = SigningAlgoType.rsa2048;
       signingInput.hashingAlgoType = HashingAlgoType.sha256;
       AtSigningAlgorithm signingAlgorithm =
-          DefaultSigningAlgo(encryptionKeypair, signingInput.hashingAlgoType);
+          RSASigningAlgo(encryptionKeypair, signingInput.hashingAlgoType);
       signingInput.signingAlgorithm = signingAlgorithm;
       final signingResult = atChops.sign(signingInput);
       expect(signingResult.atSigningMetaData, isNotNull);
@@ -316,8 +317,8 @@ void main() {
               encryptionKeypair.atPublicKey.publicKey);
       verificationInput.signingAlgoType = SigningAlgoType.rsa2048;
       verificationInput.hashingAlgoType = HashingAlgoType.sha256;
-      AtSigningAlgorithm verifyAlgorithm = DefaultSigningAlgo(
-          encryptionKeypair, verificationInput.hashingAlgoType);
+      AtSigningAlgorithm verifyAlgorithm =
+          RSASigningAlgo(encryptionKeypair, verificationInput.hashingAlgoType);
       verificationInput.signingAlgorithm = verifyAlgorithm;
       AtSigningResult verificationResult = atChops.verify(verificationInput);
       expect(verificationResult.atSigningMetaData, isNotNull);
@@ -343,7 +344,7 @@ void main() {
       signingInput.signingAlgoType = SigningAlgoType.rsa2048;
       signingInput.hashingAlgoType = HashingAlgoType.sha512;
       AtSigningAlgorithm signingAlgorithm =
-          DefaultSigningAlgo(encryptionKeypair, signingInput.hashingAlgoType);
+          RSASigningAlgo(encryptionKeypair, signingInput.hashingAlgoType);
       signingInput.signingAlgorithm = signingAlgorithm;
       final signingResult = atChops.sign(signingInput);
       expect(signingResult.atSigningMetaData, isNotNull);
@@ -363,8 +364,8 @@ void main() {
               encryptionKeypair.atPublicKey.publicKey);
       verificationInput.signingAlgoType = SigningAlgoType.rsa2048;
       verificationInput.hashingAlgoType = HashingAlgoType.sha512;
-      AtSigningAlgorithm verifyAlgorithm = DefaultSigningAlgo(
-          encryptionKeypair, verificationInput.hashingAlgoType);
+      AtSigningAlgorithm verifyAlgorithm =
+          RSASigningAlgo(encryptionKeypair, verificationInput.hashingAlgoType);
       verificationInput.signingAlgorithm = verifyAlgorithm;
       AtSigningResult verificationResult = atChops.verify(verificationInput);
       expect(verificationResult.atSigningMetaData, isNotNull);
@@ -388,7 +389,7 @@ void main() {
       signingInput.signingAlgoType = SigningAlgoType.rsa2048;
       signingInput.hashingAlgoType = HashingAlgoType.sha256;
       signingInput.signingAlgorithm =
-          DefaultSigningAlgo(encryptionKeypair, signingInput.hashingAlgoType);
+          RSASigningAlgo(encryptionKeypair, signingInput.hashingAlgoType);
       final signingResult = atChops.sign(signingInput);
 
       AtSigningVerificationInput? verificationInput =
@@ -396,8 +397,8 @@ void main() {
               encryptionKeypair.atPublicKey.publicKey);
       verificationInput.signingAlgoType = SigningAlgoType.rsa2048;
       verificationInput.hashingAlgoType = HashingAlgoType.sha512;
-      verificationInput.signingAlgorithm = DefaultSigningAlgo(
-          encryptionKeypair, verificationInput.hashingAlgoType);
+      verificationInput.signingAlgorithm =
+          RSASigningAlgo(encryptionKeypair, verificationInput.hashingAlgoType);
 
       AtSigningResult verificationResult = atChops.verify(verificationInput);
       expect(verificationResult.atSigningMetaData, isNotNull);
@@ -421,7 +422,7 @@ void main() {
       signingInput.signingAlgoType = SigningAlgoType.rsa2048;
       signingInput.hashingAlgoType = HashingAlgoType.sha512;
       signingInput.signingAlgorithm =
-          DefaultSigningAlgo(encryptionKeypair, signingInput.hashingAlgoType);
+          RSASigningAlgo(encryptionKeypair, signingInput.hashingAlgoType);
       final signingResult = atChops.sign(signingInput);
 
       AtSigningVerificationInput? verificationInput =
@@ -429,8 +430,8 @@ void main() {
               encryptionKeypair.atPublicKey.publicKey);
       verificationInput.signingAlgoType = SigningAlgoType.rsa2048;
       verificationInput.hashingAlgoType = HashingAlgoType.sha256;
-      verificationInput.signingAlgorithm = DefaultSigningAlgo(
-          encryptionKeypair, verificationInput.hashingAlgoType);
+      verificationInput.signingAlgorithm =
+          RSASigningAlgo(encryptionKeypair, verificationInput.hashingAlgoType);
 
       AtSigningResult verificationResult = atChops.verify(verificationInput);
       expect(verificationResult.atSigningMetaData, isNotNull);
@@ -453,8 +454,8 @@ void main() {
               data, 'dummysignature', encryptionKeypair.atPublicKey.publicKey);
       verificationInput.signingAlgoType = SigningAlgoType.rsa2048;
       verificationInput.hashingAlgoType = HashingAlgoType.sha256;
-      AtSigningAlgorithm verifyAlgorithm = DefaultSigningAlgo(
-          encryptionKeypair, verificationInput.hashingAlgoType);
+      AtSigningAlgorithm verifyAlgorithm =
+          RSASigningAlgo(encryptionKeypair, verificationInput.hashingAlgoType);
       verificationInput.signingAlgorithm = verifyAlgorithm;
 
       AtSigningResult verificationResult = atChops.verify(verificationInput);
@@ -478,8 +479,8 @@ void main() {
               encryptionKeypair.atPublicKey.publicKey);
       verificationInput.signingAlgoType = SigningAlgoType.rsa2048;
       verificationInput.hashingAlgoType = HashingAlgoType.sha512;
-      AtSigningAlgorithm verifyAlgorithm = DefaultSigningAlgo(
-          encryptionKeypair, verificationInput.hashingAlgoType);
+      AtSigningAlgorithm verifyAlgorithm =
+          RSASigningAlgo(encryptionKeypair, verificationInput.hashingAlgoType);
       verificationInput.signingAlgorithm = verifyAlgorithm;
 
       AtSigningResult verificationResult = atChops.verify(verificationInput);
@@ -497,21 +498,21 @@ void main() {
       final encryptionKeypair = AtChopsUtil.generateAtEncryptionKeyPair();
       final anotherEncryptionKeypair =
           AtChopsUtil.generateAtEncryptionKeyPair();
-      AtEncryptionKeyPair dummyKeyPair = AtEncryptionKeyPair.create(
-          encryptionKeypair.atPrivateKey.privateKey, '');
+      AtRSAKeyPair dummyKeyPair =
+          AtRSAKeyPair.create(encryptionKeypair.atPrivateKey.privateKey, '');
       final atChopsKeys = AtChopsKeys.create(dummyKeyPair, null);
       final atChops = AtChopsImpl(atChopsKeys);
 
       AtSigningInput signingInput = AtSigningInput(data);
       signingInput.signingAlgorithm =
-          DefaultSigningAlgo(encryptionKeypair, signingInput.hashingAlgoType);
+          RSASigningAlgo(encryptionKeypair, signingInput.hashingAlgoType);
       final signingResult = atChops.sign(signingInput);
 
       AtSigningVerificationInput? verificationInput =
           AtSigningVerificationInput(data, base64Decode(signingResult.result),
               anotherEncryptionKeypair.atPublicKey.publicKey);
-      verificationInput.signingAlgorithm = DefaultSigningAlgo(
-          encryptionKeypair, verificationInput.hashingAlgoType);
+      verificationInput.signingAlgorithm =
+          RSASigningAlgo(encryptionKeypair, verificationInput.hashingAlgoType);
 
       AtSigningResult verificationResult = atChops.verify(verificationInput);
       expect(verificationResult.atSigningMetaData, isNotNull);
@@ -529,13 +530,12 @@ void main() {
 
       AtSigningInput signingInput = AtSigningInput('abcde');
       signingInput.signingAlgorithm =
-          DefaultSigningAlgo(null, signingInput.hashingAlgoType);
+          RSASigningAlgo(null, signingInput.hashingAlgoType);
       try {
         atChops.sign(signingInput);
       } catch (e, _) {
         assert(e is AtSigningException);
-        expect(e.toString(),
-            'Exception: encryption key pair not set for default signing algo');
+        expect(e.toString(), 'Exception: Encryption key pair not set');
       }
     });
 
@@ -546,7 +546,7 @@ void main() {
 
       AtSigningInput signingInput = AtSigningInput(213456777);
       signingInput.signingAlgorithm =
-          DefaultSigningAlgo(encryptionKeypair, signingInput.hashingAlgoType);
+          RSASigningAlgo(encryptionKeypair, signingInput.hashingAlgoType);
       try {
         atChops.sign(signingInput);
       } catch (e, _) {
