@@ -1,25 +1,55 @@
-import 'dart:io';
+import 'dart:async';
 
-abstract class AtConnection {
-  /// Write a data to the underlying socket of the connection
+abstract class AtConnection<T> {
+  /// The underlying connection
+  T get underlying;
+
+  /// Metadata for the connection
+  final AtConnectionMetaData metaData = AtConnectionMetaData();
+
+  /// The idle timeout in milliseconds (default: 10 minutes)
+  int idleTimeMillis = 600000;
+
+  AtConnection() {
+    metaData.created = DateTime.now().toUtc();
+  }
+
+  /// Writes data to the underlying socket of the connection.
   /// @param - data - Data to write to the socket
   /// @throws [AtIOException] for any exception during the operation
-  void write(String data);
+  FutureOr<void> write(String data);
 
-  /// Retrieves the socket of underlying connection
-  Socket getSocket();
-
-  /// closes the underlying connection
+  /// Closes the underlying connection.
   Future<void> close();
 
-  /// Returns true if the connection is invalid
-  bool isInValid();
+  /// Returns true if the connection is invalid.
+  bool isInValid() {
+    return _isIdle() || metaData.isClosed || metaData.isStale;
+  }
 
-  /// Gets the connection metadata
-  AtConnectionMetaData? getMetaData();
+  /// Updates the idle time for the connection (Socket or WebSocket).
+  void setIdleTime(int? idleTimeMillis) {
+    if (idleTimeMillis != null) {
+      this.idleTimeMillis = idleTimeMillis;
+    }
+  }
+
+  /// Checks if the connection has been idle for longer than the specified timeout.
+  bool _isIdle() {
+    return _getIdleTimeMillis() > idleTimeMillis;
+  }
+
+  /// Calculates the idle time in milliseconds.
+  int _getIdleTimeMillis() {
+    var lastAccessedTime = metaData.lastAccessed;
+    lastAccessedTime ??= metaData.created;
+    var currentTime = DateTime.now().toUtc();
+    return currentTime.difference(lastAccessedTime!).inMilliseconds;
+  }
 }
 
-abstract class AtConnectionMetaData {
+/// Metadata for [AtConnection].
+class AtConnectionMetaData {
   bool isAuthenticated = false;
   DateTime? lastAccessed;
   DateTime? created;

@@ -9,7 +9,6 @@ abstract class BaseConnection extends AtConnection {
   late final AtSignLogger logger;
   late final Socket _socket;
   StringBuffer? buffer;
-  AtConnectionMetaData? metaData;
 
   BaseConnection(Socket? socket) {
     logger = AtSignLogger(runtimeType.toString());
@@ -18,7 +17,6 @@ abstract class BaseConnection extends AtConnection {
     _socket = socket!;
   }
 
-  @override
   AtConnectionMetaData? getMetaData() {
     return metaData;
   }
@@ -46,7 +44,6 @@ abstract class BaseConnection extends AtConnection {
     }
   }
 
-  @override
   Socket getSocket() {
     return _socket;
   }

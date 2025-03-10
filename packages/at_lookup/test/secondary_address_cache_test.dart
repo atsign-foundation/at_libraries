@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:at_commons/at_commons.dart';
 import 'package:at_lookup/at_lookup.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
-import 'package:mocktail/mocktail.dart';
 
 import 'at_lookup_test_utils.dart';
 
@@ -141,7 +141,7 @@ void main() async {
     late Function socketOnDataFn;
 
     late SecureSocket mockSocket;
-    late MockSecureSocketFactory mockSocketFactory;
+    late MockAtLookupConnectionFactory mockSocketFactory;
 
     late CacheableSecondaryAddressFinder cachingAtServerFinder;
 
@@ -162,7 +162,7 @@ void main() async {
 
     setUp(() {
       mockSocket = createMockAtDirectorySocket(mockAtDirectoryHost, 64);
-      mockSocketFactory = MockSecureSocketFactory();
+      mockSocketFactory = MockAtLookupConnectionFactory();
 
       cachingAtServerFinder = CacheableSecondaryAddressFinder(
           mockAtDirectoryHost, 64,
@@ -170,9 +170,8 @@ void main() async {
               socketFactory: mockSocketFactory));
 
       numSocketCreateCalls = 0;
-      when(() =>
-              mockSocketFactory.createSocket(mockAtDirectoryHost, '64', any()))
-          .thenAnswer((invocation) {
+      when(() => mockSocketFactory.createUnderlying(
+          mockAtDirectoryHost, '64', any())).thenAnswer((invocation) {
         print(
             'mock create socket: numFailures $numSocketCreateCalls requiredFailures $requiredFailures');
         if (numSocketCreateCalls++ < requiredFailures) {
