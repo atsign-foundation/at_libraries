@@ -1,3 +1,5 @@
+## 2.1.0
+- feat: at_chops uptake for faster AES encryption/decryption
 ## 2.0.10
 - fix: Replace legacy IVs with random IVs for encrypting "defaultEncryptionPrivateKey" and "selfEncryptionKey" in APKAM flow
 ## 2.0.9
