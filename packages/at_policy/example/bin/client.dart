@@ -17,7 +17,7 @@ void main(List<String> args) async {
 
     var atClient = (await CLIBase.fromCommandLineArgs(args)).atClient;
 
-    var rpc = AtRpcClient(
+    var policyClient = AtRpcClient(
         atClient: atClient,
         baseNameSpace: atClient.getPreferences()!.namespace!,
         domainNameSpace: policyRequestNamespace,
@@ -37,7 +37,7 @@ void main(List<String> args) async {
       }
 
       try {
-        var response = await rpc
+        var response = await policyClient
             .call({'reqType': RequestType.values[reqType - 1].name}).timeout(
                 Duration(seconds: 15));
 

@@ -61,6 +61,16 @@ class PolicyRequest {
     required this.intents,
   });
 
+  PolicyIntent? infoForIntent(String intent) {
+    for (final i in intents) {
+      if (i.intent == intent) {
+        return i;
+      }
+    }
+    return null;
+  }
+
+
   Map<String, dynamic> toJson() => _$PolicyRequestToJson(this);
 
   static PolicyRequest fromJson(Map<String, dynamic> json) =>
