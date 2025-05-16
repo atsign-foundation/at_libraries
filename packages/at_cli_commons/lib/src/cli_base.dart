@@ -261,6 +261,13 @@ class CLIBase {
       atServiceFactory = ServiceFactoryWithNoOpSyncService();
     }
 
+    int _rootPort = 64;
+    String _rootDomain = '';
+    if (this.rootDomain.contains(':')) {
+      _rootPort = int.parse(this.rootDomain.split(':')[1]);
+      _rootDomain = this.rootDomain.split(':')[0];
+    }
+
     AtOnboardingPreference atOnboardingConfig = AtOnboardingPreference()
       ..hiveStoragePath = localStoragePathToUse
       ..namespace = nameSpace
@@ -268,7 +275,8 @@ class CLIBase {
       ..isLocalStoreRequired = true
       ..commitLogPath = '$localStoragePathToUse/commitLog'
           .replaceAll('/', Platform.pathSeparator)
-      ..rootDomain = rootDomain
+      ..rootDomain = _rootDomain
+      ..rootPort = _rootPort
       ..fetchOfflineNotifications = true
       ..atKeysFilePath = atKeysFilePathToUse
       ..atProtocolEmitted = Version(2, 0, 0)
