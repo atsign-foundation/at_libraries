@@ -29,6 +29,7 @@ export 'src/exception/at_auth_exceptions.dart';
 export 'src/keys/at_auth_keys.dart';
 export 'src/onboard/at_onboarding_request.dart';
 export 'src/onboard/at_onboarding_response.dart';
+export 'src/registrar/registrar.dart';
 
 /// Global constant to access [AtAuthInterface].
 ///
