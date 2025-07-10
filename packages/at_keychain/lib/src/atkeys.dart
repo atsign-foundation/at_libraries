@@ -1,10 +1,11 @@
 import 'dart:async' show FutureOr;
+import 'dart:convert';
 
-// TODO drop atChops - this package should be upstream of at_chops
-import 'package:at_chops/at_chops.dart' show AESKey, StringAESEncryptor;
-import 'package:at_chops/types.dart' show AtChopsUtil;
 import 'package:at_keychain/src/base64_encodeable_key.dart'
     show Base64EncodableKey;
+import 'package:at_utils/at_utils.dart' show AtSignLogger;
+import 'package:better_cryptography/better_cryptography.dart'
+    show AesCtr, MacAlgorithm, SecretKey, Mac, SecretBox;
 
 /// Defines the contents of the .atKeys file / an atSign's keys in the keychain
 abstract class AtKeys {
@@ -19,7 +20,7 @@ abstract class AtKeys {
   Map<String, String> toJson();
   FutureOr<Map<String, String>> toEncryptedJson();
 
-  factory AtKeys.fromJson(Map json) => _AtKeys.fromJson(json);
+  static Future<AtKeys> fromJson(Map json) => _AtKeys.fromJson(json);
   factory AtKeys({
     Base64EncodableKey? apkamPublicKey,
     Base64EncodableKey? apkamPrivateKey,
@@ -40,7 +41,13 @@ abstract class AtKeys {
       );
 }
 
+// TODO:
+// KeyChainManager also stores :
+// "hiveSecret": hiveSecret,
+// "secret": secret,
+// What do we do with these fields?
 class _AtKeys implements AtKeys {
+  static final AtSignLogger _logger = AtSignLogger('AtKeys');
   @override
   final Base64EncodableKey? apkamPublicKey;
   @override
@@ -66,28 +73,67 @@ class _AtKeys implements AtKeys {
     this.enrollmentId,
   });
 
-  factory _AtKeys.fromJson(Map json) {
-    Base64EncodableKey? keyOnly(dynamic value) =>
-        value is String ? Base64EncodableKey.fromBase64(value) : null;
-    var selfEncryptionKey = keyOnly(json['selfEncryptionKey']);
+  static List<int> get _emptyNonce =>
+      const [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-    String? Function(dynamic) decrypted;
-    if (selfEncryptionKey == null) {
-      decrypted = (_) => null;
-    } else {
-      // TODO want base64 not utf8 String in
-      var aes = StringAESEncryptor(AESKey(selfEncryptionKey.base64));
-      decrypted = (value) {
-        if (value is! String) return null;
-        return aes.decrypt(value, iv: AtChopsUtil.generateIVLegacy());
-      };
+  static Future<_AtKeys> fromJson(Map json) async {
+    Base64EncodableKey? toBase64KeyOrNull(dynamic value) {
+      if (value is String) return Base64EncodableKey.fromBase64(value);
+      if (value is List<int>) return Base64EncodableKey.fromBytes(value);
+      return null;
     }
 
-    // TODO continue
-    // var apkamPublicKey = keyOnly(decrypted(
-    // var apkamPrivateKey,
-    // var sharedEncryptionPublicKey,
-    // var sharedEncryptionPrivateKey,
+    String? asStringOrNull(dynamic value) => value is String ? value : null;
+
+    var selfEncryptionKey = toBase64KeyOrNull(json['selfEncryptionKey']);
+    Base64EncodableKey? apkamPublicKey,
+        apkamPrivateKey,
+        sharedEncryptionPrivateKey,
+        sharedEncryptionPublicKey,
+        apkamSymmetricKey;
+
+    // Function which decrypts a potential key, otherwise yields null
+    Future<List<int>?> Function(dynamic) decrypted;
+    if (selfEncryptionKey == null) {
+      decrypted = (_) async => null;
+    } else {
+      var aes = AesCtr.with256bits(macAlgorithm: MacAlgorithm.empty);
+      var secretKey = SecretKey(selfEncryptionKey.bytes);
+      decrypted = (keyName) async {
+        var value = json[keyName];
+        if (value is! String) return null;
+        try {
+          var sBox = SecretBox(base64Decode(value),
+              nonce: _emptyNonce, mac: Mac.empty);
+          return await aes.decrypt(sBox, secretKey: secretKey);
+        } catch (e, s) {
+          _logger.severe("Failed to decrypt key: $keyName", e, s);
+          return null;
+        }
+      };
+      apkamPublicKey = toBase64KeyOrNull(
+        json['pkamPublicKey'] ?? await decrypted('aesPkamPublicKey'),
+      );
+      apkamPrivateKey = toBase64KeyOrNull(
+        json['pkamPrivateKey'] ?? await decrypted('aesPkamPrivateKey'),
+      );
+      sharedEncryptionPublicKey = toBase64KeyOrNull(
+        json['encryptionPublicKey'] ?? await decrypted('aesEncryptPublicKey'),
+      );
+      sharedEncryptionPrivateKey = toBase64KeyOrNull(
+        json['encryptionPrivateKey'] ?? await decrypted('aesEncryptPrivateKey'),
+      );
+    }
+
+    return _AtKeys(
+      apkamPublicKey: apkamPublicKey,
+      apkamPrivateKey: apkamPrivateKey,
+      sharedEncryptionPublicKey: sharedEncryptionPublicKey,
+      sharedEncryptionPrivateKey: sharedEncryptionPrivateKey,
+      selfEncryptionKey: selfEncryptionKey,
+      apkamSymmetricKey: apkamSymmetricKey,
+      enrollmentId: asStringOrNull(json['enrollmentId']),
+    );
   }
 
   Map<String, String> _dropNulls(Map<String, String?> json) {
@@ -96,11 +142,12 @@ class _AtKeys implements AtKeys {
 
   @override
   Map<String, String> toJson() {
+    // Field names originate from how they are stored in a native keychain
     var json = {
       'pkamPublicKey': apkamPublicKey?.base64,
       'pkamPrivateKey': apkamPrivateKey?.base64,
-      'encryptPublicKey': sharedEncryptionPublicKey?.base64,
-      'encryptPrivateKey': sharedEncryptionPrivateKey?.base64,
+      'encryptionPublicKey': sharedEncryptionPublicKey?.base64,
+      'encryptionPrivateKey': sharedEncryptionPrivateKey?.base64,
       'selfEncryptionKey': selfEncryptionKey?.base64,
       'apkamSymmetricKey': apkamSymmetricKey?.base64,
       'enrollmentId': enrollmentId,
@@ -113,25 +160,38 @@ class _AtKeys implements AtKeys {
   // decryption key is stored in the same place
   // We should wait a while before we replace writing of non-encrypted key files
   // however we should support reading immediately so it has time to propogate
-  Map<String, String> toEncryptedJson() {
+  Future<Map<String, String>> toEncryptedJson() async {
     if (selfEncryptionKey == null) {
       return _dropNulls({
         'apkamSymmetricKey': apkamSymmetricKey?.base64,
         'enrollmentId': enrollmentId,
       });
     }
-    // TODO want base64 not utf8 String out
-    var aes = StringAESEncryptor(AESKey(selfEncryptionKey!.base64));
-    encrypted(Base64EncodableKey? value) {
+    var aes = AesCtr.with256bits(macAlgorithm: MacAlgorithm.empty);
+    var secretKey = SecretKey(selfEncryptionKey!.bytes);
+    encrypted(Base64EncodableKey? value, String keyName) async {
       if (value == null) return null;
-      return aes.encrypt(value.base64, iv: AtChopsUtil.generateIVLegacy());
+      try {
+        var sBox = await aes.encrypt(
+          base64Encode(value.bytes).codeUnits,
+          secretKey: secretKey,
+          nonce: [0],
+        );
+        return base64Encode(sBox.cipherText);
+      } catch (e, s) {
+        _logger.severe("Failed to encrypt key: $keyName", e, s);
+        return null;
+      }
     }
 
+    // Field names originate from how they are stored in .atKeys
     var json = {
-      'aesPkamPublicKey': encrypted(apkamPublicKey),
-      'aesPkamPrivateKey': encrypted(apkamPrivateKey),
-      'aesEncryptPublicKey': encrypted(sharedEncryptionPublicKey),
-      'aesEncryptPrivateKey': encrypted(sharedEncryptionPrivateKey),
+      'aesPkamPublicKey': await encrypted(apkamPublicKey, "pkam public key"),
+      'aesPkamPrivateKey': await encrypted(apkamPrivateKey, "pkam private key"),
+      'aesEncryptPublicKey': await encrypted(
+          sharedEncryptionPublicKey, "shared encryption public key"),
+      'aesEncryptPrivateKey': await encrypted(
+          sharedEncryptionPrivateKey, "shared encryption private key"),
       'selfEncryptionKey': selfEncryptionKey?.base64,
       'apkamSymmetricKey': apkamSymmetricKey?.base64,
       'enrollmentId': enrollmentId,

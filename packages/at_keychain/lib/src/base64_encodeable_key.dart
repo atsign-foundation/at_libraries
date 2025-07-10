@@ -13,7 +13,7 @@ sealed class Base64EncodableKey {
     return _Base64Key(base64);
   }
 
-  factory Base64EncodableKey.fromBytes(Uint8List bytes,
+  factory Base64EncodableKey.fromBytes(List<int> bytes,
       {bool persistEncoded = false}) {
     if (persistEncoded) {
       return Base64EncodableKey.fromBase64(
@@ -21,7 +21,7 @@ sealed class Base64EncodableKey {
         persistDecoded: false,
       );
     }
-    return _RawKey(bytes);
+    return _RawKey(Uint8List.fromList(bytes));
   }
 
   String get base64;
