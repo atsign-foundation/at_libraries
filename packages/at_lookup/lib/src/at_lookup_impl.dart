@@ -685,9 +685,18 @@ class AtLookupImpl implements AtLookUp {
 }
 
 class AtLookupSecureSocketFactory {
-  Future<SecureSocket> createSocket(
-      String host, String port, SecureSocketConfig socketConfig) async {
-    return await SecureSocketUtil.createSecureSocket(host, port, socketConfig);
+  static SecureSocketConfig _globalFallbackConfig = SecureSocketConfig();
+  static void registerConfig(SecureSocketConfig config) {
+    _globalFallbackConfig = config;
+  }
+
+  Future<SecureSocket> createSocket(String host, String port,
+      [SecureSocketConfig? socketConfig]) async {
+    return await SecureSocketUtil.createSecureSocket(
+      host,
+      port,
+      socketConfig ?? _globalFallbackConfig,
+    );
   }
 }
 

@@ -190,8 +190,7 @@ class SecondaryUrlFinder {
       var prompt = false;
       var once = true;
 
-      socket = await _socketFactory.createSocket(
-          _rootDomain, '$_rootPort', SecureSocketConfig());
+      socket = await _socketFactory.createSocket(_rootDomain, '$_rootPort');
       _logger.finer('findAtServerUrl: connection to atDirectory established');
       // listen to the received data event stream
       socket.listen((List<int> event) async {
