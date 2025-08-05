@@ -1,25 +1,7 @@
-Package for Cryptographic and Hashing Operations (CHOPS) such as encryption, decryption,
-data signing and hashing that can  be leveraged by client applications using the at protocol.
+<a href="https://atsign.com#gh-light-mode-only"><img width=250px src="https://atsign.com/wp-content/uploads/2022/05/atsign-logo-horizontal-color2022.svg#gh-light-mode-only" alt="The Atsign Foundation"></a><a href="https://atsign.com#gh-dark-mode-only"><img width=250px src="https://atsign.com/wp-content/uploads/2023/08/atsign-logo-horizontal-reverse2022-Color.svg#gh-dark-mode-only" alt="The Atsign Foundation"></a>
 
-## Features
+# at_chops
 
-- Asymmetric public/private key encryption/decryption using RSA
-- Symmetric key encryption/decryption using AES
-- Digest signing and verification for PKAM authentication
-- Data signing and verification for public data in the at protocol
-- Hashing operations 
-
-## Getting started
-
-- Developer should have a basic understanding on how asymmetric and symmetric encryption works.
-- Developers can use their own key pairs/keys to use this package or create new key pairs/keys using [AtChopsUtil]
-
-## Usage
-
-```dart
-final atChopsKeys = AtChopsKeys.create(atEncryptionKeyPair, null);
-final atChops = AtChopsImpl(atChopsKeys);
-final data = 'Hello World';
-final encryptedString = atChops.encryptString(data, EncryptionKeyType.rsa_2048);
-final decryptedString = atChops.decryptString(encryptedString, EncryptionKeyType.rsa_2048);
-```
+This package has been moved to
+[at_client_sdk](https://github.com/atsign-foundation/at_client_sdk/blob/trunk/packages/at_chops/README.md).
+Please visit that repository instead.
